@@ -257,12 +257,9 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                               </div>
                               
                               <div className="flex-1 min-w-0">
-                                <label 
-                                  htmlFor={`video-${video.id}`}
-                                  className="font-medium text-sm cursor-pointer block"
-                                >
+                                <div className="font-medium text-sm">
                                   {video.title}
-                                </label>
+                                </div>
                                 {video.description && (
                                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                                     {video.description}
@@ -292,10 +289,9 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                             </div>
                           </div>
 
-                          {/* Deadline Picker - Only show when video is selected */}
+                          {/* Calendar Picker - Only show when video is selected */}
                           {isSelected && (
                             <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                              <div className="text-xs text-muted-foreground">Deadline</div>
                               <Popover>
                                 <PopoverTrigger asChild>
                                   <Button
