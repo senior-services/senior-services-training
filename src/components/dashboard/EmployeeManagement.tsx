@@ -137,8 +137,8 @@ export const EmployeeManagement: React.FC = () => {
 
     if (!dueDate) {
       return {
-        variant: "secondary" as const,
-        className: "",
+        variant: "default" as const,
+        className: "bg-muted text-muted-foreground hover:bg-muted",
         text: "No deadline"
       };
     }
@@ -255,26 +255,26 @@ export const EmployeeManagement: React.FC = () => {
                           </div>
                         </div>
                         
-                        <div className="text-center">
-                          <Badge variant="secondary">
-                            {employee.assigned_videos_count || 0} videos
-                          </Badge>
-                        </div>
+                         <div className="text-center">
+                           <Badge className="bg-muted text-muted-foreground hover:bg-muted">
+                             {employee.assigned_videos_count || 0} videos
+                           </Badge>
+                         </div>
                       </div>
                       
                       {/* Action buttons on far right */}
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAssignVideos(employee);
-                          }}
-                        >
-                          <Edit className="w-4 h-4" />
-                          <span className="sr-only">Edit Video Assignments</span>
-                        </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAssignVideos(employee);
+                            }}
+                          >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </Button>
                         <Button
                           variant="outline"
                           size="sm"
