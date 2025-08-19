@@ -242,9 +242,6 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                                   </p>
                                 )}
                                 <div className="flex items-center gap-2 mt-2">
-                                  <Badge variant="outline" className="text-xs">
-                                    {video.type}
-                                  </Badge>
                                   {wasOriginallyAssigned && (
                                     <Badge 
                                       variant={isSelected ? "default" : "secondary"} 
