@@ -9,6 +9,8 @@ export function useUserRole(user: User | null) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     if (!user) {
       setRole(null);
       setLoading(false);
@@ -26,22 +28,31 @@ export function useUserRole(user: User | null) {
           .eq('user_id', user.id)
           .maybeSingle();
 
+        if (!mounted) return;
+
         if (error) {
           console.error('Error fetching user role:', error);
-          setRole('employee'); // Default to employee role
+          setRole('employee'); // Default to employee role on error
         } else {
           setRole(data?.role || 'employee');
         }
       } catch (error) {
+        if (!mounted) return;
         console.error('Error fetching user role:', error);
-        setRole('employee'); // Default to employee role
+        setRole('employee'); // Default to employee role on error
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchUserRole();
-  }, [user]);
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]); // Only depend on user.id to avoid unnecessary re-renders
 
   return { role, loading };
 }

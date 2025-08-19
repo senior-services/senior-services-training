@@ -17,9 +17,13 @@ export function useAuth() {
   });
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!mounted) return;
+        
         setState({
           session,
           user: session?.user ?? null,
@@ -32,16 +36,24 @@ export function useAuth() {
       }
     );
 
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setState({
+    // Then check for existing session only if we haven't gotten one yet
+    const getInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!mounted) return;
+      
+      setState(prev => ({
         session,
         user: session?.user ?? null,
         loading: false,
-      });
-    });
+      }));
+    };
 
-    return () => subscription.unsubscribe();
+    getInitialSession();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signInWithGoogle = async () => {
