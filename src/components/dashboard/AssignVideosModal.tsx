@@ -220,7 +220,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
+      <DialogContent className="sm:max-w-2xl h-[80vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Video className="w-5 h-5" />
@@ -271,7 +271,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                 </div>
               </div>
 
-              <ScrollArea className="flex-1 mt-4">
+              <ScrollArea className="flex-1 mt-4 overflow-y-auto">
                 <div className="space-y-3 pr-4">
                   {videos.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
