@@ -12,6 +12,12 @@ import { Play, FileVideo, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  isYouTubeUrl, 
+  isGoogleDriveUrl, 
+  getYouTubeVideoId, 
+  getGoogleDriveEmbedUrl 
+} from "@/utils/videoUtils";
 
 interface VideoData {
   id: string;
@@ -92,21 +98,13 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete }: 
 
   if (!video) return null;
 
-  // Determine video source and type
-  const isYouTubeUrl = video.video_url && (
-    video.video_url.includes('youtube.com/watch') || 
-    video.video_url.includes('youtu.be/')
-  );
-  const isDriveUrl = video.video_url && video.video_url.includes('drive.google.com');
+  // Check video URL type using utility functions
+  const isYouTube = video.video_url && isYouTubeUrl(video.video_url);
+  const isGoogleDrive = video.video_url && isGoogleDriveUrl(video.video_url);
   const isFileUpload = video.video_file_name;
 
-  // Extract YouTube video ID for embedding
-  const getYouTubeVideoId = (url: string) => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-    return match ? match[1] : null;
-  };
-
-  const youtubeVideoId = isYouTubeUrl && video.video_url ? getYouTubeVideoId(video.video_url) : null;
+  const youtubeVideoId = isYouTube && video.video_url ? getYouTubeVideoId(video.video_url) : null;
+  const googleDriveEmbedUrl = isGoogleDrive && video.video_url ? getGoogleDriveEmbedUrl(video.video_url) : null;
 
   return (
     <>
@@ -130,8 +128,8 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete }: 
                 <div className="space-y-3">
                   <Label>Video Preview</Label>
                   <div className="border border-border rounded-lg overflow-hidden bg-muted/30">
-                    {isYouTubeUrl && youtubeVideoId ? (
-                      <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                      {isYouTube && youtubeVideoId ? (
                         <iframe
                           width="100%"
                           height="100%"
@@ -142,76 +140,57 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete }: 
                           allowFullScreen
                           className="w-full h-full"
                         />
-                      </div>
-                    ) : video.video_url && !isYouTubeUrl && !isDriveUrl ? (
-                      <div className="relative aspect-video bg-black">
+                      ) : isGoogleDrive && googleDriveEmbedUrl ? (
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={googleDriveEmbedUrl}
+                          title={video.title}
+                          frameBorder="0"
+                          allowFullScreen
+                          className="w-full h-full"
+                        />
+                      ) : video.video_url ? (
                         <video 
-                          className="w-full h-full object-cover"
+                          className="w-full h-full"
                           controls
                           preload="metadata"
+                          poster={video.thumbnail_url || undefined}
                         >
                           <source src={video.video_url} type="video/mp4" />
                           Your browser does not support the video tag.
                         </video>
-                      </div>
-                    ) : isYouTubeUrl ? (
-                      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center p-4">
-                        <div className="text-center space-y-2">
-                          <Play className="w-8 h-8 text-muted-foreground mx-auto" />
-                          <p className="text-sm text-muted-foreground">YouTube Video</p>
-                          <p className="text-xs text-muted-foreground truncate max-w-[300px]">
-                            {video.video_url}
-                          </p>
-                          {video.video_url && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => window.open(video.video_url!, '_blank')}
-                            >
-                              <Play className="w-4 h-4 mr-2" />
-                              Open Video
-                            </Button>
-                          )}
+                      ) : isFileUpload ? (
+                        <video 
+                          className="w-full h-full"
+                          controls
+                          preload="metadata"
+                          poster={video.thumbnail_url || undefined}
+                        >
+                          <source 
+                            src={`https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}`} 
+                            type="video/mp4" 
+                          />
+                          <source 
+                            src={`https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}`} 
+                            type="video/quicktime" 
+                          />
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : (
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                          <div className="text-center space-y-3">
+                            <Play className="w-16 h-16 text-muted-foreground mx-auto" />
+                            <div>
+                              <p className="font-medium text-foreground">No video source available</p>
+                              <p className="text-sm text-muted-foreground">
+                                Add a video URL or upload a file to enable playback
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ) : isDriveUrl ? (
-                      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center p-4">
-                        <div className="text-center space-y-2">
-                          <FileVideo className="w-8 h-8 text-muted-foreground mx-auto" />
-                          <p className="text-sm text-muted-foreground">Google Drive Video</p>
-                          <p className="text-xs text-muted-foreground truncate max-w-[300px]">
-                            {video.video_url}
-                          </p>
-                          {video.video_url && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => window.open(video.video_url!, '_blank')}
-                            >
-                              <Play className="w-4 h-4 mr-2" />
-                              Open Video
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ) : isFileUpload ? (
-                      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center p-4">
-                        <div className="text-center space-y-2">
-                          <FileVideo className="w-8 h-8 text-muted-foreground mx-auto" />
-                          <p className="text-sm text-muted-foreground">Uploaded Video File</p>
-                          <p className="text-xs text-muted-foreground">
-                            {video.video_file_name}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center p-4">
-                        <div className="text-center space-y-2">
-                          <FileVideo className="w-8 h-8 text-muted-foreground mx-auto" />
-                          <p className="text-sm text-muted-foreground">Video source not available</p>
-                        </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
 
