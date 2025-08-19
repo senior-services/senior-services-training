@@ -91,19 +91,42 @@ export const videoService = {
   },
 
   /**
-   * Creates a new video
+   * Creates a new video with file upload support
    * @param videoData - Video creation data
    * @returns Promise with created video or error
    */
-  async create(videoData: VideoCreateData): Promise<ApiResult<Video>> {
+  async create(videoData: VideoCreateData & { file?: File }): Promise<ApiResult<Video>> {
     try {
+      let video_url = videoData.video_url;
+      let video_file_name = videoData.video_file_name;
+      
+      // If file is provided, upload to storage
+      if (videoData.file) {
+        const fileName = `${Date.now()}-${videoData.file.name}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('videos')
+          .upload(fileName, videoData.file);
+
+        if (uploadError) {
+          console.error('Error uploading video file:', uploadError);
+          return {
+            data: null,
+            error: uploadError.message || 'Failed to upload video file',
+            success: false,
+          };
+        }
+
+        video_file_name = fileName;
+        video_url = null; // Clear URL if file is uploaded
+      }
+
       const { data, error } = await supabase
         .from(DB_CONFIG.TABLES.VIDEOS)
         .insert({
           title: videoData.title,
           description: videoData.description,
-          video_url: videoData.video_url,
-          video_file_name: videoData.video_file_name,
+          video_url: video_url,
+          video_file_name: video_file_name,
           type: videoData.type,
           assigned_to: 0, // Default value
           completion_rate: 0, // Default value

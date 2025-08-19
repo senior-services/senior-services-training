@@ -84,20 +84,24 @@ export const VideoPlayerModal = ({ open, onOpenChange, video }: VideoPlayerModal
                 Your browser does not support the video tag.
               </video>
             ) : video.video_file_name ? (
-              <div className="w-full h-full bg-muted flex items-center justify-center">
-                <div className="text-center space-y-3">
-                  <Play className="w-16 h-16 text-muted-foreground mx-auto" />
-                  <div>
-                    <p className="font-medium text-foreground">Video File Available</p>
-                    <p className="text-sm text-muted-foreground">
-                      File: {video.video_file_name}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      File playback not yet implemented
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <video 
+                className="w-full h-full"
+                controls
+                preload="metadata"
+                poster={video.thumbnail_url || undefined}
+                onLoadStart={() => console.log('Video file loading started')}
+                onError={(e) => console.error('Video file error:', e)}
+              >
+                <source 
+                  src={`https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}`} 
+                  type="video/mp4" 
+                />
+                <source 
+                  src={`https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}`} 
+                  type="video/quicktime" 
+                />
+                Your browser does not support the video tag.
+              </video>
             ) : (
               <div className="w-full h-full bg-muted flex items-center justify-center">
                 <div className="text-center space-y-3">

@@ -149,7 +149,8 @@ export const useVideos = (): UseVideosReturn => {
         description: videoData.description,
         video_url: videoData.url,
         video_file_name: videoData.file?.name,
-        type: 'Optional'
+        type: 'Optional',
+        file: videoData.file // Pass the actual file for upload
       });
 
       if (result.success && result.data) {

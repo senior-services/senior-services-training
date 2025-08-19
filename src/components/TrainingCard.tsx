@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Progress } from "@/components/ui/progress";
 import { Calendar, Clock, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import videoPlaceholder from "@/assets/video-placeholder.jpg";
 
 export interface TrainingVideo {
   id: string;
@@ -50,7 +51,7 @@ export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) =>
       {/* Video Thumbnail */}
       <div className="relative">
         <img 
-          src={video.thumbnail} 
+          src={video.thumbnail || videoPlaceholder} 
           alt={video.title}
           className="w-full h-48 object-cover"
         />
