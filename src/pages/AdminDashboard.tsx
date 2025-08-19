@@ -486,58 +486,23 @@ const [isDeleting, setIsDeleting] = useState(false);
                                           }}
                                         />
                                       );
-                                    } else if (video.video_url && !isYouTubeUrl) {
-                                      return (
-                                        <video 
-                                          className="w-full h-full object-cover pointer-events-none"
-                                          preload="metadata"
-                                          muted
-                                          onError={(e) => {
-                                            // Fallback to placeholder if video fails to load
-                                            const target = e.target as HTMLVideoElement;
-                                            target.style.display = 'none';
-                                            const fallback = target.nextElementSibling as HTMLElement;
-                                            if (fallback) fallback.classList.remove('hidden');
-                                          }}
-                                        >
-                                          <source src={video.video_url} type="video/mp4" />
-                                        </video>
-                                      );
-                                    } else if (video.video_file_name) {
-                                      const publicUrl = `https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}`;
-                                      return (
-                                        <video 
-                                          className="w-full h-full object-cover pointer-events-none"
-                                          preload="metadata"
-                                          muted
-                                          onError={(e) => {
-                                            const target = e.target as HTMLVideoElement;
-                                            target.style.display = 'none';
-                                            const fallback = target.nextElementSibling as HTMLElement;
-                                            if (fallback) fallback.classList.remove('hidden');
-                                          }}
-                                        >
-                                          <source src={publicUrl} type="video/mp4" />
-                                          <source src={publicUrl} type="video/quicktime" />
-                                        </video>
-                                      );
                                     }
+                                    // For all other cases (uploaded files, other URLs, no source), show the colored placeholder
+                                    return (
+                                      <div className={`absolute inset-0 flex items-center justify-center ${generateThumbnailColor(video.title)}`}>
+                                        <Play className="w-4 h-4 text-white" />
+                                      </div>
+                                    );
                                   })()}
 
-                                  {/* Fallback placeholder when no preview loads */}
+                                  {/* Hidden fallback placeholder for YouTube/thumbnail errors */}
                                   <div className={`hidden absolute inset-0 flex items-center justify-center ${generateThumbnailColor(video.title)}`}>
                                     <Play className="w-4 h-4 text-white" />
                                   </div>
 
-                                  {/* Default fallback for no video source */}
-                                  {!video.video_url && !video.thumbnail_url && (
-                                    <div className={`absolute inset-0 flex items-center justify-center ${generateThumbnailColor(video.title)}`}>
-                                      <Play className="w-4 h-4 text-white" />
-                                    </div>
-                                  )}
-
-                                  {!video.video_url && (
-                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border border-white" title="No video file" />
+                                  {/* Show indicator for uploaded files */}
+                                  {video.video_file_name && (
+                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-white" title="Uploaded video file" />
                                   )}
 
                                   {/* Hover overlay with play icon */}
