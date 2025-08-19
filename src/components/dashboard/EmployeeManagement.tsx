@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,9 +22,13 @@ import {
   UserPlus, 
   Mail, 
   Users, 
-  Video as VideoIcon,
   Trash2,
-  Edit
+  Edit,
+  Clock,
+  CheckCircle,
+  XCircle,
+  HelpCircle,
+  Play
 } from 'lucide-react';
 import { EmployeeService } from '@/services/employeeService';
 import type { EmployeeWithAssignments, Employee } from '@/types/employee';
@@ -37,6 +39,7 @@ import { AssignVideosModal } from './AssignVideosModal';
 
 export const EmployeeManagement: React.FC = () => {
   const [employees, setEmployees] = useState<EmployeeWithAssignments[]>([]);
+  const [employeeVideos, setEmployeeVideos] = useState<Map<string, any[]>>(new Map());
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -54,6 +57,21 @@ export const EmployeeManagement: React.FC = () => {
       setLoading(true);
       const data = await EmployeeService.getEmployees();
       setEmployees(data);
+      
+      // Load video assignments for each employee
+      const videoMap = new Map();
+      for (const employee of data) {
+        if (employee.assigned_videos_count && employee.assigned_videos_count > 0) {
+          try {
+            const assignments = await EmployeeService.getEmployeeAssignments(employee.id);
+            videoMap.set(employee.id, assignments);
+          } catch (error) {
+            console.error(`Error loading videos for employee ${employee.id}:`, error);
+            videoMap.set(employee.id, []);
+          }
+        }
+      }
+      setEmployeeVideos(videoMap);
     } catch (error) {
       console.error('Error loading employees:', error);
       toast({
@@ -131,86 +149,151 @@ export const EmployeeManagement: React.FC = () => {
               <LoadingSkeleton lines={1} className="h-12" />
               <LoadingSkeleton lines={1} className="h-12" />
             </div>
+          ) : employees.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="space-y-3">
+                <UserPlus className="w-12 h-12 text-muted-foreground mx-auto" />
+                <div>
+                  <h4 className="font-medium text-foreground">
+                    No employees found
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Add employees by email to assign specific training videos.
+                  </p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowAddModal(true)}
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Add First Employee
+                </Button>
+              </div>
+            </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="whitespace-nowrap">Employee</TableHead>
-                  <TableHead className="whitespace-nowrap">Email</TableHead>
-                  <TableHead className="text-center whitespace-nowrap">Assigned Videos</TableHead>
-                  <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {employees.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-12">
-                      <div className="space-y-3">
-                        <UserPlus className="w-12 h-12 text-muted-foreground mx-auto" />
-                        <div>
-                          <h4 className="font-medium text-foreground">
-                            No individual employees found
-                          </h4>
-                          <p className="text-sm text-muted-foreground">
-                            Add employees by email to assign specific training videos.
-                          </p>
+            <Accordion type="multiple" className="w-full">
+              {employees.map((employee) => {
+                const hasVideos = (employee.assigned_videos_count || 0) > 0;
+                const videos = employeeVideos.get(employee.id) || [];
+                
+                return (
+                  <AccordionItem 
+                    key={employee.id} 
+                    value={employee.id}
+                    className={!hasVideos ? "opacity-60" : ""}
+                  >
+                    <AccordionTrigger 
+                      className={`px-6 hover:bg-muted/50 ${!hasVideos ? "cursor-default" : ""}`}
+                      disabled={!hasVideos}
+                    >
+                      <div className="flex items-center justify-between w-full pr-4">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <div className="font-medium text-left">
+                              {employee.full_name || 'Unknown'}
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Mail className="w-3 h-3" />
+                              {employee.email}
+                            </div>
+                          </div>
                         </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setShowAddModal(true)}
-                        >
-                          <UserPlus className="w-4 h-4 mr-2" />
-                          Add First Employee
-                        </Button>
+                        
+                        <div className="flex items-center gap-4">
+                          <div className="text-center">
+                            <Badge variant="secondary">
+                              {employee.assigned_videos_count || 0} videos
+                            </Badge>
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAssignVideos(employee);
+                              }}
+                            >
+                              <Edit className="w-4 h-4" />
+                              <span className="sr-only">Edit Video Assignments</span>
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteConfirmEmployee(employee);
+                              }}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              <span className="sr-only">Delete Employee</span>
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  employees.map((employee) => (
-                    <TableRow key={employee.id}>
-                      <TableCell>
-                        <div className="font-medium">
-                          {employee.full_name || 'Unknown'}
+                    </AccordionTrigger>
+                    
+                    {hasVideos && (
+                      <AccordionContent className="px-6 pb-4">
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm text-muted-foreground mb-3">
+                            Assigned Training Videos
+                          </h4>
+                          
+                          {videos.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">Loading video assignments...</p>
+                          ) : (
+                            videos.map((assignment, index) => (
+                              <div 
+                                key={assignment.video_id || index}
+                                className="flex items-center justify-between p-3 border rounded-lg bg-muted/20"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-12 h-8 bg-muted rounded flex items-center justify-center flex-shrink-0">
+                                    <Play className="w-3 h-3 text-muted-foreground" />
+                                  </div>
+                                  
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-medium text-sm">
+                                      {assignment.video_title || 'Untitled Video'}
+                                    </div>
+                                    {assignment.video_description && (
+                                      <p className="text-xs text-muted-foreground line-clamp-1">
+                                        {assignment.video_description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-4 text-xs">
+                                  <div className="flex items-center gap-1 text-muted-foreground">
+                                    <Clock className="w-3 h-3" />
+                                    <span>No deadline</span>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-1 text-muted-foreground">
+                                    <XCircle className="w-3 h-3" />
+                                    <span>Not completed</span>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-1 text-muted-foreground">
+                                    <HelpCircle className="w-3 h-3" />
+                                    <span>No quiz</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          )}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">{employee.email}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant="secondary">
-                          {employee.assigned_videos_count || 0}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleAssignVideos(employee)}
-                          >
-                            <Edit className="w-4 h-4" />
-                            <span className="sr-only">Edit Video Assignments</span>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setDeleteConfirmEmployee(employee)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            <span className="sr-only">Delete Employee</span>
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                      </AccordionContent>
+                    )}
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
           )}
         </CardContent>
       </Card>
