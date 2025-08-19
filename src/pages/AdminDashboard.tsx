@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Users, Video, BookOpen, Settings, Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { AddVideoModal, VideoFormData } from "@/components/AddVideoModal";
+import { useToast } from "@/hooks/use-toast";
 
 interface AdminDashboardProps {
   userName: string;
@@ -13,6 +16,9 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboardProps) => {
+  const [isAddVideoModalOpen, setIsAddVideoModalOpen] = useState(false);
+  const { toast } = useToast();
+
   // Mock data - will be replaced with real data from Supabase
   const employees = [
     {
@@ -78,6 +84,18 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
       hasQuiz: false
     }
   ];
+
+  const handleAddVideo = (videoData: VideoFormData) => {
+    // TODO: Implement actual video upload/save logic with Supabase
+    console.log('Adding video:', videoData);
+    
+    toast({
+      title: "Video Added",
+      description: `"${videoData.title}" has been added to the training library.`,
+    });
+    
+    setIsAddVideoModalOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -213,7 +231,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
                 <h3 className="text-xl font-semibold">Training Videos</h3>
                 <p className="text-muted-foreground">Manage your training content library</p>
               </div>
-              <Button>
+              <Button onClick={() => setIsAddVideoModalOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Video
               </Button>
@@ -281,6 +299,12 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
           </TabsContent>
         </Tabs>
       </main>
+
+      <AddVideoModal
+        open={isAddVideoModalOpen}
+        onOpenChange={setIsAddVideoModalOpen}
+        onSave={handleAddVideo}
+      />
     </div>
   );
 };
