@@ -134,7 +134,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh]">
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Video className="w-5 h-5" />
@@ -156,151 +156,153 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        {loading ? (
-          <div className="space-y-4 py-4">
-            <LoadingSkeleton lines={1} className="h-16" />
-            <LoadingSkeleton lines={1} className="h-16" />
-            <LoadingSkeleton lines={1} className="h-16" />
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-2">
-                <Badge variant={selectedCount > 0 ? "default" : "secondary"}>
-                  {selectedCount} video{selectedCount !== 1 ? 's' : ''} selected
-                </Badge>
-                {hasChanges && (
-                  <Badge variant="outline" className="text-orange-600">
-                    Unsaved changes
-                  </Badge>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedVideoIds(new Set())}
-                  disabled={selectedVideoIds.size === 0}
-                >
-                  Clear All
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedVideoIds(new Set(videos.map(v => v.id)))}
-                  disabled={selectedVideoIds.size === videos.length}
-                >
-                  Select All
-                </Button>
-              </div>
+        <div className="flex-1 overflow-hidden flex flex-col">
+          {loading ? (
+            <div className="space-y-4 py-4">
+              <LoadingSkeleton lines={1} className="h-16" />
+              <LoadingSkeleton lines={1} className="h-16" />
+              <LoadingSkeleton lines={1} className="h-16" />
             </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between py-2 flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <Badge variant={selectedCount > 0 ? "default" : "secondary"}>
+                    {selectedCount} video{selectedCount !== 1 ? 's' : ''} selected
+                  </Badge>
+                  {hasChanges && (
+                    <Badge variant="outline" className="text-orange-600">
+                      Unsaved changes
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedVideoIds(new Set())}
+                    disabled={selectedVideoIds.size === 0}
+                  >
+                    Clear All
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedVideoIds(new Set(videos.map(v => v.id)))}
+                    disabled={selectedVideoIds.size === videos.length}
+                  >
+                    Select All
+                  </Button>
+                </div>
+              </div>
 
-            <ScrollArea className="h-96 pr-4">
-              <div className="space-y-3">
-                {videos.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Video className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No training videos available</p>
-                  </div>
-                ) : (
-                  videos.map((video) => {
-                    const isSelected = selectedVideoIds.has(video.id);
-                    const wasOriginallyAssigned = assignedVideoIds.has(video.id);
-                    
-                    return (
-                      <div
-                        key={video.id}
-                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                          isSelected ? 'bg-primary/5 border-primary/20' : 'hover:bg-muted/50'
-                        }`}
-                      >
-                        <Checkbox
-                          id={`video-${video.id}`}
-                          checked={isSelected}
-                          onCheckedChange={(checked) => 
-                            handleVideoToggle(video.id, checked as boolean)
-                          }
-                          className="mt-1"
-                        />
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start gap-3">
-                            {/* Video thumbnail/placeholder */}
-                            <div className="relative w-16 h-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                              {video.thumbnail_url ? (
-                                <img 
-                                  src={video.thumbnail_url} 
-                                  alt={video.title}
-                                  className="w-full h-full object-cover rounded"
-                                />
-                              ) : (
-                                <Play className="w-4 h-4 text-muted-foreground" />
-                              )}
-                            </div>
-                            
-                            <div className="flex-1 min-w-0">
-                              <label 
-                                htmlFor={`video-${video.id}`}
-                                className="font-medium text-sm cursor-pointer line-clamp-1"
-                              >
-                                {video.title}
-                              </label>
-                              {video.description && (
-                                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                  {video.description}
-                                </p>
-                              )}
-                              <div className="flex items-center gap-2 mt-2">
-                                <Badge variant="outline" className="text-xs">
-                                  {video.type}
-                                </Badge>
-                                {wasOriginallyAssigned && (
-                                  <Badge 
-                                    variant={isSelected ? "default" : "secondary"} 
-                                    className="text-xs"
-                                  >
-                                    {isSelected ? (
-                                      <>
-                                        <Check className="w-3 h-3 mr-1" />
-                                        Assigned
-                                      </>
-                                    ) : (
-                                      <>
-                                        <X className="w-3 h-3 mr-1" />
-                                        Will Remove
-                                      </>
-                                    )}
-                                  </Badge>
+              <ScrollArea className="flex-1 pr-4">
+                <div className="space-y-3 pb-4">
+                  {videos.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Video className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>No training videos available</p>
+                    </div>
+                  ) : (
+                    videos.map((video) => {
+                      const isSelected = selectedVideoIds.has(video.id);
+                      const wasOriginallyAssigned = assignedVideoIds.has(video.id);
+                      
+                      return (
+                        <div
+                          key={video.id}
+                          className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                            isSelected ? 'bg-primary/5 border-primary/20' : 'hover:bg-muted/50'
+                          }`}
+                        >
+                          <Checkbox
+                            id={`video-${video.id}`}
+                            checked={isSelected}
+                            onCheckedChange={(checked) => 
+                              handleVideoToggle(video.id, checked as boolean)
+                            }
+                            className="mt-1 flex-shrink-0"
+                          />
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start gap-3">
+                              {/* Video thumbnail/placeholder */}
+                              <div className="relative w-16 h-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                                {video.thumbnail_url ? (
+                                  <img 
+                                    src={video.thumbnail_url} 
+                                    alt={video.title}
+                                    className="w-full h-full object-cover rounded"
+                                  />
+                                ) : (
+                                  <Play className="w-4 h-4 text-muted-foreground" />
                                 )}
+                              </div>
+                              
+                              <div className="flex-1 min-w-0">
+                                <label 
+                                  htmlFor={`video-${video.id}`}
+                                  className="font-medium text-sm cursor-pointer block"
+                                >
+                                  {video.title}
+                                </label>
+                                {video.description && (
+                                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                    {video.description}
+                                  </p>
+                                )}
+                                <div className="flex items-center gap-2 mt-2">
+                                  <Badge variant="outline" className="text-xs">
+                                    {video.type}
+                                  </Badge>
+                                  {wasOriginallyAssigned && (
+                                    <Badge 
+                                      variant={isSelected ? "default" : "secondary"} 
+                                      className="text-xs"
+                                    >
+                                      {isSelected ? (
+                                        <>
+                                          <Check className="w-3 h-3 mr-1" />
+                                          Assigned
+                                        </>
+                                      ) : (
+                                        <>
+                                          <X className="w-3 h-3 mr-1" />
+                                          Will Remove
+                                        </>
+                                      )}
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </ScrollArea>
+                      );
+                    })
+                  )}
+                </div>
+              </ScrollArea>
+            </>
+          )}
+        </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSubmit} 
-                disabled={!hasChanges || isSubmitting}
-              >
-                {isSubmitting ? 'Saving...' : 'Save Assignments'}
-              </Button>
-            </div>
-          </>
-        )}
+        <div className="flex justify-end gap-3 pt-4 border-t flex-shrink-0">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={!hasChanges || isSubmitting}
+          >
+            {isSubmitting ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

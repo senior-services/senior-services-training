@@ -12,10 +12,10 @@ const Checkbox = React.forwardRef<
     ref={ref}
     className={cn(
       // Carbon Design System Checkbox - 16px container, 1px border, square with rounded corners
-      "peer h-4 w-4 shrink-0 rounded-sm border border-foreground bg-transparent",
+      "peer h-4 w-4 shrink-0 rounded-sm border-2 border-foreground bg-transparent",
       "hover:border-primary transition-colors duration-200 ease-out",
-      // Focus: 2px border as per Carbon spec
-      "focus-visible:outline-none focus-visible:border-2 focus-visible:border-primary",
+      // Focus: 2px border as per Carbon spec - using ring for better visibility
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1",
       // Checked state: background becomes primary, border remains primary
       "data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-primary-foreground",
       // Indeterminate state: same as checked
