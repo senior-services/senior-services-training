@@ -12,8 +12,9 @@ interface VideoPlayerModalProps {
     type: string;
     assigned_to: number;
     has_quiz: boolean;
-    video_url?: string;
-    video_file_name?: string;
+    video_url?: string | null;
+    video_file_name?: string | null;
+    thumbnail_url?: string | null;
   } | null;
 }
 
@@ -34,32 +35,42 @@ export const VideoPlayerModal = ({ open, onOpenChange, video }: VideoPlayerModal
         
         <div className="space-y-6">
           {/* Video Player Area */}
-          <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-            {hasVideoSource ? (
-              <div className="text-center space-y-3">
-                <Play className="w-16 h-16 text-muted-foreground mx-auto" />
-                <p className="text-sm text-muted-foreground">
-                  Video player would be implemented here
-                </p>
-                {video.video_url && (
-                  <p className="text-xs text-muted-foreground">
-                    URL: {video.video_url}
-                  </p>
-                )}
-                {video.video_file_name && (
-                  <p className="text-xs text-muted-foreground">
-                    File: {video.video_file_name}
-                  </p>
-                )}
+          <div className="aspect-video bg-black rounded-lg overflow-hidden">
+            {video.video_url ? (
+              <video 
+                className="w-full h-full"
+                controls
+                preload="metadata"
+                poster={video.thumbnail_url}
+              >
+                <source src={video.video_url} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            ) : video.video_file_name ? (
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                <div className="text-center space-y-3">
+                  <Play className="w-16 h-16 text-muted-foreground mx-auto" />
+                  <div>
+                    <p className="font-medium text-foreground">Video File Available</p>
+                    <p className="text-sm text-muted-foreground">
+                      File: {video.video_file_name}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      File playback not yet implemented
+                    </p>
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="text-center space-y-3">
-                <Play className="w-16 h-16 text-muted-foreground mx-auto" />
-                <div>
-                  <p className="font-medium text-foreground">No video source available</p>
-                  <p className="text-sm text-muted-foreground">
-                    Add a video URL or upload a file to enable playback
-                  </p>
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                <div className="text-center space-y-3">
+                  <Play className="w-16 h-16 text-muted-foreground mx-auto" />
+                  <div>
+                    <p className="font-medium text-foreground">No video source available</p>
+                    <p className="text-sm text-muted-foreground">
+                      Add a video URL or upload a file to enable playback
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
