@@ -15,6 +15,9 @@ export function useUserRole(user: User | null) {
       return;
     }
 
+    // Reset loading to true when user changes and we need to fetch role
+    setLoading(true);
+
     const fetchUserRole = async () => {
       try {
         const { data, error } = await supabase
