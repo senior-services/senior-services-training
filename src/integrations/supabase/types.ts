@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      employees: {
+        Row: {
+          created_at: string
+          domain: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          is_generic: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          domain?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          is_generic?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          is_generic?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -173,6 +203,48 @@ export type Database = {
         }
         Relationships: []
       }
+      video_assignments: {
+        Row: {
+          assigned_by: string
+          created_at: string
+          employee_id: string
+          id: string
+          updated_at: string
+          video_id: string
+        }
+        Insert: {
+          assigned_by: string
+          created_at?: string
+          employee_id: string
+          id?: string
+          updated_at?: string
+          video_id: string
+        }
+        Update: {
+          assigned_by?: string
+          created_at?: string
+          employee_id?: string
+          id?: string
+          updated_at?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_assignments_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       videos: {
         Row: {
           assigned_to: number
@@ -220,9 +292,46 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      employee_assignments_with_videos: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          assignment_id: string | null
+          employee_domain: string | null
+          employee_email: string | null
+          employee_id: string | null
+          employee_name: string | null
+          is_generic_assignment: boolean | null
+          thumbnail_url: string | null
+          video_description: string | null
+          video_id: string | null
+          video_title: string | null
+          video_type: string | null
+          video_url: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_assignments_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      extract_domain_from_email: {
+        Args: { email_address: string }
+        Returns: string
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
