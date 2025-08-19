@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Users, Video, BookOpen, Settings, Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { AddVideoModal, VideoFormData } from "@/components/AddVideoModal";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Table, 
   TableBody, 
@@ -23,8 +24,21 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
+type VideoData = {
+  id: string;
+  title: string;
+  description?: string;
+  type: string;
+  assigned_to: number;
+  completion_rate: number;
+  has_quiz: boolean;
+  created_at: string;
+};
+
 export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboardProps) => {
   const [isAddVideoModalOpen, setIsAddVideoModalOpen] = useState(false);
+  const [videos, setVideos] = useState<VideoData[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   // Mock data - will be replaced with real data from Supabase
@@ -58,49 +72,72 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
     }
   ];
 
-  const videos = [
-    {
-      id: '1',
-      title: 'Workplace Safety and Emergency Procedures',
-      type: 'Required',
-      assignedTo: 15,
-      completionRate: 73,
-      hasQuiz: true
-    },
-    {
-      id: '2',
-      title: 'Senior Care Best Practices',
-      type: 'Required',
-      assignedTo: 15,
-      completionRate: 87,
-      hasQuiz: true
-    },
-    {
-      id: '3',
-      title: 'HIPAA Privacy and Confidentiality',
-      type: 'Required',
-      assignedTo: 15,
-      completionRate: 45,
-      hasQuiz: true
-    },
-    {
-      id: '4',
-      title: 'Effective Communication with Families',
-      type: 'Optional',
-      assignedTo: 0,
-      completionRate: 32,
-      hasQuiz: false
-    }
-  ];
+  // Fetch videos from Supabase
+  const fetchVideos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('videos')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-  const handleAddVideo = (videoData: VideoFormData) => {
-    // TODO: Implement actual video upload/save logic with Supabase
-    console.log('Adding video:', videoData);
-    
-    toast({
-      title: "Video Added",
-      description: `"${videoData.title}" has been added to the training library.`,
-    });
+      if (error) {
+        console.error('Error fetching videos:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load videos. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        setVideos(data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching videos:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVideos();
+  }, []);
+
+  const handleAddVideo = async (videoData: VideoFormData) => {
+    try {
+      const { error } = await supabase
+        .from('videos')
+        .insert({
+          title: videoData.title || 'Untitled Video',
+          description: videoData.description,
+          video_url: videoData.url,
+          video_file_name: videoData.file?.name,
+          type: 'Optional', // Default type, can be updated later
+          has_quiz: false // Default value, can be updated later
+        });
+
+      if (error) {
+        console.error('Error adding video:', error);
+        toast({
+          title: "Error",
+          description: "Failed to add video. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Video Added",
+          description: `"${videoData.title || 'Video'}" has been added to the training library.`,
+        });
+        
+        // Refresh the videos list
+        fetchVideos();
+      }
+    } catch (error) {
+      console.error('Error adding video:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add video. Please try again.",
+        variant: "destructive",
+      });
+    }
     
     setIsAddVideoModalOpen(false);
   };
@@ -259,38 +296,52 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {videos.map((video) => (
-                      <TableRow key={video.id}>
-                        <TableCell className="font-medium">{video.title}</TableCell>
-                        <TableCell>
-                          <Badge variant={video.type === 'Required' ? 'default' : 'outline'}>
-                            {video.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-center">{video.assignedTo}</TableCell>
-                        <TableCell className="text-center">{video.completionRate}%</TableCell>
-                        <TableCell className="text-center">
-                          {video.hasQuiz ? (
-                            <Badge variant="secondary">Yes</Badge>
-                          ) : (
-                            <span className="text-muted-foreground">No</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end space-x-2">
-                            <Button variant="outline" size="sm">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          Loading videos...
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : videos.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          No videos found. Add your first video to get started.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      videos.map((video) => (
+                        <TableRow key={video.id}>
+                          <TableCell className="font-medium">{video.title}</TableCell>
+                          <TableCell>
+                            <Badge variant={video.type === 'Required' ? 'default' : 'outline'}>
+                              {video.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">{video.assigned_to}</TableCell>
+                          <TableCell className="text-center">{video.completion_rate}%</TableCell>
+                          <TableCell className="text-center">
+                            {video.has_quiz ? (
+                              <Badge variant="secondary">Yes</Badge>
+                            ) : (
+                              <span className="text-muted-foreground">No</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end space-x-2">
+                              <Button variant="outline" size="sm">
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
