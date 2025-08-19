@@ -2,25 +2,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogIn, BookOpen, Users, Shield } from "lucide-react";
 import logoImage from "@/assets/senior-services-logo.png";
-
 interface LandingProps {
   onGoogleLogin: () => void;
 }
-
-export const Landing = ({ onGoogleLogin }: LandingProps) => {
-  return (
-    <div className="min-h-screen bg-gradient-hero">
+export const Landing = ({
+  onGoogleLogin
+}: LandingProps) => {
+  return <div className="min-h-screen bg-gradient-hero">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <img 
-            src={logoImage} 
-            alt="Senior Services for South Sound" 
-            className="mx-auto h-16 w-auto mb-6"
-          />
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Training Portal
-          </h1>
+          <img src={logoImage} alt="Senior Services for South Sound" className="mx-auto h-16 w-auto mb-6" />
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Senior Services Training Portal</h1>
           <p className="text-xl text-white/90 max-w-2xl mx-auto">
             Streamlined onboarding and continuous training for nonprofit employees
           </p>
@@ -83,11 +76,7 @@ export const Landing = ({ onGoogleLogin }: LandingProps) => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <Button 
-                  onClick={onGoogleLogin}
-                  size="lg"
-                  className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm"
-                >
+                <Button onClick={onGoogleLogin} size="lg" className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm">
                   <LogIn className="w-5 h-5 mr-3" />
                   Sign in with Google
                 </Button>
@@ -109,6 +98,5 @@ export const Landing = ({ onGoogleLogin }: LandingProps) => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
