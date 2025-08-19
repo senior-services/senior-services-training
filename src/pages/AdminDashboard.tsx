@@ -192,13 +192,14 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
           </TabsList>
 
           <TabsContent value="employees" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-semibold">Employee Progress Overview</h3>
+                <p className="text-muted-foreground">Track training completion and identify employees who need support</p>
+              </div>
+            </div>
+
             <Card>
-              <CardHeader>
-                <CardTitle>Employee Progress Overview</CardTitle>
-                <CardDescription>
-                  Track training completion and identify employees who need support
-                </CardDescription>
-              </CardHeader>
               <CardContent>
                 <div className="space-y-6">
                   {employees.map((employee) => (
@@ -349,13 +350,14 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-semibold">System Settings</h3>
+                <p className="text-muted-foreground">Configure portal settings and manage user permissions</p>
+              </div>
+            </div>
+
             <Card>
-              <CardHeader>
-                <CardTitle>System Settings</CardTitle>
-                <CardDescription>
-                  Configure portal settings and manage user permissions
-                </CardDescription>
-              </CardHeader>
               <CardContent className="space-y-6">
                 <div className="text-center py-12">
                   <Settings className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
