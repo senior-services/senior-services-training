@@ -478,11 +478,12 @@ export const EditVideoModal = ({
               <TabsTrigger value="video">Video Info</TabsTrigger>
               <TabsTrigger value="quiz" className="relative">
                 Quiz
-                {video.has_quiz && (
-                  <Badge variant="secondary" className="ml-2">
-                    Active
-                  </Badge>
-                )}
+                <Badge 
+                  variant={questions.length > 0 ? "secondary" : "outline"} 
+                  className={`ml-2 ${questions.length === 0 ? 'text-muted-foreground' : ''}`}
+                >
+                  {questions.length}
+                </Badge>
               </TabsTrigger>
             </TabsList>
 
