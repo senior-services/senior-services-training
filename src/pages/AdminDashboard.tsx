@@ -19,6 +19,16 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 
 interface AdminDashboardProps {
   userName: string;
@@ -48,7 +58,9 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
   const [editingVideo, setEditingVideo] = useState<VideoData | null>(null);
   const [videos, setVideos] = useState<VideoData[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+const { toast } = useToast();
+const [deleteConfirmVideo, setDeleteConfirmVideo] = useState<VideoData | null>(null);
+const [isDeleting, setIsDeleting] = useState(false);
 
   // Mock data - will be replaced with real data from Supabase
   const employees = [
@@ -255,6 +267,15 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
     }
   };
 
+  // Confirm deletion dialog action
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirmVideo) return;
+    setIsDeleting(true);
+    await handleDeleteVideo(deleteConfirmVideo.id);
+    setDeleteConfirmVideo(null);
+    setIsDeleting(false);
+  };
+
   return (
     <>
       <Header
@@ -424,9 +445,9 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
                                 >
                                   <Edit className="w-4 h-4" />
                                 </Button>
-                                <Button variant="outline" size="sm">
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
+<Button variant="outline" size="sm" onClick={() => setDeleteConfirmVideo(video)}>
+  <Trash2 className="w-4 h-4" />
+</Button>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -476,7 +497,38 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
         onSave={handleUpdateVideo}
         onDelete={handleDeleteVideo}
       />
-      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmVideo} onOpenChange={(open) => { if (!open) setDeleteConfirmVideo(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Training Video</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deleteConfirmVideo?.title}"?
+              <br />
+              <br />
+              This will permanently remove:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>The video and all its content</li>
+                <li>Title and description</li>
+                <li>Its assignment as a required video for users</li>
+              </ul>
+              <br />
+              <strong>This action cannot be undone.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Video'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <VideoPlayerModal
         open={isVideoPlayerOpen}
         onOpenChange={setIsVideoPlayerOpen}
