@@ -26,9 +26,7 @@ export function useAuth() {
           loading: false,
         });
 
-        if (event === 'SIGNED_IN') {
-          toast.success('Successfully signed in!');
-        } else if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT') {
           toast.success('Successfully signed out');
         }
       }
