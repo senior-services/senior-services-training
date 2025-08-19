@@ -167,7 +167,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
 
   if (!employee) return null;
 
-  const hasChanges = !areSetEqual(selectedVideoIds, assignedVideoIds);
+  const hasChanges = !areSetEqual(selectedVideoIds, assignedVideoIds) || videoDeadlines.size > 0;
   const selectedCount = selectedVideoIds.size;
 
   return (
