@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { ChevronDown, LogOut, User } from "lucide-react";
-import logoImage from "@/assets/senior-services-logo.png";
+// Using uploaded logo image
 
 interface HeaderProps {
   userRole: 'admin' | 'employee';
@@ -22,9 +22,9 @@ export const Header = ({ userRole, userName, userEmail, overallProgress, onLogou
           {/* Left Side - Logo and Title */}
           <div className="flex items-center space-x-4">
             <img 
-              src={logoImage} 
+              src="/lovable-uploads/004b8e9d-75f8-4dc3-a163-f517428d9881.png" 
               alt="Senior Services for South Sound" 
-              className="h-12 w-auto"
+              className="h-12 w-auto object-contain"
             />
             <div>
               <h1 className="text-xl font-bold text-primary">
