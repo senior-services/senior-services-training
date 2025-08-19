@@ -8,6 +8,14 @@ import { Progress } from "@/components/ui/progress";
 import { Users, Video, BookOpen, Settings, Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { AddVideoModal, VideoFormData } from "@/components/AddVideoModal";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 
 interface AdminDashboardProps {
   userName: string;
@@ -239,40 +247,52 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
 
             <Card>
               <CardContent className="p-0">
-                <div className="space-y-4 p-6">
-                  {videos.map((video) => (
-                    <div key={video.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-foreground">{video.title}</h4>
-                          <div className="flex items-center space-x-2">
-                            <Badge variant={video.type === 'Required' ? 'default' : 'outline'}>
-                              {video.type}
-                            </Badge>
-                            {video.hasQuiz && (
-                              <Badge variant="secondary">Quiz</Badge>
-                            )}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead className="text-center">Assigned To</TableHead>
+                      <TableHead className="text-center">Completion Rate</TableHead>
+                      <TableHead className="text-center">Quiz</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {videos.map((video) => (
+                      <TableRow key={video.id}>
+                        <TableCell className="font-medium">{video.title}</TableCell>
+                        <TableCell>
+                          <Badge variant={video.type === 'Required' ? 'default' : 'outline'}>
+                            {video.type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">{video.assignedTo}</TableCell>
+                        <TableCell className="text-center">{video.completionRate}%</TableCell>
+                        <TableCell className="text-center">
+                          {video.hasQuiz ? (
+                            <Badge variant="secondary">Yes</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">No</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end space-x-2">
+                            <Button variant="outline" size="sm">
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
-                        </div>
-                        <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-                          <span>Assigned: {video.assignedTo} employees</span>
-                          <span>Completion: {video.completionRate}%</span>
-                        </div>
-                      </div>
-                      <div className="ml-6 flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </TabsContent>
