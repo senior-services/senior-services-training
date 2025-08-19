@@ -289,10 +289,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      extract_domain_from_email: {
-        Args: { email_address: string }
-        Returns: string
-      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
