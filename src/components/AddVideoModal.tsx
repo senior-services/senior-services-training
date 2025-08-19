@@ -32,8 +32,6 @@ export const AddVideoModal = ({ open, onOpenChange, onSave }: AddVideoModalProps
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleSave = () => {
-    if (!formData.title.trim()) return;
-    
     if (formData.type === 'file' && !selectedFile) return;
     if (formData.type === 'url' && !formData.url?.trim()) return;
 
@@ -85,8 +83,7 @@ export const AddVideoModal = ({ open, onOpenChange, onSave }: AddVideoModalProps
     setIsDragOver(false);
   };
 
-  const isValid = formData.title.trim() && 
-    ((formData.type === 'file' && selectedFile) || 
+  const isValid = ((formData.type === 'file' && selectedFile) || 
      (formData.type === 'url' && formData.url?.trim()));
 
   return (
@@ -229,23 +226,23 @@ export const AddVideoModal = ({ open, onOpenChange, onSave }: AddVideoModalProps
 
           {/* Title */}
           <div className="space-y-2">
-            <Label htmlFor="title">Video Title</Label>
+            <Label htmlFor="title">Video Title (Optional)</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="Enter video title..."
+              placeholder="Enter video title... (optional)"
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Description (Optional)</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Enter video description..."
+              placeholder="Enter video description... (optional)"
               rows={3}
             />
           </div>
