@@ -167,7 +167,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                   <TableHead className="whitespace-nowrap">
                     <Button
                       variant="ghost"
-                      className="font-semibold p-0 h-auto hover:bg-transparent"
+                      className="font-semibold p-0 h-auto hover:bg-transparent whitespace-nowrap"
                       onClick={() => handleSort('title')}
                       aria-label={`Sort by title ${sortColumn === 'title' ? 
                         (sortDirection === 'asc' ? 'descending' : 'ascending') : 
@@ -185,7 +185,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                   <TableHead className="text-center whitespace-nowrap">
                     <Button
                       variant="ghost"
-                      className="font-semibold p-0 h-auto hover:bg-transparent"
+                      className="font-semibold p-0 h-auto hover:bg-transparent whitespace-nowrap"
                       onClick={() => handleSort('assigned_to')}
                       aria-label="Sort by assigned employees"
                     >
