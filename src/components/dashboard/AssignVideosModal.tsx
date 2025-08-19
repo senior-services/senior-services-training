@@ -286,7 +286,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                       return (
                         <div
                           key={video.id}
-                          className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                          className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
                             isSelected ? 'bg-primary/5 border-primary/20' : ''
                           }`}
                         >
@@ -297,7 +297,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                             onChange={(e) => 
                               handleVideoToggle(video.id, e.target.checked)
                             }
-                            className="mt-1 flex-shrink-0 w-4 h-4 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary hover:border-primary/60 hover:bg-primary/5 transition-colors cursor-pointer"
+                            className="flex-shrink-0 w-4 h-4 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary hover:border-primary/60 hover:bg-primary/5 transition-colors cursor-pointer"
                           />
                           
                           <div className="flex-1 min-w-0">
