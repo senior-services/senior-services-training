@@ -189,37 +189,8 @@ export const EmployeeManagement: React.FC = () => {
                       disabled={!hasVideos}
                     >
                       <div className="flex items-center justify-between w-full pr-4">
+                        {/* Employee info with accordion icon on left */}
                         <div className="flex items-center gap-4">
-                          {/* Action buttons on left */}
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAssignVideos(employee);
-                              }}
-                            >
-                              <Edit className="w-4 h-4" />
-                              <span className="sr-only">Edit Video Assignments</span>
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteConfirmEmployee(employee);
-                              }}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              <span className="sr-only">Delete Employee</span>
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {/* Employee info in center/right */}
-                        <div className="flex items-center gap-4 flex-1 ml-4">
                           <div className="flex-1">
                             <div className="font-medium text-left">
                               {employee.full_name || 'Unknown'}
@@ -235,6 +206,33 @@ export const EmployeeManagement: React.FC = () => {
                               {employee.assigned_videos_count || 0} videos
                             </Badge>
                           </div>
+                        </div>
+                        
+                        {/* Action buttons on far right */}
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAssignVideos(employee);
+                            }}
+                          >
+                            <Edit className="w-4 h-4" />
+                            <span className="sr-only">Edit Video Assignments</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteConfirmEmployee(employee);
+                            }}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            <span className="sr-only">Delete Employee</span>
+                          </Button>
                         </div>
                       </div>
                     </AccordionTrigger>
