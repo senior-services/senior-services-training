@@ -105,7 +105,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
 
       toast({
         title: "Success",
-        description: `Video assignments updated for ${employee.is_generic ? 'white-label domains' : employee.full_name || employee.email}`,
+        description: `Video assignments updated for ${employee.full_name || employee.email}`,
       });
 
       onAssignmentComplete();
@@ -138,21 +138,10 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Video className="w-5 h-5" />
-            Assign Videos to{' '}
-            {employee.is_generic ? (
-              <>
-                <Users className="w-4 h-4" />
-                White-Label Domains
-              </>
-            ) : (
-              employee.full_name || employee.email
-            )}
+            Assign Videos to {employee.full_name || employee.email}
           </DialogTitle>
           <DialogDescription>
-            {employee.is_generic 
-              ? 'Videos assigned here will be available to all users from authorized domains.'
-              : `Select which training videos should be assigned to ${employee.full_name || employee.email}.`
-            }
+            Select which training videos should be assigned to {employee.full_name || employee.email}.
           </DialogDescription>
         </DialogHeader>
 

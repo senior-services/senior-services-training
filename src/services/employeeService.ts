@@ -28,8 +28,7 @@ export class EmployeeService {
       .from('employees')
       .insert({
         email,
-        full_name: fullName,
-        is_generic: false
+        full_name: fullName
       })
       .select()
       .single();
@@ -38,17 +37,6 @@ export class EmployeeService {
     return data;
   }
 
-  // Get generic employee (for white-label assignments)
-  static async getGenericEmployee(): Promise<Employee | null> {
-    const { data, error } = await supabase
-      .from('employees')
-      .select('*')
-      .eq('is_generic', true)
-      .single();
-
-    if (error && error.code !== 'PGRST116') throw error;
-    return data;
-  }
 
   // Assign video to employee
   static async assignVideoToEmployee(videoId: string, employeeId: string): Promise<VideoAssignment> {
@@ -79,13 +67,28 @@ export class EmployeeService {
 
   // Get employee assignments with video details
   static async getEmployeeAssignments(employeeId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('employee_assignments_with_videos')
-      .select('*')
+    const { data: assignments, error: assignmentError } = await supabase
+      .from('video_assignments')
+      .select(`
+        *,
+        videos (*)
+      `)
       .eq('employee_id', employeeId);
 
-    if (error) throw error;
-    return data || [];
+    if (assignmentError) throw assignmentError;
+    
+    return assignments?.map(assignment => ({
+      assignment_id: assignment.id,
+      video_id: assignment.video_id,
+      video_title: assignment.videos?.title,
+      video_description: assignment.videos?.description,
+      video_url: assignment.videos?.video_url,
+      thumbnail_url: assignment.videos?.thumbnail_url,
+      video_type: assignment.videos?.type,
+      assigned_at: assignment.created_at,
+      assigned_by: assignment.assigned_by,
+      employee_id: employeeId
+    })) || [];
   }
 
   // Get videos assigned to a specific employee
@@ -118,42 +121,45 @@ export class EmployeeService {
 
   // Get videos assigned to user by their email (for employee dashboard)
   static async getAssignedVideosByEmail(email: string): Promise<Video[]> {
-    // Get videos assigned directly to the user
-    const { data: directAssignments } = await supabase
-      .from('employee_assignments_with_videos')
-      .select('*')
-      .eq('employee_email', email);
+    // First find the employee by email
+    const { data: employee, error: employeeError } = await supabase
+      .from('employees')
+      .select('id')
+      .eq('email', email)
+      .single();
 
-    // Get videos assigned to generic employee (white-label)
-    const { data: genericAssignments } = await supabase
-      .from('employee_assignments_with_videos')
-      .select('*')
-      .eq('is_generic_assignment', true);
+    if (employeeError || !employee) {
+      return [];
+    }
 
-    const allAssignments = [...(directAssignments || []), ...(genericAssignments || [])];
-    
-    // Extract unique videos
-    const videoMap = new Map();
-    allAssignments.forEach(assignment => {
-      if (!videoMap.has(assignment.video_id)) {
-        videoMap.set(assignment.video_id, {
-          id: assignment.video_id,
-          title: assignment.video_title,
-          description: assignment.video_description,
-          video_url: assignment.video_url,
-          thumbnail_url: assignment.thumbnail_url,
-          type: assignment.video_type as VideoType,
-          created_at: assignment.assigned_at,
-          updated_at: assignment.assigned_at,
-          assigned_to: 0,
-          completion_rate: 0,
-          video_file_name: null,
-          has_quiz: false
-        });
-      }
-    });
+    // Get videos assigned to this employee
+    const { data: assignments, error: assignmentError } = await supabase
+      .from('video_assignments')
+      .select(`
+        *,
+        videos (*)
+      `)
+      .eq('employee_id', employee.id);
 
-    return Array.from(videoMap.values());
+    if (assignmentError) {
+      return [];
+    }
+
+    // Extract videos from assignments
+    return assignments?.map(assignment => ({
+      id: assignment.videos?.id || '',
+      title: assignment.videos?.title || '',
+      description: assignment.videos?.description || '',
+      video_url: assignment.videos?.video_url || '',
+      thumbnail_url: assignment.videos?.thumbnail_url || '',
+      type: assignment.videos?.type as VideoType || 'Optional',
+      created_at: assignment.videos?.created_at || '',
+      updated_at: assignment.videos?.updated_at || '',
+      assigned_to: assignment.videos?.assigned_to || 0,
+      completion_rate: assignment.videos?.completion_rate || 0,
+      video_file_name: assignment.videos?.video_file_name || null,
+      has_quiz: assignment.videos?.has_quiz || false
+    })).filter(video => video.id) || [];
   }
 
   // Delete employee

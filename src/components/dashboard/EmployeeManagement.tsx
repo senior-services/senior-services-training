@@ -21,13 +21,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { 
-  Plus, 
   UserPlus, 
   Mail, 
   Users, 
   Video as VideoIcon,
-  Trash2,
-  Settings
+  Trash2
 } from 'lucide-react';
 import { EmployeeService } from '@/services/employeeService';
 import type { EmployeeWithAssignments, Employee } from '@/types/employee';
@@ -82,7 +80,7 @@ export const EmployeeManagement: React.FC = () => {
   };
 
   const handleDeleteEmployee = async () => {
-    if (!deleteConfirmEmployee || deleteConfirmEmployee.is_generic) return;
+    if (!deleteConfirmEmployee) return;
 
     setIsDeleting(true);
     try {
@@ -105,8 +103,7 @@ export const EmployeeManagement: React.FC = () => {
     }
   };
 
-  const genericEmployee = employees.find(emp => emp.is_generic);
-  const regularEmployees = employees.filter(emp => !emp.is_generic);
+  
 
   return (
     <div className="space-y-6">
@@ -115,7 +112,7 @@ export const EmployeeManagement: React.FC = () => {
         <div>
           <h3 className="text-xl font-semibold">Employee Management</h3>
           <p className="text-muted-foreground">
-            Manage individual employees and white-label domain assignments
+            Manage individual employees and their video assignments
           </p>
         </div>
         <Button onClick={() => setShowAddModal(true)}>
@@ -123,42 +120,6 @@ export const EmployeeManagement: React.FC = () => {
           Add Employee
         </Button>
       </div>
-
-      {/* Generic Employee Card */}
-      {genericEmployee && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Users className="w-5 h-5 text-primary" />
-              White-Label Domain Assignments
-              <Badge variant="secondary">Generic</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Videos assigned to this category will be available to all users 
-                  from authorized domains automatically.
-                </p>
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="flex items-center gap-1">
-                    <VideoIcon className="w-4 h-4" />
-                    {genericEmployee.assigned_videos_count || 0} assigned videos
-                  </span>
-                </div>
-              </div>
-              <Button 
-                variant="outline"
-                onClick={() => handleAssignVideos(genericEmployee)}
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Manage Videos
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Individual Employees Table */}
       <Card>
@@ -187,7 +148,7 @@ export const EmployeeManagement: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {regularEmployees.length === 0 ? (
+                {employees.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-12">
                       <div className="space-y-3">
@@ -212,7 +173,7 @@ export const EmployeeManagement: React.FC = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  regularEmployees.map((employee) => (
+                  employees.map((employee) => (
                     <TableRow key={employee.id}>
                       <TableCell>
                         <div className="font-medium">

@@ -3,7 +3,6 @@ export interface Employee {
   email?: string;
   full_name?: string;
   domain?: string;
-  is_generic: boolean;
   created_at: string;
   updated_at: string;
 }

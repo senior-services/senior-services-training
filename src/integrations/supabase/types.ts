@@ -21,7 +21,6 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
-          is_generic: boolean
           updated_at: string
         }
         Insert: {
@@ -30,7 +29,6 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
-          is_generic?: boolean
           updated_at?: string
         }
         Update: {
@@ -39,7 +37,6 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
-          is_generic?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -292,40 +289,7 @@ export type Database = {
       }
     }
     Views: {
-      employee_assignments_with_videos: {
-        Row: {
-          assigned_at: string | null
-          assigned_by: string | null
-          assignment_id: string | null
-          employee_domain: string | null
-          employee_email: string | null
-          employee_id: string | null
-          employee_name: string | null
-          is_generic_assignment: boolean | null
-          thumbnail_url: string | null
-          video_description: string | null
-          video_id: string | null
-          video_title: string | null
-          video_type: string | null
-          video_url: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "video_assignments_employee_id_fkey"
-            columns: ["employee_id"]
-            isOneToOne: false
-            referencedRelation: "employees"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "video_assignments_video_id_fkey"
-            columns: ["video_id"]
-            isOneToOne: false
-            referencedRelation: "videos"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       extract_domain_from_email: {
