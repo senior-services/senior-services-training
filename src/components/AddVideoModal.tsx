@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, Link as LinkIcon, FileVideo } from "lucide-react";
+import { Upload, Link as LinkIcon, FileVideo, CheckCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AddVideoModalProps {
@@ -127,25 +127,40 @@ export const AddVideoModal = ({ open, onOpenChange, onSave }: AddVideoModalProps
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   className={cn(
-                    "border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors",
-                    isDragOver
-                      ? "border-primary bg-primary/10"
-                      : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"
+                    "border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all duration-300",
+                    selectedFile
+                      ? "border-success bg-success/10 hover:bg-success/15"
+                      : isDragOver
+                        ? "border-primary bg-primary/10"
+                        : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"
                   )}
                 >
                   <div className="flex flex-col items-center space-y-3">
-                    <FileVideo className={cn(
-                      "w-8 h-8 transition-colors",
-                      isDragOver ? "text-primary" : "text-muted-foreground"
-                    )} />
+                    {selectedFile ? (
+                      <CheckCircle className="w-8 h-8 text-success" />
+                    ) : (
+                      <FileVideo className={cn(
+                        "w-8 h-8 transition-colors",
+                        isDragOver ? "text-primary" : "text-muted-foreground"
+                      )} />
+                    )}
+                    
                     <div className="space-y-1">
                       <p className="text-sm font-medium">
-                        {isDragOver ? "Drop video file here" : "Drag & drop video file here"}
+                        {selectedFile 
+                          ? "Video uploaded successfully!" 
+                          : isDragOver 
+                            ? "Drop video file here" 
+                            : "Drag & drop video file here"
+                        }
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        or click to browse files
-                      </p>
+                      {!selectedFile && (
+                        <p className="text-xs text-muted-foreground">
+                          or click to browse files
+                        </p>
+                      )}
                     </div>
+                    
                     <Input
                       type="file"
                       accept="video/*"
@@ -153,35 +168,46 @@ export const AddVideoModal = ({ open, onOpenChange, onSave }: AddVideoModalProps
                       className="hidden"
                       id="fileInput"
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => document.getElementById('fileInput')?.click()}
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Browse Files
-                    </Button>
+                    
+                    {!selectedFile && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => document.getElementById('fileInput')?.click()}
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Browse Files
+                      </Button>
+                    )}
                   </div>
                 </div>
 
                 {selectedFile && (
-                  <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-                    <FileVideo className="w-5 h-5 text-primary" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{selectedFile.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
+                  <div className="flex items-center justify-between p-4 bg-success/5 border border-success/20 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-success/10 rounded-lg">
+                        <FileVideo className="w-5 h-5 text-success" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-success-foreground">{selectedFile.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • Ready to upload
+                        </p>
+                      </div>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedFile(null)}
-                    >
-                      Remove
-                    </Button>
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-5 h-5 text-success" />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedFile(null)}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 )}
               </TabsContent>
