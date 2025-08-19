@@ -89,7 +89,7 @@ export const useVideos = (): UseVideosReturn => {
     }
 
     // Validate file or URL based on type
-    if (videoData.sourceType === 'file') {
+    if (videoData.type === 'file') {
       if (!videoData.file) {
         errors.push('Please select a video file to upload.');
       } else {
@@ -98,7 +98,7 @@ export const useVideos = (): UseVideosReturn => {
           errors.push(...fileValidation.errors);
         }
       }
-    } else if (videoData.sourceType === 'url') {
+    } else if (videoData.type === 'url') {
       if (!videoData.url?.trim()) {
         errors.push('Please enter a video URL.');
       }

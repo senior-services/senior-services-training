@@ -48,7 +48,7 @@ export type VideoType = 'Required' | 'Optional';
 export interface VideoFormData {
   title: string;
   description: string;
-  sourceType: 'file' | 'url';
+  type: 'file' | 'url';
   file?: File;
   url?: string;
 }

@@ -18,6 +18,8 @@ export interface VideoData {
   has_quiz: boolean;
   assigned_to: number;
   completion_rate: number;
+  created_at: string;
+  updated_at: string;
 }
 
 interface EditVideoModalProps {

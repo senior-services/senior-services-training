@@ -4,8 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings } from "lucide-react";
 import { AddVideoModal, VideoFormData } from "@/components/AddVideoModal";
-import { EditVideoModal, VideoData } from "@/components/EditVideoModal";
+import { EditVideoModal } from "@/components/EditVideoModal";
 import { VideoPlayerModal } from "@/components/VideoPlayerModal";
+import { Video } from "@/types";
 import { AdminDashboardLayout } from "@/components/layout/DashboardLayout";
 import { VideoTable } from "@/components/dashboard/VideoTable";
 import { EmployeeList } from "@/components/dashboard/EmployeeList";
@@ -22,7 +23,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
   const [isAddVideoModalOpen, setIsAddVideoModalOpen] = useState(false);
   const [isEditVideoModalOpen, setIsEditVideoModalOpen] = useState(false);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
-  const [editingVideo, setEditingVideo] = useState<VideoData | null>(null);
+  const [editingVideo, setEditingVideo] = useState<Video | null>(null);
   
   // Use custom hooks for data management
   const {
@@ -49,7 +50,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
     }
   };
 
-  const handleEditVideo = (video: VideoData) => {
+  const handleEditVideo = (video: Video) => {
     setEditingVideo(video);
     setIsEditVideoModalOpen(true);
   };
@@ -70,7 +71,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
     }
   };
 
-  const handlePlayVideo = (video: VideoData) => {
+  const handlePlayVideo = (video: Video) => {
     selectVideo(video);
     setIsVideoPlayerOpen(true);
   };
