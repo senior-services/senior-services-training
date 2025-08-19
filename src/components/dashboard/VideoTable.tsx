@@ -15,6 +15,16 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
 import { Edit, Trash2, Play, Video, Plus } from 'lucide-react';
 import { Video as VideoType } from '@/types';
@@ -61,6 +71,8 @@ export const VideoTable: React.FC<VideoTableProps> = ({
 }) => {
   const [sortColumn, setSortColumn] = useState<string>('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [deleteConfirmVideo, setDeleteConfirmVideo] = useState<VideoType | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   /**
    * Handles column sorting
@@ -85,6 +97,25 @@ export const VideoTable: React.FC<VideoTableProps> = ({
   const handleVideoAction = (action: string, video: VideoType, callback: () => void) => {
     callback();
     announceToScreenReader(`${action} initiated for video: ${video.title}`);
+  };
+
+  /**
+   * Handles delete confirmation and execution
+   */
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirmVideo) return;
+
+    setIsDeleting(true);
+    try {
+      await onDelete(deleteConfirmVideo);
+      setDeleteConfirmVideo(null);
+      announceToScreenReader(`Video "${deleteConfirmVideo.title}" has been deleted successfully`);
+    } catch (error) {
+      console.error('Error deleting video:', error);
+      announceToScreenReader(`Failed to delete video "${deleteConfirmVideo.title}"`);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   /**
@@ -319,7 +350,10 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleVideoAction('Delete video', video, () => onDelete(video))}
+                            onClick={() => {
+                              setDeleteConfirmVideo(video);
+                              announceToScreenReader(`Delete confirmation dialog opened for video: ${video.title}`);
+                            }}
                             aria-label={`Delete video: ${video.title}`}
                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           >
@@ -344,6 +378,39 @@ export const VideoTable: React.FC<VideoTableProps> = ({
           : `${videos.length} training video${videos.length === 1 ? '' : 's'} available`
         }
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmVideo} onOpenChange={() => setDeleteConfirmVideo(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Training Video</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deleteConfirmVideo?.title}"? 
+              <br />
+              <br />
+              This will permanently remove:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>The video and all its content</li>
+                <li>Title and description</li>
+                <li>Assignment requirements for all users</li>
+                <li>All progress tracking data</li>
+              </ul>
+              <br />
+              <strong>This action cannot be undone.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Video'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
