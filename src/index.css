@@ -170,6 +170,32 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     border-width: 2px; /* Thicker borders for better visibility */
   }
 
+  /* Carbon Design System Form Controls */
+  .radio-group {
+    @apply flex flex-col gap-2;
+  }
+
+  .radio-group-horizontal {
+    @apply flex flex-row gap-4;
+  }
+
+  .checkbox-group {
+    @apply flex flex-col gap-2;
+  }
+
+  .checkbox-group-horizontal {
+    @apply flex flex-row gap-4;
+  }
+
+  /* Form field spacing following Carbon guidelines */
+  .form-field {
+    @apply mb-6; /* 24px spacing between form fields */
+  }
+
+  .form-field-compact {
+    @apply mb-4; /* 16px for more compact forms */
+  }
+
   .progress-bar {
     @apply bg-progress-bg rounded-full overflow-hidden;
   }

@@ -1,7 +1,6 @@
 import * as React from "react"
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
 
-
 import { cn } from "@/lib/utils"
 
 const RadioGroup = React.forwardRef<
@@ -26,19 +25,19 @@ const RadioGroupItem = React.forwardRef<
     <RadioGroupPrimitive.Item
       ref={ref}
       className={cn(
-        // M3 Radio Button - 16px container with 2px stroke (smaller like reference)
-        "relative h-4 w-4 rounded-full border-2 border-input bg-transparent ring-offset-background",
-        "hover:border-primary/80 hover:bg-primary/10",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        "data-[state=checked]:border-primary data-[state=checked]:text-primary",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        "transition-all duration-200 ease-out",
+        // Carbon Design System Radio Button - 20px container, clean minimal design
+        "relative h-5 w-5 rounded-full border border-foreground bg-transparent shrink-0",
+        "hover:border-primary transition-colors duration-200 ease-out",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "data-[state=checked]:border-primary",
+        "disabled:cursor-not-allowed disabled:opacity-50 disabled:border-muted-foreground",
         className
       )}
       {...props}
     >
       <RadioGroupPrimitive.Indicator className="absolute inset-0 flex items-center justify-center">
-        <div className="h-1.5 w-1.5 rounded-full bg-current" />
+        {/* Carbon Design System: 8px inner dot */}
+        <div className="h-2 w-2 rounded-full bg-primary" />
       </RadioGroupPrimitive.Indicator>
     </RadioGroupPrimitive.Item>
   )
