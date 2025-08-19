@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -751,36 +752,71 @@ export const EditVideoModal = ({
                                     )}
                                   </div>
 
-                                  <div className="space-y-2">
-                                    {question.options.map((option, optionIndex) => (
-                                      <div key={option.id} className="flex items-center space-x-2">
-                                        <Checkbox
-                                          checked={option.is_correct}
-                                          onCheckedChange={(checked) =>
-                                            updateOption(questionIndex, optionIndex, { is_correct: !!checked })
-                                          }
-                                        />
-                                        <Input
-                                          value={option.option_text}
-                                          onChange={(e) =>
-                                            updateOption(questionIndex, optionIndex, { option_text: e.target.value })
-                                          }
-                                          placeholder="Enter option text..."
-                                          className="flex-1"
-                                          disabled={question.question_type === 'true_false'}
-                                        />
-                                        {question.question_type !== 'true_false' && question.options.length > 2 && (
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => removeOption(questionIndex, optionIndex)}
-                                          >
-                                            <X className="w-4 h-4" />
-                                          </Button>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
+                                   <div className="space-y-2">
+                                     {question.question_type === 'single_choice' || question.question_type === 'true_false' ? (
+                                       <RadioGroup
+                                         value={question.options.find(opt => opt.is_correct)?.id || ''}
+                                         onValueChange={(value) => {
+                                           const optionIndex = question.options.findIndex(opt => opt.id === value);
+                                           if (optionIndex !== -1) {
+                                             updateOption(questionIndex, optionIndex, { is_correct: true });
+                                           }
+                                         }}
+                                       >
+                                         {question.options.map((option, optionIndex) => (
+                                           <div key={option.id} className="flex items-center space-x-2">
+                                             <RadioGroupItem value={option.id} id={option.id} />
+                                             <Input
+                                               value={option.option_text}
+                                               onChange={(e) =>
+                                                 updateOption(questionIndex, optionIndex, { option_text: e.target.value })
+                                               }
+                                               placeholder="Enter option text..."
+                                               className="flex-1"
+                                               disabled={question.question_type === 'true_false'}
+                                             />
+                                             {question.question_type !== 'true_false' && question.options.length > 2 && (
+                                               <Button
+                                                 variant="ghost"
+                                                 size="sm"
+                                                 onClick={() => removeOption(questionIndex, optionIndex)}
+                                               >
+                                                 <X className="w-4 h-4" />
+                                               </Button>
+                                             )}
+                                           </div>
+                                         ))}
+                                       </RadioGroup>
+                                     ) : (
+                                       question.options.map((option, optionIndex) => (
+                                         <div key={option.id} className="flex items-center space-x-2">
+                                           <Checkbox
+                                             checked={option.is_correct}
+                                             onCheckedChange={(checked) =>
+                                               updateOption(questionIndex, optionIndex, { is_correct: !!checked })
+                                             }
+                                           />
+                                           <Input
+                                             value={option.option_text}
+                                             onChange={(e) =>
+                                               updateOption(questionIndex, optionIndex, { option_text: e.target.value })
+                                             }
+                                             placeholder="Enter option text..."
+                                             className="flex-1"
+                                           />
+                                           {question.options.length > 2 && (
+                                             <Button
+                                               variant="ghost"
+                                               size="sm"
+                                               onClick={() => removeOption(questionIndex, optionIndex)}
+                                             >
+                                               <X className="w-4 h-4" />
+                                             </Button>
+                                           )}
+                                         </div>
+                                       ))
+                                     )}
+                                   </div>
 
                                   {question.question_type === 'single_choice' && (
                                     <p className="text-xs text-muted-foreground">
