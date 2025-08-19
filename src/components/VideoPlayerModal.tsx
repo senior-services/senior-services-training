@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Play, Clock, Users } from "lucide-react";
 
@@ -19,9 +19,16 @@ interface VideoPlayerModalProps {
 }
 
 export const VideoPlayerModal = ({ open, onOpenChange, video }: VideoPlayerModalProps) => {
+  console.log('VideoPlayerModal rendered with video:', video);
+  
   if (!video) return null;
 
   const hasVideoSource = video.video_url || video.video_file_name;
+  console.log('Video source check:', { 
+    video_url: video.video_url, 
+    video_file_name: video.video_file_name, 
+    hasVideoSource 
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -31,6 +38,9 @@ export const VideoPlayerModal = ({ open, onOpenChange, video }: VideoPlayerModal
             <Play className="w-5 h-5 text-primary" />
             {video.title}
           </DialogTitle>
+          <DialogDescription>
+            Watch training video and track your progress
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">
@@ -41,7 +51,9 @@ export const VideoPlayerModal = ({ open, onOpenChange, video }: VideoPlayerModal
                 className="w-full h-full"
                 controls
                 preload="metadata"
-                poster={video.thumbnail_url}
+                poster={video.thumbnail_url || undefined}
+                onLoadStart={() => console.log('Video loading started')}
+                onError={(e) => console.error('Video error:', e)}
               >
                 <source src={video.video_url} type="video/mp4" />
                 Your browser does not support the video tag.
