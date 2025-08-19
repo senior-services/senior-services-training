@@ -123,12 +123,6 @@ export const EmployeeManagement: React.FC = () => {
 
       {/* Individual Employees Table */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Individual Employees
-          </CardTitle>
-        </CardHeader>
         <CardContent className="p-0">
           {loading ? (
             <div className="p-6 space-y-4">
