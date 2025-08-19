@@ -1,6 +1,7 @@
 import * as React from "react"
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
 
+
 import { cn } from "@/lib/utils"
 
 const RadioGroup = React.forwardRef<
@@ -25,6 +26,7 @@ const RadioGroupItem = React.forwardRef<
     <RadioGroupPrimitive.Item
       ref={ref}
       className={cn(
+        // M3 Radio Button - 16px container with 2px stroke (smaller like reference)
         "relative h-4 w-4 rounded-full border-2 border-input bg-transparent ring-offset-background",
         "hover:border-primary/80 hover:bg-primary/10",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
