@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 interface AddVideoModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (videoData: VideoFormData) => void;
+  onSave: (videoData: VideoFormData) => Promise<void>;
 }
 export interface VideoFormData {
   title: string;
@@ -31,10 +31,11 @@ export const AddVideoModal = ({
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const handleSave = () => {
+  const handleSave = async () => {
     if (formData.type === 'file' && !selectedFile) return;
     if (formData.type === 'url' && !formData.url?.trim()) return;
-    onSave({
+    
+    await onSave({
       ...formData,
       file: selectedFile || undefined
     });
