@@ -2,36 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { 
-  UserPlus, 
-  Mail, 
-  Users, 
-  Trash2,
-  Edit,
-  Clock,
-  CheckCircle,
-  XCircle,
-  HelpCircle,
-  Play,
-  ChevronDown,
-  User
-} from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { UserPlus, Mail, Users, Trash2, Edit, Clock, CheckCircle, XCircle, HelpCircle, Play, ChevronDown, User } from 'lucide-react';
 import { EmployeeService } from '@/services/employeeService';
 import type { EmployeeWithAssignments, Employee } from '@/types/employee';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
@@ -39,7 +12,6 @@ import { useToast } from '@/hooks/use-toast';
 import { AddEmployeeModal } from './AddEmployeeModal';
 import { AssignVideosModal } from './AssignVideosModal';
 import { format, differenceInDays, isPast } from 'date-fns';
-
 export const EmployeeManagement: React.FC = () => {
   const [employees, setEmployees] = useState<EmployeeWithAssignments[]>([]);
   const [employeeVideos, setEmployeeVideos] = useState<Map<string, any[]>>(new Map());
@@ -49,18 +21,18 @@ export const EmployeeManagement: React.FC = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [deleteConfirmEmployee, setDeleteConfirmEmployee] = useState<Employee | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     loadEmployees();
   }, []);
-
   const loadEmployees = async () => {
     try {
       setLoading(true);
       const data = await EmployeeService.getEmployees();
       setEmployees(data);
-      
+
       // Load video assignments for each employee
       const videoMap = new Map();
       for (const employee of data) {
@@ -80,30 +52,29 @@ export const EmployeeManagement: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to load employees",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleAddEmployee = (employee: Employee) => {
-    setEmployees(prev => [...prev, { ...employee, assigned_videos_count: 0 }]);
+    setEmployees(prev => [...prev, {
+      ...employee,
+      assigned_videos_count: 0
+    }]);
     setShowAddModal(false);
     toast({
       title: "Success",
-      description: "Employee added successfully",
+      description: "Employee added successfully"
     });
   };
-
   const handleAssignVideos = (employee: Employee) => {
     setSelectedEmployee(employee);
     setShowAssignModal(true);
   };
-
   const handleDeleteEmployee = async () => {
     if (!deleteConfirmEmployee) return;
-
     setIsDeleting(true);
     try {
       await EmployeeService.deleteEmployee(deleteConfirmEmployee.id);
@@ -111,14 +82,14 @@ export const EmployeeManagement: React.FC = () => {
       setDeleteConfirmEmployee(null);
       toast({
         title: "Success",
-        description: "Employee deleted successfully",
+        description: "Employee deleted successfully"
       });
     } catch (error) {
       console.error('Error deleting employee:', error);
       toast({
         title: "Error",
         description: "Failed to delete employee",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsDeleting(false);
@@ -134,7 +105,6 @@ export const EmployeeManagement: React.FC = () => {
         text: "Completed"
       };
     }
-
     if (!dueDate) {
       return {
         variant: "default" as const,
@@ -142,15 +112,11 @@ export const EmployeeManagement: React.FC = () => {
         text: "No deadline"
       };
     }
-
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
     const due = new Date(dueDate);
     due.setHours(0, 0, 0, 0);
-    
     const daysUntilDue = differenceInDays(due, today);
-    
     if (isPast(due) && daysUntilDue < 0) {
       return {
         variant: "default" as const,
@@ -158,7 +124,6 @@ export const EmployeeManagement: React.FC = () => {
         text: "Overdue"
       };
     }
-    
     if (daysUntilDue <= 5) {
       return {
         variant: "default" as const,
@@ -166,20 +131,17 @@ export const EmployeeManagement: React.FC = () => {
         text: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`
       };
     }
-    
     return {
       variant: "default" as const,
       className: "bg-gray-700 text-white hover:bg-gray-700",
       text: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`
     };
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-xl font-semibold">Employee Management</h3>
+          <h3 className="text-xl font-semibold">Employee Video Assignements</h3>
           <p className="text-muted-foreground">
             Manage individual employees and their video assignments
           </p>
@@ -193,14 +155,11 @@ export const EmployeeManagement: React.FC = () => {
       {/* Individual Employees Table */}
       <Card>
         <CardContent className="p-0">
-          {loading ? (
-            <div className="p-6 space-y-4">
+          {loading ? <div className="p-6 space-y-4">
               <LoadingSkeleton lines={1} className="h-12" />
               <LoadingSkeleton lines={1} className="h-12" />
               <LoadingSkeleton lines={1} className="h-12" />
-            </div>
-          ) : employees.length === 0 ? (
-            <div className="text-center py-12">
+            </div> : employees.length === 0 ? <div className="text-center py-12">
               <div className="space-y-3">
                 <UserPlus className="w-12 h-12 text-muted-foreground mx-auto" />
                 <div>
@@ -211,40 +170,24 @@ export const EmployeeManagement: React.FC = () => {
                     Add employees by email to assign specific training videos.
                   </p>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowAddModal(true)}
-                >
+                <Button variant="outline" size="sm" onClick={() => setShowAddModal(true)}>
                   <UserPlus className="w-4 h-4 mr-2" />
                   Add First Employee
                 </Button>
               </div>
-            </div>
-          ) : (
-            <Accordion type="multiple" className="w-full">
-              {employees.map((employee) => {
-                const hasVideos = (employee.assigned_videos_count || 0) > 0;
-                const videos = employeeVideos.get(employee.id) || [];
-                
-                return (
-                  <AccordionItem 
-                    key={employee.id} 
-                    value={employee.id}
-                    className="group data-[state=open]:bg-muted/60"
-                  >
-                    <AccordionTrigger 
-                      className="[&>svg]:hidden" // Hide default chevron
-                    >
+            </div> : <Accordion type="multiple" className="w-full">
+              {employees.map(employee => {
+            const hasVideos = (employee.assigned_videos_count || 0) > 0;
+            const videos = employeeVideos.get(employee.id) || [];
+            return <AccordionItem key={employee.id} value={employee.id} className="group data-[state=open]:bg-muted/60">
+                    <AccordionTrigger className="[&>svg]:hidden" // Hide default chevron
+              >
                     <div className="flex items-center justify-between w-full">
                       {/* Left side: Chevron + Employee info */}
                       <div className="flex items-center gap-4">
                         {/* Manual chevron on the left or equivalent spacing */}
-                        {hasVideos ? (
-                          <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                        ) : (
-                          <div className="w-4 h-4" /> // Empty space to maintain alignment
-                        )}
+                        {hasVideos ? <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" /> : <div className="w-4 h-4" /> // Empty space to maintain alignment
+                    }
                         
                         <div className="flex-1">
                           <div className="font-medium text-left">
@@ -264,26 +207,17 @@ export const EmployeeManagement: React.FC = () => {
                       
                       {/* Action buttons on far right */}
                       <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAssignVideos(employee);
-                            }}
-                          >
+                          <Button variant="outline" size="sm" onClick={e => {
+                      e.stopPropagation();
+                      handleAssignVideos(employee);
+                    }}>
                             <Edit className="w-4 h-4 mr-2" />
                             Edit
                           </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteConfirmEmployee(employee);
-                          }}
-                          className="text-destructive hover:text-destructive"
-                        >
+                        <Button variant="outline" size="sm" onClick={e => {
+                      e.stopPropagation();
+                      setDeleteConfirmEmployee(employee);
+                    }} className="text-destructive hover:text-destructive">
                           <Trash2 className="w-4 h-4" />
                           <span className="sr-only">Delete Employee</span>
                         </Button>
@@ -291,22 +225,14 @@ export const EmployeeManagement: React.FC = () => {
                     </div>
                   </AccordionTrigger>
                     
-                    {hasVideos && (
-                      <AccordionContent className="px-6 pb-4">
+                    {hasVideos && <AccordionContent className="px-6 pb-4">
                         <div className="space-y-3">
                           <h4 className="font-medium text-sm text-muted-foreground mb-3">
                             Assigned Training Videos
                           </h4>
                           
-                          {videos.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">Loading video assignments...</p>
-                          ) : (
-                            <div className="space-y-0">
-                              {videos.map((assignment, index) => (
-                                <div 
-                                  key={assignment.video_id || index}
-                                  className="flex items-center justify-between py-2 border-b last:border-b-0 border-border/50"
-                                >
+                          {videos.length === 0 ? <p className="text-sm text-muted-foreground">Loading video assignments...</p> : <div className="space-y-0">
+                              {videos.map((assignment, index) => <div key={assignment.video_id || index} className="flex items-center justify-between py-2 border-b last:border-b-0 border-border/50">
                                   <div className="flex-1 min-w-0 w-1/2">
                                     <div className="font-medium text-sm line-clamp-2">
                                       {assignment.video_title || 'Untitled Video'}
@@ -315,56 +241,34 @@ export const EmployeeManagement: React.FC = () => {
                                   
                                   <div className="flex items-center gap-4 text-xs">
                                     {(() => {
-                                      const badgeProps = getDeadlineBadge(assignment.due_date, false); // TODO: Add completion tracking
-                                      return (
-                                        <Badge 
-                                          variant={badgeProps.variant}
-                                          className={`text-xs whitespace-nowrap ${badgeProps.className}`}
-                                        >
+                          const badgeProps = getDeadlineBadge(assignment.due_date, false); // TODO: Add completion tracking
+                          return <Badge variant={badgeProps.variant} className={`text-xs whitespace-nowrap ${badgeProps.className}`}>
                                           {badgeProps.text}
-                                        </Badge>
-                                      );
-                                    })()}
+                                        </Badge>;
+                        })()}
                                     
                                     <div className="flex items-center gap-1 text-muted-foreground">
                                       <XCircle className="w-3 h-3" />
                                       <span>Not completed</span>
                                     </div>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                                </div>)}
+                            </div>}
                         </div>
-                      </AccordionContent>
-                    )}
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
-          )}
+                      </AccordionContent>}
+                  </AccordionItem>;
+          })}
+            </Accordion>}
         </CardContent>
       </Card>
 
       {/* Modals */}
-      <AddEmployeeModal
-        open={showAddModal}
-        onOpenChange={setShowAddModal}
-        onEmployeeAdded={handleAddEmployee}
-      />
+      <AddEmployeeModal open={showAddModal} onOpenChange={setShowAddModal} onEmployeeAdded={handleAddEmployee} />
 
-      <AssignVideosModal
-        open={showAssignModal}
-        onOpenChange={setShowAssignModal}
-        employee={selectedEmployee}
-        onAssignmentComplete={loadEmployees}
-      />
+      <AssignVideosModal open={showAssignModal} onOpenChange={setShowAssignModal} employee={selectedEmployee} onAssignmentComplete={loadEmployees} />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog 
-        open={!!deleteConfirmEmployee} 
-        onOpenChange={() => setDeleteConfirmEmployee(null)}
-      >
+      <AlertDialog open={!!deleteConfirmEmployee} onOpenChange={() => setDeleteConfirmEmployee(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Employee</AlertDialogTitle>
@@ -386,16 +290,11 @@ export const EmployeeManagement: React.FC = () => {
             <AlertDialogCancel disabled={isDeleting}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteEmployee}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+            <AlertDialogAction onClick={handleDeleteEmployee} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {isDeleting ? 'Deleting...' : 'Delete Employee'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
+    </div>;
 };
