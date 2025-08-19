@@ -17,7 +17,7 @@ const App = () => {
   const { role, loading: roleLoading } = useUserRole(user);
   
   const isAuthenticated = !!user;
-  const loading = authLoading || (isAuthenticated && roleLoading);
+  const loading = authLoading || (isAuthenticated && (roleLoading || role === null));
 
   const handleLogout = () => {
     signOut();
