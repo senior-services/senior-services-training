@@ -7,10 +7,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Video, Users, Play, Check, X } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Video, Play, Check, X, CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import { EmployeeService } from '@/services/employeeService';
 import { videoService } from '@/services/supabase';
 import type { Employee } from '@/types/employee';
@@ -34,6 +41,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const [videos, setVideos] = useState<VideoType[]>([]);
   const [assignedVideoIds, setAssignedVideoIds] = useState<Set<string>>(new Set());
   const [selectedVideoIds, setSelectedVideoIds] = useState<Set<string>>(new Set());
+  const [videoDeadlines, setVideoDeadlines] = useState<Map<string, Date>>(new Map());
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -79,8 +87,26 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
         newSet.add(videoId);
       } else {
         newSet.delete(videoId);
+        // Remove deadline when video is unselected
+        setVideoDeadlines(prev => {
+          const newDeadlines = new Map(prev);
+          newDeadlines.delete(videoId);
+          return newDeadlines;
+        });
       }
       return newSet;
+    });
+  };
+
+  const handleDeadlineChange = (videoId: string, date: Date | undefined) => {
+    setVideoDeadlines(prev => {
+      const newDeadlines = new Map(prev);
+      if (date) {
+        newDeadlines.set(videoId, date);
+      } else {
+        newDeadlines.delete(videoId);
+      }
+      return newDeadlines;
     });
   };
 
@@ -124,6 +150,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
 
   const handleClose = () => {
     setSelectedVideoIds(new Set(assignedVideoIds));
+    setVideoDeadlines(new Map()); // Clear deadlines on close
     onOpenChange(false);
   };
 
@@ -264,6 +291,44 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                               </div>
                             </div>
                           </div>
+
+                          {/* Deadline Picker - Only show when video is selected */}
+                          {isSelected && (
+                            <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                              <div className="text-xs text-muted-foreground">Deadline</div>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={cn(
+                                      "w-[140px] justify-start text-left font-normal",
+                                      !videoDeadlines.get(video.id) && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-3 w-3" />
+                                    {videoDeadlines.get(video.id) ? (
+                                      format(videoDeadlines.get(video.id)!, "PPP")
+                                    ) : (
+                                      <span className="text-xs">Pick date</span>
+                                    )}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="end">
+                                  <Calendar
+                                    mode="single"
+                                    selected={videoDeadlines.get(video.id)}
+                                    onSelect={(date) => handleDeadlineChange(video.id, date)}
+                                    disabled={(date) =>
+                                      date < new Date(new Date().setHours(0, 0, 0, 0))
+                                    }
+                                    initialFocus
+                                    className="p-3 pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                          )}
                         </div>
                       );
                     })
