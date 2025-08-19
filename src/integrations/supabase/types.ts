@@ -201,6 +201,7 @@ export type Database = {
         Row: {
           assigned_by: string
           created_at: string
+          due_date: string | null
           employee_id: string
           id: string
           updated_at: string
@@ -209,6 +210,7 @@ export type Database = {
         Insert: {
           assigned_by: string
           created_at?: string
+          due_date?: string | null
           employee_id: string
           id?: string
           updated_at?: string
@@ -217,6 +219,7 @@ export type Database = {
         Update: {
           assigned_by?: string
           created_at?: string
+          due_date?: string | null
           employee_id?: string
           id?: string
           updated_at?: string

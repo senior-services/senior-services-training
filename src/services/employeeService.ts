@@ -38,13 +38,21 @@ export class EmployeeService {
   }
 
 
-  // Assign video to employee
-  static async assignVideoToEmployee(videoId: string, employeeId: string): Promise<VideoAssignment> {
+  // Assign video to employee (optionally with due date)
+  static async assignVideoToEmployee(videoId: string, employeeId: string, dueDate?: Date | string): Promise<VideoAssignment> {
+    // Normalize date to YYYY-MM-DD for Postgres DATE column
+    const normalizedDueDate = dueDate
+      ? (dueDate instanceof Date
+          ? dueDate.toISOString().slice(0, 10)
+          : new Date(dueDate).toISOString().slice(0, 10))
+      : null;
+
     const { data, error } = await supabase
       .from('video_assignments')
       .insert({
         video_id: videoId,
         employee_id: employeeId,
+        due_date: normalizedDueDate,
         assigned_by: (await supabase.auth.getUser()).data.user?.id
       })
       .select()
@@ -59,6 +67,18 @@ export class EmployeeService {
     const { error } = await supabase
       .from('video_assignments')
       .delete()
+      .eq('video_id', videoId)
+      .eq('employee_id', employeeId);
+
+    if (error) throw error;
+  }
+
+  // Set or clear due date for an assignment
+  static async setAssignmentDueDate(videoId: string, employeeId: string, dueDate: Date | null): Promise<void> {
+    const normalizedDueDate = dueDate ? dueDate.toISOString().slice(0, 10) : null;
+    const { error } = await supabase
+      .from('video_assignments')
+      .update({ due_date: normalizedDueDate })
       .eq('video_id', videoId)
       .eq('employee_id', employeeId);
 
@@ -87,6 +107,7 @@ export class EmployeeService {
       video_type: assignment.videos?.type,
       assigned_at: assignment.created_at,
       assigned_by: assignment.assigned_by,
+      due_date: assignment.due_date,
       employee_id: employeeId
     })) || [];
   }

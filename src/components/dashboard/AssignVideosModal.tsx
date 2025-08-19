@@ -42,6 +42,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const [assignedVideoIds, setAssignedVideoIds] = useState<Set<string>>(new Set());
   const [selectedVideoIds, setSelectedVideoIds] = useState<Set<string>>(new Set());
   const [videoDeadlines, setVideoDeadlines] = useState<Map<string, Date>>(new Map());
+  const [initialVideoDeadlines, setInitialVideoDeadlines] = useState<Map<string, Date>>(new Map());
   const [calendarOpen, setCalendarOpen] = useState<Map<string, boolean>>(new Map());
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,6 +70,18 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
       const currentlyAssigned = new Set(assignments.map(a => a.video_id));
       setAssignedVideoIds(currentlyAssigned);
       setSelectedVideoIds(new Set(currentlyAssigned));
+
+      // Load existing deadlines for assigned videos
+      const deadlines = new Map<string, Date>();
+      assignments.forEach(a => {
+        if (a.due_date) {
+          try {
+            deadlines.set(a.video_id, new Date(a.due_date));
+          } catch {}
+        }
+      });
+      setInitialVideoDeadlines(deadlines);
+      setVideoDeadlines(new Map(deadlines));
     } catch (error) {
       console.error('Error loading videos and assignments:', error);
       toast({
@@ -128,10 +141,22 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
       // Determine which videos to assign and which to unassign
       const toAssign = [...selectedVideoIds].filter(id => !assignedVideoIds.has(id));
       const toUnassign = [...assignedVideoIds].filter(id => !selectedVideoIds.has(id));
+      const toRemain = [...selectedVideoIds].filter(id => assignedVideoIds.has(id));
 
-      // Process assignments
+      // Process assignments (with optional due dates)
       for (const videoId of toAssign) {
-        await EmployeeService.assignVideoToEmployee(videoId, employee.id);
+        const due = videoDeadlines.get(videoId);
+        await EmployeeService.assignVideoToEmployee(videoId, employee.id, due);
+      }
+
+      // Update due dates for existing assignments if changed
+      for (const videoId of toRemain) {
+        const current = videoDeadlines.get(videoId) || null;
+        const initial = initialVideoDeadlines.get(videoId) || null;
+        const toISO = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
+        if (toISO(current) !== toISO(initial)) {
+          await EmployeeService.setAssignmentDueDate(videoId, employee.id, current);
+        }
       }
 
       // Process unassignments
@@ -160,14 +185,16 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
 
   const handleClose = () => {
     setSelectedVideoIds(new Set(assignedVideoIds));
-    setVideoDeadlines(new Map()); // Clear deadlines on close
+    setVideoDeadlines(new Map(initialVideoDeadlines)); // Reset deadlines to initial on close
     setCalendarOpen(new Map()); // Clear calendar open states on close
     onOpenChange(false);
   };
 
   if (!employee) return null;
 
-  const hasChanges = !areSetEqual(selectedVideoIds, assignedVideoIds) || videoDeadlines.size > 0;
+  const hasSelectionChanges = !areSetEqual(selectedVideoIds, assignedVideoIds);
+  const hasDeadlineChanges = !areDeadlineMapsEqual(videoDeadlines, initialVideoDeadlines);
+  const hasChanges = hasSelectionChanges || hasDeadlineChanges;
   const selectedCount = selectedVideoIds.size;
 
   return (
@@ -381,6 +408,18 @@ function areSetEqual<T>(set1: Set<T>, set2: Set<T>): boolean {
   if (set1.size !== set2.size) return false;
   for (const item of set1) {
     if (!set2.has(item)) return false;
+  }
+  return true;
+}
+
+// Utility to compare deadline maps by YYYY-MM-DD
+function areDeadlineMapsEqual(a: Map<string, Date>, b: Map<string, Date>): boolean {
+  if (a.size !== b.size) return false;
+  const toKey = (d: Date) => d.toISOString().slice(0, 10);
+  for (const [key, value] of a.entries()) {
+    const other = b.get(key);
+    if (!other) return false;
+    if (toKey(value) !== toKey(other)) return false;
   }
   return true;
 }

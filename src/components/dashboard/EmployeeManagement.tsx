@@ -36,6 +36,7 @@ import { LoadingSkeleton } from '@/components/ui/loading-spinner';
 import { useToast } from '@/hooks/use-toast';
 import { AddEmployeeModal } from './AddEmployeeModal';
 import { AssignVideosModal } from './AssignVideosModal';
+import { format } from 'date-fns';
 
 export const EmployeeManagement: React.FC = () => {
   const [employees, setEmployees] = useState<EmployeeWithAssignments[]>([]);
@@ -271,7 +272,11 @@ export const EmployeeManagement: React.FC = () => {
                                 <div className="flex items-center gap-4 text-xs">
                                   <div className="flex items-center gap-1 text-muted-foreground">
                                     <Clock className="w-3 h-3" />
-                                    <span>No deadline</span>
+                                    <span>
+                                      {assignment.due_date
+                                        ? `Due ${format(new Date(assignment.due_date), 'MMM d, yyyy')}`
+                                        : 'No deadline'}
+                                    </span>
                                   </div>
                                   
                                   <div className="flex items-center gap-1 text-muted-foreground">
