@@ -45,8 +45,8 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --destructive-foreground: 0 0% 100%;
 
     /* UI Elements */
-    --border: 210 20% 91%;
-    --input: 210 20% 96%;
+    --border: 210 20% 80%;
+    --input: 210 20% 94%;
     --ring: 219 79% 26%;
 
     --radius: 0.75rem;
@@ -107,8 +107,8 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --destructive: 0 84% 70%;
     --destructive-foreground: 219 79% 8%;
 
-    --border: 219 79% 20%;
-    --input: 219 79% 15%;
+    --border: 219 79% 30%;
+    --input: 219 79% 18%;
     --ring: 206 73% 65%;
     /* Dark mode progress & status colors */
     --progress-bg: 219 79% 15%;
