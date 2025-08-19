@@ -230,7 +230,7 @@ export const EmployeeManagement: React.FC = () => {
                   <AccordionItem 
                     key={employee.id} 
                     value={employee.id}
-                    className="group data-[state=open]:bg-muted/30"
+                    className="group data-[state=open]:bg-muted/60"
                   >
                     <AccordionTrigger 
                       className="[&>svg]:hidden" // Hide default chevron
