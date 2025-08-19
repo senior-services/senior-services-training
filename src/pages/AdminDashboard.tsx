@@ -330,13 +330,6 @@ const [isDeleting, setIsDeleting] = useState(false);
       
       <main className="container mx-auto px-4 py-6">
         <div className="space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Administrator Dashboard</h1>
-            <p className="text-muted-foreground">
-              Manage training content, monitor employee progress, and configure system settings.
-            </p>
-          </div>
-
             <Tabs defaultValue="videos" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="videos">Videos</TabsTrigger>
