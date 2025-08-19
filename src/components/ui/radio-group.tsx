@@ -26,8 +26,8 @@ const RadioGroupItem = React.forwardRef<
     <RadioGroupPrimitive.Item
       ref={ref}
       className={cn(
-        // M3 Radio Button - 18px container with 2px stroke
-        "relative h-[18px] w-[18px] rounded-full border-2 border-input bg-transparent ring-offset-background",
+        // M3 Radio Button - 16px container with 2px stroke (smaller like reference)
+        "relative h-4 w-4 rounded-full border-2 border-input bg-transparent ring-offset-background",
         "hover:border-primary/80 hover:bg-primary/10",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         "data-[state=checked]:border-primary data-[state=checked]:text-primary",
@@ -38,7 +38,7 @@ const RadioGroupItem = React.forwardRef<
       {...props}
     >
       <RadioGroupPrimitive.Indicator className="absolute inset-0 flex items-center justify-center">
-        <div className="h-2 w-2 rounded-full bg-current" />
+        <div className="h-1.5 w-1.5 rounded-full bg-current" />
       </RadioGroupPrimitive.Indicator>
     </RadioGroupPrimitive.Item>
   )
