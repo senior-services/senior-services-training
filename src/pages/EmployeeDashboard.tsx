@@ -24,8 +24,7 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
       progress: 65,
       isRequired: true,
       deadline: 'Dec 25',
-      status: 'warning',
-      hasQuiz: true
+      status: 'warning'
     },
     {
       id: '2',
@@ -36,8 +35,7 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
       progress: 100,
       isRequired: true,
       deadline: 'Dec 20',
-      status: 'completed',
-      hasQuiz: true
+      status: 'completed'
     },
     {
       id: '3',
@@ -48,8 +46,7 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
       progress: 0,
       isRequired: true,
       deadline: 'Jan 5',
-      status: 'upcoming',
-      hasQuiz: true
+      status: 'upcoming'
     }
   ];
 
@@ -60,8 +57,7 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
       description: 'Building strong relationships with clients and their families',
       thumbnail: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&h=300&fit=crop',
       duration: '12 min',
-      progress: 30,
-      hasQuiz: false
+      progress: 30
     },
     {
       id: '5',
@@ -69,8 +65,7 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
       description: 'Overview of digital tools and platforms used in senior care',
       thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop',
       duration: '20 min',
-      progress: 0,
-      hasQuiz: false
+      progress: 0
     }
   ];
 

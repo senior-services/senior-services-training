@@ -5,18 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, FileVideo, Trash2, Plus, X } from "lucide-react";
+import { Play, FileVideo, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-export interface VideoData {
+interface VideoData {
   id: string;
   title: string;
   description: string | null;
@@ -24,34 +21,10 @@ export interface VideoData {
   video_file_name: string | null;
   thumbnail_url?: string | null;
   type: string;
-  has_quiz: boolean;
   assigned_to: number;
   completion_rate: number;
   created_at: string;
   updated_at: string;
-}
-
-interface QuizQuestion {
-  id: string;
-  question_text: string;
-  question_type: 'multiple_choice' | 'single_choice' | 'true_false';
-  order_index: number;
-  options: QuizQuestionOption[];
-}
-
-interface QuizQuestionOption {
-  id: string;
-  option_text: string;
-  is_correct: boolean;
-  order_index: number;
-}
-
-interface Quiz {
-  id: string;
-  video_id: string;
-  title: string;
-  description: string | null;
-  questions: QuizQuestion[];
 }
 
 interface EditVideoModalProps {
@@ -62,124 +35,32 @@ interface EditVideoModalProps {
   onDelete: (videoId: string) => Promise<void>;
 }
 
-export const EditVideoModal = ({
-  open,
-  onOpenChange,
-  video,
-  onSave,
-  onDelete
-}: EditVideoModalProps) => {
+export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete }: EditVideoModalProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [activeTab, setActiveTab] = useState('video');
-  
-  // Quiz state
-  const [quiz, setQuiz] = useState<Quiz | null>(null);
-  const [quizTitle, setQuizTitle] = useState('');
-  const [quizDescription, setQuizDescription] = useState('');
-  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [loadingQuiz, setLoadingQuiz] = useState(false);
-  
   const { toast } = useToast();
 
-  // Update form when video changes
   useEffect(() => {
     if (video) {
       setTitle(video.title || '');
       setDescription(video.description || '');
-      fetchQuiz(video.id);
     }
   }, [video]);
-
-  const fetchQuiz = async (videoId: string) => {
-    setLoadingQuiz(true);
-    try {
-      // Fetch quiz with questions and options
-      const { data: quizData, error: quizError } = await supabase
-        .from('quizzes')
-        .select(`
-          *,
-          quiz_questions (
-            *,
-            quiz_question_options (*)
-          )
-        `)
-        .eq('video_id', videoId)
-        .maybeSingle();
-
-      if (quizError && quizError.code !== 'PGRST116') {
-        console.error('Error fetching quiz:', quizError);
-        toast({
-          title: "Error",
-          description: "Failed to load quiz data.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (quizData) {
-        const formattedQuestions = quizData.quiz_questions
-          .sort((a: any, b: any) => a.order_index - b.order_index)
-          .map((q: any) => ({
-            id: q.id,
-            question_text: q.question_text,
-            question_type: q.question_type,
-            order_index: q.order_index,
-            options: q.quiz_question_options
-              .sort((a: any, b: any) => a.order_index - b.order_index)
-              .map((opt: any) => ({
-                id: opt.id,
-                option_text: opt.option_text,
-                is_correct: opt.is_correct,
-                order_index: opt.order_index,
-              }))
-          }));
-        
-        const formattedQuiz: Quiz = {
-          id: quizData.id,
-          video_id: quizData.video_id,
-          title: quizData.title,
-          description: quizData.description,
-          questions: formattedQuestions
-        };
-        
-        setQuiz(formattedQuiz);
-        setQuizTitle(quizData.title);
-        setQuizDescription(quizData.description || '');
-        setQuestions(formattedQuestions);
-      } else {
-        // No quiz exists, reset state
-        setQuiz(null);
-        setQuizTitle('');
-        setQuizDescription('');
-        setQuestions([]);
-      }
-    } catch (error) {
-      console.error('Error fetching quiz:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load quiz data.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingQuiz(false);
-    }
-  };
 
   const handleSave = async () => {
     if (!video) return;
     
-    setIsSaving(true);
+    setLoading(true);
     try {
       await onSave(video.id, { title, description });
       onOpenChange(false);
     } catch (error) {
       console.error('Error updating video:', error);
     } finally {
-      setIsSaving(false);
+      setLoading(false);
     }
   };
 
@@ -189,7 +70,7 @@ export const EditVideoModal = ({
     setIsDeleting(true);
     try {
       await onDelete(video.id);
-      setShowDeleteDialog(false);
+      setDeleteDialogOpen(false);
       onOpenChange(false);
     } catch (error) {
       console.error('Error deleting video:', error);
@@ -198,247 +79,12 @@ export const EditVideoModal = ({
     }
   };
 
-  // Quiz management functions
-  const addQuestion = () => {
-    const newQuestion: QuizQuestion = {
-      id: `temp-${Date.now()}`,
-      question_text: '',
-      question_type: 'single_choice',
-      order_index: questions.length,
-      options: [
-        { id: `temp-opt-${Date.now()}-1`, option_text: '', is_correct: false, order_index: 0 },
-        { id: `temp-opt-${Date.now()}-2`, option_text: '', is_correct: true, order_index: 1 },
-      ]
-    };
-    setQuestions([...questions, newQuestion]);
-  };
-
-  const removeQuestion = (questionIndex: number) => {
-    setQuestions(questions.filter((_, index) => index !== questionIndex));
-  };
-
-  const updateQuestion = (questionIndex: number, updates: Partial<QuizQuestion>) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex] = { ...updatedQuestions[questionIndex], ...updates };
-    
-    // If changing question type, update options accordingly
-    if (updates.question_type) {
-      const question = updatedQuestions[questionIndex];
-      if (updates.question_type === 'true_false') {
-        question.options = [
-          { id: `temp-opt-${Date.now()}-true`, option_text: 'True', is_correct: true, order_index: 0 },
-          { id: `temp-opt-${Date.now()}-false`, option_text: 'False', is_correct: false, order_index: 1 },
-        ];
-      } else if (question.options.length === 2 && question.options[0].option_text === 'True') {
-        // Converting from true/false, reset options
-        question.options = [
-          { id: `temp-opt-${Date.now()}-1`, option_text: '', is_correct: false, order_index: 0 },
-          { id: `temp-opt-${Date.now()}-2`, option_text: '', is_correct: true, order_index: 1 },
-        ];
-      }
-    }
-    
-    setQuestions(updatedQuestions);
-  };
-
-  const addOption = (questionIndex: number) => {
-    const updatedQuestions = [...questions];
-    const question = updatedQuestions[questionIndex];
-    const newOption: QuizQuestionOption = {
-      id: `temp-opt-${Date.now()}`,
-      option_text: '',
-      is_correct: false,
-      order_index: question.options.length
-    };
-    question.options.push(newOption);
-    setQuestions(updatedQuestions);
-  };
-
-  const removeOption = (questionIndex: number, optionIndex: number) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].options = updatedQuestions[questionIndex].options.filter((_, index) => index !== optionIndex);
-    setQuestions(updatedQuestions);
-  };
-
-  const updateOption = (questionIndex: number, optionIndex: number, updates: Partial<QuizQuestionOption>) => {
-    const updatedQuestions = [...questions];
-    const question = updatedQuestions[questionIndex];
-    
-    // If this option is being set as correct and it's single choice, unset others
-    if (updates.is_correct && question.question_type === 'single_choice') {
-      question.options.forEach((opt, idx) => {
-        if (idx !== optionIndex) opt.is_correct = false;
-      });
-    }
-    
-    question.options[optionIndex] = { ...question.options[optionIndex], ...updates };
-    setQuestions(updatedQuestions);
-  };
-
-  const saveQuiz = async () => {
-    if (!video) return;
-    
-    try {
-      setIsSaving(true);
-      
-      let quizId: string;
-      
-      if (quiz) {
-        // Update existing quiz
-        const { error: quizError } = await supabase
-          .from('quizzes')
-          .update({
-            title: quizTitle,
-            description: quizDescription,
-          })
-          .eq('id', quiz.id);
-
-        if (quizError) throw quizError;
-        
-        // Delete existing questions and options (cascade will handle options)
-        const { error: deleteError } = await supabase
-          .from('quiz_questions')
-          .delete()
-          .eq('quiz_id', quiz.id);
-
-        if (deleteError) throw deleteError;
-        quizId = quiz.id;
-      } else {
-        // Create new quiz
-        const { data: newQuiz, error: quizError } = await supabase
-          .from('quizzes')
-          .insert({
-            video_id: video.id,
-            title: quizTitle,
-            description: quizDescription,
-          })
-          .select()
-          .single();
-
-        if (quizError) throw quizError;
-        
-        const formattedQuiz: Quiz = {
-          id: newQuiz.id,
-          video_id: newQuiz.video_id,
-          title: newQuiz.title,
-          description: newQuiz.description,
-          questions: []
-        };
-        
-        setQuiz(formattedQuiz);
-        quizId = newQuiz.id;
-      }
-
-      // Insert questions and options
-      for (let i = 0; i < questions.length; i++) {
-        const question = questions[i];
-        const { data: newQuestion, error: questionError } = await supabase
-          .from('quiz_questions')
-          .insert({
-            quiz_id: quizId,
-            question_text: question.question_text,
-            question_type: question.question_type,
-            order_index: i,
-          })
-          .select()
-          .single();
-
-        if (questionError) throw questionError;
-
-        // Insert options
-        const optionsToInsert = question.options.map((option, optionIndex) => ({
-          question_id: newQuestion.id,
-          option_text: option.option_text,
-          is_correct: option.is_correct,
-          order_index: optionIndex,
-        }));
-
-        const { error: optionsError } = await supabase
-          .from('quiz_question_options')
-          .insert(optionsToInsert);
-
-        if (optionsError) throw optionsError;
-      }
-
-      // Update video has_quiz status
-      const { error: videoError } = await supabase
-        .from('videos')
-        .update({ has_quiz: questions.length > 0 })
-        .eq('id', video.id);
-
-      if (videoError) throw videoError;
-
-      toast({
-        title: "Quiz Saved",
-        description: "Quiz has been successfully saved.",
-      });
-
-      // Refresh quiz data
-      fetchQuiz(video.id);
-    } catch (error) {
-      console.error('Error saving quiz:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save quiz. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const deleteQuiz = async () => {
-    if (!video || !quiz) return;
-    
-    try {
-      setIsDeleting(true);
-      
-      const { error } = await supabase
-        .from('quizzes')
-        .delete()
-        .eq('id', quiz.id);
-
-      if (error) throw error;
-
-      // Update video has_quiz status
-      const { error: videoError } = await supabase
-        .from('videos')
-        .update({ has_quiz: false })
-        .eq('id', video.id);
-
-      if (videoError) throw videoError;
-
-      toast({
-        title: "Quiz Deleted",
-        description: "Quiz has been successfully deleted.",
-      });
-
-      // Reset quiz state
-      setQuiz(null);
-      setQuizTitle('');
-      setQuizDescription('');
-      setQuestions([]);
-    } catch (error) {
-      console.error('Error deleting quiz:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete quiz. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   const handleClose = () => {
-    if (video) {
-      setTitle(video.title || '');
-      setDescription(video.description || '');
-    }
+    setTitle('');
+    setDescription('');
     onOpenChange(false);
   };
 
-  // Check if there are unsaved changes
   const hasChanges = video && (
     title !== (video.title || '') || 
     description !== (video.description || '')
@@ -457,7 +103,6 @@ export const EditVideoModal = ({
   // Extract YouTube video ID for embedding
   const getYouTubeVideoId = (url: string) => {
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-    console.log('YouTube URL parsing:', { url, match, videoId: match?.[1] });
     return match ? match[1] : null;
   };
 
@@ -470,26 +115,17 @@ export const EditVideoModal = ({
           <DialogHeader className="shrink-0">
             <DialogTitle>Edit Training Video</DialogTitle>
             <DialogDescription>
-              Preview, edit details, or manage this training video.
+              Preview and edit details for this training video.
             </DialogDescription>
           </DialogHeader>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-            <TabsList className="grid w-full grid-cols-2 shrink-0">
-              <TabsTrigger value="video">Video Info</TabsTrigger>
-              <TabsTrigger value="quiz" className="relative">
-                Quiz
-                <Badge 
-                  variant={questions.length > 0 ? "secondary" : "outline"} 
-                  className={`ml-2 ${questions.length === 0 ? 'text-muted-foreground' : ''}`}
-                >
-                  {questions.length}
-                </Badge>
-              </TabsTrigger>
-            </TabsList>
+          <div className="flex-1 overflow-y-auto">
+            <Tabs defaultValue="info" className="w-full">
+              <TabsList className="grid w-full grid-cols-1">
+                <TabsTrigger value="info">Video Info</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="video" className="flex-1 overflow-y-auto p-1 mt-4 data-[state=active]:flex data-[state=active]:flex-col">
-              <div className="space-y-6">
+              <TabsContent value="info" className="space-y-6">
                 {/* Video Preview Section */}
                 <div className="space-y-3">
                   <Label>Video Preview</Label>
@@ -609,10 +245,6 @@ export const EditVideoModal = ({
                     <p className="text-foreground">{video.type}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="font-medium text-muted-foreground">Has Quiz</p>
-                    <p className="text-foreground">{video.has_quiz ? 'Yes' : 'No'}</p>
-                  </div>
-                  <div className="space-y-1">
                     <p className="font-medium text-muted-foreground">Assigned To</p>
                     <p className="text-foreground">{video.assigned_to} employees</p>
                   </div>
@@ -621,266 +253,14 @@ export const EditVideoModal = ({
                     <p className="text-foreground">{video.completion_rate}%</p>
                   </div>
                 </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="quiz" className="flex-1 overflow-hidden data-[state=active]:flex data-[state=active]:flex-col mt-4">
-              {loadingQuiz ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="space-y-2 text-center">
-                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    <p className="text-sm text-muted-foreground">Loading quiz...</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex-1 overflow-y-auto">
-                  <div className="space-y-4 p-1">
-                    {/* Quiz Header */}
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2 flex-1">
-                        <Label htmlFor="quiz-title">Quiz Title</Label>
-                        <Input
-                          id="quiz-title"
-                          value={quizTitle}
-                          onChange={(e) => setQuizTitle(e.target.value)}
-                          placeholder="Enter quiz title..."
-                        />
-                      </div>
-                      {quiz && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={deleteQuiz}
-                          disabled={isDeleting}
-                          className="ml-4"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          {isDeleting ? 'Deleting...' : 'Delete Quiz'}
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="quiz-description">Quiz Description</Label>
-                      <Textarea
-                        id="quiz-description"
-                        value={quizDescription}
-                        onChange={(e) => setQuizDescription(e.target.value)}
-                        placeholder="Enter quiz description..."
-                        rows={2}
-                      />
-                    </div>
-
-                    {/* Questions */}
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h4 className="text-lg font-medium">Questions</h4>
-                        <Button onClick={addQuestion} size="sm">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Question
-                        </Button>
-                      </div>
-
-                      {questions.length === 0 ? (
-                        <Card>
-                          <CardContent className="p-6 text-center">
-                            <p className="text-muted-foreground">No questions added yet.</p>
-                            <p className="text-sm text-muted-foreground mt-1">Click "Add Question" to get started.</p>
-                          </CardContent>
-                        </Card>
-                      ) : (
-                        <div className="space-y-4">
-                          {questions.map((question, questionIndex) => (
-                            <Card key={question.id}>
-                              <CardHeader>
-                                <div className="flex justify-between items-start">
-                                  <CardTitle className="text-base">Question {questionIndex + 1}</CardTitle>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => removeQuestion(questionIndex)}
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </CardHeader>
-                              <CardContent className="space-y-4">
-                                {/* Question Text */}
-                                <div className="space-y-2">
-                                  <Label>Question Text</Label>
-                                  <Textarea
-                                    value={question.question_text}
-                                    onChange={(e) => updateQuestion(questionIndex, { question_text: e.target.value })}
-                                    placeholder="Enter your question..."
-                                    rows={2}
-                                  />
-                                </div>
-
-                                {/* Question Type */}
-                                <div className="space-y-2">
-                                  <Label>Question Type</Label>
-                                  <Select
-                                    value={question.question_type}
-                                    onValueChange={(value: 'multiple_choice' | 'single_choice' | 'true_false') => 
-                                      updateQuestion(questionIndex, { question_type: value })
-                                    }
-                                  >
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="single_choice">Single Choice</SelectItem>
-                                      <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
-                                      <SelectItem value="true_false">True/False</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-
-                                {/* Options */}
-                                <div className="space-y-3">
-                                  <div className="flex justify-between items-center">
-                                    <Label>Answer Options</Label>
-                                    {question.question_type !== 'true_false' && (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => addOption(questionIndex)}
-                                      >
-                                        <Plus className="w-3 h-3 mr-2" />
-                                        Add Option
-                                      </Button>
-                                    )}
-                                  </div>
-
-                                   <div className="space-y-3">
-                                     {question.question_type === 'single_choice' || question.question_type === 'true_false' ? (
-                                       <RadioGroup
-                                         value={question.options.find(opt => opt.is_correct)?.id || ''}
-                                         onValueChange={(value) => {
-                                           const optionIndex = question.options.findIndex(opt => opt.id === value);
-                                           if (optionIndex !== -1) {
-                                             updateOption(questionIndex, optionIndex, { is_correct: true });
-                                           }
-                                         }}
-                                         className="space-y-2"
-                                       >
-                                         {question.options.map((option, optionIndex) => (
-                                           <div key={option.id} className="flex items-center space-x-3">
-                                             <div className="flex items-center space-x-2">
-                                               <RadioGroupItem 
-                                                 value={option.id} 
-                                                 id={`${question.id}-option-${optionIndex}`}
-                                                 className="mt-1"
-                                               />
-                                               <Label 
-                                                 htmlFor={`${question.id}-option-${optionIndex}`}
-                                                 className="sr-only"
-                                               >
-                                                 Option {optionIndex + 1}
-                                               </Label>
-                                             </div>
-                                             <Input
-                                               value={option.option_text}
-                                               onChange={(e) =>
-                                                 updateOption(questionIndex, optionIndex, { option_text: e.target.value })
-                                               }
-                                               placeholder="Enter option text..."
-                                               className="flex-1"
-                                               disabled={question.question_type === 'true_false'}
-                                               aria-label={`Option ${optionIndex + 1} text`}
-                                             />
-                                             {question.question_type !== 'true_false' && question.options.length > 2 && (
-                                               <Button
-                                                 variant="ghost"
-                                                 size="sm"
-                                                 onClick={() => removeOption(questionIndex, optionIndex)}
-                                                 aria-label={`Remove option ${optionIndex + 1}`}
-                                               >
-                                                 <X className="w-4 h-4" />
-                                               </Button>
-                                             )}
-                                           </div>
-                                         ))}
-                                       </RadioGroup>
-                                     ) : (
-                                       question.options.map((option, optionIndex) => (
-                                         <div key={option.id} className="flex items-center space-x-3">
-                                           <div className="flex items-center space-x-2">
-                                             <Checkbox
-                                               checked={option.is_correct}
-                                               onCheckedChange={(checked) =>
-                                                 updateOption(questionIndex, optionIndex, { is_correct: !!checked })
-                                               }
-                                               id={`${question.id}-checkbox-${optionIndex}`}
-                                               className="mt-1"
-                                             />
-                                             <Label 
-                                               htmlFor={`${question.id}-checkbox-${optionIndex}`}
-                                               className="sr-only"
-                                             >
-                                               Option {optionIndex + 1}
-                                             </Label>
-                                           </div>
-                                           <Input
-                                             value={option.option_text}
-                                             onChange={(e) =>
-                                               updateOption(questionIndex, optionIndex, { option_text: e.target.value })
-                                             }
-                                             placeholder="Enter option text..."
-                                             className="flex-1"
-                                             aria-label={`Option ${optionIndex + 1} text`}
-                                           />
-                                           {question.options.length > 2 && (
-                                             <Button
-                                               variant="ghost"
-                                               size="sm"
-                                               onClick={() => removeOption(questionIndex, optionIndex)}
-                                               aria-label={`Remove option ${optionIndex + 1}`}
-                                             >
-                                               <X className="w-4 h-4" />
-                                             </Button>
-                                           )}
-                                         </div>
-                                       ))
-                                     )}
-                                   </div>
-
-                                  {question.question_type === 'single_choice' && (
-                                    <p className="text-xs text-muted-foreground">
-                                      Select one correct answer
-                                    </p>
-                                  )}
-                                  {question.question_type === 'multiple_choice' && (
-                                    <p className="text-xs text-muted-foreground">
-                                      Select all correct answers
-                                    </p>
-                                  )}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Save Quiz Button */}
-                    {questions.length > 0 && (
-                      <div className="pt-4 border-t">
-                        <Button onClick={saveQuiz} disabled={isSaving} className="w-full">
-                          {isSaving ? 'Saving Quiz...' : 'Save Quiz'}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+            </Tabs>
+          </div>
 
           <DialogFooter className="flex justify-between shrink-0">
             <Button 
               variant="link" 
-              onClick={() => setShowDeleteDialog(true)}
+              onClick={() => setDeleteDialogOpen(true)}
               className="text-destructive hover:text-destructive p-0 h-auto font-normal"
             >
               <Trash2 className="w-4 h-4 mr-2" />
@@ -893,9 +273,9 @@ export const EditVideoModal = ({
               </Button>
               <Button 
                 onClick={handleSave} 
-                disabled={!hasChanges || isSaving}
+                disabled={!hasChanges || loading}
               >
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                {loading ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </DialogFooter>
@@ -903,7 +283,7 @@ export const EditVideoModal = ({
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Video</AlertDialogTitle>

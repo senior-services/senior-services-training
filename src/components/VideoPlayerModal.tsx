@@ -11,7 +11,6 @@ interface VideoPlayerModalProps {
     description?: string;
     type: string;
     assigned_to: number;
-    has_quiz: boolean;
     video_url?: string | null;
     video_file_name?: string | null;
     thumbnail_url?: string | null;
@@ -121,11 +120,6 @@ export const VideoPlayerModal = ({ open, onOpenChange, video }: VideoPlayerModal
                 <Users className="w-4 h-4" />
                 <span>Assigned to {video.assigned_to} employees</span>
               </div>
-              {video.has_quiz && (
-                <Badge variant="secondary">
-                  Quiz Available
-                </Badge>
-              )}
             </div>
 
             {video.description && (

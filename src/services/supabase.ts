@@ -105,7 +105,6 @@ export const videoService = {
           video_url: videoData.video_url,
           video_file_name: videoData.video_file_name,
           type: videoData.type,
-          has_quiz: videoData.has_quiz,
           assigned_to: 0, // Default value
           completion_rate: 0, // Default value
         })

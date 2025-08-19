@@ -39,7 +39,6 @@ export interface Video {
   type: VideoType;
   assigned_to: number;
   completion_rate: number;
-  has_quiz: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -114,7 +113,6 @@ export interface VideoCreateData extends VideoUpdateData {
   video_url?: string;
   video_file_name?: string;
   type: VideoType;
-  has_quiz: boolean;
 }
 
 // API response types

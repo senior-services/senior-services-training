@@ -352,19 +352,6 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                         </span>
                       </TableCell>
 
-                      {/* Quiz indicator */}
-                      <TableCell className="text-center">
-                        {video.has_quiz ? (
-                          <Badge variant="secondary" aria-label="Has quiz">
-                            Yes
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground" aria-label="No quiz">
-                            No
-                          </span>
-                        )}
-                      </TableCell>
-
                       {/* Action buttons */}
                       <TableCell className="text-right">
                         <div 

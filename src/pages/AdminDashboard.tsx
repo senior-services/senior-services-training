@@ -46,7 +46,6 @@ type VideoData = {
   type: string;
   assigned_to: number;
   completion_rate: number;
-  has_quiz: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -160,8 +159,7 @@ const [isDeleting, setIsDeleting] = useState(false);
           description: videoData.description,
           video_url: videoData.url,
           video_file_name: videoData.file?.name,
-          type: 'Optional', // Default type, can be updated later
-          has_quiz: false // Default value, can be updated later
+          type: 'Optional' // Default type, can be updated later
         });
 
       if (error) {
@@ -367,18 +365,17 @@ const [isDeleting, setIsDeleting] = useState(false);
               <Card>
                 <CardContent className="p-0">
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead className="text-center">Assigned To</TableHead>
-                        <TableHead className="text-center">Quiz</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Title</TableHead>
+                            <TableHead className="text-center">Assigned To</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
                     <TableBody>
                       {loading ? (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                          <TableCell colSpan={3} className="text-center py-12 text-muted-foreground">
                             <div className="space-y-2">
                               <p>Loading videos...</p>
                               <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -387,7 +384,7 @@ const [isDeleting, setIsDeleting] = useState(false);
                         </TableRow>
                       ) : videos.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-12">
+                          <TableCell colSpan={3} className="text-center py-12">
                             <div className="space-y-3">
                               <Video className="w-12 h-12 text-muted-foreground mx-auto" />
                               <div>
@@ -514,13 +511,6 @@ const [isDeleting, setIsDeleting] = useState(false);
                               </div>
                             </TableCell>
                             <TableCell className="text-center">{video.assigned_to}</TableCell>
-                            <TableCell className="text-center">
-                              {video.has_quiz ? (
-                                <Badge variant="secondary">Yes</Badge>
-                              ) : (
-                                <span className="text-muted-foreground">No</span>
-                              )}
-                            </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end space-x-2">
                                 <Button 

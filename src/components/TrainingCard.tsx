@@ -15,7 +15,6 @@ export interface TrainingVideo {
   isRequired?: boolean;
   deadline?: string;
   status?: 'overdue' | 'warning' | 'upcoming' | 'completed';
-  hasQuiz?: boolean;
 }
 
 interface TrainingCardProps {
@@ -120,12 +119,6 @@ export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) =>
             </div>
           )}
         </div>
-
-        {video.hasQuiz && (
-          <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-            📝 Quiz required after completion
-          </div>
-        )}
       </CardContent>
 
       <CardFooter>

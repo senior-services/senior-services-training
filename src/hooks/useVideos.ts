@@ -137,7 +137,6 @@ export const useVideos = (): UseVideosReturn => {
         type: 'Optional',
         assigned_to: 0,
         completion_rate: 0,
-        has_quiz: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -150,8 +149,7 @@ export const useVideos = (): UseVideosReturn => {
         description: videoData.description,
         video_url: videoData.url,
         video_file_name: videoData.file?.name,
-        type: 'Optional',
-        has_quiz: false,
+        type: 'Optional'
       });
 
       if (result.success && result.data) {
