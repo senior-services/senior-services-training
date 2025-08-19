@@ -752,7 +752,7 @@ export const EditVideoModal = ({
                                     )}
                                   </div>
 
-                                   <div className="space-y-2">
+                                   <div className="space-y-3">
                                      {question.question_type === 'single_choice' || question.question_type === 'true_false' ? (
                                        <RadioGroup
                                          value={question.options.find(opt => opt.is_correct)?.id || ''}
@@ -762,10 +762,23 @@ export const EditVideoModal = ({
                                              updateOption(questionIndex, optionIndex, { is_correct: true });
                                            }
                                          }}
+                                         className="space-y-2"
                                        >
                                          {question.options.map((option, optionIndex) => (
-                                           <div key={option.id} className="flex items-center space-x-2">
-                                             <RadioGroupItem value={option.id} id={option.id} />
+                                           <div key={option.id} className="flex items-center space-x-3">
+                                             <div className="flex items-center space-x-2">
+                                               <RadioGroupItem 
+                                                 value={option.id} 
+                                                 id={`${question.id}-option-${optionIndex}`}
+                                                 className="mt-1"
+                                               />
+                                               <Label 
+                                                 htmlFor={`${question.id}-option-${optionIndex}`}
+                                                 className="sr-only"
+                                               >
+                                                 Option {optionIndex + 1}
+                                               </Label>
+                                             </div>
                                              <Input
                                                value={option.option_text}
                                                onChange={(e) =>
@@ -774,12 +787,14 @@ export const EditVideoModal = ({
                                                placeholder="Enter option text..."
                                                className="flex-1"
                                                disabled={question.question_type === 'true_false'}
+                                               aria-label={`Option ${optionIndex + 1} text`}
                                              />
                                              {question.question_type !== 'true_false' && question.options.length > 2 && (
                                                <Button
                                                  variant="ghost"
                                                  size="sm"
                                                  onClick={() => removeOption(questionIndex, optionIndex)}
+                                                 aria-label={`Remove option ${optionIndex + 1}`}
                                                >
                                                  <X className="w-4 h-4" />
                                                </Button>
@@ -789,13 +804,23 @@ export const EditVideoModal = ({
                                        </RadioGroup>
                                      ) : (
                                        question.options.map((option, optionIndex) => (
-                                         <div key={option.id} className="flex items-center space-x-2">
-                                           <Checkbox
-                                             checked={option.is_correct}
-                                             onCheckedChange={(checked) =>
-                                               updateOption(questionIndex, optionIndex, { is_correct: !!checked })
-                                             }
-                                           />
+                                         <div key={option.id} className="flex items-center space-x-3">
+                                           <div className="flex items-center space-x-2">
+                                             <Checkbox
+                                               checked={option.is_correct}
+                                               onCheckedChange={(checked) =>
+                                                 updateOption(questionIndex, optionIndex, { is_correct: !!checked })
+                                               }
+                                               id={`${question.id}-checkbox-${optionIndex}`}
+                                               className="mt-1"
+                                             />
+                                             <Label 
+                                               htmlFor={`${question.id}-checkbox-${optionIndex}`}
+                                               className="sr-only"
+                                             >
+                                               Option {optionIndex + 1}
+                                             </Label>
+                                           </div>
                                            <Input
                                              value={option.option_text}
                                              onChange={(e) =>
@@ -803,12 +828,14 @@ export const EditVideoModal = ({
                                              }
                                              placeholder="Enter option text..."
                                              className="flex-1"
+                                             aria-label={`Option ${optionIndex + 1} text`}
                                            />
                                            {question.options.length > 2 && (
                                              <Button
                                                variant="ghost"
                                                size="sm"
                                                onClick={() => removeOption(questionIndex, optionIndex)}
+                                               aria-label={`Remove option ${optionIndex + 1}`}
                                              >
                                                <X className="w-4 h-4" />
                                              </Button>
