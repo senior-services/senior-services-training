@@ -8,56 +8,56 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
 
 @layer base {
   :root {
-    /* Brand Colors - Senior Services Blue Palette */
+    /* Enhanced Accessibility Colors for Senior Users - Higher Contrast */
     --background: 0 0% 100%;
-    --foreground: 215 25% 27%;
+    --foreground: 215 25% 15%; /* Darker for better contrast */
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 215 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 215 25% 15%;
 
-    /* Primary: Deep Professional Blue */
-    --primary: 219 79% 26%;
+    /* Primary: Deep Professional Blue - Enhanced Contrast */
+    --primary: 219 79% 22%; /* Darker for better contrast */
     --primary-foreground: 0 0% 100%;
-    --primary-light: 219 79% 35%;
-    --primary-dark: 219 79% 20%;
+    --primary-light: 219 79% 30%;
+    --primary-dark: 219 79% 16%;
 
-    /* Secondary: Light Blue Accent */
-    --secondary: 206 73% 65%;
-    --secondary-foreground: 219 79% 26%;
+    /* Secondary: More Contrast */
+    --secondary: 206 73% 55%; /* Darker for better contrast */
+    --secondary-foreground: 0 0% 100%; /* White text for better readability */
 
-    /* Muted: Subtle Blue-Grays */
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
+    /* Muted: Higher Contrast for Senior Vision */
+    --muted: 210 20% 93%; /* Less subtle background */
+    --muted-foreground: 215 25% 35%; /* Much darker for better readability */
 
     /* Accent: Success Green & Warning Colors */
-    --accent: 206 73% 65%;
-    --accent-foreground: 219 79% 26%;
+    --accent: 206 73% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Status Colors */
-    --success: 142 76% 36%;
+    /* Status Colors - Enhanced Contrast */
+    --success: 142 76% 30%; /* Darker for better contrast */
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 38 92% 45%; /* Darker for better contrast */
     --warning-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --destructive: 0 84% 50%; /* Darker for better contrast */
     --destructive-foreground: 0 0% 100%;
 
-    /* UI Elements */
-    --border: 210 20% 80%;
-    --input: 210 20% 94%;
-    --ring: 219 79% 26%;
+    /* UI Elements - Stronger Borders and Inputs */
+    --border: 210 20% 65%; /* Much darker border for visibility */
+    --input: 210 20% 90%; /* Slightly darker input background */
+    --ring: 219 79% 22%;
 
     --radius: 0.75rem;
 
-    /* Progress & Training Status Colors */
-    --progress-bg: 210 20% 94%;
-    --progress-fill: 219 79% 26%;
-    --deadline-overdue: 0 84% 60%;
-    --deadline-warning: 38 92% 50%;
-    --deadline-upcoming: 215 16% 47%;
-    --deadline-completed: 142 76% 36%;
+    /* Progress & Training Status Colors - Enhanced Contrast */
+    --progress-bg: 210 20% 88%; /* Darker background for better visibility */
+    --progress-fill: 219 79% 22%; /* Match new primary color */
+    --deadline-overdue: 0 84% 50%; /* Match new destructive color */
+    --deadline-warning: 38 92% 45%; /* Match new warning color */
+    --deadline-upcoming: 215 25% 35%; /* Match new muted-foreground */
+    --deadline-completed: 142 76% 30%; /* Match new success color */
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
@@ -76,47 +76,47 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   }
 
   .dark {
-    /* Dark mode with professional blue tones */
-    --background: 219 79% 8%;
-    --foreground: 210 20% 96%;
+    /* Enhanced Dark Mode for Senior Accessibility - Higher Contrast */
+    --background: 219 79% 6%; /* Darker background for better contrast */
+    --foreground: 210 20% 98%; /* Brighter text for better readability */
 
-    --card: 219 79% 12%;
-    --card-foreground: 210 20% 96%;
+    --card: 219 79% 10%; /* Darker cards */
+    --card-foreground: 210 20% 98%;
 
-    --popover: 219 79% 12%;
-    --popover-foreground: 210 20% 96%;
+    --popover: 219 79% 10%;
+    --popover-foreground: 210 20% 98%;
 
-    --primary: 206 73% 65%;
-    --primary-foreground: 219 79% 8%;
-    --primary-light: 206 73% 75%;
-    --primary-dark: 206 73% 55%;
+    --primary: 206 73% 70%; /* Brighter primary in dark mode */
+    --primary-foreground: 219 79% 6%;
+    --primary-light: 206 73% 80%;
+    --primary-dark: 206 73% 60%;
 
-    --secondary: 219 79% 20%;
-    --secondary-foreground: 210 20% 96%;
+    --secondary: 219 79% 25%; /* Higher contrast secondary */
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 219 79% 15%;
-    --muted-foreground: 215 16% 65%;
+    --muted: 219 79% 12%; /* Darker muted background */
+    --muted-foreground: 215 16% 75%; /* Brighter muted text */
 
-    --accent: 206 73% 65%;
-    --accent-foreground: 219 79% 8%;
+    --accent: 206 73% 70%;
+    --accent-foreground: 219 79% 6%;
 
-    --success: 142 76% 45%;
-    --success-foreground: 219 79% 8%;
-    --warning: 38 92% 60%;
-    --warning-foreground: 219 79% 8%;
-    --destructive: 0 84% 70%;
-    --destructive-foreground: 219 79% 8%;
+    --success: 142 76% 55%; /* Brighter for dark mode visibility */
+    --success-foreground: 219 79% 6%;
+    --warning: 38 92% 65%; /* Brighter warning */
+    --warning-foreground: 219 79% 6%;
+    --destructive: 0 84% 75%; /* Brighter destructive */
+    --destructive-foreground: 219 79% 6%;
 
-    --border: 219 79% 30%;
-    --input: 219 79% 18%;
-    --ring: 206 73% 65%;
-    /* Dark mode progress & status colors */
-    --progress-bg: 219 79% 15%;
-    --progress-fill: 206 73% 65%;
-    --deadline-overdue: 0 84% 70%;
-    --deadline-warning: 38 92% 60%;
-    --deadline-upcoming: 215 16% 65%;
-    --deadline-completed: 142 76% 50%;
+    --border: 219 79% 35%; /* More visible borders in dark mode */
+    --input: 219 79% 15%; /* Darker input with better contrast */
+    --ring: 206 73% 70%;
+    /* Dark mode progress & status colors - Enhanced */
+    --progress-bg: 219 79% 12%;
+    --progress-fill: 206 73% 70%;
+    --deadline-overdue: 0 84% 75%;
+    --deadline-warning: 38 92% 65%;
+    --deadline-upcoming: 215 16% 75%;
+    --deadline-completed: 142 76% 55%;
 
     /* Dark gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
@@ -137,11 +137,37 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-sans antialiased text-base leading-relaxed;
+    /* Enhanced base font size for seniors - minimum 16px */
+    font-size: 1rem;
+    line-height: 1.6;
   }
 
+  /* Enhanced Typography for Senior Users */
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
+    line-height: 1.3; /* Improved line height for readability */
+  }
+
+  h1 { font-size: 2.25rem; } /* 36px - larger headers */
+  h2 { font-size: 1.875rem; } /* 30px */
+  h3 { font-size: 1.5rem; } /* 24px */
+  h4 { font-size: 1.25rem; } /* 20px */
+  h5 { font-size: 1.125rem; } /* 18px */
+  h6 { font-size: 1rem; } /* 16px */
+
+  /* Improved button and interactive element sizing */
+  button, .btn {
+    min-height: 44px; /* Minimum touch target size for seniors */
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  /* Enhanced input sizing */
+  input, textarea, select {
+    min-height: 44px;
+    font-size: 1rem;
+    border-width: 2px; /* Thicker borders for better visibility */
   }
 
   .progress-bar {
@@ -157,7 +183,10 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   }
 
   .status-badge {
-    @apply px-2 py-1 rounded-md text-xs font-medium;
+    @apply px-3 py-2 rounded-md text-sm font-semibold; /* Larger badges for better visibility */
+    min-height: 32px; /* Ensure adequate size */
+    border-width: 1px;
+    border-style: solid;
   }
 
   .status-overdue {

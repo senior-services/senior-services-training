@@ -18,6 +18,32 @@ export default {
 			}
 		},
 		extend: {
+			fontSize: {
+				/* Enhanced font sizes for senior accessibility */
+				'xs': ['0.875rem', { lineHeight: '1.5' }], /* 14px */
+				'sm': ['0.9375rem', { lineHeight: '1.5' }], /* 15px - larger than default */
+				'base': ['1rem', { lineHeight: '1.6' }], /* 16px - minimum for seniors */
+				'lg': ['1.125rem', { lineHeight: '1.6' }], /* 18px */
+				'xl': ['1.25rem', { lineHeight: '1.5' }], /* 20px */
+				'2xl': ['1.5rem', { lineHeight: '1.4' }], /* 24px */
+				'3xl': ['1.875rem', { lineHeight: '1.3' }], /* 30px */
+				'4xl': ['2.25rem', { lineHeight: '1.2' }], /* 36px */
+				'5xl': ['3rem', { lineHeight: '1.1' }], /* 48px */
+				'6xl': ['3.75rem', { lineHeight: '1' }], /* 60px */
+			},
+			spacing: {
+				/* Enhanced spacing for better touch targets */
+				'18': '4.5rem', /* 72px */
+				'22': '5.5rem', /* 88px */
+				'26': '6.5rem', /* 104px */
+				'30': '7.5rem', /* 120px */
+			},
+			minHeight: {
+				/* Minimum sizes for accessibility */
+				'touch': '2.75rem', /* 44px - minimum touch target */
+				'button': '2.75rem', /* 44px */
+				'input': '2.75rem', /* 44px */
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
