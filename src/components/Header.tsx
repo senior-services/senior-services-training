@@ -24,7 +24,8 @@ export const Header = ({ userRole, userName, userEmail, overallProgress, onLogou
             <img 
               src="/lovable-uploads/004b8e9d-75f8-4dc3-a163-f517428d9881.png" 
               alt="Senior Services for South Sound" 
-              className="h-12 w-auto object-contain"
+              className="h-12 w-auto object-cover"
+              style={{ objectPosition: 'left center' }}
             />
             <div>
               <h1 className="text-xl font-bold text-primary">
