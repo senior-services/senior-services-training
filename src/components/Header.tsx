@@ -13,7 +13,7 @@ interface HeaderProps {
 }
 
 export const Header = ({ userRole, userName, userEmail, overallProgress, onLogout }: HeaderProps) => {
-  const subtitle = userRole === 'admin' ? 'Administrator Portal' : 'Employee Portal';
+  const subtitle = userRole === 'admin' ? 'Administrator Dashboard' : 'Employee Portal';
 
   return (
     <header className="bg-background border-b border-border shadow-sm">
