@@ -190,24 +190,7 @@ export const EmployeeManagement: React.FC = () => {
                     >
                       <div className="flex items-center justify-between w-full pr-4">
                         <div className="flex items-center gap-4">
-                          <div>
-                            <div className="font-medium text-left">
-                              {employee.full_name || 'Unknown'}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Mail className="w-3 h-3" />
-                              {employee.email}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-4">
-                          <div className="text-center">
-                            <Badge variant="secondary">
-                              {employee.assigned_videos_count || 0} videos
-                            </Badge>
-                          </div>
-                          
+                          {/* Action buttons on left */}
                           <div className="flex gap-2">
                             <Button
                               variant="outline"
@@ -232,6 +215,25 @@ export const EmployeeManagement: React.FC = () => {
                               <Trash2 className="w-4 h-4" />
                               <span className="sr-only">Delete Employee</span>
                             </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Employee info in center/right */}
+                        <div className="flex items-center gap-4 flex-1 ml-4">
+                          <div className="flex-1">
+                            <div className="font-medium text-left">
+                              {employee.full_name || 'Unknown'}
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Mail className="w-3 h-3" />
+                              {employee.email}
+                            </div>
+                          </div>
+                          
+                          <div className="text-center">
+                            <Badge variant="secondary">
+                              {employee.assigned_videos_count || 0} videos
+                            </Badge>
                           </div>
                         </div>
                       </div>
