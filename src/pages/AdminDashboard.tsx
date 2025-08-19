@@ -295,9 +295,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
                   <TableHeader>
                     <TableRow>
                       <TableHead>Title</TableHead>
-                      <TableHead>Type</TableHead>
                       <TableHead className="text-center">Assigned To</TableHead>
-                      <TableHead className="text-center">Completion Rate</TableHead>
                       <TableHead className="text-center">Quiz</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -305,7 +303,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                        <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
                           <div className="space-y-2">
                             <p>Loading videos...</p>
                             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -314,7 +312,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
                       </TableRow>
                     ) : videos.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-12">
+                        <TableCell colSpan={4} className="text-center py-12">
                           <div className="space-y-3">
                             <Video className="w-12 h-12 text-muted-foreground mx-auto" />
                             <div>
@@ -336,13 +334,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
                       videos.map((video) => (
                         <TableRow key={video.id}>
                           <TableCell className="font-medium">{video.title}</TableCell>
-                          <TableCell>
-                            <Badge variant={video.type === 'Required' ? 'default' : 'outline'}>
-                              {video.type}
-                            </Badge>
-                          </TableCell>
                           <TableCell className="text-center">{video.assigned_to}</TableCell>
-                          <TableCell className="text-center">{video.completion_rate}%</TableCell>
                           <TableCell className="text-center">
                             {video.has_quiz ? (
                               <Badge variant="secondary">Yes</Badge>
@@ -352,9 +344,6 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end space-x-2">
-                              <Button variant="outline" size="sm">
-                                <Eye className="w-4 h-4" />
-                              </Button>
                               <Button variant="outline" size="sm">
                                 <Edit className="w-4 h-4" />
                               </Button>
