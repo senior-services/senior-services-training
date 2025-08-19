@@ -153,10 +153,22 @@ const [isDeleting, setIsDeleting] = useState(false);
   const handleAddVideo = async (videoData: VideoFormData): Promise<void> => {
     try {
       let insertedError: any = null;
+      let thumbnailUrl: string | null = null;
 
-      // If a file is provided, upload it to Supabase Storage and insert record with file name
+      // If a file is provided, upload it to Supabase Storage and generate thumbnail
       if (videoData.file) {
         const fileName = `${Date.now()}-${videoData.file.name}`;
+        
+        // Generate thumbnail from video
+        try {
+          const { generateVideoThumbnail, uploadThumbnail } = await import('@/utils/videoThumbnail');
+          const thumbnailBase64 = await generateVideoThumbnail(videoData.file, 1);
+          thumbnailUrl = await uploadThumbnail(thumbnailBase64, `${Date.now()}-thumbnail.jpg`);
+        } catch (thumbnailError) {
+          console.warn('Failed to generate thumbnail:', thumbnailError);
+          // Continue without thumbnail - not a critical error
+        }
+
         const { error: uploadError } = await supabase.storage
           .from('videos')
           .upload(fileName, videoData.file);
@@ -178,6 +190,7 @@ const [isDeleting, setIsDeleting] = useState(false);
             description: videoData.description,
             video_url: null,
             video_file_name: fileName,
+            thumbnail_url: thumbnailUrl,
             type: 'Optional'
           });
         insertedError = error;
@@ -190,6 +203,7 @@ const [isDeleting, setIsDeleting] = useState(false);
             description: videoData.description,
             video_url: videoData.url,
             video_file_name: null,
+            thumbnail_url: null,
             type: 'Optional'
           });
         insertedError = error;
@@ -485,6 +499,13 @@ const [isDeleting, setIsDeleting] = useState(false);
                                             if (fallback) fallback.classList.remove('hidden');
                                           }}
                                         />
+                                      );
+                                    } else if (video.video_file_name) {
+                                      // For uploaded videos without thumbnails, show colored placeholder
+                                      return (
+                                        <div className={`absolute inset-0 flex items-center justify-center ${generateThumbnailColor(video.title)}`}>
+                                          <Play className="w-4 h-4 text-white" />
+                                        </div>
                                       );
                                     }
                                     // For all other cases (uploaded files, other URLs, no source), show the colored placeholder
