@@ -112,30 +112,48 @@ export const AddVideoModal = ({
               <TabsContent value="file" className="space-y-2 mt-3">
                 <Label>Upload Video File</Label>
                 
-                {/* Drag & Drop Area */}
-                <div onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave} className={cn("border-2 border-dashed rounded-lg p-3 cursor-pointer transition-all duration-300", selectedFile ? "border-success bg-success/10 hover:bg-success/15" : isDragOver ? "border-primary bg-primary/10" : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50")}>
-                  <div className="flex items-center space-x-4">
-                    {selectedFile ? <CheckCircle className="w-6 h-6 text-success flex-shrink-0" /> : <FileVideo className={cn("w-6 h-6 flex-shrink-0 transition-colors", isDragOver ? "text-primary" : "text-muted-foreground")} />}
-                    
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">
-                        {selectedFile ? "Video uploaded successfully!" : isDragOver ? "Drop video file here" : "Drag & drop video file here"}
-                      </p>
-                      {!selectedFile && <p className="text-xs text-muted-foreground">
+                {/* Drag & Drop Area - only show when no file selected */}
+                {!selectedFile && (
+                  <div onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave} className={cn("border-2 border-dashed rounded-lg p-3 cursor-pointer transition-all duration-300", isDragOver ? "border-primary bg-primary/10" : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50")}>
+                    <div className="flex items-center space-x-4">
+                      <FileVideo className={cn("w-6 h-6 flex-shrink-0 transition-colors", isDragOver ? "text-primary" : "text-muted-foreground")} />
+                      
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">
+                          {isDragOver ? "Drop video file here" : "Drag & drop video file here"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
                           or click to browse files
-                        </p>}
-                    </div>
-                    
-                    <Input type="file" accept="video/*" onChange={handleFileChange} className="hidden" id="fileInput" />
-                    
-                    {!selectedFile && <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('fileInput')?.click()} className="flex-shrink-0">
+                        </p>
+                      </div>
+                      
+                      <Input type="file" accept="video/*" onChange={handleFileChange} className="hidden" id="fileInput" />
+                      
+                      <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('fileInput')?.click()} className="flex-shrink-0">
                         <Upload className="w-4 h-4 mr-2" />
                         Browse Files
-                      </Button>}
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {selectedFile && <div className="flex items-center justify-between p-3 bg-success/5 border border-success/20 rounded-lg">
+                {/* Success message - only show when file selected */}
+                {selectedFile && (
+                  <div className="border-2 border-dashed border-success rounded-lg p-3 bg-success/10">
+                    <div className="flex items-center space-x-4">
+                      <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-success">
+                          Video uploaded successfully!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* File details - only show when file selected */}
+                {selectedFile && (
+                  <div className="flex items-center justify-between p-3 bg-success/5 border border-success/20 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div className="p-1.5 bg-success/10 rounded-lg">
                         <FileVideo className="w-4 h-4 text-success" />
@@ -153,7 +171,8 @@ export const AddVideoModal = ({
                         <X className="w-4 h-4" />
                       </Button>
                     </div>
-                  </div>}
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="url" className="space-y-2 mt-4">
