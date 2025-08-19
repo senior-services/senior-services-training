@@ -35,6 +35,7 @@ export interface Video {
   description: string | null;
   video_url: string | null;
   video_file_name: string | null;
+  thumbnail_url?: string | null;
   type: VideoType;
   assigned_to: number;
   completion_rate: number;

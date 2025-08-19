@@ -219,18 +219,51 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       <TableCell>
                         <div className="flex items-center gap-3">
                           {/* Video thumbnail */}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                              'w-16 h-10 rounded-md p-0 flex items-center justify-center hover:opacity-80 transition-opacity',
-                              generateThumbnailColor(video.title)
-                            )}
-                            onClick={() => handleVideoAction('Play video', video, () => onPlay(video))}
-                            aria-label={`Play video: ${video.title}`}
-                          >
-                            <Play className="w-4 h-4 text-white" aria-hidden="true" />
-                          </Button>
+                          <div className="relative w-16 h-10 rounded-md overflow-hidden bg-muted">
+                            {video.thumbnail_url ? (
+                              <img 
+                                src={video.thumbnail_url}
+                                alt={`${video.title} thumbnail`}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  // Fallback to colored placeholder if image fails to load
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                            ) : video.video_url ? (
+                              <video 
+                                className="w-full h-full object-cover"
+                                preload="metadata"
+                                muted
+                                onError={(e) => {
+                                  // Fallback to colored placeholder if video fails to load
+                                  const target = e.target as HTMLVideoElement;
+                                  target.style.display = 'none';
+                                  target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              >
+                                <source src={video.video_url} type="video/mp4" />
+                              </video>
+                            ) : null}
+                            <div 
+                              className={cn(
+                                'absolute inset-0 flex items-center justify-center',
+                                generateThumbnailColor(video.title),
+                                video.thumbnail_url || video.video_url ? 'hidden' : ''
+                              )}
+                            >
+                              <Play className="w-4 h-4 text-white" aria-hidden="true" />
+                            </div>
+                            <button
+                              onClick={() => handleVideoAction('Play video', video, () => onPlay(video))}
+                              aria-label={`Play video: ${video.title}`}
+                              className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center group"
+                            >
+                              <Play className="w-3 h-3 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </button>
+                          </div>
                           
                           {/* Video info */}
                           <div className="flex-1 min-w-0">

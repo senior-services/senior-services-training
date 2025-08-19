@@ -14,6 +14,7 @@ export interface VideoData {
   description: string | null;
   video_url: string | null;
   video_file_name: string | null;
+  thumbnail_url?: string | null;
   type: string;
   has_quiz: boolean;
   assigned_to: number;
@@ -116,9 +117,38 @@ export const EditVideoModal = ({
             {/* Video Preview Section */}
             <div className="space-y-3">
               <Label>Video Preview</Label>
-              <div className="border border-border rounded-lg p-4 bg-muted/30">
-                {isYouTubeUrl ? (
-                  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+              <div className="border border-border rounded-lg overflow-hidden bg-muted/30">
+                {video.thumbnail_url ? (
+                  <div className="relative aspect-video bg-black">
+                    <img 
+                      src={video.thumbnail_url}
+                      alt={`${video.title} thumbnail`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <Button 
+                        variant="secondary" 
+                        size="lg"
+                        onClick={() => video.video_url && window.open(video.video_url, '_blank')}
+                        className="rounded-full"
+                      >
+                        <Play className="w-6 h-6" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : video.video_url && !isYouTubeUrl && !isDriveUrl ? (
+                  <div className="relative aspect-video bg-black">
+                    <video 
+                      className="w-full h-full object-cover"
+                      controls
+                      preload="metadata"
+                    >
+                      <source src={video.video_url} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                ) : isYouTubeUrl ? (
+                  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center p-4">
                     <div className="text-center space-y-2">
                       <Play className="w-8 h-8 text-muted-foreground mx-auto" />
                       <p className="text-sm text-muted-foreground">YouTube Video</p>
@@ -138,7 +168,7 @@ export const EditVideoModal = ({
                     </div>
                   </div>
                 ) : isDriveUrl ? (
-                  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center p-4">
                     <div className="text-center space-y-2">
                       <FileVideo className="w-8 h-8 text-muted-foreground mx-auto" />
                       <p className="text-sm text-muted-foreground">Google Drive Video</p>
@@ -158,7 +188,7 @@ export const EditVideoModal = ({
                     </div>
                   </div>
                 ) : isFileUpload ? (
-                  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center p-4">
                     <div className="text-center space-y-2">
                       <FileVideo className="w-8 h-8 text-muted-foreground mx-auto" />
                       <p className="text-sm text-muted-foreground">Uploaded Video File</p>
@@ -168,7 +198,7 @@ export const EditVideoModal = ({
                     </div>
                   </div>
                 ) : (
-                  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center p-4">
                     <div className="text-center space-y-2">
                       <FileVideo className="w-8 h-8 text-muted-foreground mx-auto" />
                       <p className="text-sm text-muted-foreground">Video source not available</p>
