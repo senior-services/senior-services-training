@@ -12,6 +12,7 @@ import { VideoPlayerModal } from "@/components/VideoPlayerModal";
 import { EmployeeManagement } from "@/components/dashboard/EmployeeManagement";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+// Fixed duplicate import issue - force cache refresh
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
