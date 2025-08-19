@@ -25,7 +25,8 @@ import {
   Mail, 
   Users, 
   Video as VideoIcon,
-  Trash2
+  Trash2,
+  Edit
 } from 'lucide-react';
 import { EmployeeService } from '@/services/employeeService';
 import type { EmployeeWithAssignments, Employee } from '@/types/employee';
@@ -191,8 +192,8 @@ export const EmployeeManagement: React.FC = () => {
                             size="sm"
                             onClick={() => handleAssignVideos(employee)}
                           >
-                            <VideoIcon className="w-4 h-4" />
-                            <span className="sr-only">Assign Videos</span>
+                            <Edit className="w-4 h-4" />
+                            <span className="sr-only">Edit Video Assignments</span>
                           </Button>
                           <Button
                             variant="outline"
