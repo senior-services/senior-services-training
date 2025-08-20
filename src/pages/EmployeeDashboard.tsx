@@ -45,18 +45,23 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
   };
 
   // Transform database videos to TrainingVideo format
-  const transformToTrainingVideo = (video: Video, assignment?: any): TrainingVideo => ({
-    id: video.id,
-    title: video.title || 'Untitled Video',
-    description: video.description || '',
-    thumbnail: video.thumbnail_url || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&h=300&fit=crop',
-    duration: '15 min', // TODO: Add actual duration field to database
-    progress: 0, // TODO: Add progress tracking
-    isRequired: video.type === 'Required',
-    deadline: undefined, // TODO: Add deadline from assignment  
-    dueDate: assignment?.due_date || null, // Pass the actual due date from assignment
-    status: video.video_url ? undefined : 'warning' // Mark videos without URLs as warning
-  });
+  const transformToTrainingVideo = (video: Video, assignment?: any): TrainingVideo => {
+    console.log('Transform video:', video.title, 'Assignment:', assignment);
+    const result = {
+      id: video.id,
+      title: video.title || 'Untitled Video',
+      description: video.description || '',
+      thumbnail: video.thumbnail_url || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&h=300&fit=crop',
+      duration: '15 min', // TODO: Add actual duration field to database
+      progress: 0, // TODO: Add progress tracking
+      isRequired: video.type === 'Required',
+      deadline: undefined, // TODO: Add deadline from assignment  
+      dueDate: assignment?.due_date || null, // Pass the actual due date from assignment
+      status: video.video_url ? undefined : ('warning' as const) // Mark videos without URLs as warning
+    };
+    console.log('Transformed video result:', result);
+    return result;
+  };
 
   // Separate videos by type
   const requiredVideos = assignedVideoData
