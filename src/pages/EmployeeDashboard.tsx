@@ -30,12 +30,10 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
   const loadAssignedVideos = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Loading assigned videos for:', userEmail);
       const videoData = await EmployeeService.getAssignedVideosByEmail(userEmail);
-      console.log('📊 Received video data:', videoData);
       setAssignedVideoData(videoData);
     } catch (error) {
-      console.error('❌ Error loading assigned videos:', error);
+      console.error('Error loading assigned videos:', error);
       toast({
         title: "Error",
         description: "Failed to load your assigned videos",
@@ -47,23 +45,18 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
   };
 
   // Transform database videos to TrainingVideo format
-  const transformToTrainingVideo = (video: Video, assignment?: any): TrainingVideo => {
-    console.log('Transform video:', video.title, 'Assignment:', assignment);
-    const result = {
-      id: video.id,
-      title: video.title || 'Untitled Video',
-      description: video.description || '',
-      thumbnail: video.thumbnail_url || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&h=300&fit=crop',
-      duration: '15 min', // TODO: Add actual duration field to database
-      progress: 0, // TODO: Add progress tracking
-      isRequired: video.type === 'Required',
-      deadline: undefined, // TODO: Add deadline from assignment  
-      dueDate: assignment?.due_date || null, // Pass the actual due date from assignment
-      status: video.video_url ? undefined : ('warning' as const) // Mark videos without URLs as warning
-    };
-    console.log('Transformed video result:', result);
-    return result;
-  };
+  const transformToTrainingVideo = (video: Video, assignment?: any): TrainingVideo => ({
+    id: video.id,
+    title: video.title || 'Untitled Video',
+    description: video.description || '',
+    thumbnail: video.thumbnail_url || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&h=300&fit=crop',
+    duration: '15 min', // TODO: Add actual duration field to database
+    progress: 0, // TODO: Add progress tracking
+    isRequired: video.type === 'Required',
+    deadline: undefined, // TODO: Add deadline from assignment  
+    dueDate: assignment?.due_date || null, // Pass the actual due date from assignment
+    status: video.video_url ? undefined : ('warning' as const) // Mark videos without URLs as warning
+  });
 
   // Separate videos by type
   const requiredVideos = assignedVideoData
@@ -100,29 +93,6 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
           <p className="text-muted-foreground">
             Continue your training journey and stay up to date with the latest best practices.
           </p>
-          
-          {/* TEMPORARY DEBUG INFO */}
-          {!loading && (
-            <div className="mt-4 p-4 bg-yellow-100 border border-yellow-300 rounded-md">
-              <h4 className="font-semibold text-yellow-800">DEBUG INFO (temporary)</h4>
-              <p className="text-sm text-yellow-700">
-                Raw video data count: {assignedVideoData.length}
-              </p>
-              <p className="text-sm text-yellow-700">
-                Required videos: {requiredVideos.length} | Optional videos: {optionalVideos.length}
-              </p>
-              {requiredVideos.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm font-medium text-yellow-800">Sample required video due dates:</p>
-                  {requiredVideos.slice(0, 2).map(video => (
-                    <p key={video.id} className="text-xs text-yellow-600">
-                      {video.title}: dueDate={video.dueDate}, isRequired={String(video.isRequired)}
-                    </p>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
 

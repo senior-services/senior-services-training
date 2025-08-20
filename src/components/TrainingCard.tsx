@@ -27,12 +27,8 @@ interface TrainingCardProps {
 }
 
 export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) => {
-  console.log('TrainingCard received video:', video.title, 'Due date:', video.dueDate);
-  
   // Helper function to get deadline badge props (copied from EmployeeManagement)
   const getDeadlineBadge = (dueDate: string | null, isCompleted: boolean = false) => {
-    console.log('getDeadlineBadge called with:', dueDate, isCompleted);
-    
     if (isCompleted) {
       return {
         variant: "default" as const,
@@ -41,7 +37,6 @@ export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) =>
       };
     }
     if (!dueDate) {
-      console.log('No due date, returning null');
       return null; // Don't show badge if no due date
     }
     
@@ -50,8 +45,6 @@ export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) =>
     const due = new Date(dueDate);
     due.setHours(0, 0, 0, 0);
     const daysUntilDue = differenceInDays(due, today);
-    
-    console.log('Date calculations:', { today, due, daysUntilDue });
     
     if (isPast(due) && daysUntilDue < 0) {
       return {
@@ -67,7 +60,7 @@ export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) =>
         text: "Due in 0 days"
       };
     }
-    if (daysUntilDue <= 9) {
+    if (daysUntilDue <= 30) { // Show badges for dates within 30 days
       return {
         variant: "default" as const,
         className: "bg-gray-700 text-white hover:bg-gray-700",
@@ -81,8 +74,6 @@ export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) =>
   const isCompleted = video.progress === 100;
   const hasStarted = video.progress > 0;
   const badgeProps = getDeadlineBadge(video.dueDate, isCompleted);
-  
-  console.log('Badge props:', badgeProps);
 
   return (
     <Card className={cn('training-card group relative overflow-hidden', className)}>
