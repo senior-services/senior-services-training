@@ -6,7 +6,6 @@ import { Calendar, Clock, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, differenceInDays, isPast } from 'date-fns';
 import videoPlaceholder from "@/assets/video-placeholder.jpg";
-
 export interface TrainingVideo {
   id: string;
   title: string;
@@ -19,16 +18,21 @@ export interface TrainingVideo {
   dueDate?: string | null; // Added due date field
   status?: 'overdue' | 'warning' | 'upcoming' | 'completed';
 }
-
 interface TrainingCardProps {
   video: TrainingVideo;
   onPlay: (videoId: string) => void;
   className?: string;
 }
+export const TrainingCard = ({
+  video,
+  onPlay,
+  className
+}: TrainingCardProps) => {
+  console.log('TrainingCard received video:', video.title, 'Due date:', video.dueDate);
 
-export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) => {
   // Helper function to get deadline badge props (copied from EmployeeManagement)
   const getDeadlineBadge = (dueDate: string | null, isCompleted: boolean = false) => {
+    console.log('getDeadlineBadge called with:', dueDate, isCompleted);
     if (isCompleted) {
       return {
         variant: "default" as const,
@@ -37,15 +41,19 @@ export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) =>
       };
     }
     if (!dueDate) {
+      console.log('No due date, returning null');
       return null; // Don't show badge if no due date
     }
-    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const due = new Date(dueDate);
     due.setHours(0, 0, 0, 0);
     const daysUntilDue = differenceInDays(due, today);
-    
+    console.log('Date calculations:', {
+      today,
+      due,
+      daysUntilDue
+    });
     if (isPast(due) && daysUntilDue < 0) {
       return {
         variant: "default" as const,
@@ -60,61 +68,43 @@ export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) =>
         text: "Due in 0 days"
       };
     }
-    if (daysUntilDue <= 30) { // Show badges for dates within 30 days
+    if (daysUntilDue <= 30) {
+      // Show badges for dates within 30 days
       return {
         variant: "default" as const,
         className: "bg-gray-700 text-white hover:bg-gray-700",
         text: `Due in ${daysUntilDue} days`
       };
     }
-    
     return null; // Don't show badge for far future dates
   };
-
   const isCompleted = video.progress === 100;
   const hasStarted = video.progress > 0;
   const badgeProps = getDeadlineBadge(video.dueDate, isCompleted);
-
-  return (
-    <Card className={cn('training-card group relative overflow-hidden', className)}>
+  console.log('Badge props:', badgeProps);
+  return <Card className={cn('training-card group relative overflow-hidden', className)}>
       {/* Video Thumbnail */}
       <div className="relative">
-        <img 
-          src={video.thumbnail || videoPlaceholder} 
-          alt={video.title}
-          className="w-full h-48 object-cover"
-        />
+        <img src={video.thumbnail || videoPlaceholder} alt={video.title} className="w-full h-48 object-cover" />
         
         {/* Due Date Badge Overlay */}
-        {badgeProps && (
-          <Badge 
-            variant={badgeProps.variant} 
-            className={cn('absolute top-2 right-2 text-xs font-medium shadow-lg z-10', badgeProps.className)}
-          >
+        {badgeProps && <Badge variant={badgeProps.variant} className={cn('absolute top-2 right-2 text-xs font-medium shadow-lg z-10', badgeProps.className)}>
             {badgeProps.text}
-          </Badge>
-        )}
+          </Badge>}
         
         {/* Play Button Overlay */}
         <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <Button
-            size="lg"
-            onClick={() => onPlay(video.id)}
-            className="rounded-full w-16 h-16 bg-white/90 hover:bg-white text-primary hover:text-primary shadow-lg"
-          >
+          <Button size="lg" onClick={() => onPlay(video.id)} className="rounded-full w-16 h-16 bg-white/90 hover:bg-white text-primary hover:text-primary shadow-lg">
             <Play className="w-6 h-6 ml-1" />
           </Button>
         </div>
 
         {/* Progress Overlay */}
-        {hasStarted && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20">
-            <div 
-              className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${video.progress}%` }}
-            />
-          </div>
-        )}
+        {hasStarted && <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20">
+            <div className="h-full bg-primary transition-all duration-300" style={{
+          width: `${video.progress}%`
+        }} />
+          </div>}
       </div>
 
       <CardHeader className="pb-3">
@@ -122,11 +112,7 @@ export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) =>
           <CardTitle className="text-lg leading-tight line-clamp-2">
             {video.title}
           </CardTitle>
-          {video.isRequired && (
-            <Badge variant="secondary" className="shrink-0 text-xs">
-              Required
-            </Badge>
-          )}
+          {video.isRequired}
         </div>
         <CardDescription className="line-clamp-2">
           {video.description}
@@ -150,24 +136,17 @@ export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) =>
             <span>{video.duration}</span>
           </div>
           
-          {video.deadline && (
-            <div className="flex items-center space-x-1">
+          {video.deadline && <div className="flex items-center space-x-1">
               <Calendar className="w-4 h-4" />
               <span>Due {video.deadline}</span>
-            </div>
-          )}
+            </div>}
         </div>
       </CardContent>
 
       <CardFooter>
-        <Button 
-          onClick={() => onPlay(video.id)}
-          className="w-full"
-          variant={isCompleted ? "secondary" : "default"}
-        >
+        <Button onClick={() => onPlay(video.id)} className="w-full" variant={isCompleted ? "secondary" : "default"}>
           {isCompleted ? "Review" : hasStarted ? "Continue" : "Start Training"}
         </Button>
       </CardFooter>
-    </Card>
-  );
+    </Card>;
 };
