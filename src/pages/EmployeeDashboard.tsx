@@ -1,9 +1,14 @@
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { TrainingCard, TrainingVideo } from "@/components/TrainingCard";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Clock, CheckCircle2 } from "lucide-react";
+import { EmployeeService } from "@/services/employeeService";
+import { LoadingSkeleton } from "@/components/ui/loading-spinner";
+import { useToast } from "@/hooks/use-toast";
+import type { Video } from "@/types";
 
 interface EmployeeDashboardProps {
   userName: string;
@@ -13,65 +18,57 @@ interface EmployeeDashboardProps {
 }
 
 export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }: EmployeeDashboardProps) => {
-  // Mock data - will be replaced with real data from Supabase
-  const requiredVideos: TrainingVideo[] = [
-    {
-      id: '1',
-      title: 'Workplace Safety and Emergency Procedures',
-      description: 'Essential safety protocols and emergency response procedures for all employees',
-      thumbnail: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&h=300&fit=crop',
-      duration: '15 min',
-      progress: 65,
-      isRequired: true,
-      deadline: 'Dec 25',
-      status: 'warning'
-    },
-    {
-      id: '2',
-      title: 'Senior Care Best Practices',
-      description: 'Comprehensive guide to providing excellent care and service to senior clients',
-      thumbnail: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop',
-      duration: '22 min',
-      progress: 100,
-      isRequired: true,
-      deadline: 'Dec 20',
-      status: 'completed'
-    },
-    {
-      id: '3',
-      title: 'HIPAA Privacy and Confidentiality',
-      description: 'Understanding privacy laws and maintaining confidentiality in healthcare settings',
-      thumbnail: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=300&fit=crop',
-      duration: '18 min',
-      progress: 0,
-      isRequired: true,
-      deadline: 'Jan 5',
-      status: 'upcoming'
-    }
-  ];
+  const [assignedVideos, setAssignedVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  const optionalVideos: TrainingVideo[] = [
-    {
-      id: '4',
-      title: 'Effective Communication with Families',
-      description: 'Building strong relationships with clients and their families',
-      thumbnail: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&h=300&fit=crop',
-      duration: '12 min',
-      progress: 30
-    },
-    {
-      id: '5',
-      title: 'Technology Tools for Senior Services',
-      description: 'Overview of digital tools and platforms used in senior care',
-      thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop',
-      duration: '20 min',
-      progress: 0
-    }
-  ];
+  // Load assigned videos on component mount
+  useEffect(() => {
+    loadAssignedVideos();
+  }, [userEmail]);
 
-  const overallProgress = Math.round(
-    (requiredVideos.reduce((sum, video) => sum + video.progress, 0) / requiredVideos.length)
-  );
+  const loadAssignedVideos = async () => {
+    try {
+      setLoading(true);
+      const videos = await EmployeeService.getAssignedVideosByEmail(userEmail);
+      setAssignedVideos(videos);
+    } catch (error) {
+      console.error('Error loading assigned videos:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load your assigned videos",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Transform database videos to TrainingVideo format
+  const transformToTrainingVideo = (video: Video): TrainingVideo => ({
+    id: video.id,
+    title: video.title || 'Untitled Video',
+    description: video.description || '',
+    thumbnail: video.thumbnail_url || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&h=300&fit=crop',
+    duration: '15 min', // TODO: Add actual duration field to database
+    progress: 0, // TODO: Add progress tracking
+    isRequired: video.type === 'Required',
+    deadline: undefined, // TODO: Add deadline from assignment
+    status: video.video_url ? undefined : 'warning' // Mark videos without URLs as warning
+  });
+
+  // Separate videos by type
+  const requiredVideos = assignedVideos
+    .filter(video => video.type === 'Required')
+    .map(transformToTrainingVideo);
+
+  const optionalVideos = assignedVideos
+    .filter(video => video.type === 'Optional')
+    .map(transformToTrainingVideo);
+
+  const overallProgress = requiredVideos.length > 0 
+    ? Math.round(requiredVideos.reduce((sum, video) => sum + video.progress, 0) / requiredVideos.length)
+    : 0;
 
   const completedRequired = requiredVideos.filter(v => v.progress === 100).length;
   const totalRequired = requiredVideos.length;
@@ -121,15 +118,28 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
               <p className="text-muted-foreground mb-6">
                 Complete these essential training modules to meet your onboarding requirements.
               </p>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {requiredVideos.map((video) => (
-                  <TrainingCard
-                    key={video.id}
-                    video={video}
-                    onPlay={onPlayVideo}
-                  />
-                ))}
-              </div>
+              {loading ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <LoadingSkeleton lines={1} className="h-64" />
+                  <LoadingSkeleton lines={1} className="h-64" />
+                  <LoadingSkeleton lines={1} className="h-64" />
+                </div>
+              ) : requiredVideos.length === 0 ? (
+                <div className="text-center py-12">
+                  <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground">No required training videos assigned yet.</p>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {requiredVideos.map((video) => (
+                    <TrainingCard
+                      key={video.id}
+                      video={video}
+                      onPlay={onPlayVideo}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
 
@@ -139,15 +149,27 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
               <p className="text-muted-foreground mb-6">
                 Enhance your skills with these additional training resources.
               </p>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {optionalVideos.map((video) => (
-                  <TrainingCard
-                    key={video.id}
-                    video={video}
-                    onPlay={onPlayVideo}
-                  />
-                ))}
-              </div>
+              {loading ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <LoadingSkeleton lines={1} className="h-64" />
+                  <LoadingSkeleton lines={1} className="h-64" />
+                </div>
+              ) : optionalVideos.length === 0 ? (
+                <div className="text-center py-12">
+                  <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground">No optional videos available at the moment.</p>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {optionalVideos.map((video) => (
+                    <TrainingCard
+                      key={video.id}
+                      video={video}
+                      onPlay={onPlayVideo}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
