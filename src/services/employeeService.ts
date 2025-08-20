@@ -141,7 +141,7 @@ export class EmployeeService {
   }
 
   // Get videos assigned to user by their email (for employee dashboard)
-  static async getAssignedVideosByEmail(email: string): Promise<Video[]> {
+  static async getAssignedVideosByEmail(email: string): Promise<{ video: Video; assignment: any }[]> {
     // First find the employee by email
     const { data: employee, error: employeeError } = await supabase
       .from('employees')
@@ -153,7 +153,7 @@ export class EmployeeService {
       return [];
     }
 
-    // Get videos assigned to this employee
+    // Get videos assigned to this employee with assignment details
     const { data: assignments, error: assignmentError } = await supabase
       .from('video_assignments')
       .select(`
@@ -166,21 +166,28 @@ export class EmployeeService {
       return [];
     }
 
-    // Extract videos from assignments
+    // Return videos with their assignment data
     return assignments?.map(assignment => ({
-      id: assignment.videos?.id || '',
-      title: assignment.videos?.title || '',
-      description: assignment.videos?.description || '',
-      video_url: assignment.videos?.video_url || '',
-      thumbnail_url: assignment.videos?.thumbnail_url || '',
-      type: assignment.videos?.type as VideoType || 'Optional',
-      created_at: assignment.videos?.created_at || '',
-      updated_at: assignment.videos?.updated_at || '',
-      assigned_to: assignment.videos?.assigned_to || 0,
-      completion_rate: assignment.videos?.completion_rate || 0,
-      video_file_name: assignment.videos?.video_file_name || null,
-      has_quiz: assignment.videos?.has_quiz || false
-    })).filter(video => video.id) || [];
+      video: {
+        id: assignment.videos?.id || '',
+        title: assignment.videos?.title || '',
+        description: assignment.videos?.description || '',
+        video_url: assignment.videos?.video_url || '',
+        thumbnail_url: assignment.videos?.thumbnail_url || '',
+        type: assignment.videos?.type as VideoType || 'Optional',
+        created_at: assignment.videos?.created_at || '',
+        updated_at: assignment.videos?.updated_at || '',
+        assigned_to: assignment.videos?.assigned_to || 0,
+        completion_rate: assignment.videos?.completion_rate || 0,
+        video_file_name: assignment.videos?.video_file_name || null,
+        has_quiz: assignment.videos?.has_quiz || false
+      },
+      assignment: {
+        due_date: assignment.due_date,
+        assigned_at: assignment.created_at,
+        assignment_id: assignment.id
+      }
+    })).filter(item => item.video.id) || [];
   }
 
   // Delete employee

@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Progress } from "@/components/ui/progress";
 import { Calendar, Clock, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { format, differenceInDays, isPast } from 'date-fns';
 import videoPlaceholder from "@/assets/video-placeholder.jpg";
 
 export interface TrainingVideo {
@@ -15,6 +16,7 @@ export interface TrainingVideo {
   progress: number;
   isRequired?: boolean;
   deadline?: string;
+  dueDate?: string | null; // Added due date field
   status?: 'overdue' | 'warning' | 'upcoming' | 'completed';
 }
 
@@ -25,26 +27,53 @@ interface TrainingCardProps {
 }
 
 export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) => {
-  const getStatusBadge = () => {
-    if (!video.status) return null;
+  // Helper function to get deadline badge props (copied from EmployeeManagement)
+  const getDeadlineBadge = (dueDate: string | null, isCompleted: boolean = false) => {
+    if (isCompleted) {
+      return {
+        variant: "default" as const,
+        className: "bg-green-800 text-white hover:bg-green-800",
+        text: "Completed"
+      };
+    }
+    if (!dueDate) {
+      return null; // Don't show badge if no due date
+    }
     
-    const statusConfig = {
-      overdue: { label: 'Overdue', className: 'status-overdue' },
-      warning: { label: '< 5 days', className: 'status-warning' },
-      upcoming: { label: 'Upcoming', className: 'status-upcoming' },
-      completed: { label: 'Completed', className: 'status-completed' }
-    };
-
-    const config = statusConfig[video.status];
-    return (
-      <Badge className={cn('status-badge absolute top-2 right-2', config.className)}>
-        {config.label}
-      </Badge>
-    );
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(dueDate);
+    due.setHours(0, 0, 0, 0);
+    const daysUntilDue = differenceInDays(due, today);
+    
+    if (isPast(due) && daysUntilDue < 0) {
+      return {
+        variant: "default" as const,
+        className: "bg-red-800 text-white hover:bg-red-800",
+        text: "Overdue"
+      };
+    }
+    if (daysUntilDue === 0) {
+      return {
+        variant: "default" as const,
+        className: "bg-orange-700 text-white hover:bg-orange-700",
+        text: "Due in 0 days"
+      };
+    }
+    if (daysUntilDue <= 9) {
+      return {
+        variant: "default" as const,
+        className: "bg-gray-700 text-white hover:bg-gray-700",
+        text: `Due in ${daysUntilDue} days`
+      };
+    }
+    
+    return null; // Don't show badge for far future dates
   };
 
   const isCompleted = video.progress === 100;
   const hasStarted = video.progress > 0;
+  const badgeProps = getDeadlineBadge(video.dueDate, isCompleted);
 
   return (
     <Card className={cn('training-card group relative overflow-hidden', className)}>
@@ -56,7 +85,15 @@ export const TrainingCard = ({ video, onPlay, className }: TrainingCardProps) =>
           className="w-full h-48 object-cover"
         />
         
-        {getStatusBadge()}
+        {/* Due Date Badge Overlay */}
+        {badgeProps && (
+          <Badge 
+            variant={badgeProps.variant} 
+            className={cn('absolute top-2 right-2 text-xs font-medium shadow-lg z-10', badgeProps.className)}
+          >
+            {badgeProps.text}
+          </Badge>
+        )}
         
         {/* Play Button Overlay */}
         <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">

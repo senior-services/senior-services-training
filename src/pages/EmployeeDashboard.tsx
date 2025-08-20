@@ -18,7 +18,7 @@ interface EmployeeDashboardProps {
 }
 
 export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }: EmployeeDashboardProps) => {
-  const [assignedVideos, setAssignedVideos] = useState<Video[]>([]);
+  const [assignedVideoData, setAssignedVideoData] = useState<{ video: Video; assignment: any }[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -30,8 +30,8 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
   const loadAssignedVideos = async () => {
     try {
       setLoading(true);
-      const videos = await EmployeeService.getAssignedVideosByEmail(userEmail);
-      setAssignedVideos(videos);
+      const videoData = await EmployeeService.getAssignedVideosByEmail(userEmail);
+      setAssignedVideoData(videoData);
     } catch (error) {
       console.error('Error loading assigned videos:', error);
       toast({
@@ -45,7 +45,7 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
   };
 
   // Transform database videos to TrainingVideo format
-  const transformToTrainingVideo = (video: Video): TrainingVideo => ({
+  const transformToTrainingVideo = (video: Video, assignment?: any): TrainingVideo => ({
     id: video.id,
     title: video.title || 'Untitled Video',
     description: video.description || '',
@@ -53,18 +53,19 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
     duration: '15 min', // TODO: Add actual duration field to database
     progress: 0, // TODO: Add progress tracking
     isRequired: video.type === 'Required',
-    deadline: undefined, // TODO: Add deadline from assignment
+    deadline: undefined, // TODO: Add deadline from assignment  
+    dueDate: assignment?.due_date || null, // Pass the actual due date from assignment
     status: video.video_url ? undefined : 'warning' // Mark videos without URLs as warning
   });
 
   // Separate videos by type
-  const requiredVideos = assignedVideos
-    .filter(video => video.type === 'Required')
-    .map(transformToTrainingVideo);
+  const requiredVideos = assignedVideoData
+    .filter(item => item.video.type === 'Required')
+    .map(item => transformToTrainingVideo(item.video, item.assignment));
 
-  const optionalVideos = assignedVideos
-    .filter(video => video.type === 'Optional')
-    .map(transformToTrainingVideo);
+  const optionalVideos = assignedVideoData
+    .filter(item => item.video.type === 'Optional')
+    .map(item => transformToTrainingVideo(item.video, item.assignment));
 
   const overallProgress = requiredVideos.length > 0 
     ? Math.round(requiredVideos.reduce((sum, video) => sum + video.progress, 0) / requiredVideos.length)
