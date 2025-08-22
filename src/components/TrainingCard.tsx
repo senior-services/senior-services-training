@@ -80,7 +80,7 @@ export const TrainingCard = ({
   };
   const isCompleted = video.progress === 100;
   const hasStarted = video.progress > 0;
-  const badgeProps = getDeadlineBadge(video.dueDate, isCompleted);
+  const badgeProps = video.isRequired ? getDeadlineBadge(video.dueDate, isCompleted) : null;
   console.log('Badge props:', badgeProps);
   return <Card className={cn('training-card group relative overflow-hidden', className)}>
       {/* Video Thumbnail */}
@@ -136,7 +136,7 @@ export const TrainingCard = ({
             <span>{video.duration}</span>
           </div>
           
-          {video.deadline && <div className="flex items-center space-x-1">
+          {video.isRequired && video.deadline && <div className="flex items-center space-x-1">
               <Calendar className="w-4 h-4" />
               <span>Due {video.deadline}</span>
             </div>}
