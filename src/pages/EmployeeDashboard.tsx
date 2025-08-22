@@ -3,7 +3,7 @@ import { Header } from "@/components/Header";
 import { TrainingCard, TrainingVideo } from "@/components/TrainingCard";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { BookOpen, Clock, CheckCircle2 } from "lucide-react";
 import { EmployeeService } from "@/services/employeeService";
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
@@ -96,84 +96,74 @@ export const EmployeeDashboard = ({ userName, userEmail, onLogout, onPlayVideo }
         </div>
 
 
-        {/* Training Content */}
-        <Tabs defaultValue="required" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="required" className="flex items-center space-x-2">
-              <span>Required Training</span>
-              <Badge variant="secondary" className="ml-2">
-                {totalRequired}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger value="optional" className="flex items-center space-x-2">
-              <span>Optional Videos</span>
-              <Badge variant="outline" className="ml-2">
-                {optionalVideos.length}
-              </Badge>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="required" className="space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold mb-4">Required Training</h3>
-              <p className="text-muted-foreground mb-6">
-                Complete these essential training modules to meet your onboarding requirements.
-              </p>
-              {loading ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <LoadingSkeleton lines={1} className="h-64" />
-                  <LoadingSkeleton lines={1} className="h-64" />
-                  <LoadingSkeleton lines={1} className="h-64" />
-                </div>
-              ) : requiredVideos.length === 0 ? (
-                <div className="text-center py-12">
-                  <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground">No required training videos assigned yet.</p>
-                </div>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {requiredVideos.map((video) => (
-                    <TrainingCard
-                      key={video.id}
-                      video={video}
-                      onPlay={onPlayVideo}
-                    />
-                  ))}
-                </div>
-              )}
+        {/* Required Training Section */}
+        <div className="mb-12">
+          <div className="flex items-center gap-3 mb-4">
+            <h3 className="text-xl font-semibold">Required Training</h3>
+            <Badge variant="secondary">
+              {totalRequired}
+            </Badge>
+          </div>
+          <p className="text-muted-foreground mb-6">
+            Complete these essential training modules to meet your onboarding requirements.
+          </p>
+          {loading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <LoadingSkeleton lines={1} className="h-64" />
+              <LoadingSkeleton lines={1} className="h-64" />
+              <LoadingSkeleton lines={1} className="h-64" />
             </div>
-          </TabsContent>
-
-          <TabsContent value="optional" className="space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold mb-4">Optional Training Videos</h3>
-              <p className="text-muted-foreground mb-6">
-                Enhance your skills with these additional training resources.
-              </p>
-              {loading ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <LoadingSkeleton lines={1} className="h-64" />
-                  <LoadingSkeleton lines={1} className="h-64" />
-                </div>
-              ) : optionalVideos.length === 0 ? (
-                <div className="text-center py-12">
-                  <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground">No optional videos available at the moment.</p>
-                </div>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {optionalVideos.map((video) => (
-                    <TrainingCard
-                      key={video.id}
-                      video={video}
-                      onPlay={onPlayVideo}
-                    />
-                  ))}
-                </div>
-              )}
+          ) : requiredVideos.length === 0 ? (
+            <div className="text-center py-12">
+              <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">No required training videos assigned yet.</p>
             </div>
-          </TabsContent>
-        </Tabs>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {requiredVideos.map((video) => (
+                <TrainingCard
+                  key={video.id}
+                  video={video}
+                  onPlay={onPlayVideo}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Optional Training Section */}
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <h3 className="text-xl font-semibold">Optional Training Videos</h3>
+            <Badge variant="outline">
+              {optionalVideos.length}
+            </Badge>
+          </div>
+          <p className="text-muted-foreground mb-6">
+            Enhance your skills with these additional training resources.
+          </p>
+          {loading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <LoadingSkeleton lines={1} className="h-64" />
+              <LoadingSkeleton lines={1} className="h-64" />
+            </div>
+          ) : optionalVideos.length === 0 ? (
+            <div className="text-center py-12">
+              <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">No optional videos available at the moment.</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {optionalVideos.map((video) => (
+                <TrainingCard
+                  key={video.id}
+                  video={video}
+                  onPlay={onPlayVideo}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
