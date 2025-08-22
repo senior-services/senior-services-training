@@ -85,11 +85,11 @@ export const TrainingCard = ({
         
         {/* Play Button Overlay */}
         <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <Link to={`/video/${video.id}`} onClick={(e) => e.stopPropagation()} className="rounded-full">
-            <Button type="button" size="lg" className="rounded-full w-16 h-16 bg-white/90 hover:bg-white text-primary hover:text-primary shadow-lg">
+          <Button type="button" size="lg" asChild className="rounded-full w-16 h-16 bg-white/90 hover:bg-white text-primary hover:text-primary shadow-lg">
+            <Link to={`/video/${video.id}`} aria-label={`Play ${video.title}`}>
               <Play className="w-6 h-6 ml-1" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* Progress Overlay */}
@@ -162,11 +162,11 @@ export const TrainingCard = ({
       </CardContent>
 
       <CardFooter>
-        <Link to={`/video/${video.id}`} className="w-full" onClick={(e) => e.stopPropagation()}>
-          <Button type="button" className="w-full" variant={isCompleted ? "secondary" : "default"}>
+        <Button type="button" className="w-full" variant={isCompleted ? "secondary" : "default"} asChild>
+          <Link to={`/video/${video.id}`} className="w-full">
             {isCompleted ? "Review" : hasStarted ? "Continue" : "Start Training"}
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </CardFooter>
     </Card>;
 };
