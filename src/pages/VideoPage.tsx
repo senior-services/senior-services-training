@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams, Link, Navigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,12 +22,17 @@ export const VideoPage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { role } = useUserRole(user);
+  const location = useLocation();
 
   useEffect(() => {
     if (videoId) {
       loadVideo(videoId);
     }
   }, [videoId]);
+
+  useEffect(() => {
+    console.info('VideoPage route', { pathname: location.pathname, hash: window.location.hash, videoId });
+  }, [location, videoId]);
 
   const loadVideo = async (id: string) => {
     try {
