@@ -162,18 +162,12 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
               <Play className="w-5 h-5 text-primary" />
               {video?.title || 'Training Video'}
             </DialogTitle>
-            <div className="flex items-center gap-3">
-              {isCompleted && (
-                <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  Completed
-                </Badge>
-              )}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>Progress:</span>
-                <span className="font-medium text-primary">{progress}%</span>
-              </div>
-            </div>
+            {isCompleted && (
+              <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Completed
+              </Badge>
+            )}
           </div>
           {progress > 0 && (
             <div className="mt-3">
