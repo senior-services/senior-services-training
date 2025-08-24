@@ -50,6 +50,13 @@ export const VideoPlayerModal = ({ open, onOpenChange, video }: VideoPlayerModal
             <Play className="w-5 h-5 text-primary" />
             {video.title}
           </DialogTitle>
+          {video.description && (
+            <div className="pt-2">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {video.description}
+              </p>
+            </div>
+          )}
           <DialogDescription>
             Watch training video and track your progress
           </DialogDescription>
@@ -133,15 +140,6 @@ export const VideoPlayerModal = ({ open, onOpenChange, video }: VideoPlayerModal
                 <span>Assigned to {video.assigned_to} employees</span>
               </div>
             </div>
-
-            {video.description && (
-              <div>
-                <h4 className="font-medium text-foreground mb-2">Description</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {video.description}
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </DialogContent>
