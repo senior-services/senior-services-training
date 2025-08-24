@@ -47,15 +47,14 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       const id = getYouTubeVideoId(videoUrl);
       if (id) {
         return (
-          <div className="w-full h-full aspect-video">
-            <iframe 
-              src={`https://www.youtube.com/embed/${id}`} 
-              title={video.title} 
-              className="w-full h-full" 
-              allowFullScreen 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-            />
-          </div>
+          <iframe 
+            src={`https://www.youtube.com/embed/${id}`} 
+            title={video.title} 
+            className="w-auto h-auto max-w-full max-h-full" 
+            style={{ aspectRatio: '16/9' }}
+            allowFullScreen 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          />
         );
       }
     }
@@ -63,19 +62,18 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       const embedUrl = getGoogleDriveEmbedUrl(videoUrl);
       if (embedUrl) {
         return (
-          <div className="w-full h-full aspect-video">
-            <iframe 
-              src={embedUrl} 
-              title={video.title} 
-              className="w-full h-full" 
-              allowFullScreen 
-            />
-          </div>
+          <iframe 
+            src={embedUrl} 
+            title={video.title} 
+            className="w-auto h-auto max-w-full max-h-full" 
+            style={{ aspectRatio: '16/9' }}
+            allowFullScreen 
+          />
         );
       }
     }
     const src = videoUrl || (fileName ? `https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${fileName}` : undefined);
-    return <video className="w-full h-full object-contain" controls preload="metadata">
+    return <video className="w-auto h-auto max-w-full max-h-full object-contain" controls preload="metadata">
         {src && <source src={src} type="video/mp4" />}
         Your browser does not support the video tag.
       </video>;
