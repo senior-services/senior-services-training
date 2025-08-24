@@ -270,12 +270,9 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
    */
   const handleVideoEnded = useCallback(async () => {
     setProgress(100);
-    setIsCompleted(true);
-    setWasEverCompleted(true);
-    await updateProgressToDatabase(100);
-    // Ensure parent components update immediately
+    // Do not auto-complete; allow user to confirm completion manually
     onProgressUpdate?.(100);
-  }, [updateProgressToDatabase, onProgressUpdate]);
+  }, [onProgressUpdate]);
 
   /**
    * Manual completion handler with proper error handling
@@ -417,12 +414,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 setProgress(progressPercent);
                 onProgressUpdate?.(progressPercent);
 
-                // Auto-complete when reaching 95% for YouTube videos (accounting for ads/buffering)
-                if (progressPercent >= 95 && !wasEverCompleted) {
-                  setIsCompleted(true);
-                  setWasEverCompleted(true);
-                  updateProgressToDatabase(100);
-                  onProgressUpdate?.(100);
+                // Stop interval at 100% but do not auto-complete; user must click Mark Complete
+                if (progressPercent >= 100) {
                   if (progressIntervalRef.current) {
                     clearInterval(progressIntervalRef.current);
                   }
@@ -464,12 +457,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 setProgress(progressPercent);
                 onProgressUpdate?.(progressPercent);
                 
-                // Auto-complete when reaching 95% for embedded videos
-                if (progressPercent >= 95 && !wasEverCompleted) {
-                  setIsCompleted(true);
-                  setWasEverCompleted(true);
-                  updateProgressToDatabase(100);
-                  onProgressUpdate?.(100);
+                // Stop interval at 100% but do not auto-complete; user must click Mark Complete
+                if (progressPercent >= 100) {
                   if (progressIntervalRef.current) {
                     clearInterval(progressIntervalRef.current);
                   }
