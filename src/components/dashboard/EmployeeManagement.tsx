@@ -26,12 +26,11 @@ export const EmployeeManagement: React.FC = () => {
   } = useToast();
   useEffect(() => {
     loadEmployees();
-    
+
     // Auto-refresh every 30 seconds to show latest completion status
     const interval = setInterval(loadEmployees, 30000);
     return () => clearInterval(interval);
   }, []);
-  
   const loadEmployees = async () => {
     try {
       setLoading(true);
@@ -102,7 +101,6 @@ export const EmployeeManagement: React.FC = () => {
   // Helper function to get deadline badge props
   const getDeadlineBadge = (dueDate: string | null, progressPercent: number = 0) => {
     const isCompleted = progressPercent >= 100;
-    
     if (isCompleted) {
       return {
         variant: "default" as const,
@@ -152,10 +150,7 @@ export const EmployeeManagement: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={loadEmployees} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+          
           <Button onClick={() => setShowAddModal(true)}>
             <UserPlus className="w-4 h-4 mr-2" />
             Add Employee
