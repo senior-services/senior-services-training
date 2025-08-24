@@ -39,16 +39,16 @@ export const Header = ({
           </div>
 
           {/* Center - Overall Progress (Employee Only) */}
-          {userRole === 'employee' && overallProgress !== undefined && <div className="hidden md:flex items-center space-x-3 flex-1 max-w-md mx-8">
-              <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                Overall Progress:
-              </span>
-              <div className="flex-1">
-                <Progress value={overallProgress} className="h-2" />
+          {userRole === 'employee' && overallProgress !== undefined && <div className="hidden md:flex flex-col flex-1 max-w-md mx-8">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm text-muted-foreground">
+                  Overall Progress
+                </span>
+                <span className="text-sm font-medium text-foreground">
+                  {overallProgress}%
+                </span>
               </div>
-              <span className="text-sm font-semibold text-primary whitespace-nowrap">
-                {overallProgress}%
-              </span>
+              <Progress value={overallProgress} className="h-2" />
             </div>}
 
           {/* Right Side - User Info and Menu */}
@@ -82,16 +82,16 @@ export const Header = ({
         </div>
 
         {/* Mobile Progress Bar */}
-        {userRole === 'employee' && overallProgress !== undefined && <div className="md:hidden mt-4 flex items-center space-x-3">
-            <span className="text-sm font-medium text-foreground">
-              Progress:
-            </span>
-            <div className="flex-1">
-              <Progress value={overallProgress} className="h-2" />
+        {userRole === 'employee' && overallProgress !== undefined && <div className="md:hidden mt-4">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm text-muted-foreground">
+                Overall Progress
+              </span>
+              <span className="text-sm font-medium text-foreground">
+                {overallProgress}%
+              </span>
             </div>
-            <span className="text-sm font-semibold text-primary">
-              {overallProgress}%
-            </span>
+            <Progress value={overallProgress} className="h-2" />
           </div>}
       </div>
     </header>;
