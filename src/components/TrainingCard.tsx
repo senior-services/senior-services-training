@@ -176,11 +176,19 @@ export const TrainingCard = memo<TrainingCardProps>(({
             <img src={sanitizedVideo.thumbnail} alt={`${sanitizedVideo.title} - Training video thumbnail`} className="w-full aspect-video object-cover bg-muted transition-transform duration-300 group-hover:scale-105 rounded-lg" loading={priority ? "eager" : "lazy"} onError={handleImageError} />
           </button>
 
-          {/* Due Date Badge with Enhanced Accessibility */}
+          {/* Due Date Badge and Completion Badge with Enhanced Accessibility */}
           {dueDateInfo && <Badge variant={dueDateInfo.variant} className={cn('absolute top-5 right-8 text-xs font-medium shadow-lg z-10 border-2', dueDateInfo.className)} aria-label={dueDateInfo.ariaLabel} role="status">
               {dueDateInfo.priority === 'high' && <AlertCircle className="w-3 h-3 mr-1" aria-hidden="true" />}
               {dueDateInfo.text}
             </Badge>}
+          
+          {/* Completed Badge for videos without due dates */}
+          {trainingStatus.isCompleted && !dueDateInfo && (
+            <Badge variant="default" className="absolute top-5 right-8 text-xs font-medium shadow-lg z-10 border-2 bg-success text-success-foreground hover:bg-success border-success" aria-label="Training completed successfully" role="status">
+              <CheckCircle className="w-3 h-3 mr-1" aria-hidden="true" />
+              Completed
+            </Badge>
+          )}
           
           {/* Play Button Overlay with Enhanced Accessibility */}
           <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
