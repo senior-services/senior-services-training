@@ -251,23 +251,24 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                     </Badge>
                   )}
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
+                <div className="flex items-center gap-2 text-sm">
+                  <button
+                    type="button"
                     onClick={() => setSelectedVideoIds(new Set())}
                     disabled={selectedVideoIds.size === 0}
+                    className="text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Clear All
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  </button>
+                  <span className="text-muted-foreground/50">|</span>
+                  <button
+                    type="button"
                     onClick={() => setSelectedVideoIds(new Set(videos.map(v => v.id)))}
                     disabled={selectedVideoIds.size === videos.length}
+                    className="text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Select All
-                  </Button>
+                  </button>
                 </div>
               </div>
 
