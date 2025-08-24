@@ -53,9 +53,25 @@ export const Auth = () => {
     const result = await signIn('jane.doe@southsoundseniors.org', 'test123');
     if (!result || result.error) {
       // Account doesn't exist, create it
-      await signUp('jane.doe@southsoundseniors.org', 'test123', 'Test Employee');
+      await signUp('jane.doe@southsoundseniors.org', 'test123', 'Jane Doe');
       // Then sign in
       await signIn('jane.doe@southsoundseniors.org', 'test123');
+    }
+    setIsLoading(false);
+  };
+
+  const handleTestEmployee2Login = async () => {
+    setEmail('john.doe@southsoundseniors.org');
+    setPassword('test123');
+    setIsLoading(true);
+    
+    // Try to sign in, if fails, create the account first
+    const result = await signIn('john.doe@southsoundseniors.org', 'test123');
+    if (!result || result.error) {
+      // Account doesn't exist, create it
+      await signUp('john.doe@southsoundseniors.org', 'test123', 'John Doe');
+      // Then sign in
+      await signIn('john.doe@southsoundseniors.org', 'test123');
     }
     setIsLoading(false);
   };
@@ -187,30 +203,42 @@ export const Auth = () => {
                 <h3 className="font-semibold text-yellow-800 text-sm">Development Testing</h3>
                 <p className="text-xs text-yellow-700">Quick login for testing purposes</p>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
                 <Button
                   onClick={handleTestAdminLogin}
                   disabled={isLoading}
                   variant="outline"
                   size="sm"
-                  className="border-red-200 text-red-700 hover:bg-red-50"
+                  className="w-full border-red-200 text-red-700 hover:bg-red-50"
                 >
-                  <Shield className="w-4 h-4 mr-1" />
+                  <Shield className="w-4 h-4 mr-2" />
                   Admin Test
                 </Button>
-                <Button
-                  onClick={handleTestEmployeeLogin}
-                  disabled={isLoading}
-                  variant="outline"
-                  size="sm"
-                  className="border-blue-200 text-blue-700 hover:bg-blue-50"
-                >
-                  <User className="w-4 h-4 mr-1" />
-                  Employee Test
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    onClick={handleTestEmployeeLogin}
+                    disabled={isLoading}
+                    variant="outline"
+                    size="sm"
+                    className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                  >
+                    <User className="w-4 h-4 mr-1" />
+                    Employee 1
+                  </Button>
+                  <Button
+                    onClick={handleTestEmployee2Login}
+                    disabled={isLoading}
+                    variant="outline"
+                    size="sm"
+                    className="border-green-200 text-green-700 hover:bg-green-50"
+                  >
+                    <User className="w-4 h-4 mr-1" />
+                    Employee 2
+                  </Button>
+                </div>
               </div>
               <div className="mt-2 text-xs text-yellow-600 text-center">
-                Admin: admin@gmail.com | Employee: jane.doe@southsoundseniors.org
+                Admin: admin@gmail.com | Employee 1: jane.doe@southsoundseniors.org | Employee 2: john.doe@southsoundseniors.org
               </div>
             </div>
           </CardContent>
