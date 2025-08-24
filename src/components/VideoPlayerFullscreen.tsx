@@ -329,7 +329,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mr-8">
               {isCompleted && (
                 <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white">
                   <CheckCircle className="w-4 h-4 mr-1" />
