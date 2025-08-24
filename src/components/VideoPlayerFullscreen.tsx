@@ -550,7 +550,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                   {isWatching ? "📺 Watching" : "▶️ Start Watching"}
                 </Button>
                 
-                {progress >= 10 && (
+                {(progress >= 3 || isWatching) && (
                   <Button 
                     variant="default" 
                     size="sm" 
