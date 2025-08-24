@@ -52,16 +52,25 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         // Check if video is already completed by fetching progress
         if (user?.email) {
           try {
+            console.log('Fetching progress for video:', videoId, 'user:', user.email);
             const progressData = await EmployeeService.getVideoProgressByEmail(user.email, videoId);
+            console.log('Progress data received:', progressData);
+            
             if (progressData && progressData.progress_percent >= 100) {
               setProgress(100);
               setIsCompleted(true);
-            } else {
-              setProgress(progressData?.progress_percent || 0);
+              console.log('Video marked as completed from database');
+            } else if (progressData) {
+              setProgress(progressData.progress_percent);
               setIsCompleted(false);
+              console.log('Video progress loaded:', progressData.progress_percent + '%');
+            } else {
+              setProgress(0);
+              setIsCompleted(false);
+              console.log('No existing progress found');
             }
           } catch (error) {
-            console.log('No existing progress found, starting fresh');
+            console.error('Error fetching progress:', error);
             setProgress(0);
             setIsCompleted(false);
           }
@@ -84,6 +93,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     if (!user?.email || !videoId) return;
 
     try {
+      console.log('Updating progress to database:', progressPercent + '%', 'for video:', videoId);
       const completedAt = progressPercent >= 100 ? new Date() : undefined;
       await EmployeeService.updateVideoProgressByEmail(
         user.email,
@@ -91,8 +101,10 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         progressPercent,
         completedAt
       );
+      console.log('Progress updated successfully');
 
       if (progressPercent >= 100 && !isCompleted) {
+        console.log('Video completed! Showing completion state');
         setIsCompleted(true);
         toast({
           title: "Video Completed! 🎉",
@@ -351,7 +363,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                   {isWatching ? "📺 Watching" : "▶️ Start Watching"}
                 </Button>
                 
-                {progress >= 80 && (
+                {progress >= 10 && (
                   <Button
                     variant="default"
                     size="sm"
@@ -363,6 +375,13 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                   </Button>
                 )}
               </>
+            )}
+            
+            {isCompleted && (
+              <div className="flex items-center gap-2 text-green-600">
+                <CheckCircle className="w-5 h-5" />
+                <span className="font-medium">Training Completed!</span>
+              </div>
             )}
           </div>
         </DialogHeader>
