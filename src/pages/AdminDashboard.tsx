@@ -95,30 +95,29 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
     }
   ];
 
-  // Fetch videos from Supabase
+  // Fetch videos from Supabase using the service that calculates correct assignment counts
   const fetchVideos = async () => {
     console.log('Fetching videos...');
     try {
       const { data: user } = await supabase.auth.getUser();
       console.log('Current user:', user);
       
-      const { data, error } = await supabase
-        .from('videos')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Use videoService which correctly calculates assignment counts
+      const { videoService } = await import('@/services/supabase');
+      const result = await videoService.getAll();
 
-      console.log('Videos query result:', { data, error });
+      console.log('Videos service result:', result);
 
-      if (error) {
-        console.error('Error fetching videos:', error);
+      if (!result.success) {
+        console.error('Error fetching videos:', result.error);
         toast({
           title: "Error",
-          description: `Failed to load videos: ${error.message}`,
+          description: result.error || "Failed to load videos",
           variant: "destructive",
         });
       } else {
-        console.log('Setting videos:', data);
-        setVideos(data || []);
+        console.log('Setting videos:', result.data);
+        setVideos(result.data || []);
       }
     } catch (error) {
       console.error('Unexpected error:', error);
