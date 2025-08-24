@@ -14,7 +14,7 @@ interface VideoPlayerModalProps {
   video: {
     id: string;
     title: string;
-    description?: string;
+    description?: string | null;
     type: string;
     assigned_to: number;
     video_url?: string | null;
@@ -25,6 +25,7 @@ interface VideoPlayerModalProps {
 
 export const VideoPlayerModal = ({ open, onOpenChange, video }: VideoPlayerModalProps) => {
   console.log('VideoPlayerModal rendered with video:', video);
+  console.log('Video description:', video?.description);
   
   if (!video) return null;
 
@@ -50,9 +51,9 @@ export const VideoPlayerModal = ({ open, onOpenChange, video }: VideoPlayerModal
             <Play className="w-5 h-5 text-primary" />
             {video.title}
           </DialogTitle>
-          {video.description && (
-            <div className="pt-1 pb-2">
-              <p className="text-sm text-muted-foreground font-normal">
+          {video.description && video.description.trim() && (
+            <div className="pt-3 pb-1 border-b border-border/30">
+              <p className="text-sm text-muted-foreground font-normal leading-relaxed">
                 {video.description}
               </p>
             </div>
