@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Calendar, Clock, Play } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { format, differenceInDays, isPast } from 'date-fns';
 import videoPlaceholder from "@/assets/video-placeholder.jpg";
@@ -29,7 +29,7 @@ export const TrainingCard = ({
   onPlay,
   className
 }: TrainingCardProps) => {
-  const navigate = useNavigate();
+  
   const getDeadlineBadge = (dueDate: string | null, isCompleted: boolean = false) => {
     if (isCompleted) {
       return {
@@ -76,27 +76,25 @@ export const TrainingCard = ({
   return <Card className={cn('training-card group relative overflow-hidden', className)}>
       {/* Video Thumbnail */}
       <div className="relative">
-        <img src={video.thumbnail || videoPlaceholder} alt={video.title} className="w-full h-48 object-cover" />
-        
+        <Link to={`/video/${video.id}`} aria-label={`Open ${video.title}`}>
+          <img src={video.thumbnail || videoPlaceholder} alt={video.title} className="w-full h-48 object-cover" />
+        </Link>
         {/* Due Date Badge Overlay */}
         {badgeProps && <Badge variant={badgeProps.variant} className={cn('absolute top-2 right-2 text-xs font-medium shadow-lg z-10', badgeProps.className)}>
             {badgeProps.text}
           </Badge>}
         
         {/* Play Button Overlay */}
-        <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
           <Button 
             type="button" 
             size="lg" 
-            className="rounded-full w-16 h-16 bg-white/90 hover:bg-white text-primary hover:text-primary shadow-lg"
-          onClick={() => {
-            console.log('Play button clicked for video:', video.id);
-            console.log('About to navigate to:', `/video/${video.id}`);
-            navigate(`/video/${video.id}`);
-            console.log('Navigate called');
-          }}
+            className="rounded-full w-16 h-16 bg-white/90 hover:bg-white text-primary hover:text-primary shadow-lg pointer-events-auto"
+            asChild
           >
-            <Play className="w-6 h-6 ml-1" />
+            <Link to={`/video/${video.id}`} aria-label={`Play ${video.title}`}>
+              <Play className="w-6 h-6 ml-1" />
+            </Link>
           </Button>
         </div>
 
@@ -174,14 +172,11 @@ export const TrainingCard = ({
           type="button" 
           className="w-full" 
           variant={isCompleted ? "secondary" : "default"}
-          onClick={() => {
-            console.log('Footer button clicked for video:', video.id);
-            console.log('About to navigate to:', `/video/${video.id}`);
-            navigate(`/video/${video.id}`);
-            console.log('Navigate called');
-          }}
+          asChild
         >
-          {isCompleted ? "Review" : hasStarted ? "Continue" : "Start Training"}
+          <Link to={`/video/${video.id}`} aria-label={`${isCompleted ? "Review" : hasStarted ? "Continue" : "Start"} ${video.title}`}>
+            {isCompleted ? "Review" : hasStarted ? "Continue" : "Start Training"}
+          </Link>
         </Button>
       </CardFooter>
     </Card>;
