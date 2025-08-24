@@ -213,14 +213,7 @@ export const TrainingCard = memo<TrainingCardProps>(({
 
         <CardContent className="space-y-2 flex-1 pb-2">
           {/* Video Information with Enhanced Accessibility */}
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1" aria-label={`Duration: ${sanitizedVideo.duration}`}>
-                <Clock className="w-4 h-4" aria-hidden="true" />
-                <span>{sanitizedVideo.duration}</span>
-              </div>
-            </div>
-            
+          <div className="flex items-center justify-end text-sm text-muted-foreground">
             {/* Enhanced Circular Progress Indicator */}
             <div className="flex items-center space-x-2">
               <span className="text-xs text-muted-foreground">Progress</span>
