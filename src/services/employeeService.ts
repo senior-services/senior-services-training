@@ -142,14 +142,19 @@ export class EmployeeService {
 
   // Get videos assigned to user by their email (for employee dashboard)
   static async getAssignedVideosByEmail(email: string): Promise<{ video: Video; assignment: any }[]> {
+    console.log('getAssignedVideosByEmail called with email:', email);
+    
     // First find the employee by email
     const { data: employee, error: employeeError } = await supabase
       .from('employees')
       .select('id')
       .eq('email', email)
-      .single();
+      .maybeSingle();
+
+    console.log('Employee lookup result:', { employee, employeeError });
 
     if (employeeError || !employee) {
+      console.log('No employee found for email:', email, 'Error:', employeeError);
       return [];
     }
 
@@ -162,12 +167,15 @@ export class EmployeeService {
       `)
       .eq('employee_id', employee.id);
 
+    console.log('Video assignments result:', { assignments, assignmentError });
+
     if (assignmentError) {
+      console.error('Error fetching video assignments:', assignmentError);
       return [];
     }
 
     // Return videos with their assignment data
-    return assignments?.map(assignment => ({
+    const result = assignments?.map(assignment => ({
       video: {
         id: assignment.videos?.id || '',
         title: assignment.videos?.title || '',
@@ -188,6 +196,9 @@ export class EmployeeService {
         assignment_id: assignment.id
       }
     })).filter(item => item.video.id) || [];
+    
+    console.log('Final result for getAssignedVideosByEmail:', result);
+    return result;
   }
 
   // Delete employee
