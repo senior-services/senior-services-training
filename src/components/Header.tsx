@@ -10,6 +10,8 @@ interface HeaderProps {
   userName: string;
   userEmail: string;
   overallProgress?: number;
+  completedItems?: number;
+  totalItems?: number;
   onLogout: () => void;
 }
 export const Header = ({
@@ -17,6 +19,8 @@ export const Header = ({
   userName,
   userEmail,
   overallProgress,
+  completedItems = 0,
+  totalItems = 0,
   onLogout
 }: HeaderProps) => {
   const subtitle = userRole === 'admin' ? 'Administrator Dashboard' : 'Employee Portal';
@@ -38,21 +42,24 @@ export const Header = ({
             </Link>
           </div>
 
-          {/* Center - Overall Progress (Employee Only) */}
-          {userRole === 'employee' && overallProgress !== undefined && <div className="hidden md:flex flex-col w-[120px] mx-8">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-muted-foreground">
-                  Overall Progress
-                </span>
-                <span className="text-sm font-medium text-foreground">
-                  {overallProgress}%
-                </span>
+          {/* Right Side - Progress and User Info */}
+          <div className="flex items-center space-x-6">
+            {/* Overall Progress (Employee Only) */}
+            {userRole === 'employee' && overallProgress !== undefined && (
+              <div className="hidden md:flex flex-col w-[200px]">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm text-muted-foreground">
+                    {completedItems} of {totalItems} completed
+                  </span>
+                  <span className="text-sm font-medium text-foreground">
+                    {overallProgress}%
+                  </span>
+                </div>
+                <Progress value={overallProgress} className="h-2" />
               </div>
-              <Progress value={overallProgress} className="h-2" />
-            </div>}
+            )}
 
-          {/* Right Side - User Info and Menu */}
-          <div className="flex items-center space-x-3">
+            {/* User Info and Menu */}
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium text-foreground">{userName}</p>
               
@@ -82,17 +89,19 @@ export const Header = ({
         </div>
 
         {/* Mobile Progress Bar */}
-        {userRole === 'employee' && overallProgress !== undefined && <div className="md:hidden mt-4">
+        {userRole === 'employee' && overallProgress !== undefined && (
+          <div className="md:hidden mt-4">
             <div className="flex items-center justify-between mb-1">
               <span className="text-sm text-muted-foreground">
-                Overall Progress
+                {completedItems} of {totalItems} completed
               </span>
               <span className="text-sm font-medium text-foreground">
                 {overallProgress}%
               </span>
             </div>
             <Progress value={overallProgress} className="h-2" />
-          </div>}
+          </div>
+        )}
       </div>
     </header>;
 };
