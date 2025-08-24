@@ -145,47 +145,44 @@ export class EmployeeService {
     console.log('getAssignedVideosByEmail called with email:', email);
     
     try {
-      // Direct query approach - use inner join to ensure both assignment and video exist
-      const { data: assignments, error: assignmentError } = await supabase
-        .from('video_assignments')
-        .select(`
-          id, due_date, created_at, employee_id,
-          videos!inner (
-            id, title, description, video_url, thumbnail_url, 
-            type, created_at, updated_at, assigned_to, 
-            completion_rate, video_file_name, has_quiz
-          )
-        `);
+      // Use the database function that bypasses RLS complexity
+      const { data: assignments, error } = await supabase
+        .rpc('get_user_video_assignments', { user_email: email });
 
-      console.log('Direct assignments result:', { assignments, assignmentError });
+      console.log('RPC assignments result:', { assignments, error });
 
-      if (assignmentError) {
-        console.error('Error fetching video assignments:', assignmentError);
+      if (error) {
+        console.error('Error calling get_user_video_assignments:', error);
         return [];
       }
 
-      // Return videos with their assignment data
-      const result = assignments?.map(assignment => ({
-        video: {
-          id: assignment.videos.id,
-          title: assignment.videos.title || '',
-          description: assignment.videos.description || '',
-          video_url: assignment.videos.video_url || '',
-          thumbnail_url: assignment.videos.thumbnail_url || '',
-          type: assignment.videos.type as VideoType || 'Optional',
-          created_at: assignment.videos.created_at || '',
-          updated_at: assignment.videos.updated_at || '',
-          assigned_to: assignment.videos.assigned_to || 0,
-          completion_rate: assignment.videos.completion_rate || 0,
-          video_file_name: assignment.videos.video_file_name || null,
-          has_quiz: assignment.videos.has_quiz || false
-        },
-        assignment: {
-          due_date: assignment.due_date,
-          assigned_at: assignment.created_at,
-          assignment_id: assignment.id
-        }
-      })).filter(item => item.video.id) || [];
+      // Transform the RPC result to match expected format
+      const result = assignments?.map((assignment: any) => {
+        const video = assignment.video as any;
+        const assignmentData = assignment.assignment as any;
+        
+        return {
+          video: {
+            id: video.id,
+            title: video.title || '',
+            description: video.description || '',
+            video_url: video.video_url || '',
+            thumbnail_url: video.thumbnail_url || '',
+            type: video.type as VideoType || 'Optional',
+            created_at: video.created_at || '',
+            updated_at: video.updated_at || '',
+            assigned_to: video.assigned_to || 0,
+            completion_rate: video.completion_rate || 0,
+            video_file_name: video.video_file_name || null,
+            has_quiz: video.has_quiz || false
+          },
+          assignment: {
+            due_date: assignmentData.due_date,
+            assigned_at: assignmentData.assigned_at,
+            assignment_id: assignmentData.assignment_id
+          }
+        };
+      }) || [];
       
       console.log('Final result for getAssignedVideosByEmail:', result);
       return result;

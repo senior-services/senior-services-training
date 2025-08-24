@@ -296,6 +296,13 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_user_video_assignments: {
+        Args: { user_email: string }
+        Returns: {
+          assignment: Json
+          video: Json
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
