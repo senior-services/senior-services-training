@@ -349,19 +349,10 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
 
           {/* Enhanced Welcome Section with Status Information */}
           <header className="mb-8" role="banner">
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4">
               <h1 id="dashboard-heading" className="text-3xl font-bold text-foreground">
                 Welcome back, {sanitizedUserData.firstName}!
               </h1>
-              {trainingData.stats.overallStatus === 'completed' && <Badge className="bg-success text-success-foreground border-success" aria-label="All required training completed">
-                  <CheckCircle className="w-4 h-4 mr-1" aria-hidden="true" />
-                  All Complete
-                </Badge>}
-              {trainingData.stats.overallStatus === 'needs-attention' && <Badge variant="destructive" aria-label="Some training requires immediate attention">
-                  <AlertCircle className="w-4 h-4 mr-1" aria-hidden="true" />
-                  Attention Needed
-                </Badge>}
-              {trainingData.stats.overallStatus === 'behind'}
             </div>
             
             <p className="text-muted-foreground text-lg">
