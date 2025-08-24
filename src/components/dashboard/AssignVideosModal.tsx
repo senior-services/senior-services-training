@@ -159,6 +159,18 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
 
     setIsSubmitting(true);
     try {
+      // Update video types in database for selected videos
+      for (const video of videos) {
+        if (selectedVideoIds.has(video.id)) {
+          // Update video type in database
+          await videoService.update(video.id, { 
+            title: video.title, 
+            description: video.description || '',
+            type: video.type 
+          });
+        }
+      }
+
       // Determine which videos to assign and which to unassign
       const toAssign = [...selectedVideoIds].filter(id => !assignedVideoIds.has(id));
       const toUnassign = [...assignedVideoIds].filter(id => !selectedVideoIds.has(id));
@@ -312,9 +324,34 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-4">
-                              {/* Calendar Picker - Only show when video is selected */}
-                              {isSelected && (
+                             <div className="flex items-center gap-4">
+                               {/* Required Toggle - Only show when video is selected */}
+                               {isSelected && (
+                                 <div className="flex items-center gap-2">
+                                   <input
+                                     type="checkbox"
+                                     id={`required-${video.id}`}
+                                     checked={video.type === 'Required'}
+                                     onChange={(e) => {
+                                       // Update video type based on assignment
+                                       const newType = e.target.checked ? 'Required' : 'Optional';
+                                       setVideos(prev => prev.map(v => 
+                                         v.id === video.id ? { ...v, type: newType } : v
+                                       ));
+                                     }}
+                                     className="flex-shrink-0 w-3 h-3 rounded border border-gray-300 text-primary focus:ring-1 focus:ring-primary"
+                                   />
+                                   <label 
+                                     htmlFor={`required-${video.id}`}
+                                     className="text-xs text-muted-foreground cursor-pointer"
+                                   >
+                                     Required
+                                   </label>
+                                 </div>
+                               )}
+
+                               {/* Calendar Picker - Only show when video is selected */}
+                               {isSelected && (
                                 <Popover 
                                   open={calendarOpen.get(video.id) || false}
                                   onOpenChange={(open) => {

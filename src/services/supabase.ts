@@ -203,6 +203,7 @@ export const videoService = {
         .update({
           title: updates.title,
           description: updates.description,
+          ...(updates.type && { type: updates.type }),
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)

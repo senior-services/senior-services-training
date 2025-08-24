@@ -108,6 +108,7 @@ export interface AddVideoModalProps extends ModalProps {
 export interface VideoUpdateData {
   title: string;
   description: string;
+  type?: VideoType;
 }
 
 export interface VideoCreateData extends VideoUpdateData {
