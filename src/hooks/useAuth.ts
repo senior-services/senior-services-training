@@ -154,12 +154,30 @@ export function useAuth() {
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) {
+      
+      // If there's a session_not_found error, we should still consider it a successful logout
+      // because the user is effectively logged out already
+      if (error && !error.message?.includes('session_not_found') && !error.message?.includes('Session not found')) {
         console.error('Sign out error:', error);
         toast.error('Failed to sign out');
+        return;
       }
+      
+      // Clear local state immediately for better UX
+      setState({
+        session: null,
+        user: null,
+        loading: false,
+      });
+      
     } catch (error) {
       console.error('Sign out error:', error);
+      // Even if there's an error, clear the local state to ensure user appears logged out
+      setState({
+        session: null,
+        user: null,
+        loading: false,
+      });
       toast.error('Failed to sign out');
     }
   };
