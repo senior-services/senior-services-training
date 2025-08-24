@@ -539,29 +539,15 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 <span className="font-medium">Training Completed!</span>
               </div>
             ) : !isCompleted && (
-              <>
-                <Button 
-                  variant={isWatching ? "default" : "outline"} 
-                  size="sm" 
-                  onClick={handleWatchingToggle}
-                  className="flex items-center gap-2"
-                  aria-pressed={isWatching}
-                >
-                  {isWatching ? "📺 Watching" : "▶️ Start Watching"}
-                </Button>
-                
-                {(progress >= 3 || isWatching) && (
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    onClick={handleMarkComplete}
-                    className="flex items-center gap-2 bg-success hover:bg-success/90"
-                  >
-                    <CheckCircle className="w-4 h-4" aria-hidden="true" />
-                    Mark Complete
-                  </Button>
-                )}
-              </>
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={handleMarkComplete}
+                className="flex items-center gap-2 bg-success hover:bg-success/90"
+              >
+                <CheckCircle className="w-4 h-4" aria-hidden="true" />
+                Mark Complete
+              </Button>
             )}
           </div>
         </DialogHeader>
