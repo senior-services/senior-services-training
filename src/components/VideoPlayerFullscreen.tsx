@@ -60,6 +60,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [wasEverCompleted, setWasEverCompleted] = useState(false); // Track if video was ever completed
   const [isWatching, setIsWatching] = useState(false);
   
   // Refs for video element and timing management
@@ -90,6 +91,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         // Reset state when modal is closed or no video selected
         setProgress(0);
         setIsCompleted(false);
+        setWasEverCompleted(false);
         setIsWatching(false);
         return;
       }
@@ -118,21 +120,25 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
               const progressPercent = progressData.progress_percent;
               
               setProgress(progressPercent);
-              setIsCompleted(progressPercent >= 100);
+              const isVideoCompleted = progressPercent >= 100;
+              setIsCompleted(isVideoCompleted);
+              setWasEverCompleted(isVideoCompleted); // Remember if video was ever completed
               
               logger.videoEvent('progress_restored', videoId, {
                 progress: progressPercent,
-                completed: progressPercent >= 100
+                completed: isVideoCompleted
               });
             } else {
               // No existing progress found or failed to load
               setProgress(0);
               setIsCompleted(false);
+              setWasEverCompleted(false);
               logger.videoEvent('no_previous_progress', videoId);
             }
           } else {
             setProgress(0);
             setIsCompleted(false);
+            setWasEverCompleted(false);
             logger.warn('User not authenticated, cannot load progress', { videoId });
           }
           
@@ -199,8 +205,9 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         });
 
         // Handle completion state change
-        if (progressPercent >= 100 && !isCompleted) {
+        if (progressPercent >= 100 && !wasEverCompleted) {
           setIsCompleted(true);
+          setWasEverCompleted(true);
           
           logger.videoEvent('video_completed', videoId, {
             userEmail: user.email,
@@ -231,7 +238,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         variant: "destructive"
       });
     }
-  }, [user?.email, videoId, isCompleted, toast]);
+  }, [user?.email, videoId, wasEverCompleted, toast, onProgressUpdate]);
 
   /**
    * Handle video progress updates for HTML5 videos
@@ -264,6 +271,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const handleVideoEnded = useCallback(async () => {
     setProgress(100);
     setIsCompleted(true);
+    setWasEverCompleted(true);
     await updateProgressToDatabase(100);
     // Ensure parent components update immediately
     onProgressUpdate?.(100);
@@ -291,6 +299,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       async () => {
         setProgress(100);
         setIsCompleted(true);
+        setWasEverCompleted(true);
         await updateProgressToDatabase(100);
         onProgressUpdate?.(100);
         
@@ -409,8 +418,9 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 onProgressUpdate?.(progressPercent);
 
                 // Auto-complete when reaching 95% for YouTube videos (accounting for ads/buffering)
-                if (progressPercent >= 95) {
+                if (progressPercent >= 95 && !wasEverCompleted) {
                   setIsCompleted(true);
+                  setWasEverCompleted(true);
                   updateProgressToDatabase(100);
                   onProgressUpdate?.(100);
                   if (progressIntervalRef.current) {
@@ -455,8 +465,9 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 onProgressUpdate?.(progressPercent);
                 
                 // Auto-complete when reaching 95% for embedded videos
-                if (progressPercent >= 95) {
+                if (progressPercent >= 95 && !wasEverCompleted) {
                   setIsCompleted(true);
+                  setWasEverCompleted(true);
                   updateProgressToDatabase(100);
                   onProgressUpdate?.(100);
                   if (progressIntervalRef.current) {
@@ -522,7 +533,12 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           
           {/* Video Controls */}
           <div className="flex items-center gap-2 mt-3" role="toolbar" aria-label="Video controls">
-            {!isCompleted && (
+            {(isCompleted || wasEverCompleted) ? (
+              <div className="flex items-center gap-2 text-success">
+                <CheckCircle className="w-5 h-5" aria-hidden="true" />
+                <span className="font-medium">Training Completed!</span>
+              </div>
+            ) : !isCompleted && (
               <>
                 <Button 
                   variant={isWatching ? "default" : "outline"} 
@@ -546,13 +562,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                   </Button>
                 )}
               </>
-            )}
-            
-            {isCompleted && (
-              <div className="flex items-center gap-2 text-success">
-                <CheckCircle className="w-5 h-5" aria-hidden="true" />
-                <span className="font-medium">Training Completed!</span>
-              </div>
             )}
           </div>
         </DialogHeader>
