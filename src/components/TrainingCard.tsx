@@ -177,7 +177,7 @@ export const TrainingCard = memo<TrainingCardProps>(({
           </button>
 
           {/* Due Date Badge with Enhanced Accessibility */}
-          {dueDateInfo && <Badge variant={dueDateInfo.variant} className={cn('absolute top-6 left-3 text-xs font-medium shadow-lg z-10 border-2', dueDateInfo.className)} aria-label={dueDateInfo.ariaLabel} role="status">
+          {dueDateInfo && <Badge variant={dueDateInfo.variant} className={cn('absolute top-6 right-3 text-xs font-medium shadow-lg z-10 border-2', dueDateInfo.className)} aria-label={dueDateInfo.ariaLabel} role="status">
               {dueDateInfo.priority === 'high' && <AlertCircle className="w-3 h-3 mr-1" aria-hidden="true" />}
               {dueDateInfo.text}
             </Badge>}
