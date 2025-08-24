@@ -14,6 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
 import { useToast } from "@/hooks/use-toast";
 import type { Video } from "@/types";
+import { logger, performanceTracker } from "@/utils/logger";
+import { handleError, withErrorHandler } from "@/utils/errorHandler";
 
 // Enhanced utility imports
 import { sanitizeText, createSafeDisplayName, validateUserRole } from "@/utils/security";
@@ -74,18 +76,37 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
 
   // Load assigned videos with enhanced error handling
   const loadAssignedVideos = useOptimizedCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const videoData = await EmployeeService.getAssignedVideosByEmail(userEmail);
-      setAssignedVideoData(videoData);
+    performanceTracker.start('loadAssignedVideos');
+    
+    const loadResult = await withErrorHandler(
+      async () => {
+        setLoading(true);
+        setError(null);
+        
+        const videoData = await EmployeeService.getAssignedVideosByEmail(userEmail);
+        setAssignedVideoData(videoData);
 
-      // Announce successful load to screen readers
-      announceToScreenReader(`Loaded ${videoData.length} assigned training videos`);
-    } catch (error) {
-      console.error('Error loading assigned videos:', error);
+        logger.info('Successfully loaded assigned videos', {
+          videoCount: videoData.length,
+          userEmail
+        });
+
+        // Announce successful load to screen readers
+        announceToScreenReader(`Loaded ${videoData.length} assigned training videos`);
+        
+        return videoData;
+      },
+      {
+        operation: 'loadAssignedVideos',
+        userEmail
+      },
+      'Failed to load your assigned videos. Please try refreshing the page.'
+    );
+
+    if (!loadResult.success) {
       const errorMessage = 'Failed to load your assigned videos. Please try refreshing the page.';
       setError(errorMessage);
+      
       toast({
         title: "Error",
         description: errorMessage,
@@ -94,15 +115,22 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
 
       // Announce error to screen readers
       announceToScreenReader(errorMessage, 'assertive');
-    } finally {
-      setLoading(false);
     }
+
+    performanceTracker.end('loadAssignedVideos');
+    setLoading(false);
   }, [userEmail, toast]);
 
   // Enhanced video data transformation with security and accessibility
   const transformToTrainingVideo = useOptimizedCallback((video: Video, assignment?: any): TrainingVideo => {
-    console.log('transformToTrainingVideo - Input video:', video);
-    console.log('transformToTrainingVideo - Video description:', video.description);
+    logger.debug('Transforming video data for display', {
+      videoId: video.id,
+      videoTitle: video.title,
+      hasDescription: !!video.description,
+      hasAssignment: !!assignment,
+      userEmail
+    });
+    
     // Simple duration formatter (inline to fix runtime error)
     const formatSeconds = (seconds: number): string => {
       if (seconds === 0) return '0 minutes';
@@ -117,6 +145,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       }
       return `${hours} hour${hours !== 1 ? 's' : ''} ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`;
     };
+    
     return {
       id: video.id,
       title: sanitizeText(video.title || 'Untitled Video'),
@@ -130,19 +159,31 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       dueDate: assignment?.due_date || null,
       status: !video.video_url && !video.video_file_name ? 'warning' as const : undefined
     };
-  }, []);
+  }, [userEmail]);
 
   // Enhanced training data processing with comprehensive statistics
   const trainingData = useOptimizedMemo(() => {
-    console.log('Processing training data, assignedVideoData:', assignedVideoData);
-    const allRequiredVideos = assignedVideoData.filter(item => item.video.type === 'Required').map(item => transformToTrainingVideo(item.video, item.assignment));
+    performanceTracker.start('processTrainingData');
+    
+    logger.debug('Processing assigned video data', {
+      totalAssignments: assignedVideoData.length,
+      userEmail
+    });
+    
+    const allRequiredVideos = assignedVideoData
+      .filter(item => item.video.type === 'Required')
+      .map(item => transformToTrainingVideo(item.video, item.assignment));
     
     // Separate completed and incomplete required videos
     const requiredVideos = allRequiredVideos.filter(video => video.progress < 100);
     const completedVideos = allRequiredVideos.filter(video => video.progress >= 100);
     
-    console.log('Required videos (incomplete):', requiredVideos.length);
-    console.log('Completed videos:', completedVideos.length);
+    logger.info('Training progress calculated', {
+      requiredIncomplete: requiredVideos.length,
+      completed: completedVideos.length,
+      totalRequired: allRequiredVideos.length,
+      userEmail
+    });
 
     // Calculate comprehensive training statistics using all required videos
     const stats = calculateTrainingProgress(allRequiredVideos);
@@ -177,19 +218,32 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
   // Enhanced video play handler with accessibility
   const handleVideoPlay = useOptimizedCallback((videoId: string) => {
     const video = trainingData.required.find(v => v.id === videoId) || trainingData.completed.find(v => v.id === videoId);
-    console.log('handleVideoPlay - Found video:', video);
-    console.log('handleVideoPlay - Video description:', video?.description);
+    
+    logger.videoEvent('employee_video_selected', videoId, {
+      videoTitle: video?.title,
+      hasDescription: !!video?.description,
+      userEmail,
+      videoFound: !!video
+    });
+    
     if (video) {
       const announcement = `Opening ${video.title}. ${getStatusAnnouncement(video.progress, video.isRequired || false, video.dueDate)}`;
       announceToScreenReader(announcement);
+    } else {
+      logger.warn('Video not found when attempting to play', { videoId, userEmail });
     }
+    
     onPlayVideo(videoId);
-  }, [trainingData.required, trainingData.completed, onPlayVideo]);
+  }, [trainingData.required, trainingData.completed, onPlayVideo, userEmail]);
 
   // Callback to refresh training data when progress is updated
   const handleProgressUpdate = (progress: number) => {
-    // This will trigger a re-render of components that depend on video progress
-    console.log('Video progress updated:', progress);
+    logger.videoEvent('progress_updated_callback', 'unknown', {
+      progress,
+      userEmail,
+      timestamp: new Date().toISOString()
+    });
+    
     // Optionally refresh the training data to show updated progress
     loadAssignedVideos();
   };
@@ -205,7 +259,13 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       schema: 'public',
       table: 'video_progress'
     }, payload => {
-      console.log('Real-time video progress update:', payload);
+      logger.info('Real-time video progress update received', {
+        event: payload.eventType,
+        table: payload.table,
+        userEmail,
+        timestamp: new Date().toISOString()
+      });
+      
       // Refresh assigned videos when any progress changes
       loadAssignedVideos();
     }).subscribe();

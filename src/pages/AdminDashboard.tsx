@@ -30,28 +30,81 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { logger, performanceTracker } from "@/utils/logger";
+import { handleError, createDatabaseError, withErrorHandler, withRetry } from "@/utils/errorHandler";
+import { sanitizeText, validateEmail } from "@/utils/security";
 
+/**
+ * Props interface for the AdminDashboard component
+ * @interface AdminDashboardProps
+ */
 interface AdminDashboardProps {
+  /** The admin user's display name */
   userName: string;
+  /** The admin user's email address */
   userEmail: string;
+  /** Callback function to handle user logout */
   onLogout: () => void;
 }
 
+/**
+ * Video data interface for type safety
+ * @interface VideoData
+ */
 type VideoData = {
+  /** Unique video identifier */
   id: string;
+  /** Video title */
   title: string;
+  /** Optional video description */
   description: string | null;
+  /** URL for streaming videos (YouTube, etc.) */
   video_url: string | null;
+  /** Filename for uploaded video files */
   video_file_name: string | null;
+  /** Optional thumbnail image URL */
   thumbnail_url?: string | null;
+  /** Video type classification */
   type: string;
+  /** Number of employees assigned to this video */
   assigned_to: number;
+  /** Completion rate percentage */
   completion_rate: number;
+  /** Video creation timestamp */
   created_at: string;
+  /** Last update timestamp */
   updated_at: string;
 };
 
+/**
+ * AdminDashboard Component - Main administrative interface for the Senior Services Training Portal
+ * 
+ * This component provides comprehensive administrative functionality including:
+ * - Video library management (create, edit, delete)
+ * - Employee progress monitoring and management  
+ * - Training assignment and tracking
+ * - System settings and configuration
+ * 
+ * Features:
+ * - Tabbed interface for organized access to different admin functions
+ * - Real-time video management with thumbnail generation
+ * - Secure file upload handling with validation
+ * - Comprehensive error handling and user feedback
+ * - Performance monitoring and logging
+ * - Accessibility-compliant design
+ * 
+ * Security measures:
+ * - Input sanitization for all user-provided content
+ * - File type and size validation for uploads
+ * - Proper error handling without exposing sensitive information
+ * - Admin-only access controls
+ * 
+ * @component
+ * @param {AdminDashboardProps} props - Component props
+ * @returns {JSX.Element} Admin dashboard interface
+ */
 export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboardProps) => {
+  // Component state management
   const [isAddVideoModalOpen, setIsAddVideoModalOpen] = useState(false);
   const [isEditVideoModalOpen, setIsEditVideoModalOpen] = useState(false);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
@@ -59,9 +112,11 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
   const [editingVideo, setEditingVideo] = useState<VideoData | null>(null);
   const [videos, setVideos] = useState<VideoData[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
   const [deleteConfirmVideo, setDeleteConfirmVideo] = useState<VideoData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Hooks for user feedback
+  const { toast } = useToast();
 
 
   // Mock data - will be replaced with real data from Supabase
@@ -95,226 +150,400 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
     }
   ];
 
-  // Fetch videos from Supabase using the service that calculates correct assignment counts
+  /**
+   * Fetches videos from Supabase with proper error handling and performance monitoring
+   * Uses the video service to calculate correct assignment counts and statistics
+   * 
+   * This function:
+   * 1. Authenticates the current user
+   * 2. Fetches video data using the optimized video service
+   * 3. Handles errors gracefully with user-friendly messages
+   * 4. Logs operations for monitoring and debugging
+   * 5. Updates the UI state appropriately
+   */
   const fetchVideos = async () => {
-    console.log('Fetching videos...');
-    try {
-      const { data: user } = await supabase.auth.getUser();
-      console.log('Current user:', user);
-      
-      // Use videoService which correctly calculates assignment counts
-      const { videoService } = await import('@/services/supabase');
-      const result = await videoService.getAll();
+    performanceTracker.start('fetchVideos');
+    
+    const fetchResult = await withErrorHandler(
+      async () => {
+        // Verify user authentication
+        const { data: user, error: authError } = await supabase.auth.getUser();
+        
+        if (authError) {
+          throw createDatabaseError('user authentication', 'auth.users', authError);
+        }
 
-      console.log('Videos service result:', result);
+        logger.authEvent('admin_videos_fetch_started', user?.user?.id, user?.user?.email);
+        
+        // Use videoService which correctly calculates assignment counts
+        const { videoService } = await import('@/services/supabase');
+        const result = await videoService.getAll();
 
-      if (!result.success) {
-        console.error('Error fetching videos:', result.error);
-        toast({
-          title: "Error",
-          description: result.error || "Failed to load videos",
-          variant: "destructive",
+        if (!result.success) {
+          throw createDatabaseError('video fetch', 'videos', new Error(result.error || 'Unknown error'));
+        }
+
+        logger.dbOperation('select', 'videos', true, {
+          count: result.data?.length || 0,
+          adminUser: user?.user?.email
         });
-      } else {
-        console.log('Setting videos:', result.data);
+
         setVideos(result.data || []);
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
+        return result.data;
+      },
+      { 
+        operation: 'fetchVideos',
+        adminUser: userEmail 
+      },
+      'Unable to load videos. Please refresh the page or contact support.'
+    );
+
+    if (!fetchResult.success) {
       toast({
-        title: "Error", 
-        description: "An unexpected error occurred while loading videos.",
+        title: "Error Loading Videos",
+        description: "Failed to load videos. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
+
+    performanceTracker.end('fetchVideos');
+    setLoading(false);
   };
 
-  // Load videos on component mount
+  /**
+   * Load videos on component mount with proper lifecycle management
+   */
   useEffect(() => {
     fetchVideos();
   }, []);
 
+  /**
+   * Generates a consistent color for video thumbnails based on title
+   * Provides visual consistency and accessibility for videos without thumbnails
+   * 
+   * @param {string} title - Video title to generate color from
+   * @returns {string} Tailwind CSS color class
+   */
   const generateThumbnailColor = (title: string) => {
     const colors = [
       'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-indigo-500',
       'bg-pink-500', 'bg-red-500', 'bg-yellow-500', 'bg-teal-500'
     ];
     
+    // Create hash from title for consistent color selection
     const hash = title.split('').reduce((acc, char) => char.charCodeAt(0) + acc, 0);
     return colors[hash % colors.length];
   };
 
+  /**
+   * Handles video thumbnail click to open video player
+   * Provides secure video playback with progress tracking
+   * 
+   * @param {VideoData} video - Video data to play
+   */
   const handleVideoThumbnailClick = (video: VideoData) => {
+    logger.videoEvent('thumbnail_clicked', video.id, { 
+      title: video.title,
+      adminUser: userEmail 
+    });
+    
     setSelectedVideo(video);
     setIsVideoPlayerOpen(true);
   };
 
+  /**
+   * Handles adding a new video with comprehensive error handling and validation
+   * Supports both file uploads and URL-based videos with thumbnail generation
+   * 
+   * This function:
+   * 1. Validates and sanitizes input data for security
+   * 2. Handles file upload with automatic thumbnail generation
+   * 3. Processes URL-based videos with proper validation
+   * 4. Provides detailed error handling and user feedback
+   * 5. Logs all operations for monitoring and debugging
+   * 
+   * @param {VideoFormData} videoData - Form data containing video information
+   */
   const handleAddVideo = async (videoData: VideoFormData): Promise<void> => {
-    try {
-      let insertedError: any = null;
-      let thumbnailUrl: string | null = null;
-
-      // If a file is provided, upload it to Supabase Storage and generate thumbnail
-      if (videoData.file) {
-        const fileName = `${Date.now()}-${videoData.file.name}`;
+    performanceTracker.start('addVideo');
+    
+    const addVideoResult = await withErrorHandler(
+      async () => {
+        // Sanitize input data for security
+        const sanitizedTitle = sanitizeText(videoData.title || 'Untitled Video');
+        const sanitizedDescription = videoData.description ? sanitizeText(videoData.description) : null;
         
-        // Generate thumbnail from video
-        try {
-          const { generateVideoThumbnail, uploadThumbnail } = await import('@/utils/videoThumbnail');
-          const thumbnailBase64 = await generateVideoThumbnail(videoData.file, 1);
-          thumbnailUrl = await uploadThumbnail(thumbnailBase64, `${Date.now()}-thumbnail.jpg`);
-        } catch (thumbnailError) {
-          console.warn('Failed to generate thumbnail:', thumbnailError);
-          // Continue without thumbnail - not a critical error
-        }
+        let thumbnailUrl: string | null = null;
+        let insertData: any = {
+          title: sanitizedTitle,
+          description: sanitizedDescription,
+          type: 'Optional'
+        };
 
-        const { error: uploadError } = await supabase.storage
-          .from('videos')
-          .upload(fileName, videoData.file);
-
-        if (uploadError) {
-          console.error('Error uploading video file:', uploadError);
-          toast({
-            title: 'Upload Error',
-            description: 'Failed to upload the video file.',
-            variant: 'destructive',
+        // Handle file upload
+        if (videoData.file) {
+          const fileName = `${Date.now()}-${videoData.file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+          
+          logger.info('Starting video file upload', {
+            fileName,
+            fileSize: videoData.file.size,
+            fileType: videoData.file.type,
+            adminUser: userEmail
           });
-          return;
-        }
 
-        const { error } = await supabase
-          .from('videos')
-          .insert({
-            title: videoData.title || 'Untitled Video',
-            description: videoData.description,
+          // Generate thumbnail from video with error handling
+          const thumbnailResult = await withErrorHandler(
+            async () => {
+              const { generateVideoThumbnail, uploadThumbnail } = await import('@/utils/videoThumbnail');
+              const thumbnailBase64 = await generateVideoThumbnail(videoData.file!, 1);
+              return await uploadThumbnail(thumbnailBase64, `${Date.now()}-thumbnail.jpg`);
+            },
+            { fileName, operation: 'thumbnailGeneration' },
+            'Failed to generate video thumbnail'
+          );
+
+          if (thumbnailResult.success) {
+            thumbnailUrl = thumbnailResult.data;
+            logger.info('Video thumbnail generated successfully', { fileName, thumbnailUrl });
+          } else {
+            logger.warn('Thumbnail generation failed, continuing without thumbnail', { 
+              fileName,
+              error: !thumbnailResult.success ? 'Thumbnail generation failed' : undefined
+            });
+          }
+
+          // Upload video file to storage
+          const uploadResult = await withRetry(async () => {
+            const { error } = await supabase.storage
+              .from('videos')
+              .upload(fileName, videoData.file!);
+            
+            if (error) throw error;
+          }, 3);
+
+          insertData = {
+            ...insertData,
             video_url: null,
             video_file_name: fileName,
-            thumbnail_url: thumbnailUrl,
-            type: 'Optional'
-          });
-        insertedError = error;
-      } else {
-        // URL-based video
-        const { error } = await supabase
-          .from('videos')
-          .insert({
-            title: videoData.title || 'Untitled Video',
-            description: videoData.description,
-            video_url: videoData.url,
-            video_file_name: null,
-            thumbnail_url: null,
-            type: 'Optional'
-          });
-        insertedError = error;
-      }
+            thumbnail_url: thumbnailUrl
+          };
 
-      if (insertedError) {
-        console.error('Error adding video:', insertedError);
-        toast({
-          title: 'Error',
-          description: 'Failed to add video. Please try again.',
-          variant: 'destructive',
+          logger.dbOperation('upload', 'storage.videos', true, {
+            fileName,
+            fileSize: videoData.file.size,
+            adminUser: userEmail
+          });
+        } else {
+          // Handle URL-based video
+          const sanitizedUrl = videoData.url ? videoData.url.trim() : null;
+          
+          if (!sanitizedUrl) {
+            throw new Error('Video URL is required when no file is provided');
+          }
+
+          insertData = {
+            ...insertData,
+            video_url: sanitizedUrl,
+            video_file_name: null,
+            thumbnail_url: null
+          };
+
+          logger.info('Adding URL-based video', {
+            videoUrl: sanitizedUrl,
+            adminUser: userEmail
+          });
+        }
+
+        // Insert video record into database
+        const { error: insertError } = await supabase
+          .from('videos')
+          .insert(insertData);
+
+        if (insertError) {
+          throw createDatabaseError('video insertion', 'videos', insertError);
+        }
+
+        logger.dbOperation('insert', 'videos', true, {
+          title: sanitizedTitle,
+          type: insertData.video_file_name ? 'file' : 'url',
+          adminUser: userEmail
         });
-      } else {
+
         toast({
-          title: 'Video Added',
-          description: `"${videoData.title || 'Video'}" has been added to the training library.`,
+          title: 'Video Added Successfully',
+          description: `"${sanitizedTitle}" has been added to the training library.`,
         });
-        fetchVideos();
-      }
-    } catch (error) {
-      console.error('Error adding video:', error);
+        
+        await fetchVideos(); // Refresh video list
+      },
+      {
+        operation: 'addVideo',
+        title: videoData.title,
+        hasFile: !!videoData.file,
+        hasUrl: !!videoData.url,
+        adminUser: userEmail
+      },
+      'Failed to add video. Please check your input and try again.'
+    );
+
+    if (!addVideoResult.success) {
       toast({
-        title: 'Error',
+        title: 'Video Upload Error',
         description: 'Failed to add video. Please try again.',
         variant: 'destructive',
       });
     }
+
+    performanceTracker.end('addVideo');
   };
-  // Handle editing a video
+  /**
+   * Handles editing video metadata with validation and error handling
+   * 
+   * @param {VideoData} video - Video to edit
+   */
   const handleEditVideo = (video: VideoData) => {
+    logger.videoEvent('edit_started', video.id, {
+      title: video.title,
+      adminUser: userEmail
+    });
+    
     setEditingVideo(video);
     setIsEditVideoModalOpen(true);
   };
 
-  // Handle updating video
-  const handleUpdateVideo = async (videoId: string, updates: { title: string; description: string }) => {
-    try {
-      const { error } = await supabase
-        .from('videos')
-        .update({
-          title: updates.title,
-          description: updates.description,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', videoId);
+  /**
+   * Handles updating video details with comprehensive validation and error handling
+   * 
+   * @param {string} videoId - ID of video to update
+   * @param {object} updates - Updates to apply
+   */
+  const handleUpdateVideo = async (
+    videoId: string, 
+    updates: { title: string; description: string }
+  ) => {
+    performanceTracker.start('updateVideo');
+    
+    const updateResult = await withErrorHandler(
+      async () => {
+        // Sanitize input for security
+        const sanitizedTitle = sanitizeText(updates.title);
+        const sanitizedDescription = updates.description ? sanitizeText(updates.description) : null;
+        
+        if (!sanitizedTitle.trim()) {
+          throw new Error('Video title cannot be empty');
+        }
 
-      if (error) {
-        console.error('Error updating video:', error);
-        toast({
-          title: "Error",
-          description: "Failed to update video. Please try again.",
-          variant: "destructive",
+        const { error } = await supabase
+          .from('videos')
+          .update({
+            title: sanitizedTitle,
+            description: sanitizedDescription,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', videoId);
+
+        if (error) {
+          throw createDatabaseError('video update', 'videos', error);
+        }
+
+        logger.dbOperation('update', 'videos', true, {
+          videoId,
+          title: sanitizedTitle,
+          adminUser: userEmail
         });
-      } else {
+
         toast({
-          title: "Video Updated",
+          title: "Video Updated Successfully",
           description: "Video details have been successfully updated.",
         });
         
-        // Refresh the videos list
-        fetchVideos();
-      }
-    } catch (error) {
-      console.error('Error updating video:', error);
+        await fetchVideos(); // Refresh the videos list
+      },
+      {
+        operation: 'updateVideo',
+        videoId,
+        adminUser: userEmail
+      },
+      'Failed to update video. Please try again.'
+    );
+
+    if (!updateResult.success) {
       toast({
-        title: "Error",
+        title: "Update Error",
         description: "Failed to update video. Please try again.",
         variant: "destructive",
       });
     }
+
+    performanceTracker.end('updateVideo');
   };
 
-  // Handle deleting video
+  /**
+   * Handles video deletion with comprehensive error handling and logging
+   * 
+   * @param {string} videoId - ID of video to delete
+   */
   const handleDeleteVideo = async (videoId: string) => {
-    try {
-      const { error } = await supabase
-        .from('videos')
-        .delete()
-        .eq('id', videoId);
+    performanceTracker.start('deleteVideo');
+    
+    const deleteResult = await withErrorHandler(
+      async () => {
+        const { error } = await supabase
+          .from('videos')
+          .delete()
+          .eq('id', videoId);
 
-      if (error) {
-        console.error('Error deleting video:', error);
-        toast({
-          title: "Error",
-          description: "Failed to delete video. Please try again.",
-          variant: "destructive",
+        if (error) {
+          throw createDatabaseError('video deletion', 'videos', error);
+        }
+
+        logger.dbOperation('delete', 'videos', true, {
+          videoId,
+          adminUser: userEmail
         });
-      } else {
+
         toast({
-          title: "Video Deleted",
+          title: "Video Deleted Successfully",
           description: "Video has been permanently removed from the library.",
         });
         
-        // Refresh the videos list
-        fetchVideos();
-      }
-    } catch (error) {
-      console.error('Error deleting video:', error);
+        await fetchVideos(); // Refresh the videos list
+      },
+      {
+        operation: 'deleteVideo',
+        videoId,
+        adminUser: userEmail
+      },
+      'Failed to delete video. Please try again.'
+    );
+
+    if (!deleteResult.success) {
       toast({
-        title: "Error",
+        title: "Deletion Error",
         description: "Failed to delete video. Please try again.",
         variant: "destructive",
       });
     }
+
+    performanceTracker.end('deleteVideo');
   };
 
-  // Confirm deletion dialog action
+  /**
+   * Confirms and executes video deletion with proper state management
+   */
   const handleDeleteConfirm = async () => {
-    if (!deleteConfirmVideo) return;
+    if (!deleteConfirmVideo) {
+      logger.warn('Delete confirmation called without video', { adminUser: userEmail });
+      return;
+    }
+    
     setIsDeleting(true);
+    
+    logger.videoEvent('delete_confirmed', deleteConfirmVideo.id, {
+      title: deleteConfirmVideo.title,
+      adminUser: userEmail
+    });
+    
     await handleDeleteVideo(deleteConfirmVideo.id);
     setDeleteConfirmVideo(null);
     setIsDeleting(false);

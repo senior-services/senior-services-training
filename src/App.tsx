@@ -12,6 +12,7 @@ import { NotFound } from "./pages/NotFound";
 import { useAuth } from "./hooks/useAuth";
 import { useUserRole } from "./hooks/useUserRole";
 import { VideoPlayerFullscreen } from "@/components/VideoPlayerFullscreen";
+import { logger } from "@/utils/logger";
 
 const queryClient = new QueryClient();
 
@@ -23,15 +24,16 @@ const AppContent = () => {
   const isAuthenticated = !!user;
   const loading = authLoading || (isAuthenticated && roleLoading);
 
-  // Debug logging
-  console.log('App Debug:', {
-    user: user?.email,
+  // Enhanced debug logging for application state monitoring
+  logger.debug('Application state update', {
+    user: user?.email || 'not_authenticated',
     isAuthenticated,
-    role,
+    role: role || 'unknown',
     authLoading,
     roleLoading,
     loading,
-    currentPath: window.location.pathname
+    currentPath: window.location.pathname,
+    timestamp: new Date().toISOString()
   });
 
   const handleLogout = () => {
@@ -114,7 +116,12 @@ const AppContent = () => {
         onOpenChange={setIsVideoOpen}
         videoId={selectedVideoId}
         onProgressUpdate={(progress) => {
-          console.log('Video progress updated:', progress);
+        // Update progress with comprehensive logging
+        logger.videoEvent('progress_update_callback', 'unknown', {
+          progress,
+          timestamp: new Date().toISOString(),
+          source: 'AppContent_callback'
+        });
           // The progress is already being saved to the database by the VideoPlayerFullscreen component
         }}
       />
