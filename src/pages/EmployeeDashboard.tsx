@@ -115,14 +115,12 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       }
       return `${hours} hour${hours !== 1 ? 's' : ''} ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`;
     };
-
     return {
       id: video.id,
       title: sanitizeText(video.title || 'Untitled Video'),
       description: sanitizeText(video.description || ''),
       thumbnail: video.thumbnail_url || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&h=300&fit=crop',
       duration: formatSeconds(video.duration_seconds || 0),
-      
       progress: Math.max(0, Math.min(100, assignment?.progress_percent || 0)),
       // Use real progress from assignment
       isRequired: video.type === 'Required',
@@ -254,10 +252,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
                   <AlertCircle className="w-4 h-4 mr-1" aria-hidden="true" />
                   Attention Needed
                 </Badge>}
-              {trainingData.stats.overallStatus === 'behind' && <Badge className="bg-warning text-warning-foreground border-warning" aria-label="Training progress is behind schedule">
-                  <Clock className="w-4 h-4 mr-1" aria-hidden="true" />
-                  Behind Schedule
-                </Badge>}
+              {trainingData.stats.overallStatus === 'behind'}
             </div>
             
             <p className="text-muted-foreground text-lg">
