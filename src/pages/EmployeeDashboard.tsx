@@ -125,6 +125,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
 
   // Enhanced training data processing with comprehensive statistics
   const trainingData = useOptimizedMemo(() => {
+    console.log('Processing training data, assignedVideoData:', assignedVideoData);
+    
     const requiredVideos = assignedVideoData
       .filter(item => item.video.type === 'Required')
       .map(item => transformToTrainingVideo(item.video, item.assignment));
@@ -132,6 +134,10 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
     const optionalVideos = assignedVideoData
       .filter(item => item.video.type !== 'Required')
       .map(item => transformToTrainingVideo(item.video, item.assignment));
+
+    console.log('Filtered videos - Required:', requiredVideos.length, 'Optional:', optionalVideos.length);
+    console.log('Required videos:', requiredVideos);
+    console.log('Optional videos:', optionalVideos);
 
     // Calculate comprehensive training statistics
     const stats = calculateTrainingProgress(requiredVideos);
