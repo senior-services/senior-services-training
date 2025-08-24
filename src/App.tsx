@@ -42,7 +42,6 @@ const AppContent = () => {
 
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
-  const [lastCompletedVideoId, setLastCompletedVideoId] = useState<string | null>(null);
 
   const handlePlayVideo = (videoId: string) => {
     setSelectedVideoId(videoId);
@@ -123,14 +122,8 @@ const AppContent = () => {
           timestamp: new Date().toISOString(),
           source: 'AppContent_callback'
         });
-          
-          // Only trigger refresh when video is newly completed (not already completed)
-          if (progress >= 100 && selectedVideoId && selectedVideoId !== lastCompletedVideoId) {
-            setLastCompletedVideoId(selectedVideoId);
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000); // Small delay to ensure database update completes
-          }
+        // Progress is automatically saved to database by VideoPlayerFullscreen
+        // Dashboard updates via real-time subscriptions
         }}
       />
     </>
