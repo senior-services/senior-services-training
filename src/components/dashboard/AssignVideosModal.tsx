@@ -252,23 +252,27 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                   )}
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedVideoIds(new Set())}
-                    disabled={selectedVideoIds.size === 0}
-                    className="text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSelectedVideoIds(new Set());
+                    }}
+                    className={`text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline ${selectedVideoIds.size === 0 ? 'opacity-50 pointer-events-none' : ''}`}
                   >
                     Clear All
-                  </button>
+                  </a>
                   <span className="text-muted-foreground/50">|</span>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedVideoIds(new Set(videos.map(v => v.id)))}
-                    disabled={selectedVideoIds.size === videos.length}
-                    className="text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSelectedVideoIds(new Set(videos.map(v => v.id)));
+                    }}
+                    className={`text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline ${selectedVideoIds.size === videos.length ? 'opacity-50 pointer-events-none' : ''}`}
                   >
                     Select All
-                  </button>
+                  </a>
                 </div>
               </div>
 
