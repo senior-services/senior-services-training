@@ -190,12 +190,12 @@ export const TrainingCard = memo<TrainingCardProps>(({
             </Button>
           </div>
 
-          {/* Progress Overlay with Accessibility */}
-          {trainingStatus.hasStarted && <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20" role="progressbar" aria-label={ariaLabels.progress} aria-valuenow={sanitizedVideo.progress} aria-valuemin={0} aria-valuemax={100}>
-              <div className="h-full bg-primary transition-all duration-500 ease-out" style={{
-            width: `${sanitizedVideo.progress}%`
-          }} />
-            </div>}
+          {/* Progress Overlay with Accessibility - Always show gray bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted/40" role="progressbar" aria-label={ariaLabels.progress} aria-valuenow={sanitizedVideo.progress} aria-valuemin={0} aria-valuemax={100}>
+            <div className="h-full bg-primary transition-all duration-500 ease-out" style={{
+              width: `${sanitizedVideo.progress}%`
+            }} />
+          </div>
         </header>
 
         {/* Card Content with Semantic HTML */}
