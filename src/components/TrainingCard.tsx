@@ -223,12 +223,12 @@ export const TrainingCard = memo<TrainingCardProps>(({
           {sanitizedVideo.description && (
             <button
               onClick={handleToggleDescription}
-              className="text-left w-full focus:outline-none focus:ring-2 focus:ring-ring rounded"
+              className="text-left w-full focus:outline-none focus:ring-2 focus:ring-ring rounded -mx-0 mt-2"
               aria-expanded={isDescriptionExpanded}
               aria-label={`${isDescriptionExpanded ? 'Collapse' : 'Expand'} video description`}
             >
               <CardDescription 
-                className={`transition-all duration-200 ${
+                className={`transition-all duration-200 m-0 p-0 ${
                   isDescriptionExpanded ? '' : 'line-clamp-2'
                 } hover:text-foreground cursor-pointer`}
               >
