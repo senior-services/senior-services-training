@@ -16,21 +16,9 @@ import { useToast } from "@/hooks/use-toast";
 import type { Video } from "@/types";
 
 // Enhanced utility imports
-import { 
-  sanitizeText, 
-  createSafeDisplayName, 
-  validateUserRole 
-} from "@/utils/security";
-import { 
-  announceToScreenReader,
-  getStatusAnnouncement 
-} from "@/utils/accessibility";
-import { 
-  calculateTrainingProgress, 
-  useOptimizedMemo, 
-  useOptimizedCallback,
-  usePerformanceMonitor 
-} from "@/utils/performance";
+import { sanitizeText, createSafeDisplayName, validateUserRole } from "@/utils/security";
+import { announceToScreenReader, getStatusAnnouncement } from "@/utils/accessibility";
+import { calculateTrainingProgress, useOptimizedMemo, useOptimizedCallback, usePerformanceMonitor } from "@/utils/performance";
 
 /**
  * Enhanced props interface with comprehensive type safety
@@ -57,20 +45,25 @@ interface TrainingStats {
 /**
  * Enhanced EmployeeDashboard component with comprehensive accessibility and performance optimizations
  */
-export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ 
-  userName, 
-  userEmail, 
-  onLogout, 
-  onPlayVideo 
+export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
+  userName,
+  userEmail,
+  onLogout,
+  onPlayVideo
 }) => {
   // Performance monitoring
   usePerformanceMonitor('EmployeeDashboard');
 
   // Enhanced state management with better typing
-  const [assignedVideoData, setAssignedVideoData] = useState<{ video: Video; assignment: any }[]>([]);
+  const [assignedVideoData, setAssignedVideoData] = useState<{
+    video: Video;
+    assignment: any;
+  }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
 
   // Sanitize and validate user data for security
   const sanitizedUserData = useMemo(() => ({
@@ -84,24 +77,21 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
     try {
       setLoading(true);
       setError(null);
-      
       const videoData = await EmployeeService.getAssignedVideosByEmail(userEmail);
-      
       setAssignedVideoData(videoData);
-      
+
       // Announce successful load to screen readers
       announceToScreenReader(`Loaded ${videoData.length} assigned training videos`);
     } catch (error) {
       console.error('Error loading assigned videos:', error);
       const errorMessage = 'Failed to load your assigned videos. Please try refreshing the page.';
       setError(errorMessage);
-      
       toast({
         title: "Error",
         description: errorMessage,
-        variant: "destructive",
+        variant: "destructive"
       });
-      
+
       // Announce error to screen readers
       announceToScreenReader(errorMessage, 'assertive');
     } finally {
@@ -116,8 +106,10 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       title: sanitizeText(video.title || 'Untitled Video'),
       description: sanitizeText(video.description || ''),
       thumbnail: video.thumbnail_url || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&h=300&fit=crop',
-      duration: '15 min', // TODO: Add actual duration field to database
-      progress: Math.max(0, Math.min(100, assignment?.progress_percent || 0)), // Use real progress from assignment
+      duration: '15 min',
+      // TODO: Add actual duration field to database
+      progress: Math.max(0, Math.min(100, assignment?.progress_percent || 0)),
+      // Use real progress from assignment
       isRequired: video.type === 'Required',
       deadline: assignment?.due_date ? new Date(assignment.due_date).toLocaleDateString() : undefined,
       dueDate: assignment?.due_date || null,
@@ -128,17 +120,13 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
   // Enhanced training data processing with comprehensive statistics
   const trainingData = useOptimizedMemo(() => {
     console.log('Processing training data, assignedVideoData:', assignedVideoData);
-    
-    const requiredVideos = assignedVideoData
-      .filter(item => item.video.type === 'Required')
-      .map(item => transformToTrainingVideo(item.video, item.assignment));
-
+    const requiredVideos = assignedVideoData.filter(item => item.video.type === 'Required').map(item => transformToTrainingVideo(item.video, item.assignment));
     console.log('Required videos:', requiredVideos.length);
     console.log('Required videos:', requiredVideos);
 
     // Calculate comprehensive training statistics
     const stats = calculateTrainingProgress(requiredVideos);
-    
+
     // Determine overall status for accessibility announcements
     let overallStatus: TrainingStats['overallStatus'] = 'on-track';
     if (stats.totalRequired === 0) {
@@ -156,7 +144,6 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       });
       overallStatus = hasOverdue ? 'needs-attention' : 'on-track';
     }
-
     return {
       required: requiredVideos,
       stats: {
@@ -169,16 +156,10 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
   // Enhanced video play handler with accessibility
   const handleVideoPlay = useOptimizedCallback((videoId: string) => {
     const video = trainingData.required.find(v => v.id === videoId);
-    
     if (video) {
-      const announcement = `Opening ${video.title}. ${getStatusAnnouncement(
-        video.progress, 
-        video.isRequired || false, 
-        video.dueDate
-      )}`;
+      const announcement = `Opening ${video.title}. ${getStatusAnnouncement(video.progress, video.isRequired || false, video.dueDate)}`;
       announceToScreenReader(announcement);
     }
-    
     onPlayVideo(videoId);
   }, [trainingData.required, onPlayVideo]);
 
@@ -195,22 +176,16 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
     loadAssignedVideos();
 
     // Set up realtime subscription for video progress updates
-    const channel = supabase
-      .channel('video-progress-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'video_progress'
-        },
-        (payload) => {
-          console.log('Real-time video progress update:', payload);
-          // Refresh assigned videos when any progress changes
-          loadAssignedVideos();
-        }
-      )
-      .subscribe();
+    const channel = supabase.channel('video-progress-changes').on('postgres_changes', {
+      event: '*',
+      // Listen to all changes (INSERT, UPDATE, DELETE)
+      schema: 'public',
+      table: 'video_progress'
+    }, payload => {
+      console.log('Real-time video progress update:', payload);
+      // Refresh assigned videos when any progress changes
+      loadAssignedVideos();
+    }).subscribe();
 
     // Cleanup subscription on unmount
     return () => {
@@ -220,26 +195,15 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
 
   // Error boundary fallback
   if (error) {
-    return (
-      <div className="min-h-screen bg-muted/30">
-        <Header 
-          userRole="employee"
-          userName={sanitizedUserData.displayName}
-          userEmail={userEmail}
-          overallProgress={trainingData.stats.overallProgress}
-          onLogout={onLogout}
-        />
+    return <div className="min-h-screen bg-muted/30">
+        <Header userRole="employee" userName={sanitizedUserData.displayName} userEmail={userEmail} overallProgress={trainingData.stats.overallProgress} onLogout={onLogout} />
         
         <main className="container mx-auto px-4 py-8" role="main" aria-labelledby="error-heading">
           <div className="text-center py-12">
             <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" aria-hidden="true" />
             <h2 id="error-heading" className="text-2xl font-semibold mb-2">Unable to Load Training Data</h2>
             <p className="text-muted-foreground mb-4">{error}</p>
-            <button 
-              onClick={loadAssignedVideos}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring"
-              aria-describedby="retry-description"
-            >
+            <button onClick={loadAssignedVideos} className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring" aria-describedby="retry-description">
               Try Again
             </button>
             <p id="retry-description" className="sr-only">
@@ -247,29 +211,17 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
             </p>
           </div>
         </main>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <ErrorBoundary>
+  return <ErrorBoundary>
       <div className="min-h-screen bg-muted/30">
-        <Header 
-          userRole="employee"
-          userName={sanitizedUserData.displayName}
-          userEmail={userEmail}
-          overallProgress={trainingData.stats.overallProgress}
-          onLogout={onLogout}
-        />
+        <Header userRole="employee" userName={sanitizedUserData.displayName} userEmail={userEmail} overallProgress={trainingData.stats.overallProgress} onLogout={onLogout} />
         
         <main className="container mx-auto px-4 py-8" role="main" aria-labelledby="dashboard-heading">
           {/* Skip Navigation Link for Accessibility */}
-          <a 
-            href="#main-content" 
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 
                        bg-primary text-primary-foreground px-4 py-2 rounded-md z-50
-                       focus:outline-none focus:ring-2 focus:ring-ring"
-          >
+                       focus:outline-none focus:ring-2 focus:ring-ring">
             Skip to main content
           </a>
 
@@ -279,24 +231,18 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
               <h1 id="dashboard-heading" className="text-3xl font-bold text-foreground">
                 Welcome back, {sanitizedUserData.firstName}!
               </h1>
-              {trainingData.stats.overallStatus === 'completed' && (
-                <Badge className="bg-success text-success-foreground border-success" aria-label="All required training completed">
+              {trainingData.stats.overallStatus === 'completed' && <Badge className="bg-success text-success-foreground border-success" aria-label="All required training completed">
                   <CheckCircle className="w-4 h-4 mr-1" aria-hidden="true" />
                   All Complete
-                </Badge>
-              )}
-              {trainingData.stats.overallStatus === 'needs-attention' && (
-                <Badge variant="destructive" aria-label="Some training requires immediate attention">
+                </Badge>}
+              {trainingData.stats.overallStatus === 'needs-attention' && <Badge variant="destructive" aria-label="Some training requires immediate attention">
                   <AlertCircle className="w-4 h-4 mr-1" aria-hidden="true" />
                   Attention Needed
-                </Badge>
-              )}
-              {trainingData.stats.overallStatus === 'behind' && (
-                <Badge className="bg-warning text-warning-foreground border-warning" aria-label="Training progress is behind schedule">
+                </Badge>}
+              {trainingData.stats.overallStatus === 'behind' && <Badge className="bg-warning text-warning-foreground border-warning" aria-label="Training progress is behind schedule">
                   <Clock className="w-4 h-4 mr-1" aria-hidden="true" />
                   Behind Schedule
-                </Badge>
-              )}
+                </Badge>}
             </div>
             
             <p className="text-muted-foreground text-lg">
@@ -313,71 +259,28 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           </header>
 
           {/* Required Training Section with Enhanced Accessibility */}
-          <section 
-            id="main-content"
-            className="mb-12" 
-            aria-labelledby="required-training-heading"
-            role="region"
-          >
-            <header className="flex items-center gap-3 mb-4">
-              <h2 id="required-training-heading" className="text-2xl font-semibold">
-                Required Training
-              </h2>
-              <Badge 
-                variant="secondary" 
-                className="text-base px-3 py-1"
-                aria-label={`${trainingData.stats.totalRequired} required training modules assigned`}
-              >
-                {trainingData.stats.totalRequired}
-              </Badge>
-              {trainingData.stats.requiredComplete > 0 && (
-                <Badge 
-                  className="bg-success text-success-foreground border-success text-base px-3 py-1"
-                  aria-label={`${trainingData.stats.requiredComplete} completed`}
-                >
-                  {trainingData.stats.requiredComplete} Complete
-                </Badge>
-              )}
-            </header>
+          <section id="main-content" className="mb-12" aria-labelledby="required-training-heading" role="region">
             
-            <p className="text-muted-foreground mb-6 text-lg">
-              Complete these essential training modules to meet your onboarding requirements.
-            </p>
             
-            {loading ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6" aria-label="Loading training assignments">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <LoadingSkeleton key={index} lines={1} className="h-64" />
-                ))}
-              </div>
-            ) : trainingData.required.length === 0 ? (
-              <div className="text-center py-12" role="status" aria-live="polite">
+            
+            
+            {loading ? <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6" aria-label="Loading training assignments">
+                {Array.from({
+              length: 6
+            }).map((_, index) => <LoadingSkeleton key={index} lines={1} className="h-64" />)}
+              </div> : trainingData.required.length === 0 ? <div className="text-center py-12" role="status" aria-live="polite">
                 <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" aria-hidden="true" />
                 <h3 className="text-xl font-medium mb-2">No Required Training Assigned</h3>
                 <p className="text-muted-foreground">
                   You don't have any required training videos assigned at this time.
                 </p>
-              </div>
-            ) : (
-              <div 
-                className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-                role="grid"
-                aria-label="Required training videos"
-              >
-                {trainingData.required.map((video, index) => (
-                  <TrainingCard
-                    key={video.id}
-                    video={video}
-                    onPlay={handleVideoPlay}
-                    priority={index < 3} // Prioritize first 3 cards for performance
-                  />
-                ))}
-              </div>
-            )}
+              </div> : <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6" role="grid" aria-label="Required training videos">
+                {trainingData.required.map((video, index) => <TrainingCard key={video.id} video={video} onPlay={handleVideoPlay} priority={index < 3} // Prioritize first 3 cards for performance
+            />)}
+              </div>}
           </section>
 
         </main>
       </div>
-    </ErrorBoundary>
-  );
+    </ErrorBoundary>;
 };
