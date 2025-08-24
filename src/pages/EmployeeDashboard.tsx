@@ -190,9 +190,32 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
     loadAssignedVideos();
   };
 
-  // Load videos on component mount
+  // Load videos on component mount and set up realtime subscriptions
   useEffect(() => {
     loadAssignedVideos();
+
+    // Set up realtime subscription for video progress updates
+    const channel = supabase
+      .channel('video-progress-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'video_progress'
+        },
+        (payload) => {
+          console.log('Real-time video progress update:', payload);
+          // Refresh assigned videos when any progress changes
+          loadAssignedVideos();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [loadAssignedVideos]);
 
   // Error boundary fallback
