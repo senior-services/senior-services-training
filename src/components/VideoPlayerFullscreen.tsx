@@ -527,7 +527,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 <CheckCircle className="w-5 h-5" aria-hidden="true" />
                 <span className="font-medium">Training Completed!</span>
               </div>
-            ) : (!isCompleted && (progress >= 85 || (video?.duration_seconds === 0 && progress >= 50))) ? (
+) : (!isCompleted && (progress >= 85 || ((!video?.duration_seconds || video.duration_seconds <= 0) && progress >= 50))) ? (
               <Button 
                 variant="default" 
                 size="sm" 
