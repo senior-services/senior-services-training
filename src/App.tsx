@@ -52,8 +52,11 @@ const AppContent = () => {
   const handleVideoClose = (open: boolean) => {
     setIsVideoOpen(open);
     if (!open) {
-      // Trigger dashboard refresh when modal closes
-      setRefreshDashboard(prev => prev + 1);
+      // Add delay to ensure database update completes before refreshing dashboard
+      setTimeout(() => {
+        logger.info('Triggering dashboard refresh after video modal close');
+        setRefreshDashboard(prev => prev + 1);
+      }, 500); // 500ms delay
     }
   };
 

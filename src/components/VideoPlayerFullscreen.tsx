@@ -297,12 +297,23 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         setProgress(100);
         setIsCompleted(true);
         setWasEverCompleted(true);
+        
+        // Ensure database update completes
         await updateProgressToDatabase(100);
         onProgressUpdate?.(100);
+        
+        // Add small delay before showing success message
+        await new Promise(resolve => setTimeout(resolve, 200));
         
         toast({
           title: "Training Completed! 🎉",
           description: "You've successfully completed this training video."
+        });
+        
+        logger.info('Video marked as complete successfully', { 
+          videoId: video.id, 
+          userEmail: user.email,
+          timestamp: new Date().toISOString()
         });
       },
       { videoId: video.id, userEmail: user.email },

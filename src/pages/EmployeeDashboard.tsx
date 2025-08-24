@@ -294,7 +294,13 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
   // Refresh when refreshTrigger changes (e.g., when video modal closes)
   useEffect(() => {
     if (refreshTrigger > 0) {
-      logger.info('Dashboard refresh triggered by external event', { refreshTrigger, userEmail });
+      logger.info('Dashboard refresh triggered by external event', { 
+        refreshTrigger, 
+        userEmail,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Force reload assigned videos with cache bypass
       loadAssignedVideos();
     }
   }, [refreshTrigger, loadAssignedVideos]);
