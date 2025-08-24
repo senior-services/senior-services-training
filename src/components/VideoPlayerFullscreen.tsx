@@ -339,13 +339,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             </div>
           </div>
           
-          {progress > 0 && (
-            <div className="mt-3">
-              <Progress value={progress} className="h-2" />
-              <p className="text-sm text-muted-foreground mt-1">{progress}% complete</p>
-            </div>
-          )}
-          
           {/* Video Controls */}
           <div className="flex items-center gap-2 mt-3">
             {!isCompleted && (
