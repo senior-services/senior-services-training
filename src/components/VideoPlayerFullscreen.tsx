@@ -29,6 +29,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const [isCompleted, setIsCompleted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressUpdateTimeoutRef = useRef<NodeJS.Timeout>();
+  const progressIntervalRef = useRef<NodeJS.Timeout>();
   const { user } = useAuth();
   const { toast } = useToast();
   useEffect(() => {
@@ -98,14 +99,27 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
   }, [updateProgressToDatabase, onProgressUpdate]);
 
-  // Cleanup timeout on unmount
+  // Cleanup timeout and intervals on unmount
   useEffect(() => {
     return () => {
       if (progressUpdateTimeoutRef.current) {
         clearTimeout(progressUpdateTimeoutRef.current);
       }
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
     };
   }, []);
+
+  // Clean up intervals when video changes or modal closes
+  useEffect(() => {
+    if (!open || !videoId) {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = undefined;
+      }
+    }
+  }, [open, videoId]);
   const content = useMemo(() => {
     if (!video) return null;
     const videoUrl = video.video_url;
@@ -120,11 +134,38 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       if (id) {
         return (
           <iframe 
-            src={`https://www.youtube.com/embed/${id}`} 
+            src={`https://www.youtube.com/embed/${id}?enablejsapi=1&origin=${window.location.origin}`} 
             title={video.title} 
             className="w-full h-full" 
             allowFullScreen 
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            onLoad={() => {
+              // Clean up any existing interval
+              if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+              }
+              
+              // Simple progress simulation for YouTube videos
+              let currentTime = 0;
+              const duration = 900; // 15 minutes in seconds (estimated)
+              
+              progressIntervalRef.current = setInterval(() => {
+                currentTime += 1; // Simulate 1 second of progress every second (real-time)
+                const progressPercent = Math.min(100, Math.round((currentTime / duration) * 100));
+                setProgress(progressPercent);
+                onProgressUpdate?.(progressPercent);
+                
+                if (progressPercent >= 100) {
+                  if (progressIntervalRef.current) {
+                    clearInterval(progressIntervalRef.current);
+                    progressIntervalRef.current = undefined;
+                  }
+                  updateProgressToDatabase(100);
+                } else if (currentTime % 10 === 0) { // Update database every 10 seconds
+                  updateProgressToDatabase(progressPercent);
+                }
+              }, 1000); // Update every second
+            }}
           />
         );
       }
@@ -138,6 +179,33 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             title={video.title} 
             className="w-full h-full" 
             allowFullScreen 
+            onLoad={() => {
+              // Clean up any existing interval
+              if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+              }
+              
+              // Simple progress simulation for Google Drive videos
+              let currentTime = 0;
+              const duration = 900; // 15 minutes in seconds (estimated)
+              
+              progressIntervalRef.current = setInterval(() => {
+                currentTime += 1; // Real-time progress
+                const progressPercent = Math.min(100, Math.round((currentTime / duration) * 100));
+                setProgress(progressPercent);
+                onProgressUpdate?.(progressPercent);
+                
+                if (progressPercent >= 100) {
+                  if (progressIntervalRef.current) {
+                    clearInterval(progressIntervalRef.current);
+                    progressIntervalRef.current = undefined;
+                  }
+                  updateProgressToDatabase(100);
+                } else if (currentTime % 10 === 0) { // Update database every 10 seconds
+                  updateProgressToDatabase(progressPercent);
+                }
+              }, 1000);
+            }}
           />
         );
       }
@@ -153,7 +221,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         {src && <source src={src} type="video/mp4" />}
         Your browser does not support the video tag.
       </video>;
-  }, [video]);
+  }, [video, onProgressUpdate, updateProgressToDatabase]);
   return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-6 overflow-hidden shadow-2xl">
         <DialogHeader className="pb-4 border-b">
