@@ -101,6 +101,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
 
   // Enhanced video data transformation with security and accessibility
   const transformToTrainingVideo = useOptimizedCallback((video: Video, assignment?: any): TrainingVideo => {
+    console.log('transformToTrainingVideo - Input video:', video);
+    console.log('transformToTrainingVideo - Video description:', video.description);
     // Simple duration formatter (inline to fix runtime error)
     const formatSeconds = (seconds: number): string => {
       if (seconds === 0) return '0 minutes';
@@ -175,6 +177,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
   // Enhanced video play handler with accessibility
   const handleVideoPlay = useOptimizedCallback((videoId: string) => {
     const video = trainingData.required.find(v => v.id === videoId) || trainingData.completed.find(v => v.id === videoId);
+    console.log('handleVideoPlay - Found video:', video);
+    console.log('handleVideoPlay - Video description:', video?.description);
     if (video) {
       const announcement = `Opening ${video.title}. ${getStatusAnnouncement(video.progress, video.isRequired || false, video.dueDate)}`;
       announceToScreenReader(announcement);

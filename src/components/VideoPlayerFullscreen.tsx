@@ -264,10 +264,19 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-6 overflow-hidden shadow-2xl">
         <DialogHeader className="pb-4 border-b">
           <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-3">
-              <Play className="w-5 h-5 text-primary" />
-              {video?.title || 'Training Video'}
-            </DialogTitle>
+            <div>
+              <DialogTitle className="flex items-center gap-3">
+                <Play className="w-5 h-5 text-primary" />
+                {video?.title || 'Training Video'}
+              </DialogTitle>
+              {video?.description && video.description.trim() && (
+                <div className="pt-2 pb-1">
+                  <p className="text-sm text-muted-foreground font-normal leading-relaxed">
+                    {video.description}
+                  </p>
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-3">
               {isCompleted && (
                 <Badge variant="default" className="bg-green-600 hover:bg-green-700">
