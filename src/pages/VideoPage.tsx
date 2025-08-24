@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link, Navigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Play, Pause } from "lucide-react";
+import { ArrowLeft, Play, Pause, CheckCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -51,11 +52,59 @@ export const VideoPage = () => {
     }
   };
 
+  const progressUpdateTimeoutRef = useRef<NodeJS.Timeout>();
+  const [isCompleted, setIsCompleted] = useState(false);
+
+  // Debounced progress update to database
+  const updateProgressToDatabase = async (progressPercent: number) => {
+    if (!user?.email || !videoId) return;
+
+    try {
+      const completedAt = progressPercent >= 100 ? new Date() : undefined;
+      await EmployeeService.updateVideoProgressByEmail(
+        user.email,
+        videoId,
+        progressPercent,
+        completedAt
+      );
+
+      if (progressPercent >= 100 && !isCompleted) {
+        setIsCompleted(true);
+        toast({
+          title: "Video Completed! 🎉",
+          description: "You've successfully completed this training video.",
+        });
+      }
+    } catch (error) {
+      console.error('Failed to update video progress:', error);
+    }
+  };
+
   const handleVideoProgress = (event: React.SyntheticEvent<HTMLVideoElement>) => {
     const video = event.currentTarget;
-    const progressPercent = (video.currentTime / video.duration) * 100;
-    setProgress(Math.round(progressPercent));
+    if (!video.duration) return;
+
+    const progressPercent = Math.round((video.currentTime / video.duration) * 100);
+    setProgress(progressPercent);
+
+    // Debounce database updates
+    if (progressUpdateTimeoutRef.current) {
+      clearTimeout(progressUpdateTimeoutRef.current);
+    }
+
+    progressUpdateTimeoutRef.current = setTimeout(() => {
+      updateProgressToDatabase(progressPercent);
+    }, 2000); // Update database every 2 seconds
   };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (progressUpdateTimeoutRef.current) {
+        clearTimeout(progressUpdateTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleVideoPlay = () => setIsPlaying(true);
   const handleVideoPause = () => setIsPlaying(false);
@@ -193,7 +242,15 @@ export const VideoPage = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl">{video.title || 'Untitled Video'}</CardTitle>
+              <div className="flex items-center gap-3">
+                <CardTitle className="text-2xl">{video.title || 'Untitled Video'}</CardTitle>
+                {isCompleted && (
+                  <Badge className="bg-green-600 hover:bg-green-700">
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    Completed
+                  </Badge>
+                )}
+              </div>
               
               {/* Circular Progress Indicator */}
               <div className="flex items-center space-x-3">
@@ -210,7 +267,7 @@ export const VideoPage = () => {
                         A 15.9155 15.9155 0 0 1 18 2.0845"
                     />
                     <path
-                      className="text-primary transition-all duration-300"
+                      className={`transition-all duration-300 ${isCompleted ? 'text-green-500' : 'text-primary'}`}
                       stroke="currentColor"
                       strokeWidth="2"
                       strokeDasharray={`${progress}, 100`}
@@ -222,7 +279,9 @@ export const VideoPage = () => {
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-sm font-medium text-primary">{progress}%</span>
+                    <span className={`text-sm font-medium ${isCompleted ? 'text-green-500' : 'text-primary'}`}>
+                      {progress}%
+                    </span>
                   </div>
                 </div>
               </div>
@@ -235,7 +294,13 @@ export const VideoPage = () => {
                 <span>Video Progress</span>
                 <span>{progress}% Complete</span>
               </div>
-              <Progress value={progress} className="h-2" />
+              <Progress value={progress} className={`h-2 ${isCompleted ? 'bg-green-100' : ''}`} />
+              {isCompleted && (
+                <div className="flex items-center gap-2 mt-2 text-green-600">
+                  <CheckCircle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Training completed successfully!</span>
+                </div>
+              )}
             </div>
             
             {video.description && (

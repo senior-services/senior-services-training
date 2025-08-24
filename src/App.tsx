@@ -113,6 +113,10 @@ const AppContent = () => {
         open={isVideoOpen}
         onOpenChange={setIsVideoOpen}
         videoId={selectedVideoId}
+        onProgressUpdate={(progress) => {
+          console.log('Video progress updated:', progress);
+          // The progress is already being saved to the database by the VideoPlayerFullscreen component
+        }}
       />
     </>
   );

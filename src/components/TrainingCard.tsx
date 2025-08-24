@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Calendar, Clock, Play, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, Play, AlertCircle, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, differenceInDays, isPast } from 'date-fns';
 
@@ -232,12 +232,16 @@ export const TrainingCard = memo<TrainingCardProps>(({
               <div className="relative w-12 h-12" role="progressbar" aria-label={ariaLabels.progress} aria-valuenow={sanitizedVideo.progress} aria-valuemin={0} aria-valuemax={100}>
                 <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
                   <path className="text-muted/20" stroke="currentColor" strokeWidth="3" fill="transparent" d="M18 2.0845 A 15.9155 15.9155 0 0 1 18 33.9155 A 15.9155 15.9155 0 0 1 18 2.0845" />
-                  <path className="text-primary transition-all duration-300" stroke="currentColor" strokeWidth="3" strokeDasharray={`${sanitizedVideo.progress}, 100`} strokeLinecap="round" fill="transparent" d="M18 2.0845 A 15.9155 15.9155 0 0 1 18 33.9155 A 15.9155 15.9155 0 0 1 18 2.0845" />
+                   <path className={`transition-all duration-300 ${sanitizedVideo.progress >= 100 ? 'text-green-500' : 'text-primary'}`} stroke="currentColor" strokeWidth="3" strokeDasharray={`${sanitizedVideo.progress}, 100`} strokeLinecap="round" fill="transparent" d="M18 2.0845 A 15.9155 15.9155 0 0 1 18 33.9155 A 15.9155 15.9155 0 0 1 18 2.0845" />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-medium text-primary" aria-hidden="true">
-                    {sanitizedVideo.progress}%
-                  </span>
+                  {sanitizedVideo.progress >= 100 ? (
+                    <CheckCircle className={`w-4 h-4 text-green-500`} aria-hidden="true" />
+                  ) : (
+                    <span className="text-xs font-medium text-primary" aria-hidden="true">
+                      {sanitizedVideo.progress}%
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -247,7 +251,16 @@ export const TrainingCard = memo<TrainingCardProps>(({
         {/* Enhanced Action Button */}
         <CardFooter className="flex-none">
           <Button className="w-full min-h-touch" variant={trainingStatus.isCompleted ? "secondary" : "default"} onClick={handlePlay} onKeyDown={handleCardKeyPress} aria-label={ariaLabels.actionButton}>
-            {trainingStatus.isCompleted ? "Review Training" : trainingStatus.hasStarted ? "Continue Training" : "Start Training"}
+            {trainingStatus.isCompleted ? (
+              <>
+                <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                Review Training
+              </>
+            ) : trainingStatus.hasStarted ? (
+              "Continue Training"
+            ) : (
+              "Start Training"
+            )}
           </Button>
         </CardFooter>
       </Card>

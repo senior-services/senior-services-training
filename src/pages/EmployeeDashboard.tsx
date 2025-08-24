@@ -182,6 +182,14 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
     onPlayVideo(videoId);
   }, [trainingData.required, onPlayVideo]);
 
+  // Callback to refresh training data when progress is updated
+  const handleProgressUpdate = (progress: number) => {
+    // This will trigger a re-render of components that depend on video progress
+    console.log('Video progress updated:', progress);
+    // Optionally refresh the training data to show updated progress
+    loadAssignedVideos();
+  };
+
   // Load videos on component mount
   useEffect(() => {
     loadAssignedVideos();
