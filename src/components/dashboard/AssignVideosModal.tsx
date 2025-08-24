@@ -394,7 +394,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
           )}
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t flex-shrink-0">
+        <div className="flex justify-end gap-3 pt-6 border-t flex-shrink-0">
           <Button
             type="button"
             variant="outline"
