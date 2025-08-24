@@ -322,13 +322,16 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                             >
                               <Play className="w-4 h-4 text-white" aria-hidden="true" />
                             </div>
-                            <button
-                              onClick={() => handleVideoAction('Play video', video, () => onPlay(video))}
+                            <a
+                              href={`/video/${video.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => handleVideoAction('Play video', video, () => {})}
                               aria-label={`Play video: ${video.title}`}
                               className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center group"
                             >
                               <Play className="w-3 h-3 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </button>
+                            </a>
                           </div>
                           
                           {/* Video info */}
