@@ -534,19 +534,22 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           {/* Video Controls */}
           <div className="flex items-center gap-2 mt-3" role="toolbar" aria-label="Video controls">
             {(() => {
+              const url = video?.video_url || '';
+              const isEmbedded = !!url && (isYouTubeUrl(url) || isGoogleDriveUrl(url));
               const hasUnknownDuration = !video?.duration_seconds || video.duration_seconds <= 0;
-              const shouldShowButton = !isCompleted && (progress >= 75 || (hasUnknownDuration && progress >= 20));
+              const useLowThreshold = isEmbedded || hasUnknownDuration;
+              const threshold = useLowThreshold ? 20 : 75;
+              const shouldShowButton = !isCompleted && progress >= threshold;
               console.log('Mark Complete Button Debug:', { 
                 videoTitle: video?.title,
-                isCompleted, 
-                wasEverCompleted, 
-                progress, 
+                progress,
+                isCompleted,
+                wasEverCompleted,
+                isEmbedded,
                 hasUnknownDuration,
                 duration: video?.duration_seconds,
-                shouldShowButton,
-                progressThreshold: hasUnknownDuration ? 20 : 75,
-                videoUrl: video?.video_url,
-                fileName: video?.video_file_name
+                threshold,
+                shouldShowButton
               });
               return null;
             })()}
@@ -555,7 +558,13 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 <CheckCircle className="w-5 h-5" aria-hidden="true" />
                 <span className="font-medium">Training Completed!</span>
               </div>
-            ) : (!isCompleted && (progress >= 75 || ((!video?.duration_seconds || video.duration_seconds <= 0) && progress >= 20))) ? (
+            ) : (!isCompleted && (() => {
+              const url = video?.video_url || '';
+              const isEmbedded = !!url && (isYouTubeUrl(url) || isGoogleDriveUrl(url));
+              const hasUnknownDuration = !video?.duration_seconds || video.duration_seconds <= 0;
+              const threshold = (isEmbedded || hasUnknownDuration) ? 20 : 75;
+              return progress >= threshold;
+            })()) ? (
               <Button 
                 variant="default" 
                 size="sm" 
