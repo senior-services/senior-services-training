@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Progress } from "@/components/ui/progress";
 import { ChevronDown, LogOut, User } from "lucide-react";
 import { Link } from "react-router-dom";
 // Using uploaded logo image
@@ -9,18 +8,12 @@ interface HeaderProps {
   userRole: 'admin' | 'employee';
   userName: string;
   userEmail: string;
-  overallProgress?: number;
-  completedItems?: number;
-  totalItems?: number;
   onLogout: () => void;
 }
 export const Header = ({
   userRole,
   userName,
   userEmail,
-  overallProgress,
-  completedItems = 0,
-  totalItems = 0,
   onLogout
 }: HeaderProps) => {
   const subtitle = userRole === 'admin' ? 'Administrator Dashboard' : 'Employee Portal';
@@ -42,24 +35,8 @@ export const Header = ({
             </Link>
           </div>
 
-          {/* Right Side - Progress and User Info */}
-          <div className="flex items-center space-x-6">
-            {/* Overall Progress (Employee Only) */}
-            {userRole === 'employee' && overallProgress !== undefined && (
-              <div className="hidden md:flex flex-col w-[200px]">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-muted-foreground">
-                    {completedItems} of {totalItems} completed
-                  </span>
-                  <span className="text-sm font-medium text-foreground">
-                    {overallProgress}%
-                  </span>
-                </div>
-                <Progress value={overallProgress} className="h-2" />
-              </div>
-            )}
-
-            {/* User Info and Menu */}
+          {/* Right Side - User Info and Menu */}
+          <div className="flex items-center space-x-3">
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium text-foreground">{userName}</p>
               
@@ -88,20 +65,6 @@ export const Header = ({
           </div>
         </div>
 
-        {/* Mobile Progress Bar */}
-        {userRole === 'employee' && overallProgress !== undefined && (
-          <div className="md:hidden mt-4">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-muted-foreground">
-                {completedItems} of {totalItems} completed
-              </span>
-              <span className="text-sm font-medium text-foreground">
-                {overallProgress}%
-              </span>
-            </div>
-            <Progress value={overallProgress} className="h-2" />
-          </div>
-        )}
       </div>
     </header>;
 };

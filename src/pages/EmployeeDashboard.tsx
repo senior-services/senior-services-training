@@ -219,9 +219,6 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           userRole="employee" 
           userName={sanitizedUserData.displayName} 
           userEmail={userEmail} 
-          overallProgress={trainingData.stats.overallProgress}
-          completedItems={trainingData.stats.requiredComplete}
-          totalItems={trainingData.stats.totalRequired}
           onLogout={onLogout} 
         />
         
@@ -246,9 +243,6 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           userRole="employee" 
           userName={sanitizedUserData.displayName} 
           userEmail={userEmail} 
-          overallProgress={trainingData.stats.overallProgress}
-          completedItems={trainingData.stats.requiredComplete}
-          totalItems={trainingData.stats.totalRequired}
           onLogout={onLogout} 
         />
         
