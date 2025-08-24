@@ -363,7 +363,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
 
           {/* Required Training Section with Enhanced Accessibility */}
           <section id="main-content" className="mb-12" aria-labelledby="required-training-heading" role="region">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3 mb-6">
               <h2 id="required-training-heading" className="text-2xl font-semibold text-foreground flex items-center">
                 <Clock className="w-6 h-6 text-primary mr-3" aria-hidden="true" />
                 Required Training
@@ -393,7 +393,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           {/* Completed Training Section */}
           {trainingData.completed.length > 0 && (
             <section className="mb-12" aria-labelledby="completed-training-heading" role="region">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3 mb-6">
                 <h2 id="completed-training-heading" className="text-2xl font-semibold text-foreground flex items-center">
                   <CheckCircle className="w-6 h-6 text-success mr-3" aria-hidden="true" />
                   Completed Training
