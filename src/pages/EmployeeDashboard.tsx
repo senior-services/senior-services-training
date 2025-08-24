@@ -30,6 +30,7 @@ interface EmployeeDashboardProps {
   userEmail: string;
   onLogout: () => void;
   onPlayVideo: (videoId: string) => void;
+  refreshTrigger?: number;
 }
 
 /**
@@ -51,7 +52,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
   userName,
   userEmail,
   onLogout,
-  onPlayVideo
+  onPlayVideo,
+  refreshTrigger = 0
 }) => {
   // Performance monitoring
   usePerformanceMonitor('EmployeeDashboard');
@@ -288,6 +290,14 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       supabase.removeChannel(channel);
     };
   }, [loadAssignedVideos]);
+
+  // Refresh when refreshTrigger changes (e.g., when video modal closes)
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      logger.info('Dashboard refresh triggered by external event', { refreshTrigger, userEmail });
+      loadAssignedVideos();
+    }
+  }, [refreshTrigger, loadAssignedVideos]);
 
   // Error boundary fallback
   if (error) {

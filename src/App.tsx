@@ -42,10 +42,19 @@ const AppContent = () => {
 
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [refreshDashboard, setRefreshDashboard] = useState(0);
 
   const handlePlayVideo = (videoId: string) => {
     setSelectedVideoId(videoId);
     setIsVideoOpen(true);
+  };
+
+  const handleVideoClose = (open: boolean) => {
+    setIsVideoOpen(open);
+    if (!open) {
+      // Trigger dashboard refresh when modal closes
+      setRefreshDashboard(prev => prev + 1);
+    }
   };
 
   if (loading) {
@@ -97,6 +106,7 @@ const AppContent = () => {
                   userEmail={user?.email || ''}
                   onLogout={handleLogout}
                   onPlayVideo={handlePlayVideo}
+                  refreshTrigger={refreshDashboard}
                 />
               )
             ) : (
@@ -113,7 +123,7 @@ const AppContent = () => {
 
       <VideoPlayerFullscreen
         open={isVideoOpen}
-        onOpenChange={setIsVideoOpen}
+        onOpenChange={handleVideoClose}
         videoId={selectedVideoId}
         onProgressUpdate={(progress) => {
         // Update progress with comprehensive logging
