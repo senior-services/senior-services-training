@@ -254,19 +254,17 @@ export class EmployeeService {
     completedAt?: Date
   ): Promise<void> {
     try {
-      // First get the employee ID from email
-      const { data: employee, error: employeeError } = await supabase
-        .from('employees')
-        .select('id')
-        .eq('email', email)
-        .single();
+      const { error } = await supabase.rpc('update_video_progress_by_email', {
+        p_email: email,
+        p_video_id: videoId,
+        p_progress_percent: Math.max(0, Math.min(100, progressPercent)),
+        p_completed_at: completedAt?.toISOString() || null
+      });
 
-      if (employeeError || !employee) {
-        console.error('Error finding employee by email:', employeeError);
-        throw new Error('Employee not found');
+      if (error) {
+        console.error('Error updating video progress by email:', error);
+        throw error;
       }
-
-      await this.updateVideoProgress(employee.id, videoId, progressPercent, completedAt);
     } catch (error) {
       console.error('Error in updateVideoProgressByEmail:', error);
       throw error;

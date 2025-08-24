@@ -376,6 +376,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_video_progress_by_email: {
+        Args: {
+          p_completed_at?: string
+          p_email: string
+          p_progress_percent: number
+          p_video_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "employee"
