@@ -3,7 +3,7 @@
  * Provides comprehensive video management with keyboard navigation and screen reader support
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,22 +26,27 @@ import {
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
-import { Edit, Trash2, Play, Video, Plus } from 'lucide-react';
-import { Video as VideoType } from '@/types';
+import { 
+  Edit, 
+  Trash2, 
+  Video as VideoIcon, 
+  Plus, 
+  Play 
+} from 'lucide-react';
+import { Video } from '@/types';
 import { VIDEO_CONFIG } from '@/constants';
 import { 
-  createTableAriaProps, 
   createButtonAriaProps, 
   announceToScreenReader 
 } from '@/utils/accessibility';
 import { cn } from '@/lib/utils';
 
 interface VideoTableProps {
-  videos: VideoType[];
+  videos: Video[];
   loading?: boolean;
-  onEdit: (video: VideoType) => void;
-  onDelete: (video: VideoType) => void;
-  onPlay: (video: VideoType) => void;
+  onEdit: (video: Video) => void;
+  onDelete: (video: Video) => void;
+  onPlay: (video: Video) => void;
   onAddVideo: () => void;
   className?: string;
 }
@@ -69,15 +74,36 @@ export const VideoTable: React.FC<VideoTableProps> = ({
   onAddVideo,
   className,
 }) => {
-  const [sortColumn, setSortColumn] = useState<string>('created_at');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [deleteConfirmVideo, setDeleteConfirmVideo] = useState<VideoType | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [sortColumn, setSortColumn] = useState<'title' | 'assigned_to'>('title');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [deleteConfirmVideo, setDeleteConfirmVideo] = useState<Video | null>(null);
 
   /**
-   * Handles column sorting
+   * Sorts videos based on current sort criteria
    */
-  const handleSort = (column: string) => {
+  const sortedVideos = React.useMemo(() => {
+    if (!videos.length) return videos;
+
+    return [...videos].sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortColumn) {
+        case 'title':
+          comparison = a.title.localeCompare(b.title);
+          break;
+        case 'assigned_to':
+          comparison = a.assigned_to - b.assigned_to;
+          break;
+      }
+
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [videos, sortColumn, sortDirection]);
+
+  /**
+   * Handles sorting of video table
+   */
+  const handleSort = useCallback((column: 'title' | 'assigned_to') => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -85,72 +111,53 @@ export const VideoTable: React.FC<VideoTableProps> = ({
       setSortDirection('asc');
     }
 
-    // Announce sort change to screen readers
     announceToScreenReader(
-      `Table sorted by ${column} in ${sortDirection === 'asc' ? 'descending' : 'ascending'} order`
+      `Videos sorted by ${column} in ${sortDirection === 'asc' ? 'descending' : 'ascending'} order`
     );
-  };
+  }, [sortColumn, sortDirection]);
 
   /**
    * Handles video actions with accessibility announcements
    */
-  const handleVideoAction = (action: string, video: VideoType, callback: () => void) => {
+  const handleVideoAction = useCallback((
+    action: string, 
+    video: any, 
+    callback: () => void
+  ) => {
+    announceToScreenReader(`${action}: ${video.title}`);
     callback();
-    announceToScreenReader(`${action} initiated for video: ${video.title}`);
-  };
+  }, []);
 
   /**
-   * Handles delete confirmation and execution
+   * Handles delete confirmation
    */
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = useCallback(async () => {
     if (!deleteConfirmVideo) return;
-
-    setIsDeleting(true);
+    
     try {
       await onDelete(deleteConfirmVideo);
-      setDeleteConfirmVideo(null);
-      announceToScreenReader(`Video "${deleteConfirmVideo.title}" has been deleted successfully`);
+      announceToScreenReader(`Video "${(deleteConfirmVideo as any).title}" has been deleted`);
     } catch (error) {
-      console.error('Error deleting video:', error);
-      announceToScreenReader(`Failed to delete video "${deleteConfirmVideo.title}"`);
+      announceToScreenReader(`Failed to delete video "${(deleteConfirmVideo as any).title}"`);
     } finally {
-      setIsDeleting(false);
+      setDeleteConfirmVideo(null);
     }
-  };
-
-  /**
-   * Sorts videos based on current sort settings
-   */
-  const sortedVideos = React.useMemo(() => {
-    if (!videos.length) return videos;
-
-    return [...videos].sort((a, b) => {
-      const aValue = a[sortColumn as keyof VideoType] as string;
-      const bValue = b[sortColumn as keyof VideoType] as string;
-      
-      if (sortDirection === 'asc') {
-        return aValue.localeCompare(bValue);
-      } else {
-        return bValue.localeCompare(aValue);
-      }
-    });
-  }, [videos, sortColumn, sortDirection]);
-
-  const tableAriaProps = createTableAriaProps(sortColumn, sortDirection);
+  }, [deleteConfirmVideo, onDelete]);
 
   return (
-    <div className={cn('space-y-4', className)}>
-      {/* Header with add button */}
-      <div className="flex justify-between items-center">
+    <div className={cn('space-y-6', className)}>
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
           <h3 className="text-xl font-semibold">Training Videos</h3>
           <p className="text-muted-foreground">
-            Manage your training content library
+            Manage your training content and track engagement
           </p>
         </div>
-        <Button
+        
+        <Button 
           onClick={onAddVideo}
-          aria-label="Add new training video"
+          {...createButtonAriaProps('Add new training video')}
         >
           <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
           Add Video
@@ -216,7 +223,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                   <TableRow>
                     <TableCell colSpan={4} className="text-center py-12">
                       <div className="space-y-3">
-                        <Video 
+                        <VideoIcon 
                           className="w-12 h-12 text-muted-foreground mx-auto" 
                           aria-hidden="true"
                         />
@@ -247,7 +254,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       className="group hover:bg-muted/50 transition-colors"
                     >
                        {/* Video title and preview */}
-                      <TableCell>
+                      <TableCell className="py-2">
                         <div className="flex items-center gap-3">
                           {/* Video preview */}
                           <div className="relative w-20 h-12 rounded-md overflow-hidden bg-muted">
@@ -349,14 +356,14 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       </TableCell>
 
                       {/* Assigned employees count */}
-                      <TableCell className="text-center">
+                      <TableCell className="text-center py-2">
                         <span className="font-medium">
                           {video.assigned_to}
                         </span>
                       </TableCell>
 
                       {/* Quiz status */}
-                      <TableCell className="text-center">
+                      <TableCell className="text-center py-2">
                         {video.has_quiz ? (
                           <Badge variant="default" className="text-xs">
                             Quiz
@@ -368,7 +375,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                         )}
                       </TableCell>
                       {/* Action buttons */}
-                      <TableCell className="text-right">
+                      <TableCell className="text-right py-2">
                         <div 
                           className="flex justify-end space-x-2"
                           role="group"
@@ -420,17 +427,17 @@ export const VideoTable: React.FC<VideoTableProps> = ({
       <AlertDialog open={!!deleteConfirmVideo} onOpenChange={() => setDeleteConfirmVideo(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Training Video</AlertDialogTitle>
+            <AlertDialogTitle>Delete Video</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deleteConfirmVideo?.title}"? 
+              Are you sure you want to delete "{(deleteConfirmVideo as any)?.title}"?
               <br />
               <br />
               This will permanently remove:
               <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>The video and all its content</li>
-                <li>Title and description</li>
-                <li>Assignment requirements for all users</li>
-                <li>All progress tracking data</li>
+                <li>The video file and metadata</li>
+                <li>All employee assignments for this video</li>
+                <li>Any progress tracking data</li>
+                <li>Associated quiz questions (if any)</li>
               </ul>
               <br />
               <strong>This action cannot be undone.</strong>
@@ -440,10 +447,9 @@ export const VideoTable: React.FC<VideoTableProps> = ({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteConfirm}
-              disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? 'Deleting...' : 'Delete Video'}
+              Delete Video
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
