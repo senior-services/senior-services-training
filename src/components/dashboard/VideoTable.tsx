@@ -254,7 +254,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       className="group hover:bg-muted/50 transition-colors"
                     >
                        {/* Video title and preview */}
-                      <TableCell className="py-1.5">
+                      <TableCell className="py-1">
                         <div className="flex items-center gap-3">
                           {/* Video preview */}
                           <div className="relative w-20 h-12 rounded-md overflow-hidden bg-muted">
@@ -356,14 +356,14 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       </TableCell>
 
                       {/* Assigned employees count */}
-                      <TableCell className="text-center py-2">
+                      <TableCell className="text-center py-1">
                         <span className="font-medium">
                           {video.assigned_to}
                         </span>
                       </TableCell>
 
                       {/* Quiz status */}
-                      <TableCell className="text-center py-2">
+                      <TableCell className="text-center py-1">
                         {video.has_quiz ? (
                           <Badge variant="default" className="text-xs">
                             Quiz
@@ -375,7 +375,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                         )}
                       </TableCell>
                       {/* Action buttons */}
-                      <TableCell className="text-right py-2">
+                      <TableCell className="text-right py-1">
                         <div 
                           className="flex justify-end space-x-2"
                           role="group"
