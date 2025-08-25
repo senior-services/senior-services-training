@@ -196,11 +196,10 @@ export const EmployeeManagement: React.FC = () => {
                     }
                         
                         <div className="flex-1">
-                          <div className="font-medium text-left">
-                            {employee.full_name || 'Unknown'}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {employee.email}
+                          <div className="flex items-center gap-3 text-left">
+                            <span className="font-medium">{employee.full_name || 'Unknown'}</span>
+                            <span className="text-muted-foreground">|</span>
+                            <span className="text-sm text-muted-foreground">{employee.email}</span>
                           </div>
                         </div>
                         
