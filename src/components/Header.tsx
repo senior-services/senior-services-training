@@ -27,9 +27,7 @@ export const Header = ({
               objectPosition: 'left center'
             }} />
               <div>
-                <h1 className="text-xl font-bold text-primary">
-                  Employee Training Portal
-                </h1>
+                <h1 className="text-xl font-bold text-primary">Learning Hub</h1>
                 <p className="text-sm text-muted-foreground">Employee Dashboard</p>
               </div>
             </Link>
