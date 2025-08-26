@@ -52,7 +52,66 @@ export class AdminService {
   }
 
   /**
-   * Add admin role to a user by email
+   * Add admin email to pre-approved list (creates a pending admin entry)
+   */
+  static async addPendingAdminByEmail(email: string): Promise<void> {
+    // Check if email is already in the system as an admin
+    const { data: existingProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('user_id, user_roles!inner(role)')
+      .eq('email', email)
+      .eq('user_roles.role', 'admin')
+      .maybeSingle();
+
+    if (existingProfile) {
+      throw new Error('User is already an admin.');
+    }
+
+    // Create or update pending admin entry
+    const { error: upsertError } = await supabase
+      .from('pending_admins')
+      .upsert({ email: email.toLowerCase() }, { onConflict: 'email' });
+
+    if (upsertError) {
+      console.error('Error adding pending admin:', upsertError);
+      throw upsertError;
+    }
+  }
+
+  /**
+   * Check if email is pre-approved for admin access
+   */
+  static async isPendingAdmin(email: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('pending_admins')
+      .select('email')
+      .eq('email', email.toLowerCase())
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error checking pending admin:', error);
+      return false;
+    }
+
+    return !!data;
+  }
+
+  /**
+   * Remove pending admin entry (called after user signs up)
+   */
+  static async removePendingAdmin(email: string): Promise<void> {
+    const { error } = await supabase
+      .from('pending_admins')
+      .delete()
+      .eq('email', email.toLowerCase());
+
+    if (error) {
+      console.error('Error removing pending admin:', error);
+    }
+  }
+
+  /**
+   * Add admin role to existing user
    */
   static async addAdminByEmail(email: string): Promise<void> {
     // First, check if user exists in profiles
@@ -63,7 +122,9 @@ export class AdminService {
       .maybeSingle();
 
     if (profileError || !profile) {
-      throw new Error('User not found. The user must sign up first before being made an admin.');
+      // If user doesn't exist, add to pending admins
+      await this.addPendingAdminByEmail(email);
+      return;
     }
 
     // Check if user already has admin role

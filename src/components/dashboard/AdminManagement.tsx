@@ -62,15 +62,15 @@ export const AdminManagement: React.FC = () => {
     }
 
     setIsAdding(true);
-    try {
-      await AdminService.addAdminByEmail(newAdminEmail.trim());
-      setNewAdminEmail('');
-      setShowAddModal(false);
-      await loadAdmins();
-      toast({
-        title: "Success",
-        description: "Admin added successfully"
-      });
+      try {
+        await AdminService.addAdminByEmail(newAdminEmail.trim());
+        setNewAdminEmail('');
+        setShowAddModal(false);
+        await loadAdmins();
+        toast({
+          title: "Success",
+          description: "Admin invitation sent successfully. They will gain admin access when they sign up."
+        });
     } catch (error: any) {
       console.error('Error adding admin:', error);
       toast({
