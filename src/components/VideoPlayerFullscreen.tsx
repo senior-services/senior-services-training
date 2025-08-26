@@ -618,18 +618,13 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
               });
               return null;
             })()}
-            {(isCompleted || wasEverCompleted) ? (
-              <div className="flex items-center gap-2 text-success">
-                <CheckCircle className="w-5 h-5" aria-hidden="true" />
-                <span className="font-medium">Training Completed!</span>
-              </div>
-            ) : (!isCompleted && (() => {
+            {!isCompleted && (() => {
               const url = video?.video_url || '';
               const isEmbedded = !!url && (isYouTubeUrl(url) || isGoogleDriveUrl(url));
               const hasUnknownDuration = !video?.duration_seconds || video.duration_seconds <= 0;
               const threshold = (isEmbedded || hasUnknownDuration) ? 98 : 98;
               return progress >= threshold;
-            })()) ? (
+            })() ? (
               <Button 
                 variant="default" 
                 size="sm" 
