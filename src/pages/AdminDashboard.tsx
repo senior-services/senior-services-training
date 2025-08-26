@@ -12,6 +12,7 @@ import { VideoPlayerModal } from "@/components/VideoPlayerModal";
 import { EmployeeManagement } from "@/components/dashboard/EmployeeManagement";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { EmployeeService } from "@/services/employeeService";
 import { 
   Table, 
   TableBody, 
@@ -114,6 +115,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
   const [loading, setLoading] = useState(true);
   const [deleteConfirmVideo, setDeleteConfirmVideo] = useState<VideoData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [employeeCount, setEmployeeCount] = useState(0);
   
   // Hooks for user feedback
   const { toast } = useToast();
@@ -211,10 +213,23 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
   };
 
   /**
-   * Load videos on component mount with proper lifecycle management
+   * Fetches employee count from the database
+   */
+  const fetchEmployeeCount = async () => {
+    try {
+      const employees = await EmployeeService.getEmployees();
+      setEmployeeCount(employees.length);
+    } catch (error) {
+      console.error('Error fetching employee count:', error);
+    }
+  };
+
+  /**
+   * Load videos and employee count on component mount with proper lifecycle management
    */
   useEffect(() => {
     fetchVideos();
+    fetchEmployeeCount();
   }, []);
 
   /**
@@ -572,7 +587,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
                 <TabsTrigger value="employees" className="gap-2">
                   Employees  
                   <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-2 text-xs font-medium rounded-full transition-colors">
-                    {employees.length}
+                    {employeeCount}
                   </span>
                 </TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
