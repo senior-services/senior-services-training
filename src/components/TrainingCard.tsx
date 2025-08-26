@@ -255,12 +255,14 @@ export const TrainingCard = memo<TrainingCardProps>(({
         </CardHeader>
 
         {/* Enhanced Action Button */}
-        {!trainingStatus.isCompleted && (
+        {!trainingStatus.isCompleted ? (
           <CardFooter className="flex-none">
             <Button className="w-full min-h-touch" variant="default" onClick={handlePlay} onKeyDown={handleCardKeyPress} aria-label={ariaLabels.actionButton}>
               {trainingStatus.hasStarted ? "Continue Training" : "Start Training"}
             </Button>
           </CardFooter>
+        ) : (
+          <div className="pb-6" />
         )}
       </Card>
     </article>;
