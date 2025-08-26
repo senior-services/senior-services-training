@@ -118,7 +118,6 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
   // Hooks for user feedback
   const { toast } = useToast();
 
-
   // Mock data - will be replaced with real data from Supabase
   const employees = [
     {
@@ -128,27 +127,28 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
       requiredProgress: 85,
       completedVideos: 3,
       totalVideos: 4,
-      status: 'on-track'
+      status: 'On Track'
     },
     {
-      id: '2',
-      name: 'Michael Chen',
-      email: 'michael.chen@southsoundseniors.org',
+      id: '2', 
+      name: 'Mike Chen',
+      email: 'mike.chen@southsoundseniors.org',
       requiredProgress: 60,
       completedVideos: 2,
-      totalVideos: 4,
-      status: 'behind'
+      totalVideos: 5,
+      status: 'Behind'
     },
     {
       id: '3',
-      name: 'Emily Rodriguez',
-      email: 'emily.rodriguez@southsoundseniors.org',
+      name: 'Lisa Rodriguez', 
+      email: 'lisa.rodriguez@southsoundseniors.org',
       requiredProgress: 100,
       completedVideos: 4,
       totalVideos: 4,
-      status: 'completed'
+      status: 'Completed'
     }
   ];
+
 
   /**
    * Fetches videos from Supabase with proper error handling and performance monitoring
