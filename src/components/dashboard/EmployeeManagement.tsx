@@ -232,7 +232,7 @@ export const EmployeeManagement: React.FC = () => {
                       </div>
                       
                       {/* Action buttons on far right */}
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-shrink-0">
                           <Button variant="outline" size="sm" onClick={e => {
                       e.stopPropagation();
                       handleAssignVideos(employee);
