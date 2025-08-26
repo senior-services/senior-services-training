@@ -8,14 +8,13 @@ import React, { memo, useMemo, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Calendar, Clock, Play, AlertCircle, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, differenceInDays, isPast } from 'date-fns';
 
 // Enhanced utility imports
 import { sanitizeText, createSafeDisplayName } from '@/utils/security';
-import { getTrainingCardAriaLabel, getProgressAriaLabel, getStatusAnnouncement, handleKeyPress, formatDuration, announceToScreenReader } from '@/utils/accessibility';
+import { getTrainingCardAriaLabel, getStatusAnnouncement, handleKeyPress, announceToScreenReader } from '@/utils/accessibility';
 import { useOptimizedCallback, useOptimizedMemo } from '@/utils/performance';
 
 // Import optimized image loading
@@ -144,7 +143,6 @@ export const TrainingCard = memo<TrainingCardProps>(({
   // Generate comprehensive ARIA labels
   const ariaLabels = useOptimizedMemo(() => ({
     card: getTrainingCardAriaLabel(sanitizedVideo.title, sanitizedVideo.progress, sanitizedVideo.isRequired || false, sanitizedVideo.dueDate),
-    progress: getProgressAriaLabel(sanitizedVideo.progress, sanitizedVideo.title),
     playButton: `Play ${sanitizedVideo.title} video. ${trainingStatus.statusText}.`,
     actionButton: trainingStatus.isCompleted ? `Review ${sanitizedVideo.title}` : trainingStatus.hasStarted ? `Continue ${sanitizedVideo.title}` : `Start ${sanitizedVideo.title} training`
   }), [sanitizedVideo, trainingStatus]);
@@ -196,13 +194,6 @@ export const TrainingCard = memo<TrainingCardProps>(({
               <Play className="w-6 h-6 ml-1" aria-hidden="true" />
               <span className="sr-only">{ariaLabels.playButton}</span>
             </Button>
-          </div>
-
-          {/* Progress Overlay with Accessibility - Always show gray bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[hsl(var(--progress-bg))]" role="progressbar" aria-label={ariaLabels.progress} aria-valuenow={sanitizedVideo.progress} aria-valuemin={0} aria-valuemax={100}>
-            <div className="h-full bg-primary transition-all duration-500 ease-out" style={{
-              width: `${sanitizedVideo.progress}%`
-            }} />
           </div>
         </header>
 
