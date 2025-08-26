@@ -36,7 +36,7 @@ export const AuthCallback = () => {
             if (isPending) {
               // Add admin role to the user
               try {
-                await AdminService.addAdminByEmail(email);
+                await AdminService.grantAdminToUserId(user.id);
                 // Remove from pending admins
                 await AdminService.removePendingAdmin(email);
                 

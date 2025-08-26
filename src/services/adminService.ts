@@ -55,20 +55,28 @@ export class AdminService {
    * Add admin email to pre-approved list (creates a pending admin entry)
    */
   static async addPendingAdminByEmail(email: string): Promise<void> {
-    // Check if email is already in the system as an admin
-    const { data: existingProfile, error: profileError } = await supabase
+    // If the email already belongs to an existing admin, block
+    const { data: profile } = await supabase
       .from('profiles')
-      .select('user_id, user_roles!inner(role)')
+      .select('user_id')
       .eq('email', email)
-      .eq('user_roles.role', 'admin')
       .maybeSingle();
 
-    if (existingProfile) {
-      throw new Error('User is already an admin.');
+    if (profile) {
+      const { data: existingRole } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', profile.user_id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (existingRole) {
+        throw new Error('User is already an admin.');
+      }
     }
 
-    // Create or update pending admin entry
-    const { error: upsertError } = await supabase
+    // Create or update pending admin entry (cast to any until types refresh)
+    const { error: upsertError } = await (supabase as any)
       .from('pending_admins')
       .upsert({ email: email.toLowerCase() }, { onConflict: 'email' });
 
@@ -82,7 +90,7 @@ export class AdminService {
    * Check if email is pre-approved for admin access
    */
   static async isPendingAdmin(email: string): Promise<boolean> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('pending_admins')
       .select('email')
       .eq('email', email.toLowerCase())
@@ -100,7 +108,7 @@ export class AdminService {
    * Remove pending admin entry (called after user signs up)
    */
   static async removePendingAdmin(email: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('pending_admins')
       .delete()
       .eq('email', email.toLowerCase());
@@ -150,6 +158,29 @@ export class AdminService {
     if (insertError) {
       console.error('Error adding admin role:', insertError);
       throw insertError;
+    }
+  }
+
+  /**
+   * Grant admin role to a specific user id (used after OAuth callback)
+   */
+  static async grantAdminToUserId(userId: string): Promise<void> {
+    const { data: existingRole } = await supabase
+      .from('user_roles')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (existingRole) return;
+
+    const { error } = await supabase
+      .from('user_roles')
+      .insert({ user_id: userId, role: 'admin' });
+
+    if (error) {
+      console.error('Error granting admin role:', error);
+      throw error;
     }
   }
 

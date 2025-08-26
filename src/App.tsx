@@ -13,6 +13,7 @@ import { useAuth } from "./hooks/useAuth";
 import { useUserRole } from "./hooks/useUserRole";
 import { VideoPlayerFullscreen } from "@/components/VideoPlayerFullscreen";
 import { logger } from "@/utils/logger";
+import { AuthCallback } from "./pages/AuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -93,6 +94,7 @@ const AppContent = () => {
               <Navigate to="/dashboard" replace />
           } 
         />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route 
           path="/dashboard" 
           element={
