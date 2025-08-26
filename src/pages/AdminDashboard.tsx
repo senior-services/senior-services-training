@@ -578,7 +578,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
 
-            <TabsContent value="employees" className="space-y-6">
+            <TabsContent value="employees" className="space-y-6 mt-6">
               <EmployeeManagement />
             </TabsContent>
 
@@ -780,7 +780,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
               </Card>
             </TabsContent>
 
-            <TabsContent value="settings" className="space-y-6">
+            <TabsContent value="settings" className="space-y-6 mt-6">
               <div className="flex justify-between items-center">
                 <div>
                   <h3 className="text-xl font-semibold">System Settings</h3>
