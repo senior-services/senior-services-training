@@ -5,14 +5,15 @@ export interface AdminUser {
   email: string;
   full_name?: string;
   created_at: string;
+  isPending?: boolean;
 }
 
 export class AdminService {
   /**
-   * Get all admin users by manually joining the data
+   * Get all admin users including pending admins
    */
   static async getAdmins(): Promise<AdminUser[]> {
-    // First get all admin user IDs
+    // Get actual admins
     const { data: adminRoles, error: rolesError } = await supabase
       .from('user_roles')
       .select('user_id')
@@ -23,32 +24,54 @@ export class AdminService {
       throw rolesError;
     }
 
-    if (!adminRoles || adminRoles.length === 0) {
-      return [];
+    let actualAdmins: AdminUser[] = [];
+    
+    if (adminRoles && adminRoles.length > 0) {
+      const adminUserIds = adminRoles.map(role => role.user_id);
+
+      // Get profiles for these users
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, email, full_name, created_at')
+        .in('user_id', adminUserIds)
+        .order('created_at', { ascending: false });
+
+      if (profilesError) {
+        console.error('Error fetching admin profiles:', profilesError);
+        throw profilesError;
+      }
+
+      actualAdmins = (profiles || []).map(profile => ({
+        id: profile.user_id,
+        email: profile.email,
+        full_name: profile.full_name,
+        created_at: profile.created_at,
+        isPending: false
+      }));
     }
 
-    // Get admin user IDs
-    const adminUserIds = adminRoles.map(role => role.user_id);
-
-    // Get profiles for these users
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('user_id, email, full_name, created_at')
-      .in('user_id', adminUserIds)
+    // Get pending admins
+    const { data: pendingAdmins, error: pendingError } = await (supabase as any)
+      .from('pending_admins')
+      .select('id, email, created_at')
       .order('created_at', { ascending: false });
 
-    if (profilesError) {
-      console.error('Error fetching admin profiles:', profilesError);
-      throw profilesError;
+    if (pendingError) {
+      console.error('Error fetching pending admins:', pendingError);
+      // Don't throw error, just continue without pending admins
     }
 
-    // Map the data to match our interface
-    return (profiles || []).map(profile => ({
-      id: profile.user_id,
-      email: profile.email,
-      full_name: profile.full_name,
-      created_at: profile.created_at
+    const pendingAdminUsers: AdminUser[] = (pendingAdmins || []).map(pending => ({
+      id: pending.id,
+      email: pending.email,
+      full_name: undefined,
+      created_at: pending.created_at,
+      isPending: true
     }));
+
+    // Combine and sort by created_at
+    const allAdmins = [...actualAdmins, ...pendingAdminUsers];
+    return allAdmins.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
 
   /**
@@ -185,9 +208,23 @@ export class AdminService {
   }
 
   /**
-   * Remove admin role from a user
+   * Remove admin role from a user or delete pending admin
    */
-  static async removeAdminRole(userId: string): Promise<void> {
+  static async removeAdminRole(userId: string, isPending: boolean = false): Promise<void> {
+    if (isPending) {
+      // Remove from pending admins
+      const { error } = await (supabase as any)
+        .from('pending_admins')
+        .delete()
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Error removing pending admin:', error);
+        throw error;
+      }
+      return;
+    }
+
     // Check if this is the last admin
     const { data: adminCount, error: countError } = await supabase
       .from('user_roles')

@@ -88,12 +88,12 @@ export const AdminManagement: React.FC = () => {
     
     setIsDeleting(true);
     try {
-      await AdminService.removeAdminRole(deleteConfirmAdmin.id);
+      await AdminService.removeAdminRole(deleteConfirmAdmin.id, deleteConfirmAdmin.isPending);
       setDeleteConfirmAdmin(null);
       await loadAdmins();
       toast({
         title: "Success",
-        description: "Admin removed successfully"
+        description: deleteConfirmAdmin.isPending ? "Pending admin invitation removed" : "Admin removed successfully"
       });
     } catch (error: any) {
       console.error('Error removing admin:', error);
@@ -169,9 +169,16 @@ export const AdminManagement: React.FC = () => {
                           <Crown className="w-4 h-4 text-primary" />
                         </div>
                         <div>
-                          <span>{admin.full_name || 'Unknown'}</span>
-                          <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary text-xs">
-                            Admin
+                          <span>{admin.isPending ? '--' : (admin.full_name || 'Unknown')}</span>
+                          <Badge 
+                            variant="secondary" 
+                            className={`ml-2 text-xs ${
+                              admin.isPending 
+                                ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400' 
+                                : 'bg-primary/10 text-primary'
+                            }`}
+                          >
+                            {admin.isPending ? 'Pending' : 'Admin'}
                           </Badge>
                         </div>
                       </div>
@@ -180,7 +187,7 @@ export const AdminManagement: React.FC = () => {
                       {admin.email}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {format(new Date(admin.created_at), 'MMM d, yyyy')}
+                      {admin.isPending ? 'Pending' : format(new Date(admin.created_at), 'MMM d, yyyy')}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button 
@@ -190,7 +197,7 @@ export const AdminManagement: React.FC = () => {
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
-                        <span className="sr-only">Remove Admin</span>
+                        <span className="sr-only">{admin.isPending ? 'Cancel Invitation' : 'Remove Admin'}</span>
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -245,19 +252,32 @@ export const AdminManagement: React.FC = () => {
       <AlertDialog open={!!deleteConfirmAdmin} onOpenChange={() => setDeleteConfirmAdmin(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Administrator</AlertDialogTitle>
+            <AlertDialogTitle>
+              {deleteConfirmAdmin?.isPending ? 'Cancel Admin Invitation' : 'Remove Administrator'}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove admin privileges from "{deleteConfirmAdmin?.full_name || deleteConfirmAdmin?.email}"?
+              Are you sure you want to {deleteConfirmAdmin?.isPending ? 'cancel the invitation for' : 'remove admin privileges from'} "{deleteConfirmAdmin?.email}"?
               <br />
               <br />
               This will:
               <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>Remove their admin access to the system</li>
-                <li>Restrict them to employee-level permissions</li>
-                <li>Prevent them from managing other users</li>
+                {deleteConfirmAdmin?.isPending ? (
+                  <li>Cancel their pending admin invitation</li>
+                ) : (
+                  <>
+                    <li>Remove their admin access to the system</li>
+                    <li>Restrict them to employee-level permissions</li>
+                    <li>Prevent them from managing other users</li>
+                  </>
+                )}
               </ul>
               <br />
-              <strong>This action can be reversed by adding them as an admin again.</strong>
+              <strong>
+                {deleteConfirmAdmin?.isPending 
+                  ? 'The invitation will be permanently cancelled.' 
+                  : 'This action can be reversed by adding them as an admin again.'
+                }
+              </strong>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -269,7 +289,7 @@ export const AdminManagement: React.FC = () => {
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? 'Removing...' : 'Remove Admin'}
+              {isDeleting ? 'Processing...' : (deleteConfirmAdmin?.isPending ? 'Cancel Invitation' : 'Remove Admin')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
