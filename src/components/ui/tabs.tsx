@@ -31,9 +31,9 @@ const TabsTrigger = React.forwardRef<
       // Inactive state - light gray text
       "text-muted-foreground hover:text-foreground",
       // Active state - dark text with blue bottom border
-      "data-[state=active]:text-foreground data-[state=active]:font-semibold",
+      "data-[state=active]:text-foreground data-[state=active]:font-bold",
       // Blue underline for active tab
-      "data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-primary",
+      "data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-1 data-[state=active]:after:bg-primary",
       // Badge styling
       "[&>span]:data-[state=active]:bg-primary [&>span]:data-[state=active]:text-primary-foreground",
       "[&>span]:bg-muted [&>span]:text-muted-foreground",
