@@ -16,6 +16,7 @@ import { format, differenceInDays, isPast } from 'date-fns';
 import { sanitizeText, createSafeDisplayName } from '@/utils/security';
 import { getTrainingCardAriaLabel, getStatusAnnouncement, handleKeyPress, announceToScreenReader } from '@/utils/accessibility';
 import { useOptimizedCallback, useOptimizedMemo } from '@/utils/performance';
+import { isYouTubeUrl, isGoogleDriveUrl, getYouTubeThumbnail, getGoogleDriveThumbnail } from '@/utils/videoUtils';
 
 // Import optimized image loading
 import videoPlaceholder from '@/assets/video-placeholder.jpg';
@@ -34,6 +35,9 @@ export interface TrainingVideo {
   deadline?: string;
   dueDate?: string | null;
   status?: 'overdue' | 'warning' | 'upcoming' | 'completed';
+  video_url?: string | null;
+  thumbnail_url?: string | null;
+  video_file_name?: string | null;
 }
 
 /**
@@ -65,13 +69,29 @@ export const TrainingCard = memo<TrainingCardProps>(({
   className,
   priority = false
 }) => {
-  // Sanitize video data for security
-  const sanitizedVideo = useMemo(() => ({
-    ...video,
-    title: sanitizeText(video.title || 'Untitled Video'),
-    description: sanitizeText(video.description || ''),
-    thumbnail: video.thumbnail || videoPlaceholder
-  }), [video]);
+  // Sanitize video data for security and generate proper thumbnails
+  const sanitizedVideo = useMemo(() => {
+    // Priority: thumbnail_url > thumbnail > generated from video_url > placeholder
+    let thumbnail = video.thumbnail_url || video.thumbnail || videoPlaceholder;
+    
+    // If no thumbnail is available, try to generate one based on video URL
+    if (!video.thumbnail_url && !video.thumbnail && video.video_url) {
+      if (isYouTubeUrl(video.video_url)) {
+        const youtubeThumbnail = getYouTubeThumbnail(video.video_url);
+        if (youtubeThumbnail) thumbnail = youtubeThumbnail;
+      } else if (isGoogleDriveUrl(video.video_url)) {
+        const googleDriveThumbnail = getGoogleDriveThumbnail(video.video_url);
+        if (googleDriveThumbnail) thumbnail = googleDriveThumbnail;
+      }
+    }
+
+    return {
+      ...video,
+      title: sanitizeText(video.title || 'Untitled Video'),
+      description: sanitizeText(video.description || ''),
+      thumbnail
+    };
+  }, [video]);
 
   // Calculate training status and progress
   const trainingStatus = useOptimizedMemo(() => {
