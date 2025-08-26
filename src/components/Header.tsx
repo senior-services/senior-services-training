@@ -28,7 +28,13 @@ export const Header = ({
             }} />
               <div>
                 <h1 className="text-xl font-bold text-primary">Learning Hub</h1>
-                <p className="text-sm text-muted-foreground hidden sm:block">Employee Dashboard</p>
+                <p className={`text-sm hidden sm:block ${
+                  userRole === 'admin' 
+                    ? 'font-bold text-[hsl(var(--admin-highlight))]' 
+                    : 'text-muted-foreground'
+                }`}>
+                  {userRole === 'admin' ? 'Admin Dashboard' : 'Employee Dashboard'}
+                </p>
               </div>
             </Link>
           </div>
