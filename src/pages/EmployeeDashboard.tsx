@@ -301,7 +301,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
         <main className="container mx-auto px-4 py-8" role="main" aria-labelledby="error-heading">
           <div className="text-center py-12">
             <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" aria-hidden="true" />
-            <h2 id="error-heading" className="text-2xl font-semibold mb-2">Unable to Load Training Data</h2>
+            <h2 id="error-heading" className="text-xl sm:text-2xl font-semibold mb-2">Unable to Load Training Data</h2>
             <p className="text-muted-foreground mb-4">{error}</p>
             <button onClick={loadAssignedVideos} className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring" aria-describedby="retry-description">
               Try Again
@@ -328,12 +328,12 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           {/* Enhanced Welcome Section with Status Information */}
           <header className="mb-8" role="banner">
             <div className="mb-4">
-              <h1 id="dashboard-heading" className="text-3xl font-bold text-foreground">
+              <h1 id="dashboard-heading" className="text-2xl sm:text-3xl font-bold text-foreground">
                 Welcome back, {sanitizedUserData.firstName}!
               </h1>
             </div>
             
-            <p className="text-muted-foreground text-lg">Training that turns our mission into daily practice.</p>
+            <p className="text-muted-foreground text-base sm:text-lg">Training that turns our mission into daily practice.</p>
             
             {/* Training Statistics for Screen Readers */}
             <div className="sr-only" aria-live="polite">
@@ -347,7 +347,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           {/* Required Training Section with Enhanced Accessibility */}
           <section id="main-content" className="mb-12" aria-labelledby="required-training-heading" role="region">
             <div className="flex items-center gap-3 mb-6">
-              <h2 id="required-training-heading" className="text-2xl font-semibold text-foreground flex items-center">
+              <h2 id="required-training-heading" className="text-xl sm:text-2xl font-semibold text-foreground flex items-center">
                 <Clock className="w-6 h-6 text-primary mr-3" aria-hidden="true" />
                 Required Training
               </h2>
@@ -361,7 +361,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
             }).map((_, index) => <LoadingSkeleton key={index} lines={1} className="h-64" />)}
               </div> : trainingData.required.length === 0 ? <div className="text-center py-12" role="status" aria-live="polite">
                 <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" aria-hidden="true" />
-                <h3 className="text-xl font-medium mb-2">No Required Training Assigned</h3>
+                <h3 className="text-lg sm:text-xl font-medium mb-2">No Required Training Assigned</h3>
                 <p className="text-muted-foreground">
                   You don't have any required training videos assigned at this time.
                 </p>
@@ -378,7 +378,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
                   <AccordionTrigger id="completed-training-heading" className="text-left px-0 py-4 hover:no-underline data-[state=open]:pb-2 [&>svg]:hidden">
                     <div className="flex items-center gap-3 w-full">
                       <ChevronDown className="w-8 h-8 text-muted-foreground transition-transform duration-200 data-[state=open]:rotate-180" />
-                      <h2 className="text-2xl font-semibold text-foreground flex items-center">
+                      <h2 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center">
                         <CheckCircle className="w-6 h-6 text-success mr-3" aria-hidden="true" />
                         Completed Training
                       </h2>
