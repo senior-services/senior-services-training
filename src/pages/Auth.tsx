@@ -90,6 +90,51 @@ export const Auth = () => {
 
         <Card>
           <CardHeader className="space-y-1">
+            {/* Development Testing Section */}
+            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="text-center mb-3">
+                <h3 className="font-semibold text-yellow-800 text-sm">Development Testing</h3>
+                <p className="text-xs text-yellow-700">Quick login for testing purposes</p>
+              </div>
+              <div className="space-y-2">
+                <Button
+                  onClick={handleTestAdminLogin}
+                  disabled={isLoading}
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-red-200 text-red-700 hover:bg-red-50"
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  Admin Test
+                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    onClick={handleTestEmployeeLogin}
+                    disabled={isLoading}
+                    variant="outline"
+                    size="sm"
+                    className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                  >
+                    <User className="w-4 h-4 mr-1" />
+                    Employee 1
+                  </Button>
+                  <Button
+                    onClick={handleTestEmployee2Login}
+                    disabled={isLoading}
+                    variant="outline"
+                    size="sm"
+                    className="border-green-200 text-green-700 hover:bg-green-50"
+                  >
+                    <User className="w-4 h-4 mr-1" />
+                    Employee 2
+                  </Button>
+                </div>
+              </div>
+              <div className="mt-2 text-xs text-yellow-600 text-center">
+                Admin: admin@gmail.com | Employee 1: jane.doe@southsoundseniors.org | Employee 2: john.doe@southsoundseniors.org
+              </div>
+            </div>
+
             <div className="flex justify-center mb-4">
               <Button
                 onClick={handleGoogleSignIn}
@@ -195,51 +240,6 @@ export const Auth = () => {
             
             <div className="mt-4 text-center text-sm text-muted-foreground">
               New employees will be automatically registered with employee access upon first login
-            </div>
-
-            {/* Development Testing Section */}
-            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <div className="text-center mb-3">
-                <h3 className="font-semibold text-yellow-800 text-sm">Development Testing</h3>
-                <p className="text-xs text-yellow-700">Quick login for testing purposes</p>
-              </div>
-              <div className="space-y-2">
-                <Button
-                  onClick={handleTestAdminLogin}
-                  disabled={isLoading}
-                  variant="outline"
-                  size="sm"
-                  className="w-full border-red-200 text-red-700 hover:bg-red-50"
-                >
-                  <Shield className="w-4 h-4 mr-2" />
-                  Admin Test
-                </Button>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    onClick={handleTestEmployeeLogin}
-                    disabled={isLoading}
-                    variant="outline"
-                    size="sm"
-                    className="border-blue-200 text-blue-700 hover:bg-blue-50"
-                  >
-                    <User className="w-4 h-4 mr-1" />
-                    Employee 1
-                  </Button>
-                  <Button
-                    onClick={handleTestEmployee2Login}
-                    disabled={isLoading}
-                    variant="outline"
-                    size="sm"
-                    className="border-green-200 text-green-700 hover:bg-green-50"
-                  >
-                    <User className="w-4 h-4 mr-1" />
-                    Employee 2
-                  </Button>
-                </div>
-              </div>
-              <div className="mt-2 text-xs text-yellow-600 text-center">
-                Admin: admin@gmail.com | Employee 1: jane.doe@southsoundseniors.org | Employee 2: john.doe@southsoundseniors.org
-              </div>
             </div>
           </CardContent>
         </Card>
