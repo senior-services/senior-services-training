@@ -185,8 +185,8 @@ export const EmployeeManagement: React.FC = () => {
               {employees.map(employee => {
             const hasVideos = (employee.assigned_videos_count || 0) > 0;
             const videos = employeeVideos.get(employee.id) || [];
-            return <AccordionItem key={employee.id} value={employee.id} className="group data-[state=open]:bg-muted/60 px-4">
-                    <AccordionTrigger className="[&>svg]:hidden py-2 px-0" // Hide default chevron
+            return <AccordionItem key={employee.id} value={employee.id} className="group data-[state=open]:bg-muted/60">
+                    <AccordionTrigger className="[&>svg]:hidden py-2 px-4" // Hide default chevron, add horizontal padding
               >
                     <div className="flex items-center justify-between w-full">
                       {/* Left side: Chevron + Employee info */}
@@ -251,7 +251,7 @@ export const EmployeeManagement: React.FC = () => {
                     </div>
                   </AccordionTrigger>
                     
-                    {hasVideos && <AccordionContent className="px-0 pb-4">
+                    {hasVideos && <AccordionContent className="px-4 pb-4">
                         <div className="space-y-3">
                           
                           
