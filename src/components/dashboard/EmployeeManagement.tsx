@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AddEmployeeModal } from './AddEmployeeModal';
 import { AssignVideosModal } from './AssignVideosModal';
 import { format, differenceInDays, isPast } from 'date-fns';
-export const EmployeeManagement: React.FC = () => {
+export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => void }> = ({ onCountChange }) => {
   const [employees, setEmployees] = useState<EmployeeWithAssignments[]>([]);
   const [employeeVideos, setEmployeeVideos] = useState<Map<string, any[]>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -36,6 +36,7 @@ export const EmployeeManagement: React.FC = () => {
       setLoading(true);
       const data = await EmployeeService.getEmployees();
       setEmployees(data);
+      onCountChange?.(data.length);
 
       // Load video assignments for each employee - now data comes pre-loaded from batch function
       const videoMap = new Map();
@@ -61,10 +62,14 @@ export const EmployeeManagement: React.FC = () => {
     }
   };
   const handleAddEmployee = (employee: Employee) => {
-    setEmployees(prev => [...prev, {
-      ...employee,
-      assigned_videos_count: 0
-    }]);
+    setEmployees(prev => {
+      const updated = [...prev, {
+        ...employee,
+        assigned_videos_count: 0
+      }];
+      onCountChange?.(updated.length);
+      return updated;
+    });
     setShowAddModal(false);
     toast({
       title: "Success",
@@ -80,7 +85,7 @@ export const EmployeeManagement: React.FC = () => {
     setIsDeleting(true);
     try {
       await EmployeeService.deleteEmployee(deleteConfirmEmployee.id);
-      setEmployees(prev => prev.filter(emp => emp.id !== deleteConfirmEmployee.id));
+      setEmployees(prev => { const updated = prev.filter(emp => emp.id !== deleteConfirmEmployee.id); onCountChange?.(updated.length); return updated; });
       setDeleteConfirmEmployee(null);
       toast({
         title: "Success",

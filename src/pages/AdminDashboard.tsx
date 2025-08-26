@@ -594,7 +594,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
               </TabsList>
 
             <TabsContent value="employees" className="space-y-6 mt-6">
-              <EmployeeManagement />
+              <EmployeeManagement onCountChange={setEmployeeCount} />
             </TabsContent>
 
             <TabsContent value="videos" className="space-y-6 mt-6">
