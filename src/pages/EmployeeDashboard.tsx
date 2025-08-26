@@ -158,7 +158,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       id: video.id,
       title: sanitizeText(video.title || 'Untitled Video'),
       description: sanitizeText(video.description || ''),
-      thumbnail: video.thumbnail_url || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&h=300&fit=crop',
+      thumbnail: '', // Let TrainingCard handle thumbnail generation
       duration: formatSeconds(video.duration_seconds || 0),
       progress: Math.max(0, Math.min(100, assignment?.progress_percent || 0)),
       // Use real progress from assignment
