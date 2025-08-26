@@ -62,6 +62,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const [isCompleted, setIsCompleted] = useState(false);
   const [wasEverCompleted, setWasEverCompleted] = useState(false); // Track if video was ever completed
   const [isWatching, setIsWatching] = useState(false);
+  const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
   
   // Refs for video element and timing management
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -93,6 +94,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         setIsCompleted(false);
         setWasEverCompleted(false);
         setIsWatching(false);
+        setShowCompletionOverlay(false);
         return;
       }
 
@@ -133,12 +135,14 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
               setProgress(0);
               setIsCompleted(false);
               setWasEverCompleted(false);
+              setShowCompletionOverlay(false);
               logger.videoEvent('no_previous_progress', videoId);
             }
           } else {
             setProgress(0);
             setIsCompleted(false);
             setWasEverCompleted(false);
+            setShowCompletionOverlay(false);
             logger.warn('User not authenticated, cannot load progress', { videoId });
           }
           
@@ -208,6 +212,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         if (progressPercent >= 100 && !wasEverCompleted) {
           setIsCompleted(true);
           setWasEverCompleted(true);
+          setShowCompletionOverlay(true);
           
           logger.videoEvent('video_completed', videoId, {
             userEmail: user.email,
@@ -270,6 +275,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
    */
   const handleVideoEnded = useCallback(async () => {
     setProgress(100);
+    setShowCompletionOverlay(true);
     // Do not auto-complete; allow user to confirm completion manually
     onProgressUpdate?.(100);
   }, [onProgressUpdate]);
@@ -297,6 +303,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         setProgress(100);
         setIsCompleted(true);
         setWasEverCompleted(true);
+        setShowCompletionOverlay(true);
         
         // Ensure database update completes
         await updateProgressToDatabase(100);
@@ -425,8 +432,9 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 setProgress(progressPercent);
                 onProgressUpdate?.(progressPercent);
 
-                // Stop interval at 100% but do not auto-complete; user must click Mark Complete
+                // Stop interval at 100% and show completion overlay
                 if (progressPercent >= 100) {
+                  setShowCompletionOverlay(true);
                   if (progressIntervalRef.current) {
                     clearInterval(progressIntervalRef.current);
                   }
@@ -468,8 +476,9 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 setProgress(progressPercent);
                 onProgressUpdate?.(progressPercent);
                 
-                // Stop interval at 100% but do not auto-complete; user must click Mark Complete
+                // Stop interval at 100% and show completion overlay
                 if (progressPercent >= 100) {
+                  setShowCompletionOverlay(true);
                   if (progressIntervalRef.current) {
                     clearInterval(progressIntervalRef.current);
                   }
@@ -578,7 +587,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           </div>
         </DialogHeader>
         
-        <div className="w-full aspect-video bg-black rounded-lg overflow-hidden shadow-inner flex-shrink-0">
+        <div className="w-full aspect-video bg-black rounded-lg overflow-hidden shadow-inner flex-shrink-0 relative">
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
               <LoadingSkeleton lines={1} className="w-32 h-32" />
@@ -586,6 +595,32 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               {content}
+            </div>
+          )}
+          
+          {/* Completion Overlay */}
+          {showCompletionOverlay && progress >= 100 && (
+            <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-10 animate-fade-in">
+              <div className="bg-card rounded-xl p-8 max-w-md mx-4 text-center shadow-xl border animate-scale-in">
+                <div className="mb-4">
+                  <CheckCircle className="w-16 h-16 text-success mx-auto mb-3" />
+                  <h3 className="text-2xl font-bold text-foreground mb-2">
+                    Training Completed! 🎉
+                  </h3>
+                  <p className="text-muted-foreground">
+                    You've successfully completed "{video?.title}"
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => {
+                    setShowCompletionOverlay(false);
+                    onOpenChange(false);
+                  }}
+                  className="w-full"
+                >
+                  Close
+                </Button>
+              </div>
             </div>
           )}
         </div>
