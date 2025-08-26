@@ -27,11 +27,14 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap px-0 py-2 text-base font-medium transition-all duration-200 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-      "text-muted-foreground hover:text-foreground",
-      "data-[state=active]:text-foreground data-[state=active]:font-semibold",
+      "inline-flex items-center justify-center whitespace-nowrap px-4 py-3 text-base font-medium transition-all duration-200 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 rounded-lg",
+      // Inactive state styling
+      "bg-muted/50 text-muted-foreground shadow-sm hover:bg-muted/80 hover:text-foreground",
+      // Active state styling  
+      "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md data-[state=active]:font-semibold data-[state=active]:border data-[state=active]:border-border/20",
+      // Badge styling for different states
       "[&>span]:data-[state=active]:bg-primary [&>span]:data-[state=active]:text-primary-foreground",
-      "[&>span]:data-[state=inactive]:bg-muted [&>span]:data-[state=inactive]:text-muted-foreground",
+      "[&>span]:bg-muted [&>span]:text-muted-foreground",
       className
     )}
     {...props}
