@@ -562,9 +562,19 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
         <div className="space-y-6">
 
             <Tabs defaultValue="videos" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="videos">Videos</TabsTrigger>
-                <TabsTrigger value="employees">Employees</TabsTrigger>
+              <TabsList className="border-b border-border/20 pb-4">
+                <TabsTrigger value="videos" className="gap-2">
+                  Videos
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-2 text-xs font-medium text-white bg-primary rounded-full">
+                    {videos.length}
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="employees" className="gap-2">
+                  Employees  
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-2 text-xs font-medium text-muted-foreground bg-muted rounded-full">
+                    {employees.length}
+                  </span>
+                </TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
 
