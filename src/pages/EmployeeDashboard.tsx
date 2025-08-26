@@ -8,7 +8,7 @@ import { Header } from "@/components/Header";
 import { TrainingCard, TrainingVideo } from "@/components/TrainingCard";
 import { Badge } from "@/components/ui/badge";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { BookOpen, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { BookOpen, AlertCircle, CheckCircle, Clock, ChevronDown } from "lucide-react";
 import { EmployeeService } from "@/services/employeeService";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
@@ -16,6 +16,12 @@ import { useToast } from "@/hooks/use-toast";
 import type { Video } from "@/types";
 import { logger, performanceTracker } from "@/utils/logger";
 import { handleError, withErrorHandler } from "@/utils/errorHandler";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 // Enhanced utility imports
 import { sanitizeText, createSafeDisplayName, validateUserRole } from "@/utils/security";
@@ -397,33 +403,44 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
               </div>}
           </section>
 
-          {/* Completed Training Section */}
+          {/* Completed Training Accordion Section */}
           {trainingData.completed.length > 0 && (
             <section className="mb-12" aria-labelledby="completed-training-heading" role="region">
-              <div className="flex items-center gap-3 mb-6">
-                <h2 id="completed-training-heading" className="text-2xl font-semibold text-foreground flex items-center">
-                  <CheckCircle className="w-6 h-6 text-success mr-3" aria-hidden="true" />
-                  Completed Training
-                </h2>
-                <Badge className="bg-success/10 text-success border-success/20">
-                  {trainingData.completed.length} completed
-                </Badge>
-              </div>
-              
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" role="grid" aria-label="Completed training videos">
-                {trainingData.completed.map((video, index) => (
-                  <TrainingCard 
-                    key={video.id} 
-                    video={video} 
-                    onPlay={handleVideoPlay} 
-                    priority={false}
-                  />
-                ))}
-              </div>
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="completed-training" className="border-0">
+                  <AccordionTrigger 
+                    id="completed-training-heading"
+                    className="text-left px-0 py-4 hover:no-underline data-[state=open]:pb-2"
+                  >
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-2xl font-semibold text-foreground flex items-center">
+                        <CheckCircle className="w-6 h-6 text-success mr-3" aria-hidden="true" />
+                        Completed Training
+                      </h2>
+                      <Badge className="bg-success/10 text-success border-success/20">
+                        {trainingData.completed.length} completed
+                      </Badge>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-0 pb-0">
+                    <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 pt-4" role="grid" aria-label="Completed training videos">
+                      {trainingData.completed.map((video, index) => (
+                        <TrainingCard 
+                          key={video.id} 
+                          video={video} 
+                          onPlay={handleVideoPlay} 
+                          priority={false}
+                        />
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </section>
           )}
 
         </main>
       </div>
-    </ErrorBoundary>;
+    </ErrorBoundary>
+  );
 };
