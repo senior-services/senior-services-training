@@ -558,11 +558,11 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
         onLogout={onLogout}
       />
       
-      <main className="container mx-auto px-4 py-6">
-        <div className="space-y-6">
+      <main className="container mx-auto px-4 pb-6">
+        <div>
 
             <Tabs defaultValue="videos" className="w-full">
-              <TabsList className="w-full mb-6">
+              <TabsList className="w-full">
                 <TabsTrigger value="videos" className="gap-2">
                   Videos
                   <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-2 text-xs font-medium rounded-full transition-colors">
