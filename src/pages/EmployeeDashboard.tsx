@@ -334,9 +334,10 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
             </p>
           </div>
         </main>
-      </div>;
+      </div>
   }
-  return <ErrorBoundary>
+  return (
+    <ErrorBoundary>
       <div className="min-h-screen bg-muted/30">
         <Header 
           userRole="employee" 
