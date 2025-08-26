@@ -569,10 +569,18 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] p-6 overflow-y-auto shadow-2xl">
-        <DialogDescription className="sr-only">
+      <DialogContent 
+        className="max-w-6xl w-[95vw] max-h-[90vh] p-6 overflow-y-auto shadow-2xl"
+        onOpenAutoFocus={(e) => {
+          // Prevent auto-focus to allow natural tab order
+          e.preventDefault();
+        }}
+        aria-describedby="video-description"
+      >
+        <DialogDescription id="video-description" className="sr-only">
           Training video player for {video?.title || 'training content'}. 
           Use the controls below to watch the video and track your progress.
+          Press Escape key to close this dialog.
         </DialogDescription>
         
         <DialogHeader className="pb-4 border-b flex-shrink-0">
@@ -597,7 +605,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           </div>
           
           {/* Video Controls */}
-          <div className="flex items-center gap-2 mt-3" role="toolbar" aria-label="Video controls">
+          <div className="flex items-center gap-2 mt-3" role="toolbar" aria-label="Video controls and completion options">
             {(() => {
               const url = video?.video_url || '';
               const isEmbedded = !!url && (isYouTubeUrl(url) || isGoogleDriveUrl(url));
@@ -629,7 +637,14 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 variant="default" 
                 size="sm" 
                 onClick={handleMarkComplete}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleMarkComplete();
+                  }
+                }}
                 className="flex items-center gap-2 bg-success hover:bg-success/90"
+                aria-label="Mark training video as complete"
               >
                 <CheckCircle className="w-4 h-4" aria-hidden="true" />
                 Mark Complete
