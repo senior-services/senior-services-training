@@ -591,7 +591,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
                     {employeeCount}
                   </span>
                 </TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
+                <TabsTrigger value="settings">Admin Access</TabsTrigger>
               </TabsList>
 
             <TabsContent value="employees" className="space-y-6 mt-6">
