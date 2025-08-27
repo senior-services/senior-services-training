@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { UserPlus, Trash2, Shield, Mail, Crown } from 'lucide-react';
+import { UserPlus, Trash2, Shield, Mail } from 'lucide-react';
 import { AdminService, AdminUser } from '@/services/adminService';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
 import { useToast } from '@/hooks/use-toast';
@@ -166,7 +166,7 @@ export const AdminManagement: React.FC = () => {
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Crown className="w-4 h-4 text-primary" />
+                          <Shield className="w-4 h-4 text-primary" />
                         </div>
                         <div>
                           <span>{admin.isPending ? '--' : (admin.full_name || 'Unknown')}</span>
