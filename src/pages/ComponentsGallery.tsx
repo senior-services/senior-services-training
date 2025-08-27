@@ -557,18 +557,18 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <Table>
                       <TableCaption>A simple data table</TableCaption>
                       <TableHeader>
-                         <TableRow>
+                          <TableRow>
                            <TableHead>
-                             <span className="font-medium p-0 h-auto">Name</span>
+                             <span className="font-medium p-0 h-auto pb-3">Name</span>
                            </TableHead>
                            <TableHead>
-                             <span className="font-medium p-0 h-auto">Email</span>
+                             <span className="font-medium p-0 h-auto pb-3">Email</span>
                            </TableHead>
                            <TableHead>
-                             <span className="font-medium p-0 h-auto">Role</span>
+                             <span className="font-medium p-0 h-auto pb-3">Role</span>
                            </TableHead>
                            <TableHead className="text-right">
-                             <span className="font-medium p-0 h-auto">Actions</span>
+                             <span className="font-medium p-0 h-auto pb-3">Actions</span>
                            </TableHead>
                          </TableRow>
                       </TableHeader>
@@ -720,19 +720,19 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <TableHeader>
                          <TableRow>
                            <TableHead>
-                             <span className="font-medium p-0 h-auto">User</span>
+                             <span className="font-medium p-0 h-auto pb-3">User</span>
                            </TableHead>
                            <TableHead>
-                             <span className="font-medium p-0 h-auto">Status</span>
+                             <span className="font-medium p-0 h-auto pb-3">Status</span>
                            </TableHead>
                            <TableHead>
-                             <span className="font-medium p-0 h-auto">Role</span>
+                             <span className="font-medium p-0 h-auto pb-3">Role</span>
                            </TableHead>
                            <TableHead>
-                             <span className="font-medium p-0 h-auto">Last Activity</span>
+                             <span className="font-medium p-0 h-auto pb-3">Last Activity</span>
                            </TableHead>
                            <TableHead className="text-right">
-                             <span className="font-medium p-0 h-auto">Actions</span>
+                             <span className="font-medium p-0 h-auto pb-3">Actions</span>
                            </TableHead>
                          </TableRow>
                       </TableHeader>
@@ -811,19 +811,19 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <TableHeader>
                          <TableRow>
                            <TableHead>
-                             <span className="font-medium p-0 h-auto">Project</span>
+                             <span className="font-medium p-0 h-auto pb-3">Project</span>
                            </TableHead>
                            <TableHead>
-                             <span className="font-medium p-0 h-auto">Progress</span>
+                             <span className="font-medium p-0 h-auto pb-3">Progress</span>
                            </TableHead>
                            <TableHead>
-                             <span className="font-medium p-0 h-auto">Status</span>
+                             <span className="font-medium p-0 h-auto pb-3">Status</span>
                            </TableHead>
                            <TableHead>
-                             <span className="font-medium p-0 h-auto">Priority</span>
+                             <span className="font-medium p-0 h-auto pb-3">Priority</span>
                            </TableHead>
                            <TableHead>
-                             <span className="font-medium p-0 h-auto">Assignee</span>
+                             <span className="font-medium p-0 h-auto pb-3">Assignee</span>
                            </TableHead>
                          </TableRow>
                       </TableHeader>
