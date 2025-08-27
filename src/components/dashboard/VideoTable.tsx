@@ -22,6 +22,7 @@ import {
   Plus, 
   Play 
 } from 'lucide-react';
+import { isYouTubeUrl, getYouTubeVideoId, isGoogleDriveUrl, getGoogleDriveFileId } from '@/utils/videoUtils';
 import { Video } from '@/types';
 import { VIDEO_CONFIG } from '@/constants';
 import { 
@@ -229,55 +230,27 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                           {/* Video preview */}
                           <div className="relative w-20 h-12 rounded-md overflow-hidden bg-muted">
                             {(() => {
-                              // Check if it's a YouTube URL
-                              const isYouTubeUrl = video.video_url && (
-                                video.video_url.includes('youtube.com/watch') || 
-                                video.video_url.includes('youtu.be/')
-                              );
-                              
-                              // Extract YouTube video ID
-                              const getYouTubeVideoId = (url: string) => {
-                                const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-                                return match ? match[1] : null;
-                              };
-                              
-                              const youtubeVideoId = isYouTubeUrl && video.video_url ? getYouTubeVideoId(video.video_url) : null;
-                              
-                              if (isYouTubeUrl && youtubeVideoId) {
+                              // Determine best thumbnail source
+                              let thumbSrc: string | null = null;
+                              if (video.thumbnail_url) {
+                                thumbSrc = video.thumbnail_url;
+                              } else if (video.video_url) {
+                                if (isYouTubeUrl(video.video_url)) {
+                                  const id = getYouTubeVideoId(video.video_url);
+                                  if (id) thumbSrc = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+                                } else if (isGoogleDriveUrl(video.video_url)) {
+                                  const id = getGoogleDriveFileId(video.video_url);
+                                  if (id) thumbSrc = `https://drive.google.com/thumbnail?id=${id}&sz=w400-h300`;
+                                }
+                              }
+
+                              if (thumbSrc) {
                                 return (
-                                  <iframe
-                                    width="100%"
-                                    height="100%"
-                                    src={`https://www.youtube.com/embed/${youtubeVideoId}?controls=0&modestbranding=1&rel=0`}
-                                    title={video.title}
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    className="w-full h-full pointer-events-none"
-                                  />
-                                );
-                              } else if (video.video_url && !isYouTubeUrl) {
-                                return (
-                                  <video 
-                                    className="w-full h-full object-cover pointer-events-none"
-                                    preload="metadata"
-                                    muted
-                                    onError={(e) => {
-                                      // Fallback to thumbnail if video fails to load
-                                      const target = e.target as HTMLVideoElement;
-                                      target.style.display = 'none';
-                                      const fallback = target.nextElementSibling as HTMLElement;
-                                      if (fallback) fallback.classList.remove('hidden');
-                                    }}
-                                  >
-                                    <source src={video.video_url} type="video/mp4" />
-                                  </video>
-                                );
-                              } else if (video.thumbnail_url) {
-                                return (
-                                  <img 
-                                    src={video.thumbnail_url}
+                                  <img
+                                    src={thumbSrc}
                                     alt={`${video.title} thumbnail`}
                                     className="w-full h-full object-cover"
+                                    loading="lazy"
                                     onError={(e) => {
                                       // Fallback to colored placeholder if image fails to load
                                       const target = e.target as HTMLImageElement;
@@ -294,16 +267,17 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                               className={cn(
                                 'absolute inset-0 flex items-center justify-center',
                                 generateThumbnailColor(video.title),
-                                video.video_url || video.thumbnail_url ? 'hidden' : ''
+                                (video.video_url || video.thumbnail_url) ? 'hidden' : ''
                               )}
                             >
                               <Play className="w-4 h-4 text-white" aria-hidden="true" />
                             </div>
                             <a
-                              href={`/video/${video.id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() => handleVideoAction('Play video', video, () => {})}
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleVideoAction('Play video', video, () => onPlay(video));
+                              }}
                               aria-label={`Play video: ${video.title}`}
                               className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center group"
                             >
