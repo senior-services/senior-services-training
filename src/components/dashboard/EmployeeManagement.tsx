@@ -293,7 +293,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                     </CollapsibleTrigger>
                     
                     <CollapsibleContent>
-                      <div className="px-4 pb-4 ml-6 bg-muted/30">
+                      <div className="px-4 pb-4 ml-6">
                         {videos.length === 0 ? (
                           <div className="text-sm text-muted-foreground py-2">
                             No videos assigned
