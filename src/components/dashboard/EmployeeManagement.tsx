@@ -288,7 +288,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                               On Track
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="hollow-plain" className="text-xs">
                               No Videos
                             </Badge>
                           )}
