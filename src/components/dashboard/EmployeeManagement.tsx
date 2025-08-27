@@ -284,7 +284,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                               <span className="text-sm text-destructive">overdue</span>
                             </div>
                           ) : videos.length > 0 ? (
-                            <Badge variant="hollow-success" className="text-xs">
+                            <Badge variant="hollow-success" showIcon className="text-xs">
                               On Track
                             </Badge>
                           ) : (
