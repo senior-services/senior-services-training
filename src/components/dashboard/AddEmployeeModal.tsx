@@ -108,7 +108,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form id="add-employee-form" onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">
               Email Address *
@@ -143,21 +143,21 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               This will be updated automatically from their Google account when they log in.
             </p>
           </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Adding...' : 'Add Employee'}
-            </Button>
-          </DialogFooter>
         </form>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" form="add-employee-form" disabled={isSubmitting}>
+            {isSubmitting ? 'Adding...' : 'Add Employee'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
