@@ -278,7 +278,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                         <TableCell className="text-center py-3">
                           {overdueCount > 0 ? (
                             <Badge variant="hollow-destructive" showIcon className="text-xs">
-                              Overdue
+                              {overdueCount} Overdue
                             </Badge>
                           ) : videos.length > 0 ? (
                             <Badge variant="hollow-success" showIcon className="text-xs">
