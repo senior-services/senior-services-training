@@ -298,32 +298,29 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                             No videos assigned
                           </div>
                         ) : (
-                          <div className="space-y-2">
-                            {videos.map((assignment) => {
-                              const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent);
-                              
-                              return (
-                                <div key={assignment.assignment_id} className="flex items-center justify-between py-2 border-l-2 border-border pl-4">
-                                  <div className="flex-1">
-                                    <div className="font-medium text-sm">{assignment.video_title}</div>
-                                    {assignment.video_description && (
-                                      <div className="text-xs text-muted-foreground mt-1">
-                                        {assignment.video_description}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Badge 
-                                      variant={badge.variant}
-                                      className={badge.className}
-                                    >
-                                      {badge.text}
-                                    </Badge>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
+                          <Table>
+                            <TableBody>
+                              {videos.map((assignment) => {
+                                const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent);
+                                
+                                return (
+                                  <TableRow key={assignment.assignment_id} className="border-l-2 border-border">
+                                    <TableCell className="font-medium py-3">
+                                      {assignment.video_title}
+                                    </TableCell>
+                                    <TableCell className="text-right py-3">
+                                      <Badge 
+                                        variant={badge.variant}
+                                        className={badge.className}
+                                      >
+                                        {badge.text}
+                                      </Badge>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
                         )}
                       </div>
                     </CollapsibleContent>
