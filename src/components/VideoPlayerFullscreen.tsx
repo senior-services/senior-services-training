@@ -111,14 +111,10 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
           // Load existing progress if user is authenticated
           if (user?.email) {
-            const progressResult = await withErrorHandler(
-              () => progressOperations.getByEmailAndVideo(user.email!, videoId),
-              { videoId, userEmail: user.email },
-              'Unable to load your video progress'
-            );
+            const progressResult = await progressOperations.getByEmailAndVideo(user.email, videoId);
 
             if (progressResult.success && progressResult.data) {
-              const progressData = progressResult.data as { progress_percent: number; completed_at: string | null };
+              const progressData = progressResult.data;
               const progressPercent = progressData.progress_percent;
               
               setProgress(progressPercent);
@@ -147,7 +143,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           }
           
           setIsWatching(false);
-          return videoData;
+          return res.data;
         },
         { videoId, userEmail: user?.email },
         'Unable to load video details'
