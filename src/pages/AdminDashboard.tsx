@@ -269,6 +269,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
    * @param {VideoData} video - Video data to play
    */
   const handleVideoThumbnailClick = (video: VideoData) => {
+    console.log('Opening video player for video:', video);
     logger.videoEvent('thumbnail_clicked', video.id, { 
       title: video.title,
       adminUser: userEmail 
@@ -276,6 +277,19 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
     
     setSelectedVideo(video);
     setIsVideoPlayerOpen(true);
+  };
+
+  /**
+   * Handles video player modal close - ensures proper state cleanup
+   */
+  const handleVideoPlayerClose = (open: boolean) => {
+    setIsVideoPlayerOpen(open);
+    if (!open) {
+      // Small delay to ensure modal closes smoothly before clearing video
+      setTimeout(() => {
+        setSelectedVideo(null);
+      }, 100);
+    }
   };
 
   /**
@@ -860,7 +874,7 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
 
       <VideoPlayerModal
         open={isVideoPlayerOpen}
-        onOpenChange={setIsVideoPlayerOpen}
+        onOpenChange={handleVideoPlayerClose}
         video={selectedVideo}
       />
     </>
