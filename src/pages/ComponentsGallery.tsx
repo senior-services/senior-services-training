@@ -255,14 +255,35 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     </div>
                     <div>
                       <h4 className="text-sm font-medium mb-2">Icon Only</h4>
-                      <div className="flex flex-wrap gap-3">
-                        <Button size="icon"><Plus className="w-4 h-4" /></Button>
-                        <Button size="icon" variant="outline"><Edit className="w-4 h-4" /></Button>
-                        <Button size="icon" variant="destructive"><Trash2 className="w-4 h-4" /></Button>
-                        <Button size="icon" variant="ghost"><Download className="w-4 h-4" /></Button>
-                        <Button size="icon" variant="secondary"><Settings className="w-4 h-4" /></Button>
-                        <Button size="icon" variant="ghost"><Search className="w-4 h-4" /></Button>
-                        <Button size="icon" variant="outline"><Bell className="w-4 h-4" /></Button>
+                      <div className="grid grid-cols-4 sm:grid-cols-7 gap-4">
+                        <div className="flex flex-col items-center gap-1">
+                          <Button size="icon"><Plus className="w-4 h-4" /></Button>
+                          <span className="text-xs text-muted-foreground">default</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          <Button size="icon" variant="outline"><Edit className="w-4 h-4" /></Button>
+                          <span className="text-xs text-muted-foreground">outline</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          <Button size="icon" variant="destructive"><Trash2 className="w-4 h-4" /></Button>
+                          <span className="text-xs text-muted-foreground">destructive</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          <Button size="icon" variant="ghost"><Download className="w-4 h-4" /></Button>
+                          <span className="text-xs text-muted-foreground">ghost</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          <Button size="icon" variant="secondary"><Settings className="w-4 h-4" /></Button>
+                          <span className="text-xs text-muted-foreground">secondary</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          <Button size="icon" variant="ghost"><Search className="w-4 h-4" /></Button>
+                          <span className="text-xs text-muted-foreground">ghost</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          <Button size="icon" variant="outline"><Bell className="w-4 h-4" /></Button>
+                          <span className="text-xs text-muted-foreground">outline</span>
+                        </div>
                       </div>
                     </div>
                   </div>
