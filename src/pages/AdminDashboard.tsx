@@ -14,6 +14,7 @@ import { AdminManagement } from "@/components/dashboard/AdminManagement";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { EmployeeService } from "@/services/employeeService";
+import { videoService } from "@/services/supabase";
 import { 
   Table, 
   TableBody, 
@@ -170,7 +171,6 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
     const fetchResult = await withErrorHandler(
       async () => {
         // Try to get videos directly first, auth check is handled by RLS
-        const { videoService } = await import('@/services/supabase');
         const result = await videoService.getAll();
 
         if (!result.success) {
