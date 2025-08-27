@@ -79,6 +79,7 @@ import {
   Info,
   X,
   ArrowUp,
+  ArrowDown,
   ArrowUpDown
 } from "lucide-react";
 
@@ -96,8 +97,19 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
   const [selectValue, setSelectValue] = useState("");
   const [progress, setProgress] = useState(33);
   const [isLoading, setIsLoading] = useState(false);
+  const [sortColumn, setSortColumn] = useState<string>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   
   const { toast } = useToast();
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
 
   const showToast = (type: "default" | "destructive" | "success") => {
     switch (type) {
@@ -450,21 +462,57 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <TableHeader>
                         <TableRow>
                           <TableHead>
-                            <Button variant="ghost" className="font-bold p-0 h-auto hover:bg-transparent text-foreground">
+                            <Button 
+                              variant="ghost" 
+                              className={`font-medium p-0 h-auto hover:bg-transparent ${
+                                sortColumn === "name" ? "text-foreground font-bold" : "text-muted-foreground"
+                              }`}
+                              onClick={() => handleSort("name")}
+                            >
                               Name 
-                              <ArrowUp className="w-4 h-4 ml-1" />
+                              {sortColumn === "name" ? (
+                                sortDirection === "asc" ? 
+                                  <ArrowUp className="w-4 h-4 ml-1" /> : 
+                                  <ArrowDown className="w-4 h-4 ml-1" />
+                              ) : (
+                                <ArrowUpDown className="w-4 h-4 ml-1 opacity-30" />
+                              )}
                             </Button>
                           </TableHead>
                           <TableHead>
-                            <Button variant="ghost" className="font-medium p-0 h-auto hover:bg-transparent text-muted-foreground">
+                            <Button 
+                              variant="ghost" 
+                              className={`font-medium p-0 h-auto hover:bg-transparent ${
+                                sortColumn === "email" ? "text-foreground font-bold" : "text-muted-foreground"
+                              }`}
+                              onClick={() => handleSort("email")}
+                            >
                               Email
-                              <ArrowUpDown className="w-4 h-4 ml-1 text-muted-foreground" />
+                              {sortColumn === "email" ? (
+                                sortDirection === "asc" ? 
+                                  <ArrowUp className="w-4 h-4 ml-1" /> : 
+                                  <ArrowDown className="w-4 h-4 ml-1" />
+                              ) : (
+                                <ArrowUpDown className="w-4 h-4 ml-1 opacity-30" />
+                              )}
                             </Button>
                           </TableHead>
                           <TableHead>
-                            <Button variant="ghost" className="font-medium p-0 h-auto hover:bg-transparent text-muted-foreground">
+                            <Button 
+                              variant="ghost" 
+                              className={`font-medium p-0 h-auto hover:bg-transparent ${
+                                sortColumn === "department" ? "text-foreground font-bold" : "text-muted-foreground"
+                              }`}
+                              onClick={() => handleSort("department")}
+                            >
                               Department
-                              <ArrowUpDown className="w-4 h-4 ml-1 text-muted-foreground" />
+                              {sortColumn === "department" ? (
+                                sortDirection === "asc" ? 
+                                  <ArrowUp className="w-4 h-4 ml-1" /> : 
+                                  <ArrowDown className="w-4 h-4 ml-1" />
+                              ) : (
+                                <ArrowUpDown className="w-4 h-4 ml-1 opacity-30" />
+                              )}
                             </Button>
                           </TableHead>
                           <TableHead className="text-right">Actions</TableHead>
