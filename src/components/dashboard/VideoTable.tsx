@@ -221,7 +221,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                   sortedVideos.map((video, index) => (
                     <TableRow 
                       key={video.id}
-                      className="group hover:bg-muted/50 transition-colors"
+                      className="group"
                     >
                        {/* Video title and preview */}
                       <TableCell className="py-1.5">
