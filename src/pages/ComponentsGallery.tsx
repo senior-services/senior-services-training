@@ -16,14 +16,8 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { 
   AlertDialog, 
-  AlertDialogAction,
+  AlertDialogAction, 
   AlertDialogCancel, 
   AlertDialogContent, 
   AlertDialogDescription, 
@@ -219,18 +213,13 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
             </p>
           </div>
 
-          {/* Accordion Sections */}
-          <Accordion type="multiple" defaultValue={["colors", "typography"]} className="space-y-4">
-            
-            {/* Color Palette Section */}
-            <AccordionItem value="colors">
-              <AccordionTrigger className="text-xl font-semibold">Color Palette</AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                  <CardHeader>
-                    <CardDescription>Design system color tokens and semantic colors</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-8">
+          {/* Color Palette Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Color Palette</CardTitle>
+              <CardDescription>Design system color tokens and semantic colors</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 
                 {/* Primary Colors */}
@@ -394,20 +383,16 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   </div>
                 </div>
               </div>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
+            </CardContent>
+          </Card>
 
-            {/* Typography Section */}
-            <AccordionItem value="typography">
-              <AccordionTrigger className="text-xl font-semibold">Typography</AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                  <CardHeader>
-                    <CardDescription>Text styles and hierarchy</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
+          {/* Typography Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Typography</CardTitle>
+              <CardDescription>Text styles and hierarchy</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <div className="space-y-4">
                 <h1 className="text-4xl font-bold">Heading 1</h1>
                 <h2 className="text-3xl font-semibold">Heading 2</h2>
@@ -424,20 +409,16 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 <p className="text-xs text-muted-foreground font-medium">Extra small text medium - Captions and labels</p>
                 <code className="bg-muted px-2 py-1 rounded text-sm font-mono">Code snippet</code>
               </div>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
+            </CardContent>
+          </Card>
 
-            {/* Buttons Section */}
-            <AccordionItem value="buttons">
-              <AccordionTrigger className="text-xl font-semibold">Buttons</AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                  <CardHeader>
-                    <CardDescription>All button variants and states</CardDescription>
-                  </CardHeader>
-                  <CardContent>
+          {/* Buttons Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Buttons</CardTitle>
+              <CardDescription>All button variants and states</CardDescription>
+            </CardHeader>
+            <CardContent>
               <Tabs defaultValue="variants">
                 <TabsList>
                   <TabsTrigger value="variants">Variants</TabsTrigger>
@@ -567,20 +548,16 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   </div>
                 </TabsContent>
               </Tabs>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
+            </CardContent>
+          </Card>
 
-            {/* Form Controls Section */}
-            <AccordionItem value="forms">
-              <AccordionTrigger className="text-xl font-semibold">Form Controls</AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                  <CardHeader>
-                    <CardDescription>Input fields and form elements</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-8">
+          {/* Form Controls Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Form Controls</CardTitle>
+              <CardDescription>Input fields and form elements</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
@@ -1075,20 +1052,16 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 <h3 className="text-lg font-medium">Loading States</h3>
                 <LoadingSkeleton />
               </div>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
+            </CardContent>
+          </Card>
 
-            {/* Interactive Components Section */}
-            <AccordionItem value="interactive">
-              <AccordionTrigger className="text-xl font-semibold">Interactive Components</AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                  <CardHeader>
-                    <CardDescription>Dialogs, dropdowns, and overlays</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
+          {/* Interactive Components */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Interactive Components</CardTitle>
+              <CardDescription>Dialogs, dropdowns, and overlays</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <div className="flex flex-wrap gap-4">
                 <Dialog>
                   <DialogTrigger asChild>
@@ -1251,27 +1224,18 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <p>Content for tab 3</p>
                 </TabsContent>
               </Tabs>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Footer Section */}
-            <AccordionItem value="footer">
-              <AccordionTrigger className="text-xl font-semibold">About</AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-center text-sm text-muted-foreground">
-                      <p>Components Gallery • Built with shadcn/ui and Radix UI</p>
-                      <p className="mt-2">Toggle between light and dark themes to see all variants</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
-
-          </Accordion>
+            </CardContent>
+          </Card>
+          
+          {/* Footer */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center text-sm text-muted-foreground">
+                <p>Components Gallery • Built with shadcn/ui and Radix UI</p>
+                <p className="mt-2">Toggle between light and dark themes to see all variants</p>
+              </div>
+            </CardContent>
+          </Card>
         </main>
       </div>
     </TooltipProvider>
