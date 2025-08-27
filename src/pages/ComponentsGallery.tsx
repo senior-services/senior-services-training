@@ -77,7 +77,9 @@ import {
   AlertCircle,
   CheckCircle,
   Info,
-  X
+  X,
+  ArrowUp,
+  ArrowUpDown
 } from "lucide-react";
 
 interface ComponentsGalleryProps {
@@ -448,16 +450,23 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <TableHeader>
                         <TableRow>
                           <TableHead>
-                            <Button variant="ghost" className="font-semibold p-0 h-auto hover:bg-transparent">
-                              Name ↑
+                            <Button variant="ghost" className="font-bold p-0 h-auto hover:bg-transparent text-foreground">
+                              Name 
+                              <ArrowUp className="w-4 h-4 ml-1" />
                             </Button>
                           </TableHead>
                           <TableHead>
-                            <Button variant="ghost" className="font-semibold p-0 h-auto hover:bg-transparent">
+                            <Button variant="ghost" className="font-medium p-0 h-auto hover:bg-transparent text-muted-foreground">
                               Email
+                              <ArrowUpDown className="w-4 h-4 ml-1 text-muted-foreground" />
                             </Button>
                           </TableHead>
-                          <TableHead>Department</TableHead>
+                          <TableHead>
+                            <Button variant="ghost" className="font-medium p-0 h-auto hover:bg-transparent text-muted-foreground">
+                              Department
+                              <ArrowUpDown className="w-4 h-4 ml-1 text-muted-foreground" />
+                            </Button>
+                          </TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
