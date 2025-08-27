@@ -618,53 +618,45 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             </div>
           </div>
           
-          {/* Video Controls */}
-          <div className="flex items-center gap-2 mt-3" role="toolbar" aria-label="Video controls and completion options">
-            {(() => {
-              const url = video?.video_url || '';
-              const isEmbedded = !!url && (isYouTubeUrl(url) || isGoogleDriveUrl(url));
-              const hasUnknownDuration = !video?.duration_seconds || video.duration_seconds <= 0;
-              const useLowThreshold = isEmbedded || hasUnknownDuration;
-              const threshold = useLowThreshold ? 98 : 98;
-              const shouldShowButton = !isCompleted && progress >= threshold;
-              console.log('Mark Complete Button Debug:', { 
-                videoTitle: video?.title,
-                progress,
-                isCompleted,
-                wasEverCompleted,
-                isEmbedded,
-                hasUnknownDuration,
-                duration: video?.duration_seconds,
-                threshold,
-                shouldShowButton
-              });
-              return null;
-            })()}
-            {!isCompleted && (() => {
-              const url = video?.video_url || '';
-              const isEmbedded = !!url && (isYouTubeUrl(url) || isGoogleDriveUrl(url));
-              const hasUnknownDuration = !video?.duration_seconds || video.duration_seconds <= 0;
-              const threshold = (isEmbedded || hasUnknownDuration) ? 98 : 98;
-              return progress >= threshold;
-            })() ? (
-              <Button 
-                variant="default" 
-                size="sm" 
-                onClick={handleMarkComplete}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleMarkComplete();
-                  }
-                }}
-                className="flex items-center gap-2 bg-success hover:bg-success/90"
-                aria-label="Mark training video as complete"
-              >
-                <CheckCircle className="w-4 h-4" aria-hidden="true" />
-                Mark Complete
-              </Button>
-            ) : null}
-          </div>
+           {/* Video Controls */}
+           <div className="flex items-center gap-2 mt-3" role="toolbar" aria-label="Video controls and completion options">
+             {(() => {
+               const url = video?.video_url || '';
+               const isEmbedded = !!url && (isYouTubeUrl(url) || isGoogleDriveUrl(url));
+               const hasUnknownDuration = !video?.duration_seconds || video.duration_seconds <= 0;
+               const useLowThreshold = isEmbedded || hasUnknownDuration;
+               const threshold = useLowThreshold ? 98 : 98;
+               const shouldShowButton = !isCompleted && progress >= threshold;
+               
+               // Only log when video is actually loaded and we have meaningful data
+               if (video?.title && progress > 0) {
+                 console.log('Mark Complete Button:', { 
+                   video: video.title,
+                   progress,
+                   shouldShow: shouldShowButton
+                 });
+               }
+               
+               return shouldShowButton ? (
+                 <Button 
+                   variant="default" 
+                   size="sm" 
+                   onClick={handleMarkComplete}
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter' || e.key === ' ') {
+                       e.preventDefault();
+                       handleMarkComplete();
+                     }
+                   }}
+                   className="flex items-center gap-2 bg-success hover:bg-success/90"
+                   aria-label="Mark training video as complete"
+                 >
+                   <CheckCircle className="w-4 h-4" aria-hidden="true" />
+                   Mark Complete
+                 </Button>
+               ) : null;
+             })()}
+           </div>
         </DialogHeader>
         
         <div 

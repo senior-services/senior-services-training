@@ -24,8 +24,10 @@ interface VideoPlayerModalProps {
 }
 
 export const VideoPlayerModal = ({ open, onOpenChange, video }: VideoPlayerModalProps) => {
-  console.log('VideoPlayerModal rendered with video:', video);
-  console.log('Video description:', video?.description);
+  // Only log when actually opening with video data
+  if (open && video) {
+    console.log('VideoPlayerModal opened with video:', video.title);
+  }
   
   // Handle modal close and cleanup
   const handleClose = (isOpen: boolean) => {
