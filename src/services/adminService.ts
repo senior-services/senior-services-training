@@ -170,6 +170,13 @@ export class AdminService {
       throw new Error('User is already an admin.');
     }
 
+    // Remove any existing employee role first
+    await supabase
+      .from('user_roles')
+      .delete()
+      .eq('user_id', profile.user_id)
+      .eq('role', 'employee');
+
     // Add admin role
     const { error: insertError } = await supabase
       .from('user_roles')
@@ -196,6 +203,13 @@ export class AdminService {
       .maybeSingle();
 
     if (existingRole) return;
+
+    // Remove any existing employee role first
+    await supabase
+      .from('user_roles')
+      .delete()
+      .eq('user_id', userId)
+      .eq('role', 'employee');
 
     const { error } = await supabase
       .from('user_roles')
@@ -251,5 +265,10 @@ export class AdminService {
       console.error('Error removing admin role:', error);
       throw error;
     }
+
+    // Add employee role back to ensure user has a role
+    await supabase
+      .from('user_roles')
+      .insert({ user_id: userId, role: 'employee' });
   }
 }
