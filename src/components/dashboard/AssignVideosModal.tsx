@@ -6,8 +6,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -67,6 +76,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const [calendarOpen, setCalendarOpen] = useState<Map<string, boolean>>(new Map());
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -224,9 +234,22 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   };
 
   const handleClose = () => {
+    const hasSelectionChanges = !areSetEqual(selectedVideoIds, assignedVideoIds);
+    const hasDeadlineChanges = !areDeadlineMapsEqual(videoDeadlines, initialVideoDeadlines);
+    const hasChanges = hasSelectionChanges || hasDeadlineChanges;
+    
+    if (hasChanges) {
+      setShowDiscardDialog(true);
+    } else {
+      closeModal();
+    }
+  };
+
+  const closeModal = () => {
     setSelectedVideoIds(new Set(assignedVideoIds));
-    setVideoDeadlines(new Map(initialVideoDeadlines)); // Reset deadlines to initial on close
-    setCalendarOpen(new Map()); // Clear calendar open states on close
+    setVideoDeadlines(new Map(initialVideoDeadlines));
+    setCalendarOpen(new Map());
+    setShowDiscardDialog(false);
     onOpenChange(false);
   };
 
@@ -260,15 +283,8 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
           ) : (
             <>
               <div className="flex items-center justify-between py-2 flex-shrink-0 border-b">
-                <div className="flex items-center gap-2">
-                  <Badge variant={selectedCount > 0 ? "default" : "secondary"}>
-                    {selectedCount} video{selectedCount !== 1 ? 's' : ''} selected
-                  </Badge>
-                  {hasChanges && (
-                    <Badge variant="outline" className="text-orange-600">
-                      Unsaved changes
-                    </Badge>
-                  )}
+                <div className="text-sm text-muted-foreground">
+                  {selectedCount} video{selectedCount !== 1 ? 's' : ''} selected
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <a
@@ -411,6 +427,21 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
           </Button>
         </div>
       </DialogContent>
+
+      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes that will be lost if you close this dialog.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogAction onClick={closeModal}>Discard changes</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
