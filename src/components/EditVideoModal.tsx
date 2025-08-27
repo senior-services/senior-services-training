@@ -142,7 +142,7 @@ export const EditVideoModal = ({
                    
                    {/* Video Source Link */}
                    {(video.video_url || isFileUpload) && (
-                     <div className="text-center">
+                     <div className="text-left">
                        <a
                          href={
                            video.video_url || 
