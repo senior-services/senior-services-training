@@ -564,10 +564,10 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <TableCaption>A simple data table</TableCaption>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Role</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+                           <TableHead className="text-sm font-bold uppercase text-secondary">Name</TableHead>
+                           <TableHead className="text-sm font-bold uppercase text-secondary">Email</TableHead>
+                           <TableHead className="text-sm font-bold uppercase text-secondary">Role</TableHead>
+                           <TableHead className="text-right text-sm font-bold uppercase text-secondary">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -603,13 +603,13 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <TableHeader>
                         <TableRow>
                           <TableHead>
-                            <Button 
-                              variant="ghost" 
-                              className={`font-medium p-0 h-auto hover:bg-transparent ${
-                                sortColumn === "name" ? "text-foreground font-bold" : "text-muted-foreground"
-                              }`}
-                              onClick={() => handleSort("name")}
-                            >
+                             <Button 
+                               variant="ghost" 
+                               className={`text-sm font-bold uppercase text-secondary p-0 h-auto hover:bg-transparent ${
+                                 sortColumn === "name" ? "text-foreground font-bold" : ""
+                               }`}
+                               onClick={() => handleSort("name")}
+                             >
                               Name 
                               {sortColumn === "name" ? (
                                 sortDirection === "asc" ? 
@@ -621,13 +621,13 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                             </Button>
                           </TableHead>
                           <TableHead>
-                            <Button 
-                              variant="ghost" 
-                              className={`font-medium p-0 h-auto hover:bg-transparent ${
-                                sortColumn === "email" ? "text-foreground font-bold" : "text-muted-foreground"
-                              }`}
-                              onClick={() => handleSort("email")}
-                            >
+                             <Button 
+                               variant="ghost" 
+                               className={`text-sm font-bold uppercase text-secondary p-0 h-auto hover:bg-transparent ${
+                                 sortColumn === "email" ? "text-foreground font-bold" : ""
+                               }`}
+                               onClick={() => handleSort("email")}
+                             >
                               Email
                               {sortColumn === "email" ? (
                                 sortDirection === "asc" ? 
@@ -639,13 +639,13 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                             </Button>
                           </TableHead>
                           <TableHead>
-                            <Button 
-                              variant="ghost" 
-                              className={`font-medium p-0 h-auto hover:bg-transparent ${
-                                sortColumn === "department" ? "text-foreground font-bold" : "text-muted-foreground"
-                              }`}
-                              onClick={() => handleSort("department")}
-                            >
+                             <Button 
+                               variant="ghost" 
+                               className={`text-sm font-bold uppercase text-secondary p-0 h-auto hover:bg-transparent ${
+                                 sortColumn === "department" ? "text-foreground font-bold" : ""
+                               }`}
+                               onClick={() => handleSort("department")}
+                             >
                               Department
                               {sortColumn === "department" ? (
                                 sortDirection === "asc" ? 
@@ -656,7 +656,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                               )}
                             </Button>
                           </TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+                           <TableHead className="text-right text-sm font-bold uppercase text-secondary">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                        <TableBody>
@@ -717,11 +717,11 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <TableCaption>Filtered table with search and dropdown filters</TableCaption>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>User</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Role</TableHead>
-                          <TableHead>Last Activity</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+                           <TableHead className="text-sm font-bold uppercase text-secondary">User</TableHead>
+                           <TableHead className="text-sm font-bold uppercase text-secondary">Status</TableHead>
+                           <TableHead className="text-sm font-bold uppercase text-secondary">Role</TableHead>
+                           <TableHead className="text-sm font-bold uppercase text-secondary">Last Activity</TableHead>
+                           <TableHead className="text-right text-sm font-bold uppercase text-secondary">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                        <TableBody>
@@ -798,11 +798,11 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <TableCaption>Table with various status badges and progress indicators</TableCaption>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Project</TableHead>
-                          <TableHead>Progress</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Priority</TableHead>
-                          <TableHead>Assignee</TableHead>
+                           <TableHead className="text-sm font-bold uppercase text-secondary">Project</TableHead>
+                           <TableHead className="text-sm font-bold uppercase text-secondary">Progress</TableHead>
+                           <TableHead className="text-sm font-bold uppercase text-secondary">Status</TableHead>
+                           <TableHead className="text-sm font-bold uppercase text-secondary">Priority</TableHead>
+                           <TableHead className="text-sm font-bold uppercase text-secondary">Assignee</TableHead>
                         </TableRow>
                       </TableHeader>
                        <TableBody>
