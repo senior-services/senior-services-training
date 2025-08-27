@@ -16,7 +16,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { UserPlus, Mail, Users, Trash2, Edit, Clock, CheckCircle, XCircle, HelpCircle, Play, ChevronDown, ChevronUp, User, RefreshCw } from 'lucide-react';
+import { UserPlus, Mail, Users, Trash2, Edit, Clock, CheckCircle, XCircle, HelpCircle, Play, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { employeeOperations } from '@/services/api';
 import type { EmployeeWithAssignments, Employee } from '@/types/employee';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
@@ -325,9 +325,6 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                                 </div>
                                 
                                 <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <User className="w-4 h-4 text-primary" />
-                                  </div>
                                   <div>
                                     <div className="font-medium">{employee.full_name || 'Unknown'}</div>
                                     <div className="text-sm text-muted-foreground">{employee.email}</div>
