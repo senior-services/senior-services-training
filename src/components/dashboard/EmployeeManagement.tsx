@@ -251,8 +251,9 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                               <User className="w-4 h-4 text-primary" />
                             </div>
-                            <div>
+                            <div className="flex items-center gap-2">
                               <div className="font-medium">{employee.full_name || 'Unknown'}</div>
+                              <div className="w-px h-4 bg-muted-foreground/30"></div>
                               <div className="text-sm text-muted-foreground">{employee.email}</div>
                             </div>
                           </div>
@@ -304,11 +305,11 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                                 const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent);
                                 
                                 return (
-                                  <TableRow key={assignment.assignment_id} className="border-l-2 border-border">
-                                    <TableCell className="font-medium py-3">
+                                  <TableRow key={assignment.assignment_id}>
+                                    <TableCell className="font-medium py-1">
                                       {assignment.video_title}
                                     </TableCell>
-                                    <TableCell className="text-right py-3">
+                                    <TableCell className="text-right py-1">
                                       <Badge 
                                         variant={badge.variant}
                                         className={badge.className}
