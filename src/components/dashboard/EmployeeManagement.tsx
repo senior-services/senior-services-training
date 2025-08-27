@@ -241,7 +241,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
 
                   return (
                     <React.Fragment key={employee.id}>
-                      <TableRow className="group hover:bg-muted/50 transition-colors">
+                      <TableRow className={`group hover:bg-muted/50 transition-colors ${isExpanded ? 'border-b-0' : ''}`}>
                         <TableCell className="py-3">
                           <Collapsible 
                             open={isExpanded}
