@@ -16,7 +16,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { UserPlus, Mail, Users, Trash2, Edit, Clock, CheckCircle, XCircle, HelpCircle, Play, ChevronDown, ChevronRight, User, RefreshCw } from 'lucide-react';
+import { UserPlus, Mail, Users, Trash2, Edit, Clock, CheckCircle, XCircle, HelpCircle, Play, ChevronDown, ChevronUp, User, RefreshCw } from 'lucide-react';
 import { EmployeeService } from '@/services/employeeService';
 import type { EmployeeWithAssignments, Employee } from '@/types/employee';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
@@ -241,9 +241,9 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                         <div className="flex items-center gap-4 flex-1">
                           <div className="flex items-center gap-2">
                             {isExpanded ? (
-                              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                              <ChevronUp className="w-4 h-4 text-muted-foreground" />
                             ) : (
-                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                              <ChevronDown className="w-4 h-4 text-muted-foreground" />
                             )}
                           </div>
                           
@@ -293,7 +293,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                     </CollapsibleTrigger>
                     
                     <CollapsibleContent>
-                      <div className="px-4 pb-4 ml-6">
+                      <div className="px-4 pb-4 ml-6 bg-muted/30">
                         {videos.length === 0 ? (
                           <div className="text-sm text-muted-foreground py-2">
                             No videos assigned
