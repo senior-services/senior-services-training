@@ -64,15 +64,43 @@ export const isGoogleDriveUrl = (url: string): boolean => {
  * Checks if URL is a YouTube video
  */
 export const isYouTubeUrl = (url: string): boolean => {
-  return url.includes('youtube.com/watch') || url.includes('youtu.be/');
+  try {
+    const u = new URL(url);
+    return u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be') || u.hostname.includes('m.youtube.com');
+  } catch {
+    return /youtube\.com|youtu\.be/.test(url);
+  }
 };
 
 /**
  * Extracts YouTube video ID
  */
 export const getYouTubeVideoId = (url: string): string | null => {
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-  return match ? match[1] : null;
+  try {
+    const u = new URL(url);
+
+    // youtu.be short links
+    if (u.hostname.includes('youtu.be')) {
+      const seg = u.pathname.split('/').filter(Boolean)[0];
+      return seg || null;
+    }
+
+    // Standard watch URL with v param
+    const v = u.searchParams.get('v');
+    if (v) return v;
+
+    // Handle embed, shorts, live paths
+    const p = u.pathname || '';
+    const pathMatchers = [/^\/embed\/([^/?#]+)/i, /^\/shorts\/([^/?#]+)/i, /^\/live\/([^/?#]+)/i];
+    for (const rx of pathMatchers) {
+      const m = p.match(rx);
+      if (m && m[1]) return m[1];
+    }
+  } catch {}
+
+  // Fallback regexes
+  const fallback = url.match(/(?:youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/|live\/)|youtu\.be\/)([^&\n?#/]+)/i);
+  return fallback ? fallback[1] : null;
 };
 
 /**
