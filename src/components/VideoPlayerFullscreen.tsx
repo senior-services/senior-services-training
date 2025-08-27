@@ -124,7 +124,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
               setProgress(progressPercent);
               const isVideoCompleted = progressPercent >= 100;
               setIsCompleted(isVideoCompleted);
-              setWasEverCompleted(isVideoCompleted); // Remember if video was ever completed
+              // Don't set wasEverCompleted from database - only track current session completion
               
               logger.videoEvent('progress_restored', videoId, {
                 progress: progressPercent,
@@ -711,7 +711,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           )}
           
           {/* Completion Overlay */}
-          {showCompletionOverlay && progress >= 100 && !wasEverCompleted && (
+          {showCompletionOverlay && progress >= 100 && (
             <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-10 animate-fade-in">
               <div className="bg-card rounded-xl p-8 max-w-md mx-4 text-center shadow-xl border animate-scale-in">
                 <div className="mb-4">
