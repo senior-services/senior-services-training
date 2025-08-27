@@ -99,6 +99,34 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
   const [isLoading, setIsLoading] = useState(false);
   const [sortColumn, setSortColumn] = useState<string>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  
+  // Icon state management for button examples
+  const [buttonIcons, setButtonIcons] = useState({
+    default: "Plus",
+    outline: "Edit", 
+    destructive: "Trash2",
+    ghost: "Download",
+    secondary: "Settings"
+  });
+
+  const availableIcons = {
+    Plus, Edit, Trash2, Download, Settings, Search, Bell, User, Home, Upload,
+    Eye, EyeOff, AlertCircle, CheckCircle, Info, X, ArrowUp, ArrowDown, ArrowUpDown
+  };
+
+  const getIconComponent = (iconName: string) => {
+    return availableIcons[iconName as keyof typeof availableIcons] || Plus;
+  };
+
+  const cycleIcon = (variant: keyof typeof buttonIcons) => {
+    const iconNames = Object.keys(availableIcons);
+    const currentIndex = iconNames.indexOf(buttonIcons[variant]);
+    const nextIndex = (currentIndex + 1) % iconNames.length;
+    setButtonIcons(prev => ({
+      ...prev,
+      [variant]: iconNames[nextIndex]
+    }));
+  };
 
   const tableData = [
     { name: "Alice Johnson", email: "alice@example.com", department: "101" },
@@ -254,35 +282,76 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       </div>
                     </div>
                     <div>
-                      <h4 className="text-sm font-medium mb-2">Icon Only</h4>
-                      <div className="grid grid-cols-4 sm:grid-cols-7 gap-4">
+                      <h4 className="text-sm font-medium mb-2">Icon Only (Click to cycle icons)</h4>
+                      <div className="grid grid-cols-5 gap-4">
                         <div className="flex flex-col items-center gap-1">
-                          <Button size="icon"><Plus className="w-4 h-4" /></Button>
+                          <Button 
+                            size="icon" 
+                            onClick={() => cycleIcon('default')}
+                            className="cursor-pointer"
+                          >
+                            {(() => {
+                              const IconComponent = getIconComponent(buttonIcons.default);
+                              return <IconComponent className="w-4 h-4" />;
+                            })()}
+                          </Button>
                           <span className="text-xs text-muted-foreground">default</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
-                          <Button size="icon" variant="outline"><Edit className="w-4 h-4" /></Button>
+                          <Button 
+                            size="icon" 
+                            variant="outline" 
+                            onClick={() => cycleIcon('outline')}
+                            className="cursor-pointer"
+                          >
+                            {(() => {
+                              const IconComponent = getIconComponent(buttonIcons.outline);
+                              return <IconComponent className="w-4 h-4" />;
+                            })()}
+                          </Button>
                           <span className="text-xs text-muted-foreground">outline</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
-                          <Button size="icon" variant="destructive"><Trash2 className="w-4 h-4" /></Button>
+                          <Button 
+                            size="icon" 
+                            variant="destructive" 
+                            onClick={() => cycleIcon('destructive')}
+                            className="cursor-pointer"
+                          >
+                            {(() => {
+                              const IconComponent = getIconComponent(buttonIcons.destructive);
+                              return <IconComponent className="w-4 h-4" />;
+                            })()}
+                          </Button>
                           <span className="text-xs text-muted-foreground">destructive</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
-                          <Button size="icon" variant="ghost"><Download className="w-4 h-4" /></Button>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            onClick={() => cycleIcon('ghost')}
+                            className="cursor-pointer"
+                          >
+                            {(() => {
+                              const IconComponent = getIconComponent(buttonIcons.ghost);
+                              return <IconComponent className="w-4 h-4" />;
+                            })()}
+                          </Button>
                           <span className="text-xs text-muted-foreground">ghost</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
-                          <Button size="icon" variant="secondary"><Settings className="w-4 h-4" /></Button>
+                          <Button 
+                            size="icon" 
+                            variant="secondary" 
+                            onClick={() => cycleIcon('secondary')}
+                            className="cursor-pointer"
+                          >
+                            {(() => {
+                              const IconComponent = getIconComponent(buttonIcons.secondary);
+                              return <IconComponent className="w-4 h-4" />;
+                            })()}
+                          </Button>
                           <span className="text-xs text-muted-foreground">secondary</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <Button size="icon" variant="ghost"><Search className="w-4 h-4" /></Button>
-                          <span className="text-xs text-muted-foreground">ghost</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <Button size="icon" variant="outline"><Bell className="w-4 h-4" /></Button>
-                          <span className="text-xs text-muted-foreground">outline</span>
                         </div>
                       </div>
                     </div>
