@@ -241,13 +241,30 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </TabsContent>
                 
                 <TabsContent value="icons" className="space-y-4">
-                  <div className="flex flex-wrap gap-3">
-                    <Button><Plus className="w-4 h-4 mr-2" />Add New</Button>
-                    <Button variant="outline"><Edit className="w-4 h-4 mr-2" />Edit</Button>
-                    <Button variant="destructive">
-                      <Trash2 className="w-4 h-4 mr-2" />Delete
-                    </Button>
-                    <Button variant="ghost"><Download className="w-4 h-4 mr-2" />Download</Button>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">With Text and Icons</h4>
+                      <div className="flex flex-wrap gap-3">
+                        <Button><Plus className="w-4 h-4 mr-2" />Add New</Button>
+                        <Button variant="outline"><Edit className="w-4 h-4 mr-2" />Edit</Button>
+                        <Button variant="destructive">
+                          <Trash2 className="w-4 h-4 mr-2" />Delete
+                        </Button>
+                        <Button variant="ghost"><Download className="w-4 h-4 mr-2" />Download</Button>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Icon Only</h4>
+                      <div className="flex flex-wrap gap-3">
+                        <Button size="icon"><Plus className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="outline"><Edit className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="destructive"><Trash2 className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="ghost"><Download className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="secondary"><Settings className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="ghost"><Search className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="outline"><Bell className="w-4 h-4" /></Button>
+                      </div>
+                    </div>
                   </div>
                 </TabsContent>
                 
