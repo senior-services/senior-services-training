@@ -133,15 +133,14 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
     const isCompleted = progressPercent >= 100;
     if (isCompleted) {
       return {
-        variant: "default" as const,
-        className: "bg-green-800 text-white hover:bg-green-800",
+        variant: "hollow-success" as const,
+        showIcon: true,
         text: "Completed"
       };
     }
     if (!dueDate) {
       return {
-        variant: "default" as const,
-        className: "bg-muted text-muted-foreground hover:bg-muted",
+        variant: "hollow-plain" as const,
         text: "No deadline"
       };
     }
@@ -152,21 +151,19 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
     const daysUntilDue = differenceInDays(due, today);
     if (isPast(due) && daysUntilDue < 0) {
       return {
-        variant: "default" as const,
-        className: "bg-red-800 text-white hover:bg-red-800",
+        variant: "hollow-destructive" as const,
+        showIcon: true,
         text: "Overdue"
       };
     }
     if (daysUntilDue <= 5) {
       return {
-        variant: "default" as const,
-        className: "bg-orange-700 text-white hover:bg-orange-700",
+        variant: "hollow-destructive" as const,
         text: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`
       };
     }
     return {
-      variant: "default" as const,
-      className: "bg-gray-700 text-white hover:bg-gray-700",
+      variant: "hollow-secondary" as const,
       text: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`
     };
   };
@@ -335,12 +332,12 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                                                 {assignment.video_title}
                                               </TableCell>
                                               <TableCell className="text-right py-1">
-                                                <Badge 
-                                                  variant={badge.variant}
-                                                  className={badge.className}
-                                                >
-                                                  {badge.text}
-                                                </Badge>
+                                                 <Badge 
+                                                   variant={badge.variant}
+                                                   showIcon={badge.showIcon}
+                                                 >
+                                                   {badge.text}
+                                                 </Badge>
                                               </TableCell>
                                             </TableRow>
                                           );
