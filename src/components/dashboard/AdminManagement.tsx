@@ -167,7 +167,7 @@ export const AdminManagement: React.FC = () => {
                   <TableRow key={admin.id}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
-                        <div>
+                        <div className="flex items-center">
                           <span>{admin.isPending ? '--' : (admin.full_name || 'Unknown')}</span>
                           <Badge 
                             variant="secondary" 
