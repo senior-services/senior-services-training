@@ -77,9 +77,11 @@ export const TrainingCard = memo<TrainingCardProps>(({
     description: sanitizeText(video.description || ''),
   }), [video]);
 
-  // Build robust thumbnail candidate list with fallbacks
+  // Build robust thumbnail candidate list with comprehensive fallbacks
   const thumbnailCandidates = useOptimizedMemo(() => {
     const sources: string[] = [];
+    
+    // Always try the database thumbnail_url first if it exists
     if (video.thumbnail_url) sources.push(video.thumbnail_url);
     if (video.thumbnail) sources.push(video.thumbnail);
 
@@ -88,12 +90,13 @@ export const TrainingCard = memo<TrainingCardProps>(({
       if (isYouTubeUrl(url)) {
         const id = getYouTubeVideoId(url);
         if (id) {
+          // Comprehensive YouTube thumbnail fallback cascade
           sources.push(
-            `https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
-            `https://img.youtube.com/vi/${id}/sddefault.jpg`,
-            `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
-            `https://img.youtube.com/vi/${id}/mqdefault.jpg`,
-            `https://img.youtube.com/vi/${id}/default.jpg`
+            `https://img.youtube.com/vi/${id}/maxresdefault.jpg`, // 1280x720 - highest quality
+            `https://img.youtube.com/vi/${id}/sddefault.jpg`,     // 640x480 - good quality  
+            `https://img.youtube.com/vi/${id}/hqdefault.jpg`,     // 480x360 - standard quality
+            `https://img.youtube.com/vi/${id}/mqdefault.jpg`,     // 320x180 - medium quality
+            `https://img.youtube.com/vi/${id}/default.jpg`        // 120x90 - lowest quality (always available)
           );
         }
       } else if (isGoogleDriveUrl(url)) {
@@ -101,7 +104,9 @@ export const TrainingCard = memo<TrainingCardProps>(({
         if (id) {
           sources.push(
             `https://drive.google.com/thumbnail?id=${id}&sz=w800-h600`,
-            `https://lh3.googleusercontent.com/d/${id}=w800-h600`
+            `https://drive.google.com/thumbnail?id=${id}&sz=w400-h300`,
+            `https://lh3.googleusercontent.com/d/${id}=w800-h600`,
+            `https://lh3.googleusercontent.com/d/${id}=w400-h300`
           );
         }
       }
@@ -110,7 +115,7 @@ export const TrainingCard = memo<TrainingCardProps>(({
     // Always end with our local placeholder
     sources.push(videoPlaceholder);
 
-    // Remove duplicates and falsy values
+    // Remove duplicates and falsy values  
     return Array.from(new Set(sources.filter(Boolean)));
   }, [video]);
 

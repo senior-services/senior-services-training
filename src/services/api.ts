@@ -45,17 +45,19 @@ interface EmployeeWithAssignments {
 }
 
 /**
- * Generates thumbnail URL from video URL if possible
+ * Generates thumbnail URL from video URL with proper fallback cascade
  */
 const generateThumbnailUrl = (videoUrl: string | null): string | null => {
   if (!videoUrl) return null;
   
   try {
-    // YouTube thumbnails
+    // YouTube thumbnails - use multiple quality levels as fallbacks
     if (isYouTubeUrl(videoUrl)) {
       const videoId = getYouTubeVideoId(videoUrl);
       if (videoId) {
-        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        // Return the highest quality that typically exists
+        // We'll implement the fallback cascade in the TrainingCard component
+        return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
       }
     }
     
