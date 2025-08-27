@@ -226,8 +226,14 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 <h3 className="text-2xl font-medium">Heading 3</h3>
                 <h4 className="text-xl font-medium">Heading 4</h4>
                 <p className="text-base">Body text - Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                <p className="text-base font-bold">Body text bold - Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                <p className="text-base font-medium">Body text medium - Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
                 <p className="text-sm text-muted-foreground">Small text - Secondary information</p>
+                <p className="text-sm text-muted-foreground font-bold">Small text bold - Secondary information</p>
+                <p className="text-sm text-muted-foreground font-medium">Small text medium - Secondary information</p>
                 <p className="text-xs text-muted-foreground">Extra small text - Captions and labels</p>
+                <p className="text-xs text-muted-foreground font-bold">Extra small text bold - Captions and labels</p>
+                <p className="text-xs text-muted-foreground font-medium">Extra small text medium - Captions and labels</p>
                 <code className="bg-muted px-2 py-1 rounded text-sm font-mono">Code snippet</code>
               </div>
             </CardContent>
