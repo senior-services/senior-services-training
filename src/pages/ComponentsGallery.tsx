@@ -264,7 +264,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <Button size="sm">Small</Button>
                     <Button size="default">Default</Button>
                     <Button size="lg">Large</Button>
-                    <Button size="icon"><Settings className="w-4 h-4" /></Button>
+                    <Button size="icon" variant="ghost"><Settings className="w-4 h-4" /></Button>
                   </div>
                 </TabsContent>
                 
