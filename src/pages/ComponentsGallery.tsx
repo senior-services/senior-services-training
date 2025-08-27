@@ -659,22 +659,22 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                              <TableCell className="font-medium">{user.name}</TableCell>
                              <TableCell>{user.email}</TableCell>
                              <TableCell>{user.department}</TableCell>
-                             <TableCell className="text-right">
-                               <div className="flex gap-1 justify-end">
-                                 <Button size="sm" variant="outline">
-                                   <Eye className="w-4 h-4" />
-                                   <span className="sr-only">View</span>
-                                 </Button>
-                                 <Button size="sm" variant="outline">
-                                   <Edit className="w-4 h-4" />
-                                   <span className="sr-only">Edit</span>
-                                 </Button>
-                                 <Button size="sm" variant="outline" className="text-destructive hover:text-destructive">
-                                   <Trash2 className="w-4 h-4" />
-                                   <span className="sr-only">Delete</span>
-                                 </Button>
-                               </div>
-                             </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex gap-1 justify-end">
+                                  <Button size="sm" variant="ghost">
+                                    <Eye className="w-4 h-4" />
+                                    <span className="sr-only">View</span>
+                                  </Button>
+                                  <Button size="sm" variant="ghost">
+                                    <Edit className="w-4 h-4" />
+                                    <span className="sr-only">Edit</span>
+                                  </Button>
+                                  <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive">
+                                    <Trash2 className="w-4 h-4" />
+                                    <span className="sr-only">Delete</span>
+                                  </Button>
+                                </div>
+                              </TableCell>
                            </TableRow>
                          ))}
                        </TableBody>
