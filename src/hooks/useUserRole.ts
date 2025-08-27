@@ -25,16 +25,16 @@ export function useUserRole(user: User | null) {
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', user.id)
-          .maybeSingle();
+          .eq('user_id', user.id);
 
         if (!mounted) return;
 
         if (error) {
-          console.error('Error fetching user role:', error);
+          console.error('Error fetching user roles:', error);
           setRole('employee'); // Default to employee role on error
         } else {
-          setRole(data?.role || 'employee');
+          const roles = (data ?? []).map((r: any) => (typeof r.role === 'string' ? r.role : String(r.role)));
+          setRole(roles.includes('admin') ? 'admin' : 'employee');
         }
       } catch (error) {
         if (!mounted) return;
