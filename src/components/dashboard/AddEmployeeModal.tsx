@@ -29,6 +29,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const { toast } = useToast();
 
   const validateEmail = (email: string) => {
@@ -92,6 +93,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
     setEmail('');
     setFullName('');
     setIsSubmitting(false);
+    setHasChanges(false);
     onOpenChange(false);
   };
 
@@ -118,7 +120,10 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               type="email"
               placeholder="employee@company.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setHasChanges(true);
+              }}
               required
               disabled={isSubmitting}
             />
@@ -136,7 +141,10 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               type="text"
               placeholder="John Doe"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) => {
+                setFullName(e.target.value);
+                setHasChanges(true);
+              }}
               disabled={isSubmitting}
             />
             <p className="text-xs text-muted-foreground">
@@ -154,7 +162,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
           >
             Cancel
           </Button>
-          <Button type="submit" form="add-employee-form" disabled={isSubmitting}>
+          <Button type="submit" form="add-employee-form" disabled={isSubmitting || !hasChanges}>
             {isSubmitting ? 'Adding...' : 'Add Employee'}
           </Button>
         </DialogFooter>

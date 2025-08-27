@@ -28,6 +28,7 @@ export const AdminManagement: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [hasChanges, setHasChanges] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -65,6 +66,7 @@ export const AdminManagement: React.FC = () => {
       try {
         await AdminService.addAdminByEmail(newAdminEmail.trim());
         setNewAdminEmail('');
+        setHasChanges(false);
         setShowAddModal(false);
         await loadAdmins();
         toast({
@@ -227,7 +229,10 @@ export const AdminManagement: React.FC = () => {
                 type="email"
                 placeholder="admin@example.com"
                 value={newAdminEmail}
-                onChange={(e) => setNewAdminEmail(e.target.value)}
+                onChange={(e) => {
+                  setNewAdminEmail(e.target.value);
+                  setHasChanges(true);
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     handleAddAdmin();
@@ -238,10 +243,14 @@ export const AdminManagement: React.FC = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddModal(false)} disabled={isAdding}>
+            <Button variant="outline" onClick={() => {
+              setShowAddModal(false);
+              setNewAdminEmail('');
+              setHasChanges(false);
+            }} disabled={isAdding}>
               Cancel
             </Button>
-            <Button onClick={handleAddAdmin} disabled={isAdding}>
+            <Button onClick={handleAddAdmin} disabled={isAdding || !hasChanges}>
               {isAdding ? 'Adding...' : 'Add Admin'}
             </Button>
           </DialogFooter>
