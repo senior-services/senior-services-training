@@ -203,7 +203,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <div className="flex flex-wrap gap-3">
                     <Button><Plus className="w-4 h-4 mr-2" />Add New</Button>
                     <Button variant="outline"><Edit className="w-4 h-4 mr-2" />Edit</Button>
-                    <Button variant="destructive" className="text-destructive hover:text-destructive">
+                    <Button variant="destructive">
                       <Trash2 className="w-4 h-4 mr-2" />Delete
                     </Button>
                     <Button variant="ghost"><Download className="w-4 h-4 mr-2" />Download</Button>
