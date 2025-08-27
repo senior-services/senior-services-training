@@ -216,119 +216,152 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
               </div>
             </div>
           ) : (
-            <div className="divide-y divide-border">
-              {employees.map(employee => {
-                const videos = employeeVideos.get(employee.id) || [];
-                const isExpanded = expandedEmployees.has(employee.id);
-                const overdueCount = videos.filter(assignment => {
-                  if (!assignment.due_date || assignment.progress_percent >= 100) return false;
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  const due = new Date(assignment.due_date);
-                  due.setHours(0, 0, 0, 0);
-                  const daysUntilDue = differenceInDays(due, today);
-                  return isPast(due) && daysUntilDue < 0;
-                }).length;
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="whitespace-nowrap">Employee</TableHead>
+                  <TableHead className="text-center whitespace-nowrap">Assigned Videos</TableHead>
+                  <TableHead className="text-center whitespace-nowrap">Status</TableHead>
+                  <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {employees.map(employee => {
+                  const videos = employeeVideos.get(employee.id) || [];
+                  const isExpanded = expandedEmployees.has(employee.id);
+                  const overdueCount = videos.filter(assignment => {
+                    if (!assignment.due_date || assignment.progress_percent >= 100) return false;
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const due = new Date(assignment.due_date);
+                    due.setHours(0, 0, 0, 0);
+                    const daysUntilDue = differenceInDays(due, today);
+                    return isPast(due) && daysUntilDue < 0;
+                  }).length;
 
-                return (
-                  <Collapsible 
-                    key={employee.id}
-                    open={isExpanded}
-                    onOpenChange={() => toggleEmployeeExpanded(employee.id)}
-                  >
-                    <CollapsibleTrigger asChild>
-                      <div className="flex items-center justify-between p-4 hover:bg-muted/50 cursor-pointer transition-colors">
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className="flex items-center gap-2">
-                            {isExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                            )}
-                          </div>
-                          
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                              <User className="w-4 h-4 text-primary" />
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="font-medium">{employee.full_name || 'Unknown'}</div>
-                              <div className="w-px h-4 bg-muted-foreground/30"></div>
-                              <div className="text-sm text-muted-foreground">{employee.email}</div>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 ml-4">
-                            <div className="text-sm text-muted-foreground">{employee.assigned_videos_count || 0} videos</div>
-                            {overdueCount > 0 && (
-                              <div className="flex items-center gap-1">
-                                <div className="w-6 h-6 rounded-full bg-destructive/20 flex items-center justify-center text-xs font-medium text-destructive">
-                                  {overdueCount}
+                  return (
+                    <React.Fragment key={employee.id}>
+                      <TableRow className="group hover:bg-muted/50 transition-colors">
+                        <TableCell className="py-3">
+                          <Collapsible 
+                            open={isExpanded}
+                            onOpenChange={() => toggleEmployeeExpanded(employee.id)}
+                          >
+                            <CollapsibleTrigger asChild>
+                              <div className="flex items-center gap-3 cursor-pointer">
+                                <div className="flex items-center gap-2">
+                                  {isExpanded ? (
+                                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                                  ) : (
+                                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                                  )}
                                 </div>
-                                <span className="text-sm text-destructive">overdue</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => handleAssignVideos(employee)}
-                            aria-label={`Edit video assignments for ${employee.full_name || employee.email}`}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => setDeleteConfirmEmployee(employee)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CollapsibleTrigger>
-                    
-                    <CollapsibleContent>
-                      <div className="px-4 pb-4 ml-6">
-                        {videos.length === 0 ? (
-                          <div className="text-sm text-muted-foreground py-2">
-                            No videos assigned
-                          </div>
-                        ) : (
-                          <Table>
-                            <TableBody>
-                              {videos.map((assignment) => {
-                                const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent);
                                 
-                                return (
-                                  <TableRow key={assignment.assignment_id} className="hover:bg-transparent">
-                                    <TableCell className="py-1">
-                                      {assignment.video_title}
-                                    </TableCell>
-                                    <TableCell className="text-right py-1">
-                                      <Badge 
-                                        variant={badge.variant}
-                                        className={badge.className}
-                                      >
-                                        {badge.text}
-                                      </Badge>
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              })}
-                            </TableBody>
-                          </Table>
-                        )}
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                );
-              })}
-            </div>
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <User className="w-4 h-4 text-primary" />
+                                  </div>
+                                  <div>
+                                    <div className="font-medium">{employee.full_name || 'Unknown'}</div>
+                                    <div className="text-sm text-muted-foreground">{employee.email}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </CollapsibleTrigger>
+                          </Collapsible>
+                        </TableCell>
+                        
+                        <TableCell className="text-center py-3">
+                          <span className="font-medium">{employee.assigned_videos_count || 0}</span>
+                        </TableCell>
+                        
+                        <TableCell className="text-center py-3">
+                          {overdueCount > 0 ? (
+                            <div className="flex items-center justify-center gap-1">
+                              <div className="w-6 h-6 rounded-full bg-destructive/20 flex items-center justify-center text-xs font-medium text-destructive">
+                                {overdueCount}
+                              </div>
+                              <span className="text-sm text-destructive">overdue</span>
+                            </div>
+                          ) : videos.length > 0 ? (
+                            <Badge variant="outline" className="text-xs">
+                              On Track
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="text-xs">
+                              No Videos
+                            </Badge>
+                          )}
+                        </TableCell>
+
+                        <TableCell className="text-right py-3">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleAssignVideos(employee)}
+                              aria-label={`Edit video assignments for ${employee.full_name || employee.email}`}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => setDeleteConfirmEmployee(employee)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      
+                      {isExpanded && (
+                        <TableRow>
+                          <TableCell colSpan={4} className="py-0">
+                            <Collapsible open={isExpanded}>
+                              <CollapsibleContent>
+                                <div className="px-4 pb-4 ml-6">
+                                  {videos.length === 0 ? (
+                                    <div className="text-sm text-muted-foreground py-2">
+                                      No videos assigned
+                                    </div>
+                                  ) : (
+                                    <Table>
+                                      <TableBody>
+                                        {videos.map((assignment) => {
+                                          const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent);
+                                          
+                                          return (
+                                            <TableRow key={assignment.assignment_id} className="hover:bg-transparent">
+                                              <TableCell className="py-1">
+                                                {assignment.video_title}
+                                              </TableCell>
+                                              <TableCell className="text-right py-1">
+                                                <Badge 
+                                                  variant={badge.variant}
+                                                  className={badge.className}
+                                                >
+                                                  {badge.text}
+                                                </Badge>
+                                              </TableCell>
+                                            </TableRow>
+                                          );
+                                        })}
+                                      </TableBody>
+                                    </Table>
+                                  )}
+                                </div>
+                              </CollapsibleContent>
+                            </Collapsible>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
