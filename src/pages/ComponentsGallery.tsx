@@ -101,17 +101,25 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const tableData = [
-    { name: "Alice Johnson", email: "alice@example.com", department: "Engineering" },
-    { name: "Bob Wilson", email: "bob@example.com", department: "Marketing" },
-    { name: "Carol Smith", email: "carol@example.com", department: "Design" },
-    { name: "David Brown", email: "david@example.com", department: "Engineering" },
-    { name: "Emma Davis", email: "emma@example.com", department: "Sales" },
+    { name: "Alice Johnson", email: "alice@example.com", department: "101" },
+    { name: "Bob Wilson", email: "bob@example.com", department: "205" },
+    { name: "Carol Smith", email: "carol@example.com", department: "150" },
+    { name: "David Brown", email: "david@example.com", department: "89" },
+    { name: "Emma Davis", email: "emma@example.com", department: "312" },
   ];
 
   const sortedData = [...tableData].sort((a, b) => {
     const aValue = a[sortColumn as keyof typeof a];
     const bValue = b[sortColumn as keyof typeof b];
     
+    // Handle numerical sorting for department column
+    if (sortColumn === "department") {
+      const aNum = parseInt(aValue);
+      const bNum = parseInt(bValue);
+      return sortDirection === "asc" ? aNum - bNum : bNum - aNum;
+    }
+    
+    // String sorting for other columns
     if (sortDirection === "asc") {
       return aValue.localeCompare(bValue);
     } else {
