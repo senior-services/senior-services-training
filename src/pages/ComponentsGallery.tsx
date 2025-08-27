@@ -335,6 +335,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <Badge variant="hollow-destructive">Destructive</Badge>
                       <Badge variant="hollow-success" showIcon>Success</Badge>
                       <Badge variant="outline">Outline</Badge>
+                      <Badge variant="hollow-plain">Plain</Badge>
                     </div>
                   </div>
                 </div>

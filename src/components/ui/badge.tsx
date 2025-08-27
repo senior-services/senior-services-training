@@ -28,6 +28,8 @@ const badgeVariants = cva(
           "border-destructive text-destructive bg-transparent hover:bg-destructive/10",
         "hollow-success":
           "border-success text-success bg-transparent hover:bg-success/10",
+        "hollow-plain":
+          "border-transparent text-muted-foreground bg-transparent hover:bg-secondary/10",
       },
     },
     defaultVariants: {
