@@ -151,7 +151,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                         'ascending'
                       }`}
                     >
-                      Title
+                      Video Title and Description
                       {sortColumn === 'title' && (
                         <span className="ml-1" aria-hidden="true">
                           {sortDirection === 'asc' ? '↑' : '↓'}

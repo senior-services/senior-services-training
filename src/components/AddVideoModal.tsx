@@ -80,7 +80,7 @@ export const AddVideoModal = ({
     event.preventDefault();
     setIsDragOver(false);
   };
-  const isValid = formData.type === 'file' && selectedFile || formData.type === 'url' && formData.url?.trim();
+  const isValid = formData.title.trim() && formData.description.trim() && (formData.type === 'file' && selectedFile || formData.type === 'url' && formData.url?.trim());
   return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
         <DialogHeader>
@@ -186,7 +186,7 @@ export const AddVideoModal = ({
             <Input id="title" value={formData.title} onChange={e => setFormData(prev => ({
             ...prev,
             title: e.target.value
-          }))} placeholder="Enter video title... (optional)" />
+          }))} placeholder="Enter video title..." required />
           </div>
 
           {/* Description */}
@@ -196,7 +196,7 @@ export const AddVideoModal = ({
             <Textarea id="description" value={formData.description} onChange={e => setFormData(prev => ({
             ...prev,
             description: e.target.value
-          }))} placeholder="Enter video description... (optional)" rows={3} />
+          }))} placeholder="Enter video description..." rows={3} required />
           </div>
         </div>
 
