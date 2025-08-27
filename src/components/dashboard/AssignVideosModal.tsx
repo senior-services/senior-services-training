@@ -282,32 +282,25 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between py-2 flex-shrink-0 border-b">
-                <div className="text-sm text-muted-foreground">
-                  {selectedCount} video{selectedCount !== 1 ? 's' : ''} selected
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setSelectedVideoIds(new Set());
+              <div className="flex items-center py-2 flex-shrink-0 border-b">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedCount === videos.length && videos.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedVideoIds(new Set(videos.map(v => v.id)));
+                      } else {
+                        setSelectedVideoIds(new Set());
+                      }
                     }}
-                    className={`text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline ${selectedVideoIds.size === 0 ? 'opacity-50 pointer-events-none' : ''}`}
-                  >
-                    Clear All
-                  </a>
-                  <span className="text-muted-foreground/50">|</span>
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setSelectedVideoIds(new Set(videos.map(v => v.id)));
-                    }}
-                    className={`text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline ${selectedVideoIds.size === videos.length ? 'opacity-50 pointer-events-none' : ''}`}
-                  >
-                    Select All
-                  </a>
+                    className="w-4 h-4 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary hover:border-primary/60 hover:bg-primary/5 transition-colors cursor-pointer"
+                    disabled={videos.length === 0}
+                  />
+                  <div className="w-px h-4 bg-border"></div>
+                  <div className="text-sm text-muted-foreground">
+                    {selectedCount} video{selectedCount !== 1 ? 's' : ''} selected
+                  </div>
                 </div>
               </div>
 
