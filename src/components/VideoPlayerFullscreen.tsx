@@ -624,14 +624,18 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                const threshold = useLowThreshold ? 98 : 98;
                const shouldShowButton = !isCompleted && progress >= threshold;
                
-               // Only log when video is actually loaded and we have meaningful data
-               if (video?.title && progress > 0) {
-                 console.log('Mark Complete Button:', { 
-                   video: video.title,
-                   progress,
-                   shouldShow: shouldShowButton
-                 });
-               }
+                // Only log when video is actually loaded and we have meaningful data
+                if (video?.title && progress > 0) {
+                   logger.debug('Mark Complete Button:', { 
+                     hasVideo: !!video,
+                     hasUser: !!user?.email,
+                     videoId: video?.id,
+                     userEmail: user?.email,
+                     video: video.title,
+                     progress,
+                     shouldShow: shouldShowButton
+                   });
+                }
                
                return shouldShowButton ? (
                  <Button 

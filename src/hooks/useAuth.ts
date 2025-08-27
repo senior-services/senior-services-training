@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
+import { logger } from '@/utils/logger';
 
 interface AuthState {
   user: User | null;
@@ -27,7 +28,7 @@ export function useAuth() {
         if (!mounted) return;
         
         if (error) {
-          console.error('Error getting session:', error);
+          logger.error('Error getting session', error as Error);
         }
         
         setState({
@@ -38,7 +39,7 @@ export function useAuth() {
         
         initialSessionHandled = true;
       } catch (error) {
-        console.error('Error getting initial session:', error);
+        logger.error('Error getting initial session', error as Error);
         if (mounted) {
           setState({
             session: null,
@@ -91,11 +92,11 @@ export function useAuth() {
       });
 
       if (error) {
-        console.error('Google sign in error:', error);
+        logger.error('Google sign in error', error as Error);
         toast.error(error.message || 'Failed to sign in with Google');
       }
     } catch (error) {
-      console.error('Google sign in error:', error);
+      logger.error('Google sign in error', error as Error);
       toast.error('Failed to sign in with Google');
     }
   };
@@ -116,7 +117,7 @@ export function useAuth() {
       });
 
       if (error) {
-        console.error('Sign up error:', error);
+        logger.error('Sign up error', error as Error);
         toast.error(error.message || 'Failed to sign up');
         return { error };
       }
@@ -124,7 +125,7 @@ export function useAuth() {
       toast.success('Check your email for confirmation link');
       return { error: null };
     } catch (error) {
-      console.error('Sign up error:', error);
+      logger.error('Sign up error', error as Error);
       toast.error('Failed to sign up');
       return { error: error as Error };
     }
@@ -138,14 +139,14 @@ export function useAuth() {
       });
 
       if (error) {
-        console.error('Sign in error:', error);
+        logger.error('Sign in error', error as Error);
         toast.error(error.message || 'Failed to sign in');
         return { error };
       }
 
       return { error: null };
     } catch (error) {
-      console.error('Sign in error:', error);
+      logger.error('Sign in error', error as Error);
       toast.error('Failed to sign in');
       return { error: error as Error };
     }
@@ -165,7 +166,7 @@ export function useAuth() {
       );
       
       if (error && !isSessionError) {
-        console.error('Sign out error:', error);
+        logger.error('Sign out error', error as Error);
         toast.error('Failed to sign out');
         return;
       }
@@ -178,7 +179,7 @@ export function useAuth() {
       });
       
     } catch (error: any) {
-      console.error('Sign out error:', error);
+      logger.error('Sign out error', error as Error);
       
       // Check if it's a session-related error (AuthSessionMissingError, etc.)
       const isSessionError = 

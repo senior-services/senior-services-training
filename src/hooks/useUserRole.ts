@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 type UserRole = 'admin' | 'employee' | null;
 
@@ -30,7 +31,7 @@ export function useUserRole(user: User | null) {
         if (!mounted) return;
 
         if (error) {
-          console.error('Error fetching user roles:', error);
+          logger.error('Error fetching user roles', error as Error);
           setRole('employee'); // Default to employee role on error
         } else {
           const roles = (data ?? []).map((r: any) => (typeof r.role === 'string' ? r.role : String(r.role)));
@@ -38,7 +39,7 @@ export function useUserRole(user: User | null) {
         }
       } catch (error) {
         if (!mounted) return;
-        console.error('Error fetching user role:', error);
+        logger.error('Error fetching user role', error as Error);
         setRole('employee'); // Default to employee role on error
       } finally {
         if (mounted) {

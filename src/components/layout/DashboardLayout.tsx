@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { logger } from '@/utils/logger';
 import { Header } from '@/components/Header';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { LoadingOverlay } from '@/components/ui/loading-spinner';
@@ -61,7 +62,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <ErrorBoundary
           onError={(error, errorInfo) => {
             // Log error for monitoring in production
-            console.error('Dashboard error:', error, errorInfo);
+            logger.error('Dashboard error', error as Error, { errorInfo });
             
             // In production, send to error tracking service
             // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });

@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 export interface AdminUser {
   id: string;
@@ -20,7 +21,7 @@ export class AdminService {
       .eq('role', 'admin');
 
     if (rolesError) {
-      console.error('Error fetching admin roles:', rolesError);
+      logger.error('Error fetching admin roles', rolesError as Error);
       throw rolesError;
     }
 
@@ -37,7 +38,7 @@ export class AdminService {
         .order('created_at', { ascending: false });
 
       if (profilesError) {
-        console.error('Error fetching admin profiles:', profilesError);
+        logger.error('Error fetching admin profiles', profilesError as Error);
         throw profilesError;
       }
 
@@ -57,7 +58,7 @@ export class AdminService {
       .order('created_at', { ascending: false });
 
     if (pendingError) {
-      console.error('Error fetching pending admins:', pendingError);
+      logger.error('Error fetching pending admins', pendingError as Error);
       // Don't throw error, just continue without pending admins
     }
 
@@ -104,7 +105,7 @@ export class AdminService {
       .upsert({ email: email.toLowerCase() }, { onConflict: 'email' });
 
     if (upsertError) {
-      console.error('Error adding pending admin:', upsertError);
+      logger.error('Error adding pending admin', upsertError as Error);
       throw upsertError;
     }
   }
@@ -120,7 +121,7 @@ export class AdminService {
       .maybeSingle();
 
     if (error) {
-      console.error('Error checking pending admin:', error);
+      logger.error('Error checking pending admin', error as Error);
       return false;
     }
 
@@ -137,7 +138,7 @@ export class AdminService {
       .eq('email', email.toLowerCase());
 
     if (error) {
-      console.error('Error removing pending admin:', error);
+      logger.error('Error removing pending admin', error as Error);
     }
   }
 
@@ -186,7 +187,7 @@ export class AdminService {
       });
 
     if (insertError) {
-      console.error('Error adding admin role:', insertError);
+      logger.error('Error adding admin role', insertError as Error);
       throw insertError;
     }
   }
@@ -216,7 +217,7 @@ export class AdminService {
       .insert({ user_id: userId, role: 'admin' });
 
     if (error) {
-      console.error('Error granting admin role:', error);
+      logger.error('Error granting admin role', error as Error);
       throw error;
     }
   }
@@ -233,7 +234,7 @@ export class AdminService {
         .eq('id', userId);
 
       if (error) {
-        console.error('Error removing pending admin:', error);
+        logger.error('Error removing pending admin', error as Error);
         throw error;
       }
       return;
@@ -246,7 +247,7 @@ export class AdminService {
       .eq('role', 'admin');
 
     if (countError) {
-      console.error('Error checking admin count:', countError);
+      logger.error('Error checking admin count', countError as Error);
       throw countError;
     }
 
@@ -262,7 +263,7 @@ export class AdminService {
       .eq('role', 'admin');
 
     if (error) {
-      console.error('Error removing admin role:', error);
+      logger.error('Error removing admin role', error as Error);
       throw error;
     }
 

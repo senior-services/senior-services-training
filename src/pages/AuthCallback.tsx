@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 import { AdminService } from '@/services/adminService';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
@@ -15,7 +16,7 @@ export const AuthCallback = () => {
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Auth callback error:', error);
+          logger.error('Auth callback error', error as Error);
           toast({
             title: 'Authentication Error',
             description: error.message,
@@ -49,7 +50,7 @@ export const AuthCallback = () => {
                 navigate('/dashboard');
                 return;
               } catch (adminError) {
-                console.error('Error granting admin access:', adminError);
+                logger.error('Error granting admin access', adminError as Error);
               }
             }
 
@@ -73,7 +74,7 @@ export const AuthCallback = () => {
           navigate('/auth');
         }
       } catch (error) {
-        console.error('Callback handling error:', error);
+        logger.error('Callback handling error', error as Error);
         toast({
           title: 'Error',
           description: 'Something went wrong during authentication',

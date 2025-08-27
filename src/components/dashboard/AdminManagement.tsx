@@ -12,6 +12,7 @@ import { AdminService, AdminUser } from '@/services/adminService';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { logger } from '@/utils/logger';
 export const AdminManagement: React.FC = () => {
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,7 @@ export const AdminManagement: React.FC = () => {
       const data = await AdminService.getAdmins();
       setAdmins(data);
     } catch (error) {
-      console.error('Error loading admins:', error);
+      logger.error('Error loading admins', error as Error);
       toast({
         title: "Error",
         description: "Failed to load admins",
@@ -64,7 +65,7 @@ export const AdminManagement: React.FC = () => {
         description: "Admin invitation sent successfully. They will gain admin access when they sign up."
       });
     } catch (error: any) {
-      console.error('Error adding admin:', error);
+      logger.error('Error adding admin', error as Error);
       toast({
         title: "Error",
         description: error.message || "Failed to add admin",
@@ -86,7 +87,7 @@ export const AdminManagement: React.FC = () => {
         description: deleteConfirmAdmin.isPending ? "Pending admin invitation removed" : "Admin removed successfully"
       });
     } catch (error: any) {
-      console.error('Error removing admin:', error);
+      logger.error('Error removing admin', error as Error);
       toast({
         title: "Error",
         description: error.message || "Failed to remove admin",

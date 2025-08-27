@@ -2,6 +2,8 @@
  * Utility functions for generating video thumbnails
  */
 
+import { logger } from '@/utils/logger';
+
 /**
  * Generates a thumbnail from a video file
  * @param videoFile - The video file to generate thumbnail from
@@ -86,7 +88,7 @@ export const uploadThumbnail = async (
       });
 
     if (error) {
-      console.error('Error uploading thumbnail:', error);
+      logger.error('Error uploading thumbnail', error as Error);
       return null;
     }
 
@@ -97,7 +99,7 @@ export const uploadThumbnail = async (
 
     return publicUrl;
   } catch (error) {
-    console.error('Error in uploadThumbnail:', error);
+    logger.error('Error in uploadThumbnail', error as Error);
     return null;
   }
 };
