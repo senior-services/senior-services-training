@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { Check } from "lucide-react"
+import { Check, AlertTriangle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -49,6 +49,9 @@ function Badge({ className, variant, showIcon, children, ...props }: BadgeProps)
     <div className={cn(badgeVariants({ variant }), className)} {...props}>
       {showIcon && (variant === "success" || variant === "hollow-success") && (
         <Check className="w-3 h-3 mr-1" />
+      )}
+      {showIcon && (variant === "destructive" || variant === "hollow-destructive") && (
+        <AlertTriangle className="w-3 h-3 mr-1" />
       )}
       {children}
     </div>
