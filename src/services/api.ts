@@ -472,5 +472,75 @@ export const progressOperations = {
     } finally {
       performanceTracker.end(operation);
     }
+  },
+
+  async updateByEmail(
+    email: string,
+    videoId: string,
+    progressPercent: number,
+    completedAt?: Date
+  ): Promise<ApiResult<boolean>> {
+    const operation = 'progress.updateByEmail';
+    performanceTracker.start(operation);
+    try {
+      // Lookup employee by email
+      const { data: employee, error: empError } = await supabase
+        .from('employees')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .single();
+
+      if (empError || !employee) {
+        logger.error('Employee not found for email', undefined, { email, supabaseError: empError?.message });
+        return { data: null, error: 'Employee not found', success: false };
+      }
+
+      return await this.update(employee.id, videoId, progressPercent, completedAt);
+    } catch (error) {
+      logger.error('Unexpected error updating progress by email', error as Error, { email, videoId });
+      return { data: null, error: 'Failed to update progress', success: false };
+    } finally {
+      performanceTracker.end(operation);
+    }
+  },
+
+  async getByEmailAndVideo(
+    email: string,
+    videoId: string
+  ): Promise<ApiResult<{ progress_percent: number; completed_at: string | null } | null>> {
+    const operation = 'progress.getByEmailAndVideo';
+    performanceTracker.start(operation);
+    try {
+      // Lookup employee by email
+      const { data: employee, error: empError } = await supabase
+        .from('employees')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .single();
+
+      if (empError || !employee) {
+        logger.warn('Employee not found when fetching progress', { email });
+        return { data: null, error: null, success: true };
+      }
+
+      const { data, error } = await supabase
+        .from('video_progress')
+        .select('progress_percent, completed_at')
+        .eq('employee_id', employee.id)
+        .eq('video_id', videoId)
+        .maybeSingle();
+
+      if (error) {
+        logger.error('Failed to fetch progress', undefined, { email, videoId, supabaseError: error.message });
+        return { data: null, error: error.message, success: false };
+      }
+
+      return { data: (data as any) || null, error: null, success: true };
+    } catch (error) {
+      logger.error('Unexpected error fetching progress by email', error as Error, { email, videoId });
+      return { data: null, error: 'Failed to fetch progress', success: false };
+    } finally {
+      performanceTracker.end(operation);
+    }
   }
 };

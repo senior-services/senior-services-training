@@ -28,7 +28,7 @@ import { Video, Play, Check, X, CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { videoOperations, assignmentOperations } from '@/services/api';
-import type { Employee } from '@/types/employee';
+import type { Employee, VideoAssignment } from '@/types/employee';
 import type { Video as VideoType } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
@@ -93,7 +93,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
       // Load videos and current assignments in parallel
       const [videosResult, assignmentsResult] = await Promise.all([
         videoOperations.getAll(),
-        employee ? assignmentOperations.getByEmployee(employee.id) : Promise.resolve({ success: true, data: [] })
+        employee ? assignmentOperations.getByEmployee(employee.id) : Promise.resolve({ success: true, data: [] as VideoAssignment[], error: null })
       ]);
 
       if (videosResult.success && videosResult.data) {

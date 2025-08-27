@@ -83,7 +83,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
     const loadResult = await withErrorHandler(async () => {
       setLoading(true);
       setError(null);
-      const videoData = await EmployeeService.getAssignedVideosByEmail(userEmail);
+      const res = await assignmentOperations.getByEmployeeEmail(userEmail);
+      const videoData = res.success && res.data ? res.data : [];
       setAssignedVideoData(videoData);
       logger.info('Successfully loaded assigned videos', {
         videoCount: videoData.length,

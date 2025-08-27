@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
 import { Play, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { progressOperations } from '@/services/api';
+import { progressOperations, videoOperations } from '@/services/api';
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import type { Video } from "@/types";
@@ -103,22 +103,22 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       
       const loadResult = await withErrorHandler(
         async () => {
-          // Fetch video details
-          const videoData = await EmployeeService.getVideoById(videoId);
-          setVideo(videoData);
+          const res = await videoOperations.getById(videoId);
+          if (!res.success || !res.data) { throw new Error(res.error || 'Failed to load video'); }
+          setVideo(res.data);
           
-          logger.videoEvent('video_loaded', videoId, { title: videoData.title });
+          logger.videoEvent('video_loaded', videoId, { title: res.data.title });
 
           // Load existing progress if user is authenticated
           if (user?.email) {
             const progressResult = await withErrorHandler(
-              () => EmployeeService.getVideoProgressByEmail(user.email!, videoId),
+              () => progressOperations.getByEmailAndVideo(user.email!, videoId),
               { videoId, userEmail: user.email },
               'Unable to load your video progress'
             );
 
             if (progressResult.success && progressResult.data) {
-              const progressData = progressResult.data;
+              const progressData = progressResult.data as { progress_percent: number; completed_at: string | null };
               const progressPercent = progressData.progress_percent;
               
               setProgress(progressPercent);
@@ -194,7 +194,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       async () => {
         const completedAt = progressPercent >= 100 ? new Date() : undefined;
         
-        await EmployeeService.updateVideoProgressByEmail(
+        await progressOperations.updateByEmail(
           user.email!,
           videoId,
           progressPercent,

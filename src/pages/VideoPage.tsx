@@ -5,14 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { videoOperations } from '@/services/api';
+import { videoOperations, progressOperations } from '@/services/api';
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import type { Video } from "@/types";
 import { logger } from '@/utils/logger';
-
+import { isYouTubeUrl, getYouTubeVideoId, isGoogleDriveUrl, getGoogleDriveEmbedUrl } from '@/utils/videoUtils';
 export const VideoPage = () => {
   const { videoId } = useParams<{ videoId: string }>();
   const [video, setVideo] = useState<Video | null>(null);
@@ -38,8 +38,12 @@ export const VideoPage = () => {
   const loadVideo = async (id: string) => {
     try {
       setLoading(true);
-      const videoData = await EmployeeService.getVideoById(id);
-      setVideo(videoData);
+      const res = await videoOperations.getById(id);
+      if (res.success && res.data) {
+        setVideo(res.data);
+      } else {
+        throw new Error(res.error || 'Failed to load video');
+      }
     } catch (error) {
       logger.error('Error loading video', error as Error);
       toast({
@@ -61,7 +65,7 @@ export const VideoPage = () => {
 
     try {
       const completedAt = progressPercent >= 100 ? new Date() : undefined;
-      await EmployeeService.updateVideoProgressByEmail(
+      await progressOperations.updateByEmail(
         user.email,
         videoId,
         progressPercent,
