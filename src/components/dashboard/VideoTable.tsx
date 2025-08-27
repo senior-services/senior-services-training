@@ -15,20 +15,9 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
-} from '@/components/ui/alert-dialog';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
 import { 
   Edit, 
-  Trash2, 
   Video as VideoIcon, 
   Plus, 
   Play 
@@ -45,7 +34,6 @@ interface VideoTableProps {
   videos: Video[];
   loading?: boolean;
   onEdit: (video: Video) => void;
-  onDelete: (video: Video) => void;
   onPlay: (video: Video) => void;
   onAddVideo: () => void;
   className?: string;
@@ -69,14 +57,12 @@ export const VideoTable: React.FC<VideoTableProps> = ({
   videos,
   loading = false,
   onEdit,
-  onDelete,
   onPlay,
   onAddVideo,
   className,
 }) => {
   const [sortColumn, setSortColumn] = useState<'title' | 'assigned_to'>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [deleteConfirmVideo, setDeleteConfirmVideo] = useState<Video | null>(null);
 
   /**
    * Sorts videos based on current sort criteria
@@ -127,22 +113,6 @@ export const VideoTable: React.FC<VideoTableProps> = ({
     announceToScreenReader(`${action}: ${video.title}`);
     callback();
   }, []);
-
-  /**
-   * Handles delete confirmation
-   */
-  const handleDeleteConfirm = useCallback(async () => {
-    if (!deleteConfirmVideo) return;
-    
-    try {
-      await onDelete(deleteConfirmVideo);
-      announceToScreenReader(`Video "${(deleteConfirmVideo as any).title}" has been deleted`);
-    } catch (error) {
-      announceToScreenReader(`Failed to delete video "${(deleteConfirmVideo as any).title}"`);
-    } finally {
-      setDeleteConfirmVideo(null);
-    }
-  }, [deleteConfirmVideo, onDelete]);
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -390,20 +360,6 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                             <Edit className="w-4 h-4" aria-hidden="true" />
                             <span className="sr-only">Edit</span>
                           </Button>
-                          
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => {
-                              setDeleteConfirmVideo(video);
-                              announceToScreenReader(`Delete confirmation dialog opened for video: ${video.title}`);
-                            }}
-                            aria-label={`Delete video: ${video.title}`}
-                            className="!text-red-600 hover:!text-red-700 hover:!bg-red-50 dark:!text-red-400 dark:hover:!text-red-300 dark:hover:!bg-red-950/20"
-                          >
-                            <Trash2 className="w-4 h-4 !text-red-600 dark:!text-red-400" aria-hidden="true" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -422,38 +378,6 @@ export const VideoTable: React.FC<VideoTableProps> = ({
           : `${videos.length} training video${videos.length === 1 ? '' : 's'} available`
         }
       </div>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteConfirmVideo} onOpenChange={() => setDeleteConfirmVideo(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Video</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{(deleteConfirmVideo as any)?.title}"?
-              <br />
-              <br />
-              This will permanently remove:
-              <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>The video file and metadata</li>
-                <li>All employee assignments for this video</li>
-                <li>Any progress tracking data</li>
-                <li>Associated quiz questions (if any)</li>
-              </ul>
-              <br />
-              <strong>This action cannot be undone.</strong>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteConfirm}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete Video
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
