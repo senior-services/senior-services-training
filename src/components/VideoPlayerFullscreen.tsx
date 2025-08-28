@@ -226,12 +226,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           setIsCompleted(true);
           setWasEverCompleted(true);
           
-          // Show quiz if available, otherwise show completion overlay
-          if (quiz && quiz.questions && quiz.questions.length > 0) {
-            setShowQuiz(true);
-          } else {
-            setShowCompletionOverlay(true);
-          }
+          // Always show completion overlay first, regardless of quiz availability
+          setShowCompletionOverlay(true);
           
           logger.videoEvent('video_completed', videoId, {
             userEmail: user.email,
@@ -239,7 +235,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             hasQuiz: !!quiz
           });
 
-          // Don't notify parent about completion yet if there's a quiz
+          // Only notify parent and show toast if there's no quiz
           if (!quiz || !quiz.questions || quiz.questions.length === 0) {
             onProgressUpdate?.(100);
             toast({
@@ -293,15 +289,11 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const handleVideoEnded = useCallback(async () => {
     setProgress(100);
     
-    // Show quiz if available, otherwise show completion overlay
-    if (quiz && quiz.questions && quiz.questions.length > 0) {
-      setShowQuiz(true);
-    } else {
-      setShowCompletionOverlay(true);
-    }
+    // Always show completion overlay first
+    setShowCompletionOverlay(true);
     
     onProgressUpdate?.(100);
-  }, [quiz, onProgressUpdate]);
+  }, [onProgressUpdate]);
 
   /**
    * Manual completion handler with proper error handling
@@ -327,12 +319,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         setIsCompleted(true);
         setWasEverCompleted(true);
         
-        // Show quiz if available, otherwise show completion overlay
-        if (quiz && quiz.questions && quiz.questions.length > 0) {
-          setShowQuiz(true);
-        } else {
-          setShowCompletionOverlay(true);
-        }
+        // Always show completion overlay first
+        setShowCompletionOverlay(true);
         
         // Ensure database update completes
         await updateProgressToDatabase(100);
@@ -515,12 +503,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                            onProgressUpdate?.(progressPercent);
                            if (progressPercent >= 100) {
                              clearInterval(ytProgressIntervalRef.current!);
-                             // Show quiz if available, otherwise show completion overlay
-                             if (quiz && quiz.questions && quiz.questions.length > 0) {
-                               setShowQuiz(true);
-                             } else {
-                               setShowCompletionOverlay(true);
-                             }
+                             // Always show completion overlay first
+                             setShowCompletionOverlay(true);
                              updateProgressToDatabase(100);
                            } else if (Math.floor(current) % 15 === 0) {
                              updateProgressToDatabase(progressPercent);
@@ -530,20 +514,16 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                     },
                      onStateChange: (e: any) => {
                        const state = YTGlobal.PlayerState;
-                       if (e.data === state.ENDED) {
-                         setProgress(100);
-                         // Show quiz if available, otherwise show completion overlay
-                         if (quiz && quiz.questions && quiz.questions.length > 0) {
-                           setShowQuiz(true);
-                         } else {
-                           setShowCompletionOverlay(true);
-                         }
-                         onProgressUpdate?.(100);
-                         updateProgressToDatabase(100);
-                         if (ytProgressIntervalRef.current) clearInterval(ytProgressIntervalRef.current);
-                       } else if (e.data === state.PAUSED) {
-                         updateProgressToDatabase(progress);
-                       }
+                        if (e.data === state.ENDED) {
+                          setProgress(100);
+                          // Always show completion overlay first
+                          setShowCompletionOverlay(true);
+                          onProgressUpdate?.(100);
+                          updateProgressToDatabase(100);
+                          if (ytProgressIntervalRef.current) clearInterval(ytProgressIntervalRef.current);
+                        } else if (e.data === state.PAUSED) {
+                          updateProgressToDatabase(progress);
+                        }
                      }
                   }
                 });
@@ -594,12 +574,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                  
                  if (likelyCompleted || actuallyCompleted) {
                    setProgress(100);
-                   // Show quiz if available, otherwise show completion overlay
-                   if (quiz && quiz.questions && quiz.questions.length > 0) {
-                     setShowQuiz(true);
-                   } else {
-                     setShowCompletionOverlay(true);
-                   }
+                   // Always show completion overlay first
+                   setShowCompletionOverlay(true);
                    onProgressUpdate?.(100);
                    if (progressIntervalRef.current) {
                      clearInterval(progressIntervalRef.current);
@@ -776,24 +752,52 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           {showCompletionOverlay && progress >= 100 && (
             <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-10 animate-fade-in">
               <div className="bg-card rounded-xl p-8 max-w-md mx-4 text-center shadow-xl border animate-scale-in">
-                <div className="mb-4">
-                  <CheckCircle className="w-16 h-16 text-success mx-auto mb-3" />
-                  <h3 className="text-2xl font-bold text-foreground mb-2">
-                    Training Completed! 🎉
-                  </h3>
-                  <p className="text-muted-foreground">
-                    You've successfully completed "{video?.title}"
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => {
-                    setShowCompletionOverlay(false);
-                    onOpenChange(false);
-                  }}
-                  className="w-full"
-                >
-                  Close
-                </Button>
+                 <div className="mb-6">
+                   <CheckCircle className="w-16 h-16 text-success mx-auto mb-3" />
+                   <h3 className="text-2xl font-bold text-foreground mb-2">
+                     Video Completed! 🎉
+                   </h3>
+                   <p className="text-muted-foreground mb-4">
+                     You've successfully watched "{video?.title}"
+                   </p>
+                 </div>
+                 
+                 <div className="space-y-3">
+                   {/* Show quiz button if quiz is available */}
+                   {quiz && quiz.questions && quiz.questions.length > 0 ? (
+                     <Button 
+                       onClick={() => {
+                         setShowCompletionOverlay(false);
+                         setShowQuiz(true);
+                       }}
+                       className="w-full bg-primary hover:bg-primary/90"
+                       size="lg"
+                     >
+                       Start Quiz to Complete Training
+                     </Button>
+                   ) : null}
+                   
+                   {/* Close button */}
+                   <Button 
+                     variant={quiz && quiz.questions && quiz.questions.length > 0 ? "outline" : "default"}
+                     onClick={() => {
+                       setShowCompletionOverlay(false);
+                       onOpenChange(false);
+                       
+                       // If no quiz, this completes the training
+                       if (!quiz || !quiz.questions || quiz.questions.length === 0) {
+                         onProgressUpdate?.(100);
+                         toast({
+                           title: "Training Completed! 🎉",
+                           description: "You've successfully completed this training video."
+                         });
+                       }
+                     }}
+                     className="w-full"
+                   >
+                     {quiz && quiz.questions && quiz.questions.length > 0 ? "Skip Quiz" : "Close"}
+                   </Button>
+                 </div>
               </div>
             </div>
           )}
