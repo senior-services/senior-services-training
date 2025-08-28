@@ -45,7 +45,9 @@ export default {
 				'input': '2.75rem', /* 44px */
 			},
 			colors: {
-				border: 'hsl(var(--border))',
+				border: 'hsl(var(--border-primary))',
+				'border-primary': 'hsl(var(--border-primary))',
+				'border-secondary': 'hsl(var(--border-secondary))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
