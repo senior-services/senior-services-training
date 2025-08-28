@@ -289,7 +289,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                   <TableHead>Employee</TableHead>
                   <TableHead>Assigned Videos</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-left">Actions</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
