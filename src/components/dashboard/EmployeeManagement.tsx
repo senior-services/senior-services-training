@@ -344,10 +344,10 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('employee')}
-                      className={`h-auto p-0 hover:text-primary/80 uppercase ${
+                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent ${
                         sortColumn === 'employee' 
-                          ? 'font-bold text-primary' 
-                          : 'font-medium text-foreground'
+                          ? 'font-bold' 
+                          : 'font-medium'
                       }`}
                     >
                       Employee
@@ -362,15 +362,15 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                       )}
                     </Button>
                   </TableHead>
-                  <TableHead className="font-medium">Assigned Videos</TableHead>
+                  <TableHead className="text-xs font-medium uppercase text-muted-foreground">Assigned Videos</TableHead>
                   <TableHead>
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('status')}
-                      className={`h-auto p-0 hover:text-primary/80 uppercase ${
+                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent ${
                         sortColumn === 'status' 
-                          ? 'font-bold text-primary' 
-                          : 'font-medium text-foreground'
+                          ? 'font-bold' 
+                          : 'font-medium'
                       }`}
                     >
                       Status
@@ -385,7 +385,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                       )}
                     </Button>
                   </TableHead>
-                  <TableHead className="font-medium">Actions</TableHead>
+                  <TableHead className="text-xs font-medium uppercase text-muted-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

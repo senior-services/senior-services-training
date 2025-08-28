@@ -169,10 +169,10 @@ export const AdminManagement: React.FC = () => {
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('name')}
-                      className={`h-auto p-0 hover:text-primary/80 uppercase ${
+                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent ${
                         sortColumn === 'name' 
-                          ? 'font-bold text-primary' 
-                          : 'font-medium text-foreground'
+                          ? 'font-bold' 
+                          : 'font-medium'
                       }`}
                     >
                       Name
@@ -187,15 +187,15 @@ export const AdminManagement: React.FC = () => {
                       )}
                     </Button>
                   </TableHead>
-                  <TableHead className="font-medium">Email</TableHead>
+                  <TableHead className="text-xs font-medium uppercase text-muted-foreground">Email</TableHead>
                   <TableHead>
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('dateAdded')}
-                      className={`h-auto p-0 hover:text-primary/80 uppercase ${
+                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent ${
                         sortColumn === 'dateAdded' 
-                          ? 'font-bold text-primary' 
-                          : 'font-medium text-foreground'
+                          ? 'font-bold' 
+                          : 'font-medium'
                       }`}
                     >
                       Date Added
@@ -210,7 +210,7 @@ export const AdminManagement: React.FC = () => {
                       )}
                     </Button>
                   </TableHead>
-                  <TableHead className="text-right font-medium">Actions</TableHead>
+                  <TableHead className="text-right text-xs font-medium uppercase text-muted-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
