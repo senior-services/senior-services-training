@@ -376,7 +376,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Video</AlertDialogTitle>
           </AlertDialogHeader>
-          <div className="px-6 py-4">
+          <div>
             <AlertDialogDescription>
               Are you sure you want to delete "{deleteVideo?.title}"? This action cannot be undone and will remove all associated assignments and progress.
             </AlertDialogDescription>

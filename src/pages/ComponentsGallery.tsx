@@ -1324,7 +1324,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                       </AlertDialogHeader>
-                      <div className="px-6 py-4">
+                      <div>
                         <AlertDialogDescription>
                           This action cannot be undone. This will permanently delete your data.
                         </AlertDialogDescription>
