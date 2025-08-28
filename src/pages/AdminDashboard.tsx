@@ -4,7 +4,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VideoManagement } from "@/components/dashboard/VideoManagement";
 import { EmployeeManagement } from "@/components/dashboard/EmployeeManagement";
 import { AdminManagement } from "@/components/dashboard/AdminManagement";
-import { QuizManagement } from "@/components/dashboard/QuizManagement";
 import { logger } from "@/utils/logger";
 
 /**
@@ -46,7 +45,6 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
           <Tabs defaultValue="videos" className="space-y-6">
             <TabsList className="flex w-full justify-start">
               <TabsTrigger value="videos">Videos</TabsTrigger>
-              <TabsTrigger value="quizzes">Quizzes</TabsTrigger>
               <TabsTrigger value="employees">Employees</TabsTrigger>
               <TabsTrigger value="admins">Admins</TabsTrigger>
             </TabsList>
@@ -56,11 +54,6 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
               <VideoManagement
                 userEmail={userEmail}
               />
-            </TabsContent>
-
-            {/* Quiz Management */}
-            <TabsContent value="quizzes" className="space-y-6">
-              <QuizManagement />
             </TabsContent>
 
             {/* Employee Management */}

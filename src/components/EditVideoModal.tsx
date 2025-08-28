@@ -8,12 +8,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, FileVideo, Trash2, Copy, ExternalLink } from "lucide-react";
+import { Play, FileVideo, Trash2, Copy, ExternalLink, Plus, FileQuestion } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/utils/logger";
+import { sanitizeText } from "@/utils/security";
 import { isYouTubeUrl, isGoogleDriveUrl, getYouTubeVideoId, getGoogleDriveEmbedUrl, getGoogleDriveViewUrl, getYouTubeWatchUrl } from "@/utils/videoUtils";
+import { quizOperations, questionOperations, optionOperations } from "@/services/quizService";
+import { QuizWithQuestions } from "@/types/quiz";
+import { QuestionFormData, OptionFormData } from "@/components/quiz/CreateQuizModal";
 interface VideoData {
   id: string;
   title: string;
@@ -48,15 +53,38 @@ export const EditVideoModal = ({
   const [loading, setLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const {
-    toast
-  } = useToast();
+  const [quiz, setQuiz] = useState<QuizWithQuestions | null>(null);
+  const [quizLoading, setQuizLoading] = useState(false);
+  const [isCreatingQuiz, setIsCreatingQuiz] = useState(false);
+  const [quizTitle, setQuizTitle] = useState('');
+  const [quizDescription, setQuizDescription] = useState('');
+  const [questions, setQuestions] = useState<QuestionFormData[]>([]);
+  const { toast } = useToast();
   useEffect(() => {
     if (video) {
       setTitle(video.title || '');
       setDescription(video.description || '');
+      loadQuiz();
     }
   }, [video]);
+
+  const loadQuiz = async () => {
+    if (!video) return;
+    
+    setQuizLoading(true);
+    try {
+      const quizData = await quizOperations.getByVideoId(video.id);
+      setQuiz(quizData);
+      if (quizData) {
+        setQuizTitle(quizData.title);
+        setQuizDescription(quizData.description || '');
+      }
+    } catch (error) {
+      console.log('No quiz found for this video:', error);
+    } finally {
+      setQuizLoading(false);
+    }
+  };
   const handleSave = async () => {
     if (!video) return;
     setLoading(true);
@@ -88,7 +116,130 @@ export const EditVideoModal = ({
   const handleClose = () => {
     setTitle('');
     setDescription('');
+    setQuiz(null);
+    setQuizTitle('');
+    setQuizDescription('');
+    setQuestions([]);
     onOpenChange(false);
+  };
+
+  const addQuestion = () => {
+    const newQuestion: QuestionFormData = {
+      question_text: "",
+      question_type: "multiple_choice",
+      order_index: questions.length,
+      options: []
+    };
+    setQuestions(prev => [...prev, newQuestion]);
+  };
+
+  const updateQuestion = (index: number, updates: Partial<QuestionFormData>) => {
+    setQuestions(prev => prev.map((q, i) => 
+      i === index ? { ...q, ...updates } : q
+    ));
+  };
+
+  const removeQuestion = (index: number) => {
+    setQuestions(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addOption = (questionIndex: number) => {
+    const question = questions[questionIndex];
+    const newOption: OptionFormData = {
+      option_text: "",
+      is_correct: false,
+      order_index: question.options.length
+    };
+    
+    updateQuestion(questionIndex, {
+      options: [...question.options, newOption]
+    });
+  };
+
+  const updateOption = (questionIndex: number, optionIndex: number, updates: Partial<OptionFormData>) => {
+    const question = questions[questionIndex];
+    const updatedOptions = question.options.map((option, i) => 
+      i === optionIndex ? { ...option, ...updates } : option
+    );
+    
+    updateQuestion(questionIndex, { options: updatedOptions });
+  };
+
+  const removeOption = (questionIndex: number, optionIndex: number) => {
+    const question = questions[questionIndex];
+    const updatedOptions = question.options.filter((_, i) => i !== optionIndex);
+    
+    updateQuestion(questionIndex, { options: updatedOptions });
+  };
+
+  const handleCreateQuiz = async () => {
+    if (!video) return;
+    
+    setIsCreatingQuiz(true);
+    try {
+      // Create the quiz
+      const newQuiz = await quizOperations.create({
+        title: sanitizeText(quizTitle),
+        description: sanitizeText(quizDescription) || undefined,
+        video_id: video.id
+      });
+
+      // Create questions and their options
+      for (const [index, questionData] of questions.entries()) {
+        const question = await questionOperations.create({
+          quiz_id: newQuiz.id,
+          question_text: sanitizeText(questionData.question_text),
+          question_type: questionData.question_type,
+          order_index: index
+        });
+
+        // Create options for multiple choice questions
+        if (questionData.question_type === 'multiple_choice') {
+          for (const [optionIndex, optionData] of questionData.options.entries()) {
+            await optionOperations.create({
+              question_id: question.id,
+              option_text: sanitizeText(optionData.option_text),
+              is_correct: optionData.is_correct,
+              order_index: optionIndex
+            });
+          }
+        } else if (questionData.question_type === 'true_false') {
+          // Create True/False options
+          await optionOperations.create({
+            question_id: question.id,
+            option_text: 'True',
+            is_correct: true,
+            order_index: 0
+          });
+          await optionOperations.create({
+            question_id: question.id,
+            option_text: 'False',
+            is_correct: false,
+            order_index: 1
+          });
+        }
+      }
+
+      toast({
+        title: "Success",
+        description: "Quiz created successfully",
+      });
+      
+      // Reload quiz data
+      loadQuiz();
+      setQuizTitle('');
+      setQuizDescription('');
+      setQuestions([]);
+    } catch (error) {
+      logger.error('Error creating quiz:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create quiz",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingQuiz(false);
+    }
   };
   const hasChanges = video && (title !== (video.title || '') || description !== (video.description || ''));
   if (!video) return null;
@@ -116,9 +267,12 @@ export const EditVideoModal = ({
 
           <div className="flex-1 overflow-y-auto">
             <Tabs defaultValue="info" className="w-full">
-              
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="info">Video Info</TabsTrigger>
+                <TabsTrigger value="quiz">Quiz</TabsTrigger>
+              </TabsList>
 
-              <TabsContent value="info" className="space-y-6">
+              <TabsContent value="info" className="space-y-6 mt-6">
                 {/* Video Preview Section */}
                 <div className="space-y-3">
                   
@@ -170,6 +324,191 @@ export const EditVideoModal = ({
 
                 {/* Video Info */}
                 
+              </TabsContent>
+
+              <TabsContent value="quiz" className="space-y-6 mt-6">
+                {quiz ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <FileQuestion className="h-5 w-5" />
+                        Existing Quiz: {quiz.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <p className="text-muted-foreground">{quiz.description}</p>
+                        <Badge variant="outline">
+                          {quiz.questions.length} Question{quiz.questions.length !== 1 ? 's' : ''}
+                        </Badge>
+                        <p className="text-sm text-muted-foreground">
+                          Quiz editing functionality will be added in a future update.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <FileQuestion className="h-5 w-5" />
+                          Create Quiz
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <Label htmlFor="quiz-title">Quiz Title</Label>
+                          <Input
+                            id="quiz-title"
+                            value={quizTitle}
+                            onChange={(e) => setQuizTitle(e.target.value)}
+                            placeholder="Enter quiz title"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="quiz-description">Description (Optional)</Label>
+                          <Textarea
+                            id="quiz-description"
+                            value={quizDescription}
+                            onChange={(e) => setQuizDescription(e.target.value)}
+                            placeholder="Enter quiz description"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold">Questions</h3>
+                        <Button onClick={addQuestion} variant="outline" size="sm">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Question
+                        </Button>
+                      </div>
+
+                      {questions.map((question, questionIndex) => (
+                        <Card key={questionIndex} className="border-border">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-base">Question {questionIndex + 1}</CardTitle>
+                              <Button
+                                onClick={() => removeQuestion(questionIndex)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div>
+                              <Label>Question Text</Label>
+                              <Textarea
+                                value={question.question_text}
+                                onChange={(e) => updateQuestion(questionIndex, { question_text: e.target.value })}
+                                placeholder="Enter your question"
+                              />
+                            </div>
+
+                            <div>
+                              <Label>Question Type</Label>
+                              <Select
+                                value={question.question_type}
+                                onValueChange={(value: any) => {
+                                  updateQuestion(questionIndex, { 
+                                    question_type: value,
+                                    options: value === 'single_answer' ? [] : question.options
+                                  });
+                                }}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
+                                  <SelectItem value="true_false">True/False</SelectItem>
+                                  <SelectItem value="single_answer">Single Answer</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {question.question_type === 'multiple_choice' && (
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <Label>Answer Options</Label>
+                                  <Button
+                                    onClick={() => addOption(questionIndex)}
+                                    variant="outline"
+                                    size="sm"
+                                  >
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Add Option
+                                  </Button>
+                                </div>
+                                
+                                {question.options.map((option, optionIndex) => (
+                                  <div key={optionIndex} className="flex items-center gap-2 p-3 border rounded">
+                                    <Input
+                                      value={option.option_text}
+                                      onChange={(e) => updateOption(questionIndex, optionIndex, { option_text: e.target.value })}
+                                      placeholder={`Option ${optionIndex + 1}`}
+                                      className="flex-1"
+                                    />
+                                    <label className="flex items-center gap-2 whitespace-nowrap">
+                                      <input
+                                        type="checkbox"
+                                        checked={option.is_correct}
+                                        onChange={(e) => updateOption(questionIndex, optionIndex, { is_correct: e.target.checked })}
+                                        className="rounded"
+                                      />
+                                      Correct
+                                    </label>
+                                    <Button
+                                      onClick={() => removeOption(questionIndex, optionIndex)}
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-destructive hover:text-destructive"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {question.question_type === 'true_false' && (
+                              <div className="text-sm text-muted-foreground">
+                                True/False questions will be automatically generated with "True" and "False" options.
+                              </div>
+                            )}
+
+                            {question.question_type === 'single_answer' && (
+                              <div className="text-sm text-muted-foreground">
+                                Single answer questions require manual grading by administrators.
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+
+                      {questions.length > 0 && (
+                        <Button
+                          onClick={handleCreateQuiz}
+                          disabled={!quizTitle.trim() || questions.length === 0 || 
+                            questions.some(q => !q.question_text.trim() || 
+                              (q.question_type === 'multiple_choice' && q.options.length < 2)) || 
+                            isCreatingQuiz}
+                          className="w-full"
+                        >
+                          {isCreatingQuiz ? "Creating..." : "Create Quiz"}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </div>
