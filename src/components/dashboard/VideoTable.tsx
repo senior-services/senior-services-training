@@ -202,7 +202,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       )}
                     </Button>
                   </TableHead>
-                  <TableHead className="text-left text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">Actions</TableHead>
+                  <TableHead className="text-right text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

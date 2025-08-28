@@ -385,7 +385,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                       )}
                     </Button>
                   </TableHead>
-                  <TableHead className="text-xs font-medium uppercase text-muted-foreground">Actions</TableHead>
+                  <TableHead className="text-right text-xs font-medium uppercase text-muted-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -451,8 +451,8 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                           )}
                         </TableCell>
 
-                        <TableCell className="text-left py-3">
-                          <div className="flex gap-2">
+                        <TableCell className="text-right py-3">
+                          <div className="flex gap-2 justify-end">
                             <Button 
                               variant="ghost" 
                               size="sm" 
