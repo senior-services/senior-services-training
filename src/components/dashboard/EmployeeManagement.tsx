@@ -534,7 +534,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Employee</AlertDialogTitle>
           </AlertDialogHeader>
-          <div>
+          <div className="px-6 py-4">
             <AlertDialogDescription>
               Are you sure you want to delete "{deleteConfirmEmployee?.full_name || deleteConfirmEmployee?.email}"?
               <br />

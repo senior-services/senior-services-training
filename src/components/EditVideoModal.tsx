@@ -198,7 +198,7 @@ export const EditVideoModal = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Video</AlertDialogTitle>
           </AlertDialogHeader>
-          <div>
+          <div className="px-6 py-4">
             <AlertDialogDescription>
               Are you sure you want to delete "{video?.title}"? This action cannot be undone.
             </AlertDialogDescription>
