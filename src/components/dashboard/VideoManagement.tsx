@@ -187,13 +187,6 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
   };
 
   /**
-   * Handles video deletion from table - calls the existing delete handler
-   */
-  const handleDeleteVideoFromTable = async (video: Video) => {
-    await handleDeleteVideo(video.id);
-  };
-
-  /**
    * Handles playing a video
    */
   const handlePlayVideo = (video: Video) => {
@@ -213,7 +206,6 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
         loading={loading}
         onEdit={handleEditVideo}
         onPlay={handlePlayVideo}
-        onDelete={handleDeleteVideoFromTable}
         onAddVideo={() => setIsAddVideoModalOpen(true)}
       />
 

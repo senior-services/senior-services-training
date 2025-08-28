@@ -5,18 +5,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { 
   Table, 
   TableBody, 
@@ -31,7 +20,6 @@ import {
   Video as VideoIcon, 
   Plus, 
   Play,
-  Trash2,
   ArrowUp,
   ArrowDown,
   ArrowUpDown
@@ -44,14 +32,12 @@ import {
   announceToScreenReader 
 } from '@/utils/accessibility';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
 
 interface VideoTableProps {
   videos: Video[];
   loading?: boolean;
   onEdit: (video: Video) => void;
   onPlay: (video: Video) => void;
-  onDelete: (video: Video) => void;
   onAddVideo: () => void;
   className?: string;
 }
@@ -75,14 +61,11 @@ export const VideoTable: React.FC<VideoTableProps> = ({
   loading = false,
   onEdit,
   onPlay,
-  onDelete,
   onAddVideo,
   className,
 }) => {
   const [sortColumn, setSortColumn] = useState<'title'>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [deleteVideo, setDeleteVideo] = useState<Video | null>(null);
-  const { toast } = useToast();
 
   /**
    * Sorts videos based on current sort criteria
@@ -130,28 +113,6 @@ export const VideoTable: React.FC<VideoTableProps> = ({
     announceToScreenReader(`${action}: ${video.title}`);
     callback();
   }, []);
-
-  /**
-   * Handles video deletion with confirmation
-   */
-  const handleDelete = useCallback(async () => {
-    if (!deleteVideo) return;
-    
-    try {
-      await onDelete(deleteVideo);
-      toast({
-        title: "Success",
-        description: `Video "${deleteVideo.title}" has been deleted.`,
-      });
-      setDeleteVideo(null);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete video. Please try again.",
-        variant: "destructive",
-      });
-    }
-  }, [deleteVideo, onDelete, toast]);
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -341,16 +302,6 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                             <Edit className="w-4 h-4" aria-hidden="true" />
                             <span className="sr-only">Edit</span>
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => setDeleteVideo(video)}
-                            aria-label={`Delete video: ${video.title}`}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4" aria-hidden="true" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -369,27 +320,6 @@ export const VideoTable: React.FC<VideoTableProps> = ({
           : `${videos.length} training video${videos.length === 1 ? '' : 's'} available`
         }
       </div>
-
-      {/* Delete confirmation dialog */}
-      <AlertDialog open={!!deleteVideo} onOpenChange={() => setDeleteVideo(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Video</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{deleteVideo?.title}"? This action cannot be undone and will remove all associated assignments and progress.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete Video
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
