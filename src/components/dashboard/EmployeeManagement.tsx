@@ -310,7 +310,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
       </div>
 
       {/* Individual Employees Table */}
-      <Card>
+      <Card className="shadow-card hover:shadow-lg transition-shadow duration-300">
         <CardContent className="p-0">
           {loading ? (
             <div className="p-6 space-y-4">
