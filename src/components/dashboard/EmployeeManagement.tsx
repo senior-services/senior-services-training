@@ -26,9 +26,11 @@ import { AddEmployeeModal } from './AddEmployeeModal';
 import { AssignVideosModal } from './AssignVideosModal';
 import { logger } from '@/utils/logger';
 import { format, differenceInDays, isPast } from 'date-fns';
+import { quizOperations } from '@/services/quizService';
 export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => void }> = ({ onCountChange }) => {
   const [employees, setEmployees] = useState<EmployeeWithAssignments[]>([]);
   const [employeeVideos, setEmployeeVideos] = useState<Map<string, any[]>>(new Map());
+  const [employeeQuizzes, setEmployeeQuizzes] = useState<Map<string, Map<string, any>>>(new Map());
   const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -175,14 +177,44 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
         
         // Load video assignments for each employee
         const videoMap = new Map();
+        const quizMap = new Map();
+        
         for (const employee of transformedEmployees) {
           if (employee.assignments && Array.isArray(employee.assignments)) {
             videoMap.set(employee.id, employee.assignments);
           } else {
             videoMap.set(employee.id, []);
           }
+          
+          // Load quiz attempts for this employee
+          if (employee.email) {
+            try {
+              const quizAttempts = await quizOperations.getUserAttempts(employee.email);
+              const videoQuizMap = new Map();
+              
+              // Group quiz attempts by video_id
+              for (const attempt of quizAttempts) {
+                if (attempt.quiz?.video_id) {
+                  videoQuizMap.set(attempt.quiz.video_id, {
+                    score: attempt.score,
+                    total_questions: attempt.total_questions,
+                    completed_at: attempt.completed_at
+                  });
+                }
+              }
+              
+              quizMap.set(employee.id, videoQuizMap);
+            } catch (error) {
+              logger.error(`Error loading quiz attempts for employee ${employee.email}:`, error);
+              quizMap.set(employee.id, new Map());
+            }
+          } else {
+            quizMap.set(employee.id, new Map());
+          }
         }
+        
         setEmployeeVideos(videoMap);
+        setEmployeeQuizzes(quizMap);
       } else {
         throw new Error(data.error || 'Failed to load employees');
       }
@@ -497,29 +529,38 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                                       No videos assigned
                                     </div>
                                   ) : (
-                                    <Table>
-                                      <TableBody>
-                                        {videos.map((assignment) => {
-                                          const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent);
-                                          
-                                          return (
-                                            <TableRow key={assignment.assignment_id} className="hover:bg-transparent">
-                                              <TableCell className="py-1">
-                                                {assignment.video_title}
-                                              </TableCell>
-                                              <TableCell className="text-right py-1">
-                                                 <Badge 
-                                                   variant={badge.variant}
-                                                   showIcon={badge.showIcon}
-                                                 >
-                                                   {badge.text}
-                                                 </Badge>
-                                              </TableCell>
-                                            </TableRow>
-                                          );
-                                        })}
-                                      </TableBody>
-                                    </Table>
+                                     <Table>
+                                       <TableBody>
+                                         {videos.map((assignment) => {
+                                           const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent);
+                                           const employeeQuizData = employeeQuizzes.get(employee.id);
+                                           const quizAttempt = employeeQuizData?.get(assignment.video_id);
+                                           
+                                           return (
+                                             <TableRow key={assignment.assignment_id} className="hover:bg-transparent">
+                                               <TableCell className="py-1">
+                                                 {assignment.video_title}
+                                               </TableCell>
+                                               <TableCell className="text-right py-1">
+                                                 <div className="flex gap-2 justify-end">
+                                                   {quizAttempt && (
+                                                     <Badge variant="hollow-plain">
+                                                       Quiz: {quizAttempt.score} of {quizAttempt.total_questions} correct
+                                                     </Badge>
+                                                   )}
+                                                   <Badge 
+                                                     variant={badge.variant}
+                                                     showIcon={badge.showIcon}
+                                                   >
+                                                     {badge.text}
+                                                   </Badge>
+                                                 </div>
+                                               </TableCell>
+                                             </TableRow>
+                                           );
+                                         })}
+                                       </TableBody>
+                                     </Table>
                                   )}
                                 </div>
                               </CollapsibleContent>

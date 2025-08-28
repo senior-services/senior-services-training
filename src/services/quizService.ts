@@ -170,7 +170,8 @@ export const quizOperations = {
         .select(`
           *,
           quizzes (*),
-          quiz_responses (*)
+          quiz_responses (*),
+          employees!inner (email, full_name)
         `)
         .eq('employees.email', employeeEmail)
         .order('completed_at', { ascending: false });
@@ -179,7 +180,9 @@ export const quizOperations = {
       return (data || []).map(attempt => ({
         ...attempt,
         quiz: attempt.quizzes,
-        responses: attempt.quiz_responses
+        responses: attempt.quiz_responses,
+        employee_email: attempt.employees?.email,
+        employee_name: attempt.employees?.full_name
       }));
     } catch (error) {
       logger.error('Error fetching user quiz attempts:', error);
