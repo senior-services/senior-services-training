@@ -236,10 +236,33 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               A comprehensive showcase of all UI components with their various states, variants, and themes.
             </p>
+            
+            {/* Anchor Navigation */}
+            <div className="flex flex-wrap justify-center gap-2 pt-4">
+              <a href="#color-palette" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Color Palette</a>
+              <span className="text-muted-foreground">|</span>
+              <a href="#typography" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Typography</a>
+              <span className="text-muted-foreground">|</span>
+              <a href="#buttons" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Buttons</a>
+              <span className="text-muted-foreground">|</span>
+              <a href="#form-controls" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Form Controls</a>
+              <span className="text-muted-foreground">|</span>
+              <a href="#feedback" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Feedback</a>
+              <span className="text-muted-foreground">|</span>
+              <a href="#data-display" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Data Display</a>
+              <span className="text-muted-foreground">|</span>
+              <a href="#interactive" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Interactive</a>
+              <span className="text-muted-foreground">|</span>
+              <a href="#calendar" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Calendar</a>
+              <span className="text-muted-foreground">|</span>
+              <a href="#icons" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Icons</a>
+              <span className="text-muted-foreground">|</span>
+              <a href="#layout" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Layout</a>
+            </div>
           </div>
 
           {/* Color Palette Section */}
-          <Card className="shadow-card hover:shadow-lg transition-shadow duration-300">
+          <Card id="color-palette" className="shadow-card hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle>Color Palette</CardTitle>
               <CardDescription>Design system color tokens and semantic colors</CardDescription>
@@ -455,7 +478,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Typography Section */}
-          <Card className="shadow-card hover:shadow-lg transition-shadow duration-300">
+          <Card id="typography" className="shadow-card hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle>Typography</CardTitle>
               <CardDescription>Text styles and hierarchy</CardDescription>
@@ -523,7 +546,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Buttons Section */}
-          <Card className="shadow-card hover:shadow-lg transition-shadow duration-300">
+          <Card id="buttons" className="shadow-card hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle>Buttons</CardTitle>
               <CardDescription>All button variants and states</CardDescription>
@@ -670,7 +693,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Form Controls Section */}
-          <Card className="shadow-card hover:shadow-lg transition-shadow duration-300">
+          <Card id="form-controls" className="shadow-card hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle>Form Controls</CardTitle>
               <CardDescription>Input fields and form elements</CardDescription>
@@ -743,7 +766,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Feedback Components */}
-          <Card className="shadow-card hover:shadow-lg transition-shadow duration-300">
+          <Card id="feedback" className="shadow-card hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle>Feedback Components</CardTitle>
               <CardDescription>Alerts, badges, and progress indicators</CardDescription>
@@ -819,7 +842,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Data Display */}
-          <Card>
+          <Card id="data-display">
             <CardHeader>
               <CardTitle>Data Display</CardTitle>
               <CardDescription>Tables, avatars, and data presentation</CardDescription>
@@ -1291,7 +1314,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Interactive Components */}
-          <Card>
+          <Card id="interactive">
             <CardHeader>
               <CardTitle>Interactive Components</CardTitle>
               <CardDescription>Dialogs, dropdowns, and overlays</CardDescription>
@@ -1378,7 +1401,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Calendar Component */}
-          <Card>
+          <Card id="calendar">
             <CardHeader>
               <CardTitle>Calendar</CardTitle>
               <CardDescription>Date picker component</CardDescription>
@@ -1394,7 +1417,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Icons Gallery */}
-          <Card>
+          <Card id="icons">
             <CardHeader>
               <CardTitle>Icons</CardTitle>
               <CardDescription>Commonly used Lucide icons</CardDescription>
@@ -1421,7 +1444,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Layout Components */}
-          <Card>
+          <Card id="layout">
             <CardHeader>
               <CardTitle>Layout Components</CardTitle>
               <CardDescription>Cards, separators, and tabs</CardDescription>
