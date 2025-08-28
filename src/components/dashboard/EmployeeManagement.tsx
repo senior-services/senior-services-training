@@ -344,7 +344,11 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('employee')}
-                      className="h-auto p-0 font-bold text-primary hover:text-primary/80"
+                      className={`h-auto p-0 hover:text-primary/80 ${
+                        sortColumn === 'employee' 
+                          ? 'font-bold text-primary' 
+                          : 'font-normal text-foreground'
+                      }`}
                     >
                       Employee
                       {sortColumn === 'employee' ? (
@@ -354,7 +358,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                           <ArrowDown className="ml-2 h-4 w-4" />
                         )
                       ) : (
-                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
                       )}
                     </Button>
                   </TableHead>
@@ -363,7 +367,11 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('status')}
-                      className="h-auto p-0 font-bold text-primary hover:text-primary/80"
+                      className={`h-auto p-0 hover:text-primary/80 ${
+                        sortColumn === 'status' 
+                          ? 'font-bold text-primary' 
+                          : 'font-normal text-foreground'
+                      }`}
                     >
                       Status
                       {sortColumn === 'status' ? (
@@ -373,7 +381,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                           <ArrowDown className="ml-2 h-4 w-4" />
                         )
                       ) : (
-                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
                       )}
                     </Button>
                   </TableHead>

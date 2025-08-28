@@ -169,7 +169,11 @@ export const AdminManagement: React.FC = () => {
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('name')}
-                      className="h-auto p-0 font-bold text-primary hover:text-primary/80"
+                      className={`h-auto p-0 hover:text-primary/80 ${
+                        sortColumn === 'name' 
+                          ? 'font-bold text-primary' 
+                          : 'font-normal text-foreground'
+                      }`}
                     >
                       Name
                       {sortColumn === 'name' ? (
@@ -179,7 +183,7 @@ export const AdminManagement: React.FC = () => {
                           <ArrowDown className="ml-2 h-4 w-4" />
                         )
                       ) : (
-                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
                       )}
                     </Button>
                   </TableHead>
@@ -188,7 +192,11 @@ export const AdminManagement: React.FC = () => {
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('dateAdded')}
-                      className="h-auto p-0 font-bold text-primary hover:text-primary/80"
+                      className={`h-auto p-0 hover:text-primary/80 ${
+                        sortColumn === 'dateAdded' 
+                          ? 'font-bold text-primary' 
+                          : 'font-normal text-foreground'
+                      }`}
                     >
                       Date Added
                       {sortColumn === 'dateAdded' ? (
@@ -198,7 +206,7 @@ export const AdminManagement: React.FC = () => {
                           <ArrowDown className="ml-2 h-4 w-4" />
                         )
                       ) : (
-                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
                       )}
                     </Button>
                   </TableHead>
