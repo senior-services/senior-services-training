@@ -499,7 +499,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                         <TableCell className="text-right py-3">
                           <div className="flex gap-1 justify-end">
                             <Button 
-                              variant="ghost" 
+                              variant="outline" 
                               size="sm" 
                               onClick={() => handleAssignVideos(employee)}
                               aria-label={`Assign videos to ${employee.full_name || employee.email}`}
