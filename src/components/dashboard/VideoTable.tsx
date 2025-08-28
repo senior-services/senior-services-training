@@ -326,7 +326,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                           aria-label={`Actions for video: ${video.title}`}
                         >
                           <Button 
-                            variant="outline" 
+                            variant="ghost" 
                             size="sm"
                             onClick={() => handleVideoAction('Edit video', video, () => onEdit(video))}
                             aria-label={`Edit video: ${video.title}`}
@@ -335,7 +335,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                             <span className="sr-only">Edit</span>
                           </Button>
                           <Button 
-                            variant="outline" 
+                            variant="ghost" 
                             size="sm"
                             onClick={() => setDeleteVideo(video)}
                             aria-label={`Delete video: ${video.title}`}
