@@ -290,55 +290,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     onProgressUpdate?.(100);
   }, [quiz, onProgressUpdate]);
 
-  /**
-   * Manual completion handler with proper error handling
-   * Allows users to manually mark a video as complete
-   * 
-   * This is useful for:
-   * - Videos that don't provide accurate progress tracking
-   * - External embedded videos (YouTube, Google Drive)
-   * - User preference to skip to completion
-   */
-  const handleMarkComplete = useCallback(async () => {
-    if (!video || !user?.email) {
-      logger.warn('Cannot mark complete: missing video or user', {
-        hasVideo: !!video,
-        hasUser: !!user?.email
-      });
-      return;
-    }
-
-    const completeResult = await withErrorHandler(
-      async () => {
-        setProgress(100);
-        setIsCompleted(true);
-        setWasEverCompleted(true);
-        
-        // Always show completion overlay first
-        setShowCompletionOverlay(true);
-        
-        // Ensure database update completes
-        await updateProgressToDatabase(100);
-        
-        logger.info('Video marked as complete successfully', { 
-          videoId: video.id, 
-          userEmail: user.email,
-          hasQuiz: !!quiz,
-          timestamp: new Date().toISOString()
-        });
-      },
-      { videoId: video.id, userEmail: user.email },
-      'Failed to mark video as complete'
-    );
-
-    if (!completeResult.success) {
-      toast({
-        title: "Completion Error",
-        description: "Failed to mark video as complete. Please try again.",
-        variant: "destructive"
-      });
-    }
-  }, [video, user?.email, quiz, updateProgressToDatabase, toast, onProgressUpdate]);
 
   // Handle quiz submission
   const handleQuizSubmit = useCallback(async (responses: QuizSubmissionData[]) => {
@@ -674,49 +625,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             </div>
           </div>
           
-           {/* Video Controls */}
-           <div className="flex items-center gap-2 mt-3" role="toolbar" aria-label="Video controls and completion options">
-             {(() => {
-               const url = video?.video_url || '';
-               const isEmbedded = !!url && (isYouTubeUrl(url) || isGoogleDriveUrl(url));
-               const hasUnknownDuration = !video?.duration_seconds || video.duration_seconds <= 0;
-               const useLowThreshold = isEmbedded || hasUnknownDuration;
-               const threshold = useLowThreshold ? 98 : 98;
-               const shouldShowButton = !isCompleted && progress >= threshold;
-               
-                // Only log when video is actually loaded and we have meaningful data
-                if (video?.title && progress > 0) {
-                   logger.debug('Mark Complete Button:', { 
-                     hasVideo: !!video,
-                     hasUser: !!user?.email,
-                     videoId: video?.id,
-                     userEmail: user?.email,
-                     video: video.title,
-                     progress,
-                     shouldShow: shouldShowButton
-                   });
-                }
-               
-               return shouldShowButton ? (
-                 <Button 
-                   variant="default" 
-                   size="sm" 
-                   onClick={handleMarkComplete}
-                   onKeyDown={(e) => {
-                     if (e.key === 'Enter' || e.key === ' ') {
-                       e.preventDefault();
-                       handleMarkComplete();
-                     }
-                   }}
-                   className="flex items-center gap-2 bg-success hover:bg-success/90"
-                   aria-label="Mark training video as complete"
-                 >
-                   <CheckCircle className="w-4 h-4" aria-hidden="true" />
-                   Mark Complete
-                 </Button>
-               ) : null;
-             })()}
-           </div>
         </DialogHeader>
         
         <div 
