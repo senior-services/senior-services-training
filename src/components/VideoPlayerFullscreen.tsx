@@ -283,9 +283,19 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         {quizStarted && quiz && (
           <DialogFooter>
             <Button
+              variant="outline"
+              onClick={() => {
+                setQuizStarted(false);
+                setShowCompletionOverlay(true);
+              }}
+              className="shadow-md hover:shadow-lg transition-shadow"
+            >
+              Cancel
+            </Button>
+            <Button
               onClick={handleQuizSubmit}
               disabled={!allQuestionsAnswered}
-              className="w-full shadow-md hover:shadow-lg transition-shadow"
+              className="shadow-md hover:shadow-lg transition-shadow"
             >
               Submit Quiz
             </Button>
