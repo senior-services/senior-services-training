@@ -1294,7 +1294,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
               <div className="flex flex-wrap gap-4">
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button>Open Dialog</Button>
+                    <Button className="shadow-md hover:shadow-lg transition-shadow">Open Dialog</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -1307,15 +1307,15 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
                     </div>
                     <DialogFooter>
-                      <Button variant="outline">Cancel</Button>
-                      <Button>Confirm</Button>
+                      <Button variant="outline" className="shadow-md hover:shadow-lg transition-shadow">Cancel</Button>
+                      <Button className="shadow-md hover:shadow-lg transition-shadow">Confirm</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
                 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive">Delete Item</Button>
+                    <Button variant="destructive" className="shadow-md hover:shadow-lg transition-shadow">Delete Item</Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
