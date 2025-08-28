@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -112,9 +112,6 @@ export const EditVideoModal = ({
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col">
           <DialogHeader className="shrink-0">
             <DialogTitle>Edit Training Video</DialogTitle>
-            <DialogDescription>
-              Preview and edit details for this training video.
-            </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto">
@@ -200,10 +197,12 @@ export const EditVideoModal = ({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Video</AlertDialogTitle>
+          </AlertDialogHeader>
+          <div className="px-6 py-4">
             <AlertDialogDescription>
               Are you sure you want to delete "{video?.title}"? This action cannot be undone.
             </AlertDialogDescription>
-          </AlertDialogHeader>
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">

@@ -29,7 +29,6 @@ import {
 import { 
   Dialog, 
   DialogContent, 
-  DialogDescription, 
   DialogFooter, 
   DialogHeader, 
   DialogTitle, 
@@ -1306,9 +1305,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Dialog Title</DialogTitle>
-                      <DialogDescription>
-                        This is a dialog description explaining what this dialog does.
-                      </DialogDescription>
                     </DialogHeader>
                     <div>
                       <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
@@ -1325,12 +1321,14 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <Button variant="destructive" className="shadow-md hover:shadow-lg transition-shadow">Delete Item</Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your data.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      </AlertDialogHeader>
+                      <div className="px-6 py-4">
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete your data.
+                        </AlertDialogDescription>
+                      </div>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction>Delete</AlertDialogAction>

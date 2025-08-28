@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
 import { Play, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -587,11 +587,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         }}
         aria-describedby="video-description"
       >
-        <DialogDescription id="video-description" className="sr-only">
-          Training video player for {video?.title || 'training content'}. 
-          Use the controls below to watch the video and track your progress.
-          Press Escape key to close this dialog. Press spacebar to play or pause the video.
-        </DialogDescription>
         
         <DialogHeader className="pb-4 border-b flex-shrink-0">
           <div className="flex items-center justify-between">
