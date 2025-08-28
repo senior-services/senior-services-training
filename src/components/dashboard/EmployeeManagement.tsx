@@ -347,7 +347,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                       className={`h-auto p-0 hover:text-primary/80 uppercase ${
                         sortColumn === 'employee' 
                           ? 'font-bold text-primary' 
-                          : 'font-normal text-foreground'
+                          : 'font-medium text-foreground'
                       }`}
                     >
                       Employee
@@ -362,7 +362,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                       )}
                     </Button>
                   </TableHead>
-                  <TableHead>Assigned Videos</TableHead>
+                  <TableHead className="font-medium">Assigned Videos</TableHead>
                   <TableHead>
                     <Button
                       variant="ghost"
@@ -370,7 +370,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                       className={`h-auto p-0 hover:text-primary/80 uppercase ${
                         sortColumn === 'status' 
                           ? 'font-bold text-primary' 
-                          : 'font-normal text-foreground'
+                          : 'font-medium text-foreground'
                       }`}
                     >
                       Status
@@ -385,7 +385,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                       )}
                     </Button>
                   </TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="font-medium">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

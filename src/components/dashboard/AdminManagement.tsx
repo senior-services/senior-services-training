@@ -172,7 +172,7 @@ export const AdminManagement: React.FC = () => {
                       className={`h-auto p-0 hover:text-primary/80 uppercase ${
                         sortColumn === 'name' 
                           ? 'font-bold text-primary' 
-                          : 'font-normal text-foreground'
+                          : 'font-medium text-foreground'
                       }`}
                     >
                       Name
@@ -187,7 +187,7 @@ export const AdminManagement: React.FC = () => {
                       )}
                     </Button>
                   </TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead className="font-medium">Email</TableHead>
                   <TableHead>
                     <Button
                       variant="ghost"
@@ -195,7 +195,7 @@ export const AdminManagement: React.FC = () => {
                       className={`h-auto p-0 hover:text-primary/80 uppercase ${
                         sortColumn === 'dateAdded' 
                           ? 'font-bold text-primary' 
-                          : 'font-normal text-foreground'
+                          : 'font-medium text-foreground'
                       }`}
                     >
                       Date Added
@@ -210,7 +210,7 @@ export const AdminManagement: React.FC = () => {
                       )}
                     </Button>
                   </TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right font-medium">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
