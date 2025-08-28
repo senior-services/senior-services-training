@@ -1318,6 +1318,23 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="shadow-md hover:shadow-lg transition-shadow">Show Alert</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Important Information</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This is an example of an alert dialog. It's perfect for showing important messages that require user acknowledgment.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogAction>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
                     <Button variant="destructive" className="shadow-md hover:shadow-lg transition-shadow">Delete Item</Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
