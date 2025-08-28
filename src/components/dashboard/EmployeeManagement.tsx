@@ -358,7 +358,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                           <ArrowDown className="ml-2 h-4 w-4" />
                         )
                       ) : (
-                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
                       )}
                     </Button>
                   </TableHead>
@@ -381,7 +381,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                           <ArrowDown className="ml-2 h-4 w-4" />
                         )
                       ) : (
-                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
                       )}
                     </Button>
                   </TableHead>
