@@ -18,7 +18,7 @@ export const Header = ({
 }: HeaderProps) => {
   const subtitle = userRole === 'admin' ? 'Administrator Dashboard' : 'Employee Portal';
   return (
-    <header className="bg-gradient-card border-b border-border shadow-card">
+    <header className="bg-gradient-card border-b border-border-primary shadow-card">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Left Side - Logo and Title */}
@@ -57,7 +57,7 @@ export const Header = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <div className="sm:hidden px-3 py-2 border-b border-border">
+                <div className="sm:hidden px-3 py-2 border-b border-border-primary">
                   <p className="text-sm font-medium text-foreground">{userName}</p>
                   <p className="text-xs text-muted-foreground">{userEmail}</p>
                 </div>

@@ -125,7 +125,7 @@ export const EditVideoModal = ({
                 {/* Video Preview Section */}
                 <div className="space-y-3">
                   
-                  <div className="border border-border rounded-lg overflow-hidden bg-muted/30">
+                  <div className="border border-border-primary rounded-lg overflow-hidden bg-muted/30">
                     <div className="aspect-video bg-black rounded-lg overflow-hidden">
                       {isYouTube && youtubeVideoId ? <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${youtubeVideoId}`} title={video.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen className="w-full h-full" /> : isGoogleDrive && googleDriveEmbedUrl ? <iframe width="100%" height="100%" src={googleDriveEmbedUrl} title={video.title} frameBorder="0" allowFullScreen className="w-full h-full" /> : video.video_url ? <video className="w-full h-full" controls preload="metadata" poster={video.thumbnail_url || undefined}>
                           <source src={video.video_url} type="video/mp4" />

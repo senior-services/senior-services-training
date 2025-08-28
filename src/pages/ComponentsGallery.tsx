@@ -253,7 +253,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">Primary Colors</h4>
                   <div className="space-y-2">
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-primary border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-primary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Primary</div>
                          <div className="text-xs text-muted-foreground">--primary</div>
@@ -267,7 +267,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">Secondary Colors</h4>
                   <div className="space-y-2">
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-secondary border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-secondary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Secondary</div>
                          <div className="text-xs text-muted-foreground">--secondary</div>
@@ -281,28 +281,28 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">Status Colors</h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-success border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-success border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Success</div>
                         <div className="text-xs text-muted-foreground">--success</div>
                       </div>
                     </div>
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-warning border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-warning border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Warning</div>
                          <div className="text-xs text-muted-foreground">--warning</div>
                        </div>
                      </div>
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-attention border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-attention border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Attention</div>
                          <div className="text-xs text-muted-foreground">--attention</div>
                        </div>
                      </div>
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-destructive border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-destructive border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Destructive</div>
                          <div className="text-xs text-muted-foreground">--destructive</div>
@@ -316,21 +316,21 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">UI Colors</h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-background border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-background border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Background</div>
                         <div className="text-xs text-muted-foreground">--background</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-card border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-card border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Card</div>
                         <div className="text-xs text-muted-foreground">--card</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-muted border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-muted border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Muted</div>
                         <div className="text-xs text-muted-foreground">--muted</div>
@@ -344,7 +344,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">Text Colors</h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-background border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
+                       <div className="w-12 h-12 rounded-lg bg-background border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
                         <div className="w-6 h-6 bg-foreground rounded-sm shadow-sm"></div>
                       </div>
                       <div>
@@ -353,7 +353,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-background border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-lg bg-background border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
                         <div className="w-6 h-6 bg-muted-foreground rounded-sm shadow-sm"></div>
                       </div>
                       <div>
@@ -362,7 +362,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-primary border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-lg bg-primary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
                         <div className="w-6 h-6 bg-primary-foreground rounded-sm shadow-sm"></div>
                       </div>
                       <div>
@@ -371,7 +371,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-secondary border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-lg bg-secondary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
                         <div className="w-6 h-6 bg-secondary-foreground rounded-sm shadow-sm"></div>
                       </div>
                       <div>
@@ -387,28 +387,35 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">Border & Input</h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-border border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-border-primary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                       <div>
-                        <div className="text-sm font-medium">Border</div>
-                        <div className="text-xs text-muted-foreground">--border</div>
+                        <div className="text-sm font-medium">Border Primary</div>
+                        <div className="text-xs text-muted-foreground">--border-primary</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-lg bg-border-secondary border border-border-secondary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                      <div>
+                        <div className="text-sm font-medium">Border Secondary</div>
+                        <div className="text-xs text-muted-foreground">--border-secondary</div>
                       </div>
                     </div>
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-input border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-input border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Input</div>
                          <div className="text-xs text-muted-foreground">--input</div>
                        </div>
                      </div>
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-accent border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-accent border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Accent</div>
                          <div className="text-xs text-muted-foreground">--accent</div>
                        </div>
                      </div>
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-ring border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-ring border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Ring</div>
                          <div className="text-xs text-muted-foreground">--ring</div>
@@ -422,21 +429,21 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">Gradients</h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-primary border border-border shadow-lg hover:shadow-card transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-gradient-primary border border-border-primary shadow-lg hover:shadow-card transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Primary Gradient</div>
                         <div className="text-xs text-muted-foreground">--gradient-primary</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-hero border border-border shadow-lg hover:shadow-card transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-gradient-hero border border-border-primary shadow-lg hover:shadow-card transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Hero Gradient</div>
                         <div className="text-xs text-muted-foreground">--gradient-hero</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-card border border-border shadow-lg hover:shadow-card transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-gradient-card border border-border-primary shadow-lg hover:shadow-card transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Card Gradient</div>
                         <div className="text-xs text-muted-foreground">--gradient-card</div>
@@ -455,7 +462,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
               <CardDescription>Text styles and hierarchy</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4 rounded-lg p-6 border border-border/50 shadow-md">
+              <div className="space-y-4 rounded-lg p-6 border border-border-primary/50 shadow-md">
                 <div className="flex items-baseline gap-2">
                   <h1 className="text-4xl font-bold">Heading 1</h1>
                   <span className="text-xs text-muted-foreground">(36px)</span>
@@ -509,7 +516,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <span className="text-xs text-muted-foreground">(12px)</span>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <code className="bg-muted px-2 py-1 rounded text-sm font-mono shadow-sm border border-border/30">Code snippet</code>
+                  <code className="bg-muted px-2 py-1 rounded text-sm font-mono shadow-sm border border-border-primary/30">Code snippet</code>
                   <span className="text-xs text-muted-foreground">(14px)</span>
                 </div>
               </div>
@@ -532,7 +539,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </TabsList>
                 
                 <TabsContent value="variants" className="space-y-4">
-                  <div className="rounded-lg p-6 border border-border/50 shadow-md">
+                  <div className="rounded-lg p-6 border border-border-primary/50 shadow-md">
                     <div className="flex flex-wrap gap-3">
                       <Button className="shadow-md hover:shadow-lg transition-shadow">Default</Button>
                       <Button variant="secondary" className="shadow-md hover:shadow-lg transition-shadow">Secondary</Button>
@@ -545,7 +552,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </TabsContent>
                 
                 <TabsContent value="sizes" className="space-y-4">
-                  <div className="rounded-lg p-6 border border-border/50 shadow-md">
+                  <div className="rounded-lg p-6 border border-border-primary/50 shadow-md">
                     <div className="flex flex-wrap items-center gap-3">
                       <Button size="sm" className="shadow-md hover:shadow-lg transition-shadow">Small</Button>
                       <Button size="default" className="shadow-md hover:shadow-lg transition-shadow">Default</Button>
@@ -556,7 +563,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </TabsContent>
                 
                 <TabsContent value="icons" className="space-y-4">
-                  <div className="rounded-lg p-6 border border-border/50 shadow-md">
+                  <div className="rounded-lg p-6 border border-border-primary/50 shadow-md">
                     <div className="space-y-4">
                       <div>
                         <h4 className="text-sm font-medium mb-2">With Text and Icons</h4>
@@ -649,7 +656,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </TabsContent>
                 
                 <TabsContent value="states" className="space-y-4">
-                  <div className="rounded-lg p-6 border border-border/50 shadow-md">
+                  <div className="rounded-lg p-6 border border-border-primary/50 shadow-md">
                     <div className="flex flex-wrap gap-3">
                       <Button className="shadow-md hover:shadow-lg transition-shadow">Normal</Button>
                       <Button disabled className="shadow-sm">Disabled</Button>
@@ -670,7 +677,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
               <CardDescription>Input fields and form elements</CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
-              <div className="rounded-lg p-6 border border-border/50 shadow-md">
+              <div className="rounded-lg p-6 border border-border-primary/50 shadow-md">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
@@ -1174,7 +1181,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                    </TabsContent>
                    
                    <TabsContent value="accordion" className="space-y-4">
-                     <div className="rounded-lg p-6 border border-border/50 shadow-md">
+                     <div className="rounded-lg p-6 border border-border-primary/50 shadow-md">
                        <h4 className="text-sm font-medium mb-4">Collapsible Table Rows (Admin Pattern)</h4>
                        <Table>
                          <TableCaption>Employee table with expandable rows matching admin area pattern</TableCaption>

@@ -253,7 +253,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
           {sortedEmployees.map((employee) => (
             <div
               key={employee.id}
-              className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+              className="border border-border-primary rounded-lg p-4 hover:bg-muted/50 transition-colors"
               role="article"
               aria-labelledby={`employee-${employee.id}-name`}
               aria-describedby={`employee-${employee.id}-progress`}
@@ -327,7 +327,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
               {expandedEmployee === employee.id && (
                 <div
                   id={`employee-${employee.id}-details`}
-                  className="mt-4 pt-4 border-t border-border space-y-3"
+                  className="mt-4 pt-4 border-t border-border-primary space-y-3"
                   role="region"
                   aria-label={`Detailed information for ${employee.name}`}
                 >
