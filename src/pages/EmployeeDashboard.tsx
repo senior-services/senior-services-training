@@ -374,7 +374,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           {trainingData.completed.length > 0 && <section className="mb-12" aria-labelledby="completed-training-heading" role="region">
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="completed-training" className="border-0">
-                  <AccordionTrigger id="completed-training-heading" className="text-left px-0 py-4 hover:no-underline data-[state=open]:pb-2 [&>svg]:hidden">
+                  <AccordionTrigger id="completed-training-heading" className="text-left py-4 hover:no-underline hover:bg-muted/30 data-[state=open]:pb-2 [&>svg]:hidden">
                     <div className="flex items-center gap-3 w-full">
                       <ChevronDown className="w-8 h-8 text-muted-foreground transition-transform duration-200 data-[state=open]:rotate-180" />
                       <h2 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center">
