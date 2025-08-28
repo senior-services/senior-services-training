@@ -84,32 +84,22 @@ export const videoOperations = {
     performanceTracker.start(operation);
     
     try {
-      console.log('API: Starting video.getAll operation');
-      
       // Get videos with assignment counts
       const { data: videos, error: videosError } = await supabase
         .from('videos')
         .select('*')
         .order('created_at', { ascending: false });
 
-      console.log('API: Supabase query completed', { 
-        videosError: videosError?.message,
-        videoCount: videos?.length 
-      });
-
       if (videosError) {
-        console.error('API: Supabase error in video.getAll', videosError);
         logger.error('Failed to fetch videos', undefined, { supabaseError: videosError.message });
         return { data: null, error: videosError.message, success: false };
       }
 
       const videosWithCounts = videos || [];
 
-      console.log('API: video.getAll successful', { count: videosWithCounts.length });
       logger.info('Videos fetched successfully', { count: videosWithCounts.length });
       return { data: videosWithCounts as Video[], error: null, success: true };
     } catch (error) {
-      console.error('API: Exception in video.getAll', error);
       logger.error('Unexpected error fetching videos', error as Error);
       return { data: null, error: 'Failed to fetch videos', success: false };
     } finally {

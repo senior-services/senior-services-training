@@ -52,49 +52,29 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
    * Loads videos using the unified API service
    */
   const loadVideos = async () => {
-    try {
-      setLoading(true);
-      console.log('VideoManagement: Starting to load videos...', { userEmail });
-      
-      const result = await videoOperations.getAll();
-      
-      console.log('VideoManagement: API call completed', { 
-        success: result.success, 
-        error: result.error,
-        dataLength: result.data?.length 
+    setLoading(true);
+    const result = await videoOperations.getAll();
+    
+    if (result.success && result.data) {
+      setVideos(result.data);
+      onVideoCountChange?.(result.data.length);
+      logger.info('Videos loaded successfully', { 
+        count: result.data.length,
+        adminUser: userEmail 
       });
-      
-      if (result.success && result.data) {
-        setVideos(result.data);
-        onVideoCountChange?.(result.data.length);
-        logger.info('Videos loaded successfully', { 
-          count: result.data.length,
-          adminUser: userEmail 
-        });
-      } else {
-        logger.error('Failed to load videos', undefined, { 
-          error: result.error,
-          adminUser: userEmail 
-        });
-        toast({
-          title: 'Error loading videos',
-          description: result.error || 'Failed to load videos',
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
-      console.error('VideoManagement: Exception caught in loadVideos', error);
-      logger.error('Exception in loadVideos', error as Error, { 
+    } else {
+      logger.error('Failed to load videos', undefined, { 
+        error: result.error,
         adminUser: userEmail 
       });
       toast({
         title: 'Error loading videos',
-        description: 'An unexpected error occurred while loading videos. Please try refreshing the page.',
+        description: result.error || 'Failed to load videos',
         variant: 'destructive'
       });
-    } finally {
-      setLoading(false);
     }
+    
+    setLoading(false);
   };
 
   /**

@@ -140,7 +140,7 @@ export const AdminManagement: React.FC = () => {
       </div>
 
       {/* Admins Table */}
-      <Card className="shadow-card hover:shadow-lg transition-shadow duration-300">
+      <Card>
         <CardContent className="p-0">
           {loading ? <div className="p-6 space-y-4">
               <LoadingSkeleton lines={1} className="h-12" />
