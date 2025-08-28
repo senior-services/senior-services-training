@@ -214,7 +214,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </div>
 
           {/* Color Palette Section */}
-          <Card className="shadow-elegant hover:shadow-soft transition-shadow duration-300">
+          <Card className="shadow-card hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle>Color Palette</CardTitle>
               <CardDescription>Design system color tokens and semantic colors</CardDescription>
@@ -227,7 +227,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">Primary Colors</h4>
                   <div className="space-y-2">
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-primary border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-primary border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Primary</div>
                          <div className="text-xs text-muted-foreground">--primary</div>
@@ -241,7 +241,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">Secondary Colors</h4>
                   <div className="space-y-2">
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-secondary border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-secondary border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Secondary</div>
                          <div className="text-xs text-muted-foreground">--secondary</div>
@@ -255,28 +255,28 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">Status Colors</h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-success border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-success border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Success</div>
                         <div className="text-xs text-muted-foreground">--success</div>
                       </div>
                     </div>
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-warning border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-warning border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Warning</div>
                          <div className="text-xs text-muted-foreground">--warning</div>
                        </div>
                      </div>
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-attention border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-attention border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Attention</div>
                          <div className="text-xs text-muted-foreground">--attention</div>
                        </div>
                      </div>
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-destructive border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-destructive border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Destructive</div>
                          <div className="text-xs text-muted-foreground">--destructive</div>
@@ -290,21 +290,21 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">UI Colors</h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-background border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-background border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Background</div>
                         <div className="text-xs text-muted-foreground">--background</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-card border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-card border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Card</div>
                         <div className="text-xs text-muted-foreground">--card</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-muted border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-muted border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Muted</div>
                         <div className="text-xs text-muted-foreground">--muted</div>
@@ -318,7 +318,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">Text Colors</h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-background border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-lg bg-background border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
                         <div className="w-6 h-6 bg-foreground rounded-sm shadow-sm"></div>
                       </div>
                       <div>
@@ -327,7 +327,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-background border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-lg bg-background border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
                         <div className="w-6 h-6 bg-muted-foreground rounded-sm shadow-sm"></div>
                       </div>
                       <div>
@@ -336,7 +336,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-primary border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-lg bg-primary border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
                         <div className="w-6 h-6 bg-primary-foreground rounded-sm shadow-sm"></div>
                       </div>
                       <div>
@@ -345,7 +345,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-secondary border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-lg bg-secondary border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
                         <div className="w-6 h-6 bg-secondary-foreground rounded-sm shadow-sm"></div>
                       </div>
                       <div>
@@ -361,28 +361,28 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">Border & Input</h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-border border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-border border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Border</div>
                         <div className="text-xs text-muted-foreground">--border</div>
                       </div>
                     </div>
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-input border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-input border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Input</div>
                          <div className="text-xs text-muted-foreground">--input</div>
                        </div>
                      </div>
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-accent border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-accent border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Accent</div>
                          <div className="text-xs text-muted-foreground">--accent</div>
                        </div>
                      </div>
                      <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 rounded-lg bg-ring border border-border shadow-soft hover:shadow-elegant transition-all duration-200 hover:scale-105"></div>
+                       <div className="w-12 h-12 rounded-lg bg-ring border border-border shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                        <div>
                          <div className="text-sm font-medium">Ring</div>
                          <div className="text-xs text-muted-foreground">--ring</div>
@@ -396,21 +396,21 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <h4 className="text-sm font-bold uppercase text-secondary">Gradients</h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-primary border border-border shadow-elegant hover:shadow-soft transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-gradient-primary border border-border shadow-lg hover:shadow-card transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Primary Gradient</div>
                         <div className="text-xs text-muted-foreground">--gradient-primary</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-hero border border-border shadow-elegant hover:shadow-soft transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-gradient-hero border border-border shadow-lg hover:shadow-card transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Hero Gradient</div>
                         <div className="text-xs text-muted-foreground">--gradient-hero</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-card border border-border shadow-elegant hover:shadow-soft transition-all duration-200 hover:scale-105"></div>
+                      <div className="w-12 h-12 rounded-lg bg-gradient-card border border-border shadow-lg hover:shadow-card transition-all duration-200 hover:scale-105"></div>
                       <div>
                         <div className="text-sm font-medium">Card Gradient</div>
                         <div className="text-xs text-muted-foreground">--gradient-card</div>
@@ -423,15 +423,15 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Typography Section */}
-          <Card className="shadow-elegant hover:shadow-soft transition-shadow duration-300">
+          <Card className="shadow-card hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle>Typography</CardTitle>
               <CardDescription>Text styles and hierarchy</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4 bg-gradient-subtle rounded-lg p-6 border border-border/50 shadow-soft">
-                <h1 className="text-4xl font-bold text-shadow-sm">Heading 1</h1>
-                <h2 className="text-3xl font-semibold text-shadow-sm">Heading 2</h2>
+              <div className="space-y-4 bg-gradient-card rounded-lg p-6 border border-border/50 shadow-md">
+                <h1 className="text-4xl font-bold">Heading 1</h1>
+                <h2 className="text-3xl font-semibold">Heading 2</h2>
                 <h3 className="text-2xl font-medium">Heading 3</h3>
                 <h4 className="text-xl font-medium">Heading 4</h4>
                 <p className="text-base">Body text - Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
@@ -449,14 +449,14 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Buttons Section */}
-          <Card className="shadow-elegant hover:shadow-soft transition-shadow duration-300">
+          <Card className="shadow-card hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle>Buttons</CardTitle>
               <CardDescription>All button variants and states</CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="variants">
-                <TabsList className="shadow-soft">
+                <TabsList className="shadow-md">
                   <TabsTrigger value="variants">Variants</TabsTrigger>
                   <TabsTrigger value="sizes">Sizes</TabsTrigger>
                   <TabsTrigger value="icons">With Icons</TabsTrigger>
@@ -464,42 +464,42 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </TabsList>
                 
                 <TabsContent value="variants" className="space-y-4">
-                  <div className="bg-gradient-subtle rounded-lg p-6 border border-border/50 shadow-soft">
+                  <div className="bg-gradient-card rounded-lg p-6 border border-border/50 shadow-md">
                     <div className="flex flex-wrap gap-3">
-                      <Button className="shadow-soft hover:shadow-elegant transition-shadow">Default</Button>
-                      <Button variant="secondary" className="shadow-soft hover:shadow-elegant transition-shadow">Secondary</Button>
-                      <Button variant="destructive" className="shadow-soft hover:shadow-elegant transition-shadow">Destructive</Button>
-                      <Button variant="outline" className="shadow-soft hover:shadow-elegant transition-shadow">Outline</Button>
-                      <Button variant="ghost" className="hover:shadow-soft transition-shadow">Ghost</Button>
+                      <Button className="shadow-md hover:shadow-lg transition-shadow">Default</Button>
+                      <Button variant="secondary" className="shadow-md hover:shadow-lg transition-shadow">Secondary</Button>
+                      <Button variant="destructive" className="shadow-md hover:shadow-lg transition-shadow">Destructive</Button>
+                      <Button variant="outline" className="shadow-md hover:shadow-lg transition-shadow">Outline</Button>
+                      <Button variant="ghost" className="hover:shadow-md transition-shadow">Ghost</Button>
                       <Button variant="link">Link</Button>
                     </div>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="sizes" className="space-y-4">
-                  <div className="bg-gradient-subtle rounded-lg p-6 border border-border/50 shadow-soft">
+                  <div className="bg-gradient-card rounded-lg p-6 border border-border/50 shadow-md">
                     <div className="flex flex-wrap items-center gap-3">
-                      <Button size="sm" className="shadow-soft hover:shadow-elegant transition-shadow">Small</Button>
-                      <Button size="default" className="shadow-soft hover:shadow-elegant transition-shadow">Default</Button>
-                      <Button size="lg" className="shadow-soft hover:shadow-elegant transition-shadow">Large</Button>
-                      <Button size="icon" variant="ghost" className="hover:shadow-soft transition-shadow"><Settings className="w-4 h-4" /></Button>
+                      <Button size="sm" className="shadow-md hover:shadow-lg transition-shadow">Small</Button>
+                      <Button size="default" className="shadow-md hover:shadow-lg transition-shadow">Default</Button>
+                      <Button size="lg" className="shadow-md hover:shadow-lg transition-shadow">Large</Button>
+                      <Button size="icon" variant="ghost" className="hover:shadow-md transition-shadow"><Settings className="w-4 h-4" /></Button>
                     </div>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="icons" className="space-y-4">
-                  <div className="bg-gradient-subtle rounded-lg p-6 border border-border/50 shadow-soft">
+                  <div className="bg-gradient-card rounded-lg p-6 border border-border/50 shadow-md">
                     <div className="space-y-4">
                       <div>
                         <h4 className="text-sm font-medium mb-2">With Text and Icons</h4>
                         <div className="flex flex-wrap gap-3">
-                          <Button className="shadow-soft hover:shadow-elegant transition-shadow"><Plus className="w-4 h-4 mr-2" />Add New</Button>
-                          <Button variant="outline" className="shadow-soft hover:shadow-elegant transition-shadow"><Edit className="w-4 h-4 mr-2" />Edit</Button>
-                          <Button variant="destructive" className="shadow-soft hover:shadow-elegant transition-shadow">
+                          <Button className="shadow-md hover:shadow-lg transition-shadow"><Plus className="w-4 h-4 mr-2" />Add New</Button>
+                          <Button variant="outline" className="shadow-md hover:shadow-lg transition-shadow"><Edit className="w-4 h-4 mr-2" />Edit</Button>
+                          <Button variant="destructive" className="shadow-md hover:shadow-lg transition-shadow">
                             <Trash2 className="w-4 h-4 mr-2" />Delete
                           </Button>
-                          <Button variant="ghost" className="hover:shadow-soft transition-shadow"><Download className="w-4 h-4 mr-2" />Download</Button>
-                          <Button variant="secondary" className="shadow-soft hover:shadow-elegant transition-shadow"><Settings className="w-4 h-4 mr-2" />Settings</Button>
+                          <Button variant="ghost" className="hover:shadow-md transition-shadow"><Download className="w-4 h-4 mr-2" />Download</Button>
+                          <Button variant="secondary" className="shadow-md hover:shadow-lg transition-shadow"><Settings className="w-4 h-4 mr-2" />Settings</Button>
                         </div>
                       </div>
                       <div>
@@ -509,7 +509,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                             <Button 
                               size="icon" 
                               onClick={() => cycleIcon('default')}
-                              className="cursor-pointer shadow-soft hover:shadow-elegant transition-all hover:scale-105"
+                              className="cursor-pointer shadow-md hover:shadow-lg transition-all hover:scale-105"
                             >
                               {(() => {
                                 const IconComponent = getIconComponent(buttonIcons.default);
@@ -523,7 +523,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                               size="icon" 
                               variant="outline" 
                               onClick={() => cycleIcon('outline')}
-                              className="cursor-pointer shadow-soft hover:shadow-elegant transition-all hover:scale-105"
+                              className="cursor-pointer shadow-md hover:shadow-lg transition-all hover:scale-105"
                             >
                               {(() => {
                                 const IconComponent = getIconComponent(buttonIcons.outline);
@@ -537,7 +537,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                               size="icon" 
                               variant="destructive" 
                               onClick={() => cycleIcon('destructive')}
-                              className="cursor-pointer shadow-soft hover:shadow-elegant transition-all hover:scale-105"
+                              className="cursor-pointer shadow-md hover:shadow-lg transition-all hover:scale-105"
                             >
                               {(() => {
                                 const IconComponent = getIconComponent(buttonIcons.destructive);
@@ -551,7 +551,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                               size="icon" 
                               variant="ghost" 
                               onClick={() => cycleIcon('ghost')}
-                              className="cursor-pointer hover:shadow-soft transition-all hover:scale-105"
+                              className="cursor-pointer hover:shadow-md transition-all hover:scale-105"
                             >
                               {(() => {
                                 const IconComponent = getIconComponent(buttonIcons.ghost);
@@ -565,7 +565,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                               size="icon" 
                               variant="secondary" 
                               onClick={() => cycleIcon('secondary')}
-                              className="cursor-pointer shadow-soft hover:shadow-elegant transition-all hover:scale-105"
+                              className="cursor-pointer shadow-md hover:shadow-lg transition-all hover:scale-105"
                             >
                               {(() => {
                                 const IconComponent = getIconComponent(buttonIcons.secondary);
@@ -581,11 +581,11 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </TabsContent>
                 
                 <TabsContent value="states" className="space-y-4">
-                  <div className="bg-gradient-subtle rounded-lg p-6 border border-border/50 shadow-soft">
+                  <div className="bg-gradient-card rounded-lg p-6 border border-border/50 shadow-md">
                     <div className="flex flex-wrap gap-3">
-                      <Button className="shadow-soft hover:shadow-elegant transition-shadow">Normal</Button>
+                      <Button className="shadow-md hover:shadow-lg transition-shadow">Normal</Button>
                       <Button disabled className="shadow-sm">Disabled</Button>
-                      <Button onClick={toggleLoading} disabled={isLoading} className="shadow-soft hover:shadow-elegant transition-shadow">
+                      <Button onClick={toggleLoading} disabled={isLoading} className="shadow-md hover:shadow-lg transition-shadow">
                         {isLoading ? "Loading..." : "Click to Load"}
                       </Button>
                     </div>
@@ -596,70 +596,72 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Form Controls Section */}
-          <Card>
+          <Card className="shadow-card hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle>Form Controls</CardTitle>
               <CardDescription>Input fields and form elements</CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="text-input">Text Input</Label>
-                    <Input id="text-input" placeholder="Enter text here..." />
-                  </div>
-                  <div>
-                    <Label htmlFor="disabled-input">Disabled Input</Label>
-                    <Input id="disabled-input" placeholder="Disabled input" disabled />
-                  </div>
-                  <div>
-                    <Label htmlFor="textarea">Textarea</Label>
-                    <Textarea id="textarea" placeholder="Enter longer text here..." />
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch 
-                      id="switch" 
-                      checked={switchValue} 
-                      onCheckedChange={setSwitchValue} 
-                    />
-                    <Label htmlFor="switch">Switch Toggle</Label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="checkbox" 
-                      checked={checkboxValue} 
-                      onCheckedChange={(checked) => setCheckboxValue(checked as boolean)} 
-                    />
-                    <Label htmlFor="checkbox">Checkbox</Label>
-                  </div>
-                  
-                  <RadioGroup value={radioValue} onValueChange={setRadioValue}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="option1" id="option1" />
-                      <Label htmlFor="option1">Option 1</Label>
+              <div className="bg-gradient-card rounded-lg p-6 border border-border/50 shadow-md">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="text-input">Text Input</Label>
+                      <Input id="text-input" placeholder="Enter text here..." className="shadow-sm hover:shadow-md transition-shadow" />
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="option2" id="option2" />
-                      <Label htmlFor="option2">Option 2</Label>
+                    <div>
+                      <Label htmlFor="disabled-input">Disabled Input</Label>
+                      <Input id="disabled-input" placeholder="Disabled input" disabled className="shadow-sm" />
                     </div>
-                  </RadioGroup>
+                    <div>
+                      <Label htmlFor="textarea">Textarea</Label>
+                      <Textarea id="textarea" placeholder="Enter longer text here..." className="shadow-sm hover:shadow-md transition-shadow" />
+                    </div>
+                  </div>
                   
-                  <div>
-                    <Label>Select Dropdown</Label>
-                    <Select value={selectValue} onValueChange={setSelectValue}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an option" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="option1">Option 1</SelectItem>
-                        <SelectItem value="option2">Option 2</SelectItem>
-                        <SelectItem value="option3">Option 3</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2 p-3 rounded-md bg-card/50 shadow-sm">
+                      <Switch 
+                        id="switch" 
+                        checked={switchValue} 
+                        onCheckedChange={setSwitchValue} 
+                      />
+                      <Label htmlFor="switch">Switch Toggle</Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2 p-3 rounded-md bg-card/50 shadow-sm">
+                      <Checkbox 
+                        id="checkbox" 
+                        checked={checkboxValue} 
+                        onCheckedChange={(checked) => setCheckboxValue(checked as boolean)} 
+                      />
+                      <Label htmlFor="checkbox">Checkbox</Label>
+                    </div>
+                    
+                    <RadioGroup value={radioValue} onValueChange={setRadioValue} className="p-3 rounded-md bg-card/50 shadow-sm">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="option1" id="option1" />
+                        <Label htmlFor="option1">Option 1</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="option2" id="option2" />
+                        <Label htmlFor="option2">Option 2</Label>
+                      </div>
+                    </RadioGroup>
+                    
+                    <div>
+                      <Label>Select Dropdown</Label>
+                      <Select value={selectValue} onValueChange={setSelectValue}>
+                        <SelectTrigger className="shadow-sm hover:shadow-md transition-shadow">
+                          <SelectValue placeholder="Select an option" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="option1">Option 1</SelectItem>
+                          <SelectItem value="option2">Option 2</SelectItem>
+                          <SelectItem value="option3">Option 3</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -667,7 +669,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
 
           {/* Feedback Components */}
-          <Card>
+          <Card className="shadow-card hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle>Feedback Components</CardTitle>
               <CardDescription>Alerts, badges, and progress indicators</CardDescription>
