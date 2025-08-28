@@ -238,10 +238,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           // Only notify parent and show toast if there's no quiz
           if (!quiz || !quiz.questions || quiz.questions.length === 0) {
             onProgressUpdate?.(100);
-            toast({
-              title: "Video Completed! 🎉",
-              description: "You've successfully completed this training video."
-            });
+            // Removed toast notification - completion overlay provides feedback now
           }
         }
       },
@@ -332,10 +329,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           // Add small delay before showing success message
           await new Promise(resolve => setTimeout(resolve, 200));
           
-          toast({
-            title: "Training Completed! 🎉",
-            description: "You've successfully completed this training video."
-          });
+          // Removed toast notification - completion overlay provides feedback now
         }
         
         logger.info('Video marked as complete successfully', { 
@@ -849,23 +843,21 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                    
                    {/* Close button */}
                    <Button 
-                     variant={quiz && quiz.questions && quiz.questions.length > 0 ? "outline" : "default"}
+                     variant="outline"
                      onClick={() => {
                        setShowCompletionOverlay(false);
                        onOpenChange(false);
                        
-                       // If no quiz, this completes the training
-                       if (!quiz || !quiz.questions || quiz.questions.length === 0) {
-                         onProgressUpdate?.(100);
-                         toast({
-                           title: "Training Completed! 🎉",
-                           description: "You've successfully completed this training video."
-                         });
-                       }
+                       // Complete the training since there's no quiz or user chose to close
+                       onProgressUpdate?.(100);
+                       toast({
+                         title: "Training Completed! 🎉",
+                         description: "You've successfully completed this training video."
+                       });
                      }}
                      className="w-full"
                    >
-                     {quiz && quiz.questions && quiz.questions.length > 0 ? "Skip Quiz" : "Close"}
+                     Close
                    </Button>
                  </div>
               </div>
@@ -877,10 +869,15 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             <div className="absolute inset-0 bg-card z-20">
               <QuizModal
                 quiz={quiz}
+                videoTitle={video?.title}
                 onSubmit={handleQuizSubmit}
                 onCancel={() => {
                   setShowQuiz(false);
                   setShowCompletionOverlay(true);
+                }}
+                onBackToVideo={() => {
+                  setShowQuiz(false);
+                  // Don't show completion overlay, just return to video
                 }}
               />
             </div>
