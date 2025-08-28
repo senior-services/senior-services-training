@@ -29,10 +29,9 @@ import {
 import { 
   Dialog, 
   DialogContent, 
-  DialogDescription, 
   DialogFooter, 
   DialogHeader, 
-  DialogTitle, 
+  DialogTitle,
   DialogTrigger 
 } from "@/components/ui/dialog";
 import {
@@ -1306,9 +1305,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Dialog Title</DialogTitle>
-                      <DialogDescription>
-                        This is a dialog description explaining what this dialog does.
-                      </DialogDescription>
                     </DialogHeader>
                     <div>
                       <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
