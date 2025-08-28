@@ -135,11 +135,11 @@ export const AdminManagement: React.FC = () => {
               </div>
             </div> : <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="text-xs font-medium uppercase text-muted-foreground">Name</TableHead>
-                  <TableHead className="text-xs font-medium uppercase text-muted-foreground">Email</TableHead>
-                  <TableHead className="text-xs font-medium uppercase text-muted-foreground">Date Added</TableHead>
-                  <TableHead className="text-right text-xs font-medium uppercase text-muted-foreground">Actions</TableHead>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Date Added</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
