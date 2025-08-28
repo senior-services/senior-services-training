@@ -851,7 +851,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                           <TableHead>
                               <Button 
                                 variant="ghost" 
-                                className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:font-bold group ${
+                                className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary group ${
                                   sortColumn === "name" ? "font-bold" : "font-medium"
                                 }`}
                                 onClick={() => handleSort("name")}
@@ -869,7 +869,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                           <TableHead>
                               <Button 
                                 variant="ghost" 
-                                className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:font-bold group ${
+                                className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary group ${
                                   sortColumn === "email" ? "font-bold" : "font-medium"
                                 }`}
                                 onClick={() => handleSort("email")}
@@ -887,7 +887,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                           <TableHead>
                               <Button 
                                 variant="ghost" 
-                                className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:font-bold group ${
+                                className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary group ${
                                   sortColumn === "department" ? "font-bold" : "font-medium"
                                 }`}
                                 onClick={() => handleSort("department")}
