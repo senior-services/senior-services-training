@@ -1182,7 +1182,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                                        <Button variant="ghost" size="sm">
                                          <Edit className="w-4 h-4" />
                                        </Button>
-                                       <Button variant="ghost" size="sm">
+                                       <Button variant="destructive" size="sm">
                                          <Trash2 className="w-4 h-4" />
                                        </Button>
                                      </div>
