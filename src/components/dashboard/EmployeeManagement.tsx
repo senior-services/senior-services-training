@@ -600,26 +600,34 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                                            const quizAttempt = employeeQuizData?.get(assignment.video_id);
                                            
                                            return (
-                                             <TableRow key={assignment.assignment_id} className="hover:bg-transparent">
-                                               <TableCell className="py-1">
-                                                 {assignment.video_title}
-                                               </TableCell>
-                                               <TableCell className="text-right py-1">
-                                                 <div className="flex gap-2 justify-end">
-                                                   {quizAttempt && (
-                                                     <Badge variant="hollow-plain">
-                                                       Quiz: {quizAttempt.score} of {quizAttempt.total_questions} correct
-                                                     </Badge>
-                                                   )}
-                                                   <Badge 
-                                                     variant={badge.variant}
-                                                     showIcon={badge.showIcon}
-                                                   >
-                                                     {badge.text}
-                                                   </Badge>
-                                                 </div>
-                                               </TableCell>
-                                             </TableRow>
+                                              <TableRow key={assignment.assignment_id} className="hover:bg-transparent">
+                                                <TableCell className="py-1">
+                                                  <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                      <span>{assignment.video_title}</span>
+                                                      <span className="text-muted-foreground">-</span>
+                                                      <div className="flex items-center gap-1">
+                                                        {badge.variant === "hollow-success" && <CheckCircle className="w-3 h-3 text-success" />}
+                                                        {badge.variant === "hollow-destructive" && <XCircle className="w-3 h-3 text-destructive" />}
+                                                        {badge.variant === "hollow-secondary" && <Clock className="w-3 h-3 text-muted-foreground" />}
+                                                        {badge.variant === "hollow-plain" && <HelpCircle className="w-3 h-3 text-muted-foreground" />}
+                                                        <span className={`text-sm ${
+                                                          badge.variant === "hollow-success" ? "text-success" :
+                                                          badge.variant === "hollow-destructive" ? "text-destructive" :
+                                                          "text-muted-foreground"
+                                                        }`}>
+                                                          {badge.text}
+                                                        </span>
+                                                      </div>
+                                                    </div>
+                                                    {quizAttempt && (
+                                                      <Badge variant="hollow-plain" className="text-xs">
+                                                        Quiz: {quizAttempt.score}/{quizAttempt.total_questions}
+                                                      </Badge>
+                                                    )}
+                                                  </div>
+                                                </TableCell>
+                                              </TableRow>
                                            );
                                          })}
                                        </TableBody>
