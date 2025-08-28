@@ -1325,9 +1325,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <AlertDialogTitle>Important Information</AlertDialogTitle>
                     </AlertDialogHeader>
                     <div>
-                      <AlertDialogDescription>
-                        This is an example of an alert dialog. It's perfect for showing important messages that require user acknowledgment.
-                      </AlertDialogDescription>
+                      <p>This is an example of an alert dialog. It's perfect for showing important messages that require user acknowledgment.</p>
                     </div>
                     <AlertDialogFooter>
                       <AlertDialogAction>Continue</AlertDialogAction>
@@ -1344,9 +1342,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                     </AlertDialogHeader>
                     <div>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your data.
-                      </AlertDialogDescription>
+                      <p>This action cannot be undone. This will permanently delete your data.</p>
                     </div>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
