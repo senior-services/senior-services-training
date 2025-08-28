@@ -405,12 +405,10 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Discard changes?</AlertDialogTitle>
-          </AlertDialogHeader>
-          <div className="px-6 py-4">
             <AlertDialogDescription>
               You have unsaved changes that will be lost if you close this dialog.
             </AlertDialogDescription>
-          </div>
+          </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep editing</AlertDialogCancel>
             <AlertDialogAction onClick={closeModal}>Discard changes</AlertDialogAction>

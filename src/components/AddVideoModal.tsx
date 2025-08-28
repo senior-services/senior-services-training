@@ -87,7 +87,7 @@ export const AddVideoModal = ({
           <DialogTitle>Add Training Video</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-4 p-1">
+        <div className="flex-1 overflow-y-auto space-y-4">
           {/* Video Source */}
           <div className="space-y-2">
             <Label>Video Source</Label>
@@ -197,7 +197,7 @@ export const AddVideoModal = ({
           </div>
         </div>
 
-        <DialogFooter className="border-t pt-4">
+        <DialogFooter>
           <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>

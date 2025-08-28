@@ -174,7 +174,7 @@ export const EditVideoModal = ({
             </Tabs>
           </div>
 
-          <DialogFooter className="!flex !flex-row !justify-between !items-center shrink-0 border-t pt-4">
+          <DialogFooter className="!flex !flex-row !justify-between !items-center shrink-0">
             <Button variant="link" onClick={() => setDeleteDialogOpen(true)} className="text-destructive hover:text-destructive p-0 h-auto font-normal">
               <Trash2 className="w-4 h-4 mr-2" />
               Delete Video
@@ -197,12 +197,10 @@ export const EditVideoModal = ({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Video</AlertDialogTitle>
-          </AlertDialogHeader>
-          <div className="px-6 py-4">
             <AlertDialogDescription>
               Are you sure you want to delete "{video?.title}"? This action cannot be undone.
             </AlertDialogDescription>
-          </div>
+          </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">

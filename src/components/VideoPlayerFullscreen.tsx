@@ -574,7 +574,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-6xl w-[95vw] max-h-[90vh] p-6 overflow-y-auto shadow-2xl"
+        className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto shadow-2xl"
         onOpenAutoFocus={(e) => {
           // Let the video container receive focus instead
           e.preventDefault();
@@ -588,7 +588,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         aria-describedby="video-description"
       >
         
-        <DialogHeader className="pb-4 border-b flex-shrink-0">
+        <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="flex items-center gap-3">

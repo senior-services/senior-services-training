@@ -31,7 +31,7 @@ import {
   DialogContent, 
   DialogFooter, 
   DialogHeader, 
-  DialogTitle, 
+  DialogTitle,
   DialogTrigger 
 } from "@/components/ui/dialog";
 import {
@@ -1321,14 +1321,12 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <Button variant="destructive" className="shadow-md hover:shadow-lg transition-shadow">Delete Item</Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      </AlertDialogHeader>
-                      <div className="px-6 py-4">
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete your data.
-                        </AlertDialogDescription>
-                      </div>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction>Delete</AlertDialogAction>
