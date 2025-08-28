@@ -17,12 +17,13 @@ export const Header = ({
   onLogout
 }: HeaderProps) => {
   const subtitle = userRole === 'admin' ? 'Administrator Dashboard' : 'Employee Portal';
-  return <header className="bg-background border-b border-border shadow-sm">
+  return (
+    <header className="bg-background border-b border-border shadow-card">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Left Side - Logo and Title */}
           <div className="flex items-center space-x-4">
-            <Link to="/dashboard" className="flex items-center space-x-4 hover:opacity-80 transition-opacity">
+            <Link to="/dashboard" className="flex items-center space-x-4 hover:opacity-80 transition-all duration-200">
               <img src="/lovable-uploads/f28cf692-0409-41a6-bb28-b62ca7589dcb.png" alt="Senior Services for South Sound" className="h-12 w-auto object-cover" style={{
               objectPosition: 'left center'
             }} />
@@ -48,7 +49,7 @@ export const Header = ({
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                <Button variant="ghost" size="sm" className="flex items-center space-x-2 hover:shadow-md transition-shadow">
                   <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                     <User className="w-4 h-4 text-primary-foreground" />
                   </div>
@@ -70,5 +71,6 @@ export const Header = ({
         </div>
 
       </div>
-    </header>;
+    </header>
+  );
 };

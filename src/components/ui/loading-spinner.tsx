@@ -129,13 +129,13 @@ export const LoadingSkeleton = ({
   avatar = false,
 }: LoadingSkeletonProps) => {
   return (
-    <div className={cn('animate-pulse space-y-3', className)} role="status" aria-label="Loading content">
+    <div className={cn('animate-pulse space-y-3 shadow-sm', className)} role="status" aria-label="Loading content">
       {avatar && (
         <div className="flex items-center space-x-4">
-          <div className="w-10 h-10 bg-muted rounded-full" />
+          <div className="w-10 h-10 bg-muted rounded-full shadow-sm" />
           <div className="space-y-2 flex-1">
-            <div className="h-4 bg-muted rounded w-1/4" />
-            <div className="h-3 bg-muted rounded w-1/3" />
+            <div className="h-4 bg-muted rounded w-1/4 shadow-sm" />
+            <div className="h-3 bg-muted rounded w-1/3 shadow-sm" />
           </div>
         </div>
       )}
@@ -145,7 +145,7 @@ export const LoadingSkeleton = ({
           <div
             key={i}
             className={cn(
-              'h-4 bg-muted rounded',
+              'h-4 bg-muted rounded shadow-sm',
               i === lines - 1 ? 'w-3/4' : 'w-full'
             )}
           />
