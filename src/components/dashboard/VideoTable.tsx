@@ -82,30 +82,19 @@ export const VideoTable: React.FC<VideoTableProps> = ({
         await Promise.all(
           videos.map(async (video) => {
             try {
-              console.log(`Loading quiz for video: ${video.title} (${video.id})`);
               const quiz = await quizOperations.getByVideoId(video.id);
-              console.log(`Quiz result for ${video.title}:`, {
-                hasQuiz: !!quiz,
-                questionsCount: quiz?.questions?.length || 0,
-                quizId: quiz?.id
-              });
-              
               if (quiz && quiz.questions && quiz.questions.length > 0) {
-                console.log(`Adding video ${video.title} to quiz set`);
                 quizVideoIds.add(video.id);
               }
             } catch (error) {
               // Silently handle errors - video just won't show quiz badge
-              console.log(`No quiz found for video ${video.title}:`, error);
               logger.debug(`No quiz found for video ${video.id}`, error);
             }
           })
         );
         
-        console.log('Final quiz video IDs:', Array.from(quizVideoIds));
         setVideoQuizzes(quizVideoIds);
       } catch (error) {
-        console.error('Error loading video quizzes:', error);
         logger.error('Error loading video quizzes', error);
       }
     };
