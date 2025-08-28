@@ -374,11 +374,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       setShowQuiz(false);
       setShowCompletionOverlay(true);
       onProgressUpdate?.(100);
-
-      toast({
-        title: "Training Completed! 🎉",
-        description: "You've successfully completed the quiz and training video."
-      });
     } catch (error) {
       logger.error('Failed to submit quiz', error);
       toast({
@@ -475,6 +470,106 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     }
   }, [open, videoId]);
 
+  // Initialize YouTube player into a container to avoid React DOM conflicts
+  useEffect(() => {
+    if (!open || !video || !video.video_url || !isYouTubeUrl(video.video_url)) return;
+    const id = getYouTubeVideoId(video.video_url);
+    if (!id) return;
+
+    let cancelled = false;
+
+    const setup = async () => {
+      try {
+        await ensureYouTubeAPI();
+        if (cancelled) return;
+        if (ytProgressIntervalRef.current) {
+          clearInterval(ytProgressIntervalRef.current);
+          ytProgressIntervalRef.current = undefined;
+        }
+        try {
+          if (ytPlayerRef.current && typeof ytPlayerRef.current.destroy === 'function') {
+            ytPlayerRef.current.destroy();
+            ytPlayerRef.current = null;
+          }
+        } catch (error) {
+          logger.debug('YouTube player cleanup before init', error);
+        }
+        const YTGlobal: any = (window as any).YT;
+        const container = document.getElementById(`yt-container-${id}`);
+        if (!container) {
+          logger.debug('YouTube container not found, skipping init');
+          return;
+        }
+        ytPlayerRef.current = new YTGlobal.Player(container, {
+          videoId: id,
+          events: {
+            onReady: (e: any) => {
+              ytProgressIntervalRef.current = setInterval(() => {
+                try {
+                  const current = e.target.getCurrentTime ? e.target.getCurrentTime() : 0;
+                  const duration = e.target.getDuration ? e.target.getDuration() : (video.duration_seconds || 0);
+                  if (duration > 0 && current >= 0) {
+                    const progressPercent = Math.min(100, Math.max(0, Math.floor((current / duration) * 100)));
+                    setProgress(progressPercent);
+                    onProgressUpdate?.(progressPercent);
+                    if (progressPercent >= 100) {
+                      if (ytProgressIntervalRef.current) {
+                        clearInterval(ytProgressIntervalRef.current);
+                        ytProgressIntervalRef.current = undefined;
+                      }
+                      setShowCompletionOverlay(true);
+                      updateProgressToDatabase(100);
+                    } else if (Math.floor(current) % 15 === 0) {
+                      updateProgressToDatabase(progressPercent);
+                    }
+                  }
+                } catch (err) {
+                  logger.debug('YouTube progress tracking error', err);
+                }
+              }, 1000);
+            },
+            onStateChange: (e: any) => {
+              try {
+                const state = (window as any).YT.PlayerState;
+                if (e.data === state.ENDED) {
+                  setProgress(100);
+                  setShowCompletionOverlay(true);
+                  onProgressUpdate?.(100);
+                  updateProgressToDatabase(100);
+                  if (ytProgressIntervalRef.current) {
+                    clearInterval(ytProgressIntervalRef.current);
+                    ytProgressIntervalRef.current = undefined;
+                  }
+                } else if (e.data === state.PAUSED) {
+                  updateProgressToDatabase(progress);
+                }
+              } catch (err) {
+                logger.debug('YouTube state change error', err);
+              }
+            }
+          }
+        });
+      } catch (error) {
+        logger.error('Failed to initialize YouTube player', error);
+      }
+    };
+
+    setup();
+    return () => {
+      cancelled = true;
+      if (ytProgressIntervalRef.current) {
+        clearInterval(ytProgressIntervalRef.current);
+        ytProgressIntervalRef.current = undefined;
+      }
+      try {
+        ytPlayerRef.current?.destroy?.();
+        ytPlayerRef.current = null;
+      } catch (error) {
+        logger.debug('YouTube player cleanup on unmount', error);
+      }
+    };
+  }, [open, video?.video_url]);
+
   /**
    * Memoized video content renderer
    * Handles different video sources and provides appropriate player components
@@ -500,99 +595,9 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       const id = getYouTubeVideoId(videoUrl);
       if (id) {
         return (
-          <iframe 
-            id={`yt-player-${id}`}
-            src={`https://www.youtube.com/embed/${id}?enablejsapi=1&origin=${window.location.origin}`}
-            title={video.title}
+          <div 
+            id={`yt-container-${id}`}
             className="w-full h-full"
-            allowFullScreen
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              onLoad={() => {
-                // Initialize YouTube IFrame API player and progress tracking
-                ensureYouTubeAPI().then(() => {
-                  // Clean up any existing player and intervals
-                  if (ytProgressIntervalRef.current) {
-                    clearInterval(ytProgressIntervalRef.current);
-                    ytProgressIntervalRef.current = undefined;
-                  }
-                  
-                  try {
-                    if (ytPlayerRef.current && typeof ytPlayerRef.current.destroy === 'function') {
-                      ytPlayerRef.current.destroy();
-                      ytPlayerRef.current = null;
-                    }
-                  } catch (error) {
-                    logger.debug('YouTube player cleanup error during initialization', error);
-                  }
-                  
-                  // Create player bound to this iframe
-                  try {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const YTGlobal: any = (window as any).YT;
-                    ytPlayerRef.current = new YTGlobal.Player(`yt-player-${id}`, {
-                      events: {
-                        onReady: (e: any) => {
-                          console.log('YouTube player ready');
-                          ytProgressIntervalRef.current = setInterval(() => {
-                            try {
-                              if (!ytPlayerRef.current || !e.target) return;
-                              
-                              const current = e.target.getCurrentTime ? e.target.getCurrentTime() : 0;
-                              const duration = e.target.getDuration ? e.target.getDuration() : (video.duration_seconds || 0);
-                              
-                              if (duration > 0 && current >= 0) {
-                                const progressPercent = Math.min(100, Math.max(0, Math.floor((current / duration) * 100)));
-                                setProgress(progressPercent);
-                                onProgressUpdate?.(progressPercent);
-                                
-                                if (progressPercent >= 100) {
-                                  if (ytProgressIntervalRef.current) {
-                                    clearInterval(ytProgressIntervalRef.current);
-                                    ytProgressIntervalRef.current = undefined;
-                                  }
-                                  // Always show completion overlay first
-                                  setShowCompletionOverlay(true);
-                                  updateProgressToDatabase(100);
-                                } else if (Math.floor(current) % 15 === 0) {
-                                  updateProgressToDatabase(progressPercent);
-                                }
-                              }
-                            } catch (error) {
-                              logger.debug('YouTube progress tracking error', error);
-                            }
-                          }, 1000);
-                        },
-                        onStateChange: (e: any) => {
-                          try {
-                            const state = YTGlobal.PlayerState;
-                            console.log('YouTube player state changed:', e.data);
-                            
-                            if (e.data === state.ENDED) {
-                              setProgress(100);
-                              // Always show completion overlay first
-                              setShowCompletionOverlay(true);
-                              onProgressUpdate?.(100);
-                              updateProgressToDatabase(100);
-                              if (ytProgressIntervalRef.current) {
-                                clearInterval(ytProgressIntervalRef.current);
-                                ytProgressIntervalRef.current = undefined;
-                              }
-                            } else if (e.data === state.PAUSED) {
-                              updateProgressToDatabase(progress);
-                            }
-                          } catch (error) {
-                            logger.debug('YouTube state change error', error);
-                          }
-                        }
-                      }
-                    });
-                  } catch (error) {
-                    logger.error('Failed to initialize YouTube player', error);
-                  }
-                }).catch(error => {
-                  logger.error('Failed to load YouTube API', error);
-                });
-              }}
           />
         );
       }
@@ -841,23 +846,19 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                      </Button>
                    ) : null}
                    
-                   {/* Close button */}
-                   <Button 
-                     variant="outline"
-                     onClick={() => {
-                       setShowCompletionOverlay(false);
-                       onOpenChange(false);
-                       
-                       // Complete the training since there's no quiz or user chose to close
-                       onProgressUpdate?.(100);
-                       toast({
-                         title: "Training Completed! 🎉",
-                         description: "You've successfully completed this training video."
-                       });
-                     }}
-                     className="w-full"
-                   >
-                     Close
+                    {/* Close button */}
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        setShowCompletionOverlay(false);
+                        onOpenChange(false);
+                        
+                        // Complete the training since there's no quiz or user chose to close
+                        onProgressUpdate?.(100);
+                      }}
+                      className="w-full"
+                    >
+                      Close
                    </Button>
                  </div>
               </div>
