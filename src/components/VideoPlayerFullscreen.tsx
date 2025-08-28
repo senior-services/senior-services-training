@@ -147,8 +147,12 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       title: "Training Completed! 🎉",
       description: "You've successfully completed this training video."
     });
+    
+    // Notify parent dashboard to refresh
+    onProgressUpdate?.(100);
+    
     onOpenChange(false);
-  }, [toast, onOpenChange]);
+  }, [toast, onOpenChange, onProgressUpdate]);
 
 
   // Handle quiz submission
@@ -207,9 +211,12 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       description: "You've successfully completed the training and quiz."
     });
 
+    // Notify parent dashboard to refresh
+    onProgressUpdate?.(100);
+
     // Close the dialog
     onOpenChange(false);
-  }, [toast, onOpenChange]);
+  }, [toast, onOpenChange, onProgressUpdate]);
 
   // Handle starting the quiz
   const handleStartQuiz = useCallback(() => {
