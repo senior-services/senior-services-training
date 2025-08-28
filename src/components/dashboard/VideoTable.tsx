@@ -314,7 +314,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                                 {video.title}
                               </p>
                                {videoQuizzes.has(video.id) && (
-                                 <Badge variant="default" className="text-xs">
+                                 <Badge variant="outline" className="text-xs">
                                    Quiz
                                  </Badge>
                                )}
