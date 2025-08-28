@@ -417,18 +417,28 @@ export const assignmentOperations = {
       }
 
       // Type-safe processing of RPC result
-      const result = Array.isArray(assignments) ? assignments.map((assignment: any) => ({
-        video: assignment.video as Video,
-        assignment: {
-          id: assignment.assignment_id,
-          video_id: assignment.video_id,
-          employee_id: assignment.employee_id,
-          assigned_by: assignment.assigned_by,
-          due_date: assignment.due_date,
-          created_at: assignment.created_at,
-          updated_at: assignment.updated_at
-        } as VideoAssignment
-      })) : [];
+      const result = Array.isArray(assignments)
+        ? assignments.map((row: any) => {
+            const video = row.video as Video;
+            const a = row.assignment || {};
+            return {
+              video,
+              assignment: {
+                id: a.assignment_id || a.id,
+                video_id: video.id,
+                employee_id: a.employee_id || '',
+                assigned_by: a.assigned_by || '',
+                due_date: a.due_date || null,
+                created_at: a.assigned_at || a.created_at || new Date().toISOString(),
+                updated_at: a.updated_at || a.assigned_at || a.created_at || new Date().toISOString(),
+                // Include progress fields used by the dashboard
+                progress_percent: typeof a.progress_percent === 'number' ? a.progress_percent : 0,
+                completed_at: a.completed_at || null,
+              } as any,
+            };
+          })
+        : [];
+
 
       logger.info('Assignments fetched by email', { email, count: result.length });
       return { data: result, error: null, success: true };
