@@ -12,21 +12,33 @@ interface QuizModalProps {
   quiz: QuizWithQuestions;
   onSubmit: (responses: QuizSubmissionData[]) => void;
   onCancel: () => void;
+  onResponsesChange?: (responses: QuizSubmissionData[], allAnswered: boolean) => void;
 }
 
-export function QuizModal({ quiz, onSubmit, onCancel }: QuizModalProps) {
+export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange }: QuizModalProps) {
   const [responses, setResponses] = useState<Record<string, QuizSubmissionData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleResponseChange = (questionId: string, response: Partial<QuizSubmissionData>) => {
-    setResponses(prev => ({
-      ...prev,
+    const newResponses = {
+      ...responses,
       [questionId]: {
         question_id: questionId,
-        ...prev[questionId],
+        ...responses[questionId],
         ...response
       }
-    }));
+    };
+    setResponses(newResponses);
+    
+    // Notify parent of changes
+    const responseArray = quiz.questions.map(question => 
+      newResponses[question.id] || { question_id: question.id }
+    );
+    const allAnswered = quiz.questions.every(question => {
+      const response = newResponses[question.id];
+      return response && (response.selected_option_id || response.text_answer?.trim());
+    });
+    onResponsesChange?.(responseArray, allAnswered);
   };
 
   const handleSubmit = async () => {
@@ -126,21 +138,6 @@ export function QuizModal({ quiz, onSubmit, onCancel }: QuizModalProps) {
             </Card>
           ))}
 
-          <div className="flex justify-end gap-4 pt-4 sticky bottom-0 bg-card">
-            <Button
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              Skip Quiz
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!allQuestionsAnswered || isSubmitting}
-            >
-              {isSubmitting ? "Submitting..." : "Submit Quiz"}
-            </Button>
-          </div>
         </div>
       </div>
     </div>

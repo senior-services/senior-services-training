@@ -69,6 +69,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
+  const [quizResponses, setQuizResponses] = useState<QuizSubmissionData[]>([]);
+  const [allQuestionsAnswered, setAllQuestionsAnswered] = useState(false);
   
   // Refs for video element and timing management
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -292,17 +294,18 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
 
   // Handle quiz submission
-  const handleQuizSubmit = useCallback(async (responses: QuizSubmissionData[]) => {
-    if (!quiz || !user?.email) {
-      logger.warn('Cannot submit quiz: missing quiz or user', {
+  const handleQuizSubmit = useCallback(async () => {
+    if (!quiz || !user?.email || !quizResponses.length) {
+      logger.warn('Cannot submit quiz: missing quiz, user, or responses', {
         hasQuiz: !!quiz,
-        hasUser: !!user?.email
+        hasUser: !!user?.email,
+        hasResponses: quizResponses.length > 0
       });
       return;
     }
 
     try {
-      await quizOperations.submitQuiz(user.email, quiz.id, responses);
+      await quizOperations.submitQuiz(user.email, quiz.id, quizResponses);
       
       logger.info('Quiz submitted successfully', { 
         quizId: quiz.id, 
@@ -330,7 +333,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         variant: "destructive"
       });
     }
-  }, [quiz, user?.email, video?.id, onProgressUpdate, toast, onOpenChange]);
+  }, [quiz, user?.email, video?.id, onProgressUpdate, toast, onOpenChange, quizResponses]);
 
   // Handle starting the quiz
   const handleStartQuiz = useCallback(() => {
@@ -344,6 +347,12 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         quizSection.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100);
+  }, []);
+
+  // Handle quiz responses change
+  const handleQuizResponsesChange = useCallback((responses: QuizSubmissionData[], allAnswered: boolean) => {
+    setQuizResponses(responses);
+    setAllQuestionsAnswered(allAnswered);
   }, []);
 
   // Handle going back to video from quiz
@@ -718,7 +727,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             <QuizModal
               quiz={quiz}
               onSubmit={handleQuizSubmit}
-              onCancel={handleBackToVideo}
+              onCancel={() => {}}
+              onResponsesChange={handleQuizResponsesChange}
             />
           </div>
         )}
@@ -726,19 +736,13 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         {/* Dialog Footer */}
         {quizStarted && quiz && (
           <DialogFooter>
-            <div className="flex justify-between items-center w-full">
-              <Button
-                variant="outline"
-                onClick={handleBackToVideo}
-                className="flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Back to Video
-              </Button>
-              <span className="text-sm text-muted-foreground">Complete the quiz to finish your training</span>
-            </div>
+            <Button
+              onClick={handleQuizSubmit}
+              disabled={!allQuestionsAnswered}
+              className="w-full"
+            >
+              Submit Quiz
+            </Button>
           </DialogFooter>
         )}
       </DialogContent>
