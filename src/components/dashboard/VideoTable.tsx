@@ -195,7 +195,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       )}
                     </Button>
                   </TableHead>
-                  <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
+                  <TableHead className="text-left whitespace-nowrap">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -319,9 +319,9 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       </TableCell>
 
                       {/* Action buttons */}
-                      <TableCell className="text-right py-2">
+                      <TableCell className="text-left py-2">
                         <div 
-                          className="flex justify-end space-x-2"
+                          className="flex gap-2"
                           role="group"
                           aria-label={`Actions for video: ${video.title}`}
                         >
