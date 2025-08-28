@@ -50,21 +50,35 @@ export function useUserRole(user: User | null) {
 
     fetchUserRole();
 
-    const channel = supabase
-      .channel('user_roles_changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'user_roles', filter: `user_id=eq.${user.id}` },
-        () => {
-          if (!mounted) return;
-          fetchUserRole();
-        }
-      )
-      .subscribe();
+    // Set up real-time subscription with error handling
+    let channel: any = null;
+    try {
+      channel = supabase
+        .channel('user_roles_changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'user_roles', filter: `user_id=eq.${user.id}` },
+          () => {
+            if (!mounted) return;
+            fetchUserRole();
+          }
+        )
+        .subscribe();
+    } catch (error) {
+      // Silently fail if WebSockets aren't available (e.g., in insecure contexts)
+      logger.error('Failed to set up real-time subscription for user roles', error as Error);
+    }
 
     return () => {
       mounted = false;
-      supabase.removeChannel(channel);
+      if (channel) {
+        try {
+          supabase.removeChannel(channel);
+        } catch (error) {
+          // Silently fail on cleanup
+          logger.error('Failed to remove channel', error as Error);
+        }
+      }
     };
   }, [user?.id]); // Only depend on user.id to avoid unnecessary re-renders
 
