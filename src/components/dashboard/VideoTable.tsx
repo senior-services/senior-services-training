@@ -184,10 +184,10 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('title')}
-                      className={`h-auto p-0 hover:text-primary/80 uppercase ${
+                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary group ${
                         sortColumn === 'title' 
-                          ? 'font-bold text-primary' 
-                          : 'font-normal text-foreground'
+                          ? 'font-bold' 
+                          : 'font-medium'
                       }`}
                     >
                       Video Title and Description
@@ -198,11 +198,11 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                           <ArrowDown className="ml-2 h-4 w-4" />
                         )
                       ) : (
-                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />
                       )}
                     </Button>
                   </TableHead>
-                  <TableHead className="text-left whitespace-nowrap">Actions</TableHead>
+                  <TableHead className="text-left text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
