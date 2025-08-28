@@ -63,12 +63,10 @@ export const quizOperations = {
         .from('quizzes')
         .select('*')
         .eq('video_id', videoId)
-        .single();
+        .maybeSingle();
 
-      if (quizError) {
-        if (quizError.code === 'PGRST116') return null; // No quiz found
-        throw quizError;
-      }
+      if (quizError) throw quizError;
+      if (!quiz) return null; // No quiz found
 
       const { data: questions, error: questionsError } = await supabase
         .from('quiz_questions')
@@ -91,7 +89,7 @@ export const quizOperations = {
       };
     } catch (error) {
       logger.error('Error fetching quiz by video ID:', error);
-      throw error;
+      return null; // Return null instead of throwing to prevent breaking the UI
     }
   },
 
