@@ -20,6 +20,7 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
     let initialSessionHandled = false;
+    let logoutToastShown = false;
 
     // Check for existing session first
     const getInitialSession = async () => {
@@ -66,8 +67,14 @@ export function useAuth() {
           loading: false,
         });
 
-        if (event === 'SIGNED_OUT') {
+        // Only show logout toast once per session
+        if (event === 'SIGNED_OUT' && !logoutToastShown) {
+          logoutToastShown = true;
           toast.success('Successfully signed out');
+          // Reset the flag after a delay to allow for future logouts
+          setTimeout(() => {
+            logoutToastShown = false;
+          }, 2000);
         }
       }
     );
