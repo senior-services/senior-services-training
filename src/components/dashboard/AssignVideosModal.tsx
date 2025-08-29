@@ -4,6 +4,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogScrollArea,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -19,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -353,8 +355,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                 </div>
               </div>
 
-              <ScrollArea className="flex-1 overflow-y-auto">
-                <div className="pr-4">
+              <DialogScrollArea>
                    {availableVideosCount === 0 ? (
                      <div className="text-center py-8 text-muted-foreground">
                        <Video className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -449,13 +450,12 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                        })}
                      </div>
                    )}
-                </div>
-              </ScrollArea>
+              </DialogScrollArea>
             </>
           )}
         </div>
 
-        <div className="flex justify-end gap-3 pt-6 border-t flex-shrink-0">
+        <DialogFooter>
           <Button
             type="button"
             variant="outline"
@@ -470,7 +470,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
           >
             {isSubmitting ? 'Saving...' : 'Save Changes'}
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
 
       <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
