@@ -370,10 +370,10 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                          const wasOriginallyAssigned = assignedVideoIds.has(video.id);
                          
                          return (
-                           <div
-                             key={video.id}
-                             className="flex items-center justify-between py-3 border-b last:border-b-0 border-border-primary/50 transition-colors"
-                           >
+                            <div
+                              key={video.id}
+                              className="flex items-center justify-between py-3 border-b last:border-b-0 border-border-primary/50 transition-colors min-h-[69px]"
+                            >
                              <div className="flex items-center gap-3 flex-1 min-w-0">
                                <Checkbox
                                  id={`video-${video.id}`}
