@@ -341,8 +341,8 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                             onClick={() => handleVideoAction('Edit video', video, () => onEdit(video))}
                             aria-label={`Edit video: ${video.title}`}
                           >
-                            <Edit className="w-4 h-4" aria-hidden="true" />
-                            <span className="sr-only">Edit</span>
+                            <Edit className="w-4 h-4 mr-2" aria-hidden="true" />
+                            Edit
                           </Button>
                         </div>
                       </TableCell>
