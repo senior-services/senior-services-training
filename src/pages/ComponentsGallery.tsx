@@ -818,6 +818,20 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                         <Badge variant="hollow-plain">Plain</Badge>
                       </div>
                   </div>
+                  <div>
+                    <h4 className="text-sm font-medium mb-2 text-muted-foreground">Ghost Badges</h4>
+                     <div className="flex flex-wrap gap-2">
+                        <Badge variant="ghost-primary">Primary</Badge>
+                        <Badge variant="ghost-secondary">Secondary</Badge>
+                        <Badge variant="ghost-destructive">Destructive</Badge>
+                        <Badge variant="ghost-destructive" showIcon>Destructive with Icon</Badge>
+                        <Badge variant="ghost-success">Success</Badge>
+                        <Badge variant="ghost-success" showIcon>Success with Icon</Badge>
+                        <Badge variant="ghost-warning">Warning</Badge>
+                        <Badge variant="ghost-warning" showIcon>Warning with Icon</Badge>
+                        <Badge variant="ghost-plain">Plain</Badge>
+                      </div>
+                  </div>
                 </div>
               </div>
               

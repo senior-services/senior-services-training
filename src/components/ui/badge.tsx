@@ -34,6 +34,19 @@ const badgeVariants = cva(
           "border-warning text-warning bg-transparent",
         "hollow-plain":
           "border-transparent text-muted-foreground bg-transparent",
+        // Ghost variants (like hollow but without borders)
+        "ghost-primary":
+          "border-transparent text-primary bg-transparent",
+        "ghost-secondary":
+          "border-transparent text-secondary bg-transparent",
+        "ghost-destructive":
+          "border-transparent text-destructive bg-transparent",
+        "ghost-success":
+          "border-transparent text-success bg-transparent",
+        "ghost-warning":
+          "border-transparent text-warning bg-transparent",
+        "ghost-plain":
+          "border-transparent text-muted-foreground bg-transparent",
       },
     },
     defaultVariants: {
@@ -51,13 +64,13 @@ export interface BadgeProps
 function Badge({ className, variant, showIcon, children, ...props }: BadgeProps) {
   return (
     <div className={cn(badgeVariants({ variant }), className)} {...props}>
-      {showIcon && (variant === "success" || variant === "hollow-success") && (
+      {showIcon && (variant === "success" || variant === "hollow-success" || variant === "ghost-success") && (
         <Check className="w-3 h-3 mr-1" />
       )}
-      {showIcon && (variant === "destructive" || variant === "hollow-destructive") && (
+      {showIcon && (variant === "destructive" || variant === "hollow-destructive" || variant === "ghost-destructive") && (
         <AlertTriangle className="w-3 h-3 mr-1" />
       )}
-      {showIcon && (variant === "warning" || variant === "hollow-warning") && (
+      {showIcon && (variant === "warning" || variant === "hollow-warning" || variant === "ghost-warning") && (
         <AlertCircle className="w-3 h-3 mr-1" />
       )}
       {children}
