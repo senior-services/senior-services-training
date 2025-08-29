@@ -702,7 +702,7 @@ export const EditVideoModal = ({
                                     className="space-y-3"
                                   >
                                     {question.options.map((option, optionIndex) => (
-                                      <div key={optionIndex} className="flex items-center gap-2 p-3 border rounded">
+                                      <div key={optionIndex} className="flex items-center gap-3">
                                         <Input
                                           value={option.option_text}
                                           onChange={(e) => updateOption(questionIndex, optionIndex, { option_text: e.target.value })}
@@ -737,7 +737,7 @@ export const EditVideoModal = ({
                                 ) : (
                                   <div className="space-y-3">
                                     {question.options.map((option, optionIndex) => (
-                                      <div key={optionIndex} className="flex items-center gap-2 p-3 border rounded">
+                                      <div key={optionIndex} className="flex items-center gap-3">
                                         <Input
                                           value={option.option_text}
                                           onChange={(e) => updateOption(questionIndex, optionIndex, { option_text: e.target.value })}
