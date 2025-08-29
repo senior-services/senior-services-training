@@ -247,10 +247,10 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       className="group"
                     >
                        {/* Video title and preview */}
-                      <TableCell className="py-2">
+                      <TableCell className="py-2 w-auto max-w-0">
                         <div className="flex items-center gap-3">
                           {/* Video preview */}
-                          <div className="relative w-20 h-12 rounded-md overflow-hidden bg-muted">
+                          <div className="relative w-20 h-12 rounded-md overflow-hidden bg-muted shrink-0">
                             {(() => {
                               // Determine best thumbnail source
                               let thumbSrc: string | null = null;
@@ -310,18 +310,18 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                           {/* Video info */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <p className="font-medium text-foreground truncate">
-                                {video.title}
+                              <p className="font-medium text-foreground truncate" title={video.title}>
+                                {video.title.length > 60 ? `${video.title.substring(0, 60)}...` : video.title}
                               </p>
                                {videoQuizzes.has(video.id) && (
-                                 <Badge variant="outline" className="text-xs">
+                                 <Badge variant="outline" className="text-xs shrink-0">
                                    Quiz
                                  </Badge>
                                )}
                             </div>
                             {video.description && (
-                              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                                {video.description}
+                              <p className="text-sm text-muted-foreground line-clamp-2 mt-1" title={video.description}>
+                                {video.description.length > 150 ? `${video.description.substring(0, 150)}...` : video.description}
                               </p>
                             )}
                           </div>
@@ -329,7 +329,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       </TableCell>
 
                       {/* Action buttons */}
-                      <TableCell className="text-left py-2">
+                      <TableCell className="text-left py-2 w-auto shrink-0">
                         <div 
                           className="flex gap-3"
                           role="group"
