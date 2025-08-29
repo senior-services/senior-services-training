@@ -16,6 +16,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -309,23 +311,22 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
             <>
               <div className="flex items-center py-2 flex-shrink-0 border-b">
                 <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
+                  <Checkbox
+                    id="select-all"
                     checked={selectedCount === videos.length && videos.length > 0}
-                    onChange={(e) => {
-                      if (e.target.checked) {
+                    onCheckedChange={(checked) => {
+                      if (checked) {
                         setSelectedVideoIds(new Set(videos.map(v => v.id)));
                       } else {
                         setSelectedVideoIds(new Set());
                       }
                     }}
-                    className="w-4 h-4 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary hover:border-primary/60 hover:bg-primary/5 transition-colors cursor-pointer"
                     disabled={videos.length === 0}
                   />
                   <div className="w-px h-4 bg-border"></div>
-                  <div className="text-sm text-muted-foreground">
+                  <Label htmlFor="select-all" className="text-sm text-muted-foreground cursor-pointer">
                     {selectedCount} video{selectedCount !== 1 ? 's' : ''} selected
-                  </div>
+                  </Label>
                 </div>
               </div>
 
@@ -348,21 +349,22 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                             className="flex items-center justify-between py-3 border-b last:border-b-0 border-border-primary/50 transition-colors"
                           >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <input
-                                type="checkbox"
+                              <Checkbox
                                 id={`video-${video.id}`}
                                 checked={isSelected}
-                                onChange={(e) => 
-                                  handleVideoToggle(video.id, e.target.checked)
+                                onCheckedChange={(checked) => 
+                                  handleVideoToggle(video.id, checked as boolean)
                                 }
-                                className="flex-shrink-0 w-4 h-4 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary hover:border-primary/60 hover:bg-primary/5 transition-colors cursor-pointer"
                               />
                               
-                              <div className="flex-1 min-w-0">
+                              <Label 
+                                htmlFor={`video-${video.id}`}
+                                className="flex-1 min-w-0 cursor-pointer"
+                              >
                                 <div className="font-medium text-sm line-clamp-2">
                                   {video.title}
                                 </div>
-                              </div>
+                              </Label>
                             </div>
 
                              <div className="flex items-center gap-4">
