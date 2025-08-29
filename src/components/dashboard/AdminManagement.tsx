@@ -29,9 +29,14 @@ export const AdminManagement: React.FC = () => {
     show: boolean;
     email: string;
     employeeName?: string;
-  }>({ show: false, email: '', employeeName: '' });
-  const { toast } = useToast();
-
+  }>({
+    show: false,
+    email: '',
+    employeeName: ''
+  });
+  const {
+    toast
+  } = useToast();
   const handleSort = (column: 'name' | 'dateAdded') => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -40,22 +45,19 @@ export const AdminManagement: React.FC = () => {
       setSortDirection('asc');
     }
   };
-
   const getSortedAdmins = () => {
     if (!sortColumn) return admins;
-
     return [...admins].sort((a, b) => {
       let aValue: string;
       let bValue: string;
-
       if (sortColumn === 'name') {
-        aValue = a.isPending ? 'zzz_pending' : (a.full_name || a.email || '');
-        bValue = b.isPending ? 'zzz_pending' : (b.full_name || b.email || '');
-      } else { // dateAdded
+        aValue = a.isPending ? 'zzz_pending' : a.full_name || a.email || '';
+        bValue = b.isPending ? 'zzz_pending' : b.full_name || b.email || '';
+      } else {
+        // dateAdded
         aValue = a.isPending ? 'zzz_pending' : a.created_at;
         bValue = b.isPending ? 'zzz_pending' : b.created_at;
       }
-
       const comparison = aValue.localeCompare(bValue);
       return sortDirection === 'asc' ? comparison : -comparison;
     });
@@ -80,20 +82,16 @@ export const AdminManagement: React.FC = () => {
     }
   };
   const checkIfEmployee = async (email: string) => {
-    const { data, error } = await supabase
-      .from('employees')
-      .select('email, full_name')
-      .eq('email', email.toLowerCase())
-      .maybeSingle();
-    
+    const {
+      data,
+      error
+    } = await supabase.from('employees').select('email, full_name').eq('email', email.toLowerCase()).maybeSingle();
     if (error) {
       logger.error('Error checking employee status', error);
       return null;
     }
-    
     return data;
   };
-
   const handleAddAdmin = async () => {
     if (!newAdminEmail.trim()) {
       toast({
@@ -103,12 +101,10 @@ export const AdminManagement: React.FC = () => {
       });
       return;
     }
-
     setIsAdding(true);
     try {
       // Check if user is already an employee
       const existingEmployee = await checkIfEmployee(newAdminEmail.trim());
-      
       if (existingEmployee) {
         // Show confirmation dialog for employee promotion
         setEmployeePromotionDialog({
@@ -132,7 +128,6 @@ export const AdminManagement: React.FC = () => {
       setIsAdding(false);
     }
   };
-
   const proceedWithAdminAddition = async (email: string) => {
     try {
       await AdminService.addAdminByEmail(email);
@@ -155,15 +150,17 @@ export const AdminManagement: React.FC = () => {
       setIsAdding(false);
     }
   };
-
   const handleConfirmEmployeePromotion = async () => {
-    setEmployeePromotionDialog({ show: false, email: '', employeeName: '' });
+    setEmployeePromotionDialog({
+      show: false,
+      email: '',
+      employeeName: ''
+    });
     setIsAdding(true);
     await proceedWithAdminAddition(employeePromotionDialog.email);
   };
   const handleDeleteAdmin = async () => {
     if (!deleteConfirmAdmin) return;
-    
     setIsDeleting(true);
     try {
       await AdminService.removeAdminRole(deleteConfirmAdmin.id, deleteConfirmAdmin.isPending);
@@ -189,7 +186,7 @@ export const AdminManagement: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h3 className="text-xl font-semibold">Admin Management</h3>
-          <p className="text-muted-foreground">Manage admins, employees, and training assignments.</p>
+          <p className="text-muted-foreground">Manage admins, employees, and training assignments</p>
         </div>
         <Button onClick={() => setShowAddModal(true)}>
           <UserPlus className="w-4 h-4 mr-2" />
@@ -224,48 +221,16 @@ export const AdminManagement: React.FC = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort('name')}
-                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${
-                        sortColumn === 'name' 
-                          ? 'font-bold' 
-                          : 'font-medium'
-                      }`}
-                    >
+                    <Button variant="ghost" onClick={() => handleSort('name')} className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${sortColumn === 'name' ? 'font-bold' : 'font-medium'}`}>
                       Name
-                      {sortColumn === 'name' ? (
-                        sortDirection === 'asc' ? (
-                          <ArrowUp className="ml-2 h-4 w-4" />
-                        ) : (
-                          <ArrowDown className="ml-2 h-4 w-4" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />
-                      )}
+                      {sortColumn === 'name' ? sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" /> : <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
                     </Button>
                   </TableHead>
                   <TableHead className="text-xs font-medium uppercase text-muted-foreground">Email</TableHead>
                   <TableHead>
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort('dateAdded')}
-                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${
-                        sortColumn === 'dateAdded' 
-                          ? 'font-bold' 
-                          : 'font-medium'
-                      }`}
-                    >
+                    <Button variant="ghost" onClick={() => handleSort('dateAdded')} className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${sortColumn === 'dateAdded' ? 'font-bold' : 'font-medium'}`}>
                       Date Added
-                      {sortColumn === 'dateAdded' ? (
-                        sortDirection === 'asc' ? (
-                          <ArrowUp className="ml-2 h-4 w-4" />
-                        ) : (
-                          <ArrowDown className="ml-2 h-4 w-4" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />
-                      )}
+                      {sortColumn === 'dateAdded' ? sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" /> : <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
                     </Button>
                   </TableHead>
                   <TableHead className="text-right text-xs font-medium uppercase text-muted-foreground">Actions</TableHead>
@@ -277,11 +242,7 @@ export const AdminManagement: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <div>
                           <span>{admin.isPending ? '--' : admin.full_name || 'Unknown'}</span>
-                          <Badge 
-                            variant={admin.isPending ? "soft-warning" : "soft-attention"} 
-                            showIcon
-                            className="ml-2 text-xs"
-                          >
+                          <Badge variant={admin.isPending ? "soft-warning" : "soft-attention"} showIcon className="ml-2 text-xs">
                             {admin.isPending ? 'Pending' : 'Admin'}
                           </Badge>
                         </div>
@@ -344,11 +305,15 @@ export const AdminManagement: React.FC = () => {
       </Dialog>
 
       {/* Employee Promotion Confirmation Dialog */}
-      <AlertDialog open={employeePromotionDialog.show} onOpenChange={(open) => {
-        if (!open) {
-          setEmployeePromotionDialog({ show: false, email: '', employeeName: '' });
-        }
-      }}>
+      <AlertDialog open={employeePromotionDialog.show} onOpenChange={open => {
+      if (!open) {
+        setEmployeePromotionDialog({
+          show: false,
+          email: '',
+          employeeName: ''
+        });
+      }
+    }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-orange-600">
@@ -375,11 +340,7 @@ export const AdminManagement: React.FC = () => {
             <AlertDialogCancel disabled={isAdding}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleConfirmEmployeePromotion} 
-              disabled={isAdding} 
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+            <AlertDialogAction onClick={handleConfirmEmployeePromotion} disabled={isAdding} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {isAdding ? 'Promoting...' : 'Promote to Admin'}
             </AlertDialogAction>
           </AlertDialogFooter>
