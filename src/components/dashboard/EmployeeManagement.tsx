@@ -587,7 +587,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                                   ) : (
                                      <Table>
                                         <TableHeader>
-                                          <TableRow>
+                                          <TableRow className="border-b">
                                             <TableHead className="text-xs font-medium uppercase text-muted-foreground">Video Title</TableHead>
                                             <TableHead className="text-xs font-medium uppercase text-muted-foreground">Quiz Results</TableHead>
                                             <TableHead className="text-xs font-medium uppercase text-muted-foreground text-right">Status</TableHead>
