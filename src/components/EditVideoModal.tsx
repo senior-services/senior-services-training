@@ -224,7 +224,16 @@ export const EditVideoModal = ({
     return false;
   };
 
-  // Handle discarding unsaved changes
+  // Handle cancel button click
+  const handleCancel = () => {
+    if (hasQuizChanges()) {
+      // Show unsaved changes dialog
+      setUnsavedChangesDialogOpen(true);
+    } else {
+      // No changes, just close
+      onOpenChange(false);
+    }
+  };
   const handleDiscardChanges = () => {
     // Reset to original values
     if (quiz) {
@@ -746,7 +755,7 @@ export const EditVideoModal = ({
             </Button>
             
             <div className="flex space-x-2">
-              <Button variant="outline" onClick={handleClose}>
+              <Button variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
               <Button onClick={handleSave} disabled={!hasChanges || loading}>
