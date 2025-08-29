@@ -118,11 +118,30 @@ export const EditVideoModal = ({
         setOriginalQuizDescription(quizData.description || '');
         setOriginalQuestions(JSON.parse(JSON.stringify(loadedQuestions)));
       } else {
-        // No quiz found, ensure local state is cleared for this video
+        // No quiz found, initialize with default question for new quiz creation
         setQuiz(null);
         setQuizTitle('');
         setQuizDescription('');
-        setQuestions([]);
+        
+        // Initialize with one default question with two default options
+        const defaultQuestion: EditableQuestionFormData = {
+          question_text: "",
+          question_type: "multiple_choice",
+          order_index: 0,
+          options: [
+            {
+              option_text: "",
+              is_correct: false,
+              order_index: 0
+            },
+            {
+              option_text: "",
+              is_correct: false,
+              order_index: 1
+            }
+          ]
+        };
+        setQuestions([defaultQuestion]);
         
         // Clear original values too
         setOriginalQuizTitle('');
@@ -257,7 +276,18 @@ export const EditVideoModal = ({
       question_text: "",
       question_type: "multiple_choice",
       order_index: questions.length,
-      options: []
+      options: [
+        {
+          option_text: "",
+          is_correct: false,
+          order_index: 0
+        },
+        {
+          option_text: "",
+          is_correct: false,
+          order_index: 1
+        }
+      ]
     };
     setQuestions(prev => [...prev, newQuestion]);
   };
@@ -619,13 +649,7 @@ export const EditVideoModal = ({
                   </div>
 
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold">Questions</h3>
-                        <Button onClick={addQuestion} variant="outline" size="sm">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Question
-                        </Button>
-                      </div>
+                      <h3 className="text-lg font-semibold">Questions</h3>
 
                       {questions.map((question, questionIndex) => (
                         <Card key={questionIndex} className="border-border">
@@ -676,17 +700,7 @@ export const EditVideoModal = ({
 
                             {(question.question_type === 'multiple_choice' || question.question_type === 'single_answer') && (
                               <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <Label>Answer Options</Label>
-                                  <Button
-                                    onClick={() => addOption(questionIndex)}
-                                    variant="outline"
-                                    size="sm"
-                                  >
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Add Option
-                                  </Button>
-                                </div>
+                                <Label>Answer Options</Label>
                                 
                                 {question.question_type === 'single_answer' ? (
                                   <RadioGroup
@@ -773,6 +787,16 @@ export const EditVideoModal = ({
                                     ))}
                                   </div>
                                 )}
+                                
+                                <Button
+                                  onClick={() => addOption(questionIndex)}
+                                  variant="secondary"
+                                  size="sm"
+                                  className="justify-start"
+                                >
+                                  <Plus className="w-4 h-4 mr-2" />
+                                  Add Option
+                                </Button>
                               </div>
                             )}
 
@@ -784,6 +808,11 @@ export const EditVideoModal = ({
                           </CardContent>
                         </Card>
                       ))}
+
+                      <Button onClick={addQuestion} variant="secondary" size="sm" className="justify-start">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Question
+                      </Button>
 
                       {questions.length === 0 && (
                         <p className="text-center text-muted-foreground py-8">
