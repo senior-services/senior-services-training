@@ -329,7 +329,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                         {videoQuizzes.has(video.id) && (
                           <div className="flex justify-center">
                             <svg 
-                              className="w-5 h-5 text-green-600" 
+                              className="w-6 h-6 text-foreground" 
                               fill="none" 
                               stroke="currentColor" 
                               viewBox="0 0 24 24"
