@@ -306,6 +306,8 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const hasDeadlineChanges = !areDeadlineMapsEqual(videoDeadlines, initialVideoDeadlines);
   const hasChanges = hasSelectionChanges || hasDeadlineChanges;
   const selectedCount = selectedVideoIds.size;
+  const availableVideosCount = videos.filter(v => !completedVideoIds.has(v.id)).length;
+  const selectedAvailableCount = Array.from(selectedVideoIds).filter(id => !completedVideoIds.has(id)).length;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -330,7 +332,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                 <div className="flex items-center gap-3">
                    <Checkbox
                      id="select-all"
-                     checked={selectedCount === videos.filter(v => !completedVideoIds.has(v.id)).length && videos.filter(v => !completedVideoIds.has(v.id)).length > 0}
+                     checked={selectedAvailableCount === availableVideosCount && availableVideosCount > 0}
                      onCheckedChange={(checked) => {
                        const availableVideos = videos.filter(v => !completedVideoIds.has(v.id));
                        if (checked) {
@@ -342,12 +344,12 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                          setSelectedVideoIds(new Set(Array.from(selectedVideoIds).filter(id => completedVideoIds.has(id))));
                        }
                      }}
-                     disabled={videos.filter(v => !completedVideoIds.has(v.id)).length === 0}
+                     disabled={availableVideosCount === 0}
                    />
                   <div className="w-px h-4 bg-border"></div>
-                  <Label htmlFor="select-all" className="text-sm text-muted-foreground cursor-pointer">
-                    {selectedCount} video{selectedCount !== 1 ? 's' : ''} selected
-                  </Label>
+                   <Label htmlFor="select-all" className="text-sm text-muted-foreground cursor-pointer">
+                     {selectedAvailableCount} video{selectedAvailableCount !== 1 ? 's' : ''} selected
+                   </Label>
                 </div>
               </div>
 
