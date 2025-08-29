@@ -240,70 +240,70 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
             
             {/* Anchor Navigation */}
             <nav className="pt-4">
-              <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1 text-left">
-                <li>
+              <ul className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-x-6 text-left">
+                <li className="break-inside-avoid mb-1">
                   <a href="#alerts" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Alerts
                   </a>
                 </li>
-                <li>
-                  <a href="#calendar" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Calendar
-                  </a>
-                </li>
-                <li>
-                  <a href="#form-controls" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Form Controls
-                  </a>
-                </li>
-                <li>
-                  <a href="#layout" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Layout
-                  </a>
-                </li>
-                <li>
-                  <a href="#toast" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Toast
-                  </a>
-                </li>
-                <li>
+                <li className="break-inside-avoid mb-1">
                   <a href="#badges" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Badges
                   </a>
                 </li>
-                <li>
-                  <a href="#color-palette" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Color Palette
-                  </a>
-                </li>
-                <li>
-                  <a href="#icons" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Icons
-                  </a>
-                </li>
-                <li>
-                  <a href="#progress" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Progress
-                  </a>
-                </li>
-                <li>
-                  <a href="#typography" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Typography
-                  </a>
-                </li>
-                <li>
+                <li className="break-inside-avoid mb-1">
                   <a href="#buttons" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Buttons
                   </a>
                 </li>
-                <li>
+                <li className="break-inside-avoid mb-1">
+                  <a href="#calendar" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Calendar
+                  </a>
+                </li>
+                <li className="break-inside-avoid mb-1">
+                  <a href="#color-palette" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Color Palette
+                  </a>
+                </li>
+                <li className="break-inside-avoid mb-1">
                   <a href="#data-display" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Data Display
                   </a>
                 </li>
-                <li>
+                <li className="break-inside-avoid mb-1">
+                  <a href="#form-controls" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Form Controls
+                  </a>
+                </li>
+                <li className="break-inside-avoid mb-1">
+                  <a href="#icons" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Icons
+                  </a>
+                </li>
+                <li className="break-inside-avoid mb-1">
                   <a href="#interactive" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Interactive
+                  </a>
+                </li>
+                <li className="break-inside-avoid mb-1">
+                  <a href="#layout" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Layout
+                  </a>
+                </li>
+                <li className="break-inside-avoid mb-1">
+                  <a href="#progress" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Progress
+                  </a>
+                </li>
+                <li className="break-inside-avoid mb-1">
+                  <a href="#toast" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Toast
+                  </a>
+                </li>
+                <li className="break-inside-avoid mb-1">
+                  <a href="#typography" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Typography
                   </a>
                 </li>
               </ul>
