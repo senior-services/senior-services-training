@@ -792,7 +792,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 <div className="space-y-3">
                   <div>
                     <h4 className="text-sm font-medium mb-2 text-muted-foreground">Solid Badges</h4>
-                       <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <Badge>Primary</Badge>
                         <Badge variant="secondary">Secondary</Badge>
                         <Badge variant="tertiary">Tertiary</Badge>
@@ -802,6 +802,8 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                         <Badge variant="success" showIcon>Success with Icon</Badge>
                         <Badge variant="warning">Warning</Badge>
                         <Badge variant="warning" showIcon>Warning with Icon</Badge>
+                        <Badge variant="attention">Attention</Badge>
+                        <Badge variant="attention" showIcon>Attention with Icon</Badge>
                       </div>
                   </div>
                   <div>
@@ -816,6 +818,8 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                         <Badge variant="hollow-success" showIcon>Success with Icon</Badge>
                         <Badge variant="hollow-warning">Warning</Badge>
                         <Badge variant="hollow-warning" showIcon>Warning with Icon</Badge>
+                        <Badge variant="hollow-attention">Attention</Badge>
+                        <Badge variant="hollow-attention" showIcon>Attention with Icon</Badge>
                       </div>
                   </div>
                   <div>
@@ -830,6 +834,8 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                         <Badge variant="ghost-success" showIcon>Success with Icon</Badge>
                         <Badge variant="ghost-warning">Warning</Badge>
                         <Badge variant="ghost-warning" showIcon>Warning with Icon</Badge>
+                        <Badge variant="ghost-attention">Attention</Badge>
+                        <Badge variant="ghost-attention" showIcon>Attention with Icon</Badge>
                       </div>
                   </div>
                 </div>

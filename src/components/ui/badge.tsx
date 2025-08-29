@@ -22,7 +22,9 @@ const badgeVariants = cva(
           "border-transparent bg-success text-success-foreground shadow-sm",
         warning:
           "border-transparent bg-warning text-warning-foreground shadow-sm",
-        // Hollow variants  
+        attention:
+          "border-transparent bg-attention text-attention-foreground shadow-sm",
+        // Hollow variants
         "hollow-primary":
           "border-primary text-primary bg-transparent shadow-sm",
         "hollow-secondary":
@@ -35,6 +37,8 @@ const badgeVariants = cva(
           "border-success text-success bg-transparent shadow-sm",
         "hollow-warning":
           "border-warning text-warning bg-transparent shadow-sm",
+        "hollow-attention":
+          "border-attention text-attention bg-transparent shadow-sm",
         // Ghost variants (like hollow but without borders or shadows)
         "ghost-primary":
           "border-transparent text-primary bg-transparent",
@@ -48,6 +52,8 @@ const badgeVariants = cva(
           "border-transparent text-success bg-transparent",
         "ghost-warning":
           "border-transparent text-warning bg-transparent",
+        "ghost-attention":
+          "border-transparent text-attention bg-transparent",
       },
     },
     defaultVariants: {
@@ -73,6 +79,9 @@ function Badge({ className, variant, showIcon, children, ...props }: BadgeProps)
       )}
       {showIcon && (variant === "warning" || variant === "hollow-warning" || variant === "ghost-warning") && (
         <AlertCircle className="w-3 h-3 mr-1" />
+      )}
+      {showIcon && (variant === "attention" || variant === "hollow-attention" || variant === "ghost-attention") && (
+        <AlertTriangle className="w-3 h-3 mr-1" />
       )}
       {children}
     </div>
