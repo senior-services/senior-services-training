@@ -337,6 +337,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
     if (!dueDate) {
       return {
         variant: "ghost-tertiary" as const,
+        showIcon: true,
         text: "No deadline"
       };
     }
@@ -355,11 +356,13 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
     if (daysUntilDue <= 5) {
       return {
         variant: "ghost-destructive" as const,
+        showIcon: true,
         text: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`
       };
     }
     return {
       variant: "ghost-secondary" as const,
+      showIcon: true,
       text: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`
     };
   };
