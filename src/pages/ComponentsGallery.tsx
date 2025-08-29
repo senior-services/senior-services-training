@@ -878,6 +878,22 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       </div>
                   </div>
                   <div>
+                    <h4 className="text-sm font-bold uppercase text-secondary mb-3">Soft Variants</h4>
+                   <div className="flex flex-wrap gap-2">
+                        <Badge variant="soft-primary">Primary</Badge>
+                        <Badge variant="soft-secondary">Secondary</Badge>
+                        <Badge variant="soft-tertiary">Tertiary</Badge>
+                        <Badge variant="soft-destructive">Destructive</Badge>
+                        <Badge variant="soft-destructive" showIcon>Destructive with Icon</Badge>
+                        <Badge variant="soft-success">Success</Badge>
+                        <Badge variant="soft-success" showIcon>Success with Icon</Badge>
+                        <Badge variant="soft-warning">Warning</Badge>
+                        <Badge variant="soft-warning" showIcon>Warning with Icon</Badge>
+                        <Badge variant="soft-attention">Attention</Badge>
+                        <Badge variant="soft-attention" showIcon>Attention with Icon</Badge>
+                      </div>
+                  </div>
+                  <div>
                     <h4 className="text-sm font-bold uppercase text-secondary mb-3">Ghost Variants</h4>
                      <div className="flex flex-wrap gap-2">
                         <Badge variant="ghost-primary">Primary</Badge>
@@ -893,23 +909,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                         <Badge variant="ghost-attention" showIcon>Attention with Icon</Badge>
                       </div>
                     </div>
-
-                    <div>
-                      <h4 className="text-sm font-bold uppercase text-secondary mb-3">Soft Variants</h4>
-                     <div className="flex flex-wrap gap-2">
-                        <Badge variant="soft-primary">Primary</Badge>
-                        <Badge variant="soft-secondary">Secondary</Badge>
-                        <Badge variant="soft-tertiary">Tertiary</Badge>
-                        <Badge variant="soft-destructive">Destructive</Badge>
-                        <Badge variant="soft-destructive" showIcon>Destructive with Icon</Badge>
-                        <Badge variant="soft-success">Success</Badge>
-                        <Badge variant="soft-success" showIcon>Success with Icon</Badge>
-                        <Badge variant="soft-warning">Warning</Badge>
-                        <Badge variant="soft-warning" showIcon>Warning with Icon</Badge>
-                        <Badge variant="soft-attention">Attention</Badge>
-                        <Badge variant="soft-attention" showIcon>Attention with Icon</Badge>
-                      </div>
-                  </div>
                 </div>
               </div>
             </CardContent>
