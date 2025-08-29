@@ -624,14 +624,14 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                                                  <TableCell className="py-1">
                                                    {assignment.hasQuiz ? (
                                                      quizAttempt ? (
-                                                       <span className="text-xs text-foreground whitespace-nowrap">
+                                                       <span className="text-foreground whitespace-nowrap">
                                                          {quizAttempt.score}/{quizAttempt.total_questions} Correct
                                                        </span>
                                                      ) : (
-                                                       <span className="text-xs text-muted-foreground whitespace-nowrap">Not Completed</span>
+                                                       <span className="text-foreground whitespace-nowrap">Not Completed</span>
                                                      )
                                                    ) : (
-                                                     <span className="text-xs text-muted-foreground whitespace-nowrap">N/A</span>
+                                                     <span className="text-foreground whitespace-nowrap">N/A</span>
                                                    )}
                                                  </TableCell>
                                                 <TableCell className="py-1">
