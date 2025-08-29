@@ -198,13 +198,14 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       )}
                     </Button>
                   </TableHead>
+                  <TableHead className="text-center text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">Quiz</TableHead>
                   <TableHead className="text-right text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="py-12">
+                    <TableCell colSpan={3} className="py-12">
                       <div className="space-y-4">
                         <LoadingSkeleton lines={1} className="h-16" />
                         <LoadingSkeleton lines={1} className="h-16" />
@@ -214,7 +215,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                   </TableRow>
                 ) : videos.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-12">
+                    <TableCell colSpan={3} className="text-center py-12">
                       <div className="space-y-3">
                     <VideoIcon 
                       className="w-12 h-12 text-muted-foreground mx-auto" 
@@ -313,11 +314,6 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                               <p className="font-medium text-foreground" title={video.title}>
                                 {video.title}
                               </p>
-                               {videoQuizzes.has(video.id) && (
-                                 <Badge variant="outline" className="text-xs shrink-0">
-                                   Quiz
-                                 </Badge>
-                               )}
                             </div>
                             {video.description && (
                               <p className="text-sm text-muted-foreground line-clamp-2 mt-1" title={video.description}>
@@ -326,6 +322,28 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                             )}
                           </div>
                         </div>
+                      </TableCell>
+
+                      {/* Quiz status */}
+                      <TableCell className="text-center py-2">
+                        {videoQuizzes.has(video.id) && (
+                          <div className="flex justify-center">
+                            <svg 
+                              className="w-5 h-5 text-green-600" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              viewBox="0 0 24 24"
+                              aria-label="Quiz available"
+                            >
+                              <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeWidth={2} 
+                                d="M5 13l4 4L19 7" 
+                              />
+                            </svg>
+                          </div>
+                        )}
                       </TableCell>
 
                       {/* Action buttons */}
