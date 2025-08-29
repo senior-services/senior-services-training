@@ -594,6 +594,31 @@ export const progressOperations = {
     }
   },
 
+  async getByEmployee(employeeId: string): Promise<ApiResult<{ video_id: string; progress_percent: number; completed_at: string | null }[]>> {
+    const operation = 'progress.getByEmployee';
+    performanceTracker.start(operation);
+    
+    try {
+      const { data, error } = await supabase
+        .from('video_progress')
+        .select('video_id, progress_percent, completed_at')
+        .eq('employee_id', employeeId);
+
+      if (error) {
+        logger.error('Failed to fetch employee progress', undefined, { employeeId, supabaseError: error.message });
+        return { data: null, error: error.message, success: false };
+      }
+
+      logger.info('Employee progress fetched', { employeeId, count: data?.length || 0 });
+      return { data: data as { video_id: string; progress_percent: number; completed_at: string | null }[], error: null, success: true };
+    } catch (error) {
+      logger.error('Unexpected error fetching employee progress', error as Error, { employeeId });
+      return { data: null, error: 'Failed to fetch employee progress', success: false };
+    } finally {
+      performanceTracker.end(operation);
+    }
+  },
+
   async updateByEmail(
     email: string,
     videoId: string,
