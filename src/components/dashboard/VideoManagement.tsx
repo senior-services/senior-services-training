@@ -53,23 +53,37 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
    */
   const loadVideos = async () => {
     setLoading(true);
-    const result = await videoOperations.getAll();
+    console.log('Loading videos for user:', userEmail);
     
-    if (result.success && result.data) {
-      setVideos(result.data);
-      onVideoCountChange?.(result.data.length);
-      logger.info('Videos loaded successfully', { 
-        count: result.data.length,
-        adminUser: userEmail 
-      });
-    } else {
-      logger.error('Failed to load videos', undefined, { 
-        error: result.error,
-        adminUser: userEmail 
-      });
+    try {
+      const result = await videoOperations.getAll();
+      console.log('Video operations result:', result);
+      
+      if (result.success && result.data) {
+        console.log('Videos loaded successfully, count:', result.data.length);
+        setVideos(result.data);
+        onVideoCountChange?.(result.data.length);
+        logger.info('Videos loaded successfully', { 
+          count: result.data.length,
+          adminUser: userEmail 
+        });
+      } else {
+        console.error('Failed to load videos:', result.error);
+        logger.error('Failed to load videos', undefined, { 
+          error: result.error,
+          adminUser: userEmail 
+        });
+        toast({
+          title: 'Error loading videos',
+          description: result.error || 'Failed to load videos',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Unexpected error loading videos:', error);
       toast({
         title: 'Error loading videos',
-        description: result.error || 'Failed to load videos',
+        description: 'An unexpected error occurred while loading videos',
         variant: 'destructive'
       });
     }
