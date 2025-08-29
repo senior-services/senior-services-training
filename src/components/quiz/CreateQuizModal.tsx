@@ -5,6 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { QuizQuestion, QuizQuestionOption } from "@/types/quiz";
@@ -197,61 +199,107 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                     </Select>
                   </div>
 
-                  {(question.question_type === 'multiple_choice' || question.question_type === 'single_answer') && (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label>Answer Options</Label>
-                        <Button
-                          onClick={() => addOption(questionIndex)}
-                          variant="outline"
-                          size="sm"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Option
-                        </Button>
-                      </div>
-                      
-                      {question.options.map((option, optionIndex) => (
-                        <div key={optionIndex} className="flex items-center gap-2 p-3 border rounded">
-                          <Input
-                            value={option.option_text}
-                            onChange={(e) => updateOption(questionIndex, optionIndex, { option_text: e.target.value })}
-                            placeholder={`Option ${optionIndex + 1}`}
-                            className="flex-1"
-                          />
-                          <label className="flex items-center gap-2 whitespace-nowrap">
-                            <input
-                              type={question.question_type === 'single_answer' ? 'radio' : 'checkbox'}
-                              name={question.question_type === 'single_answer' ? `question_${questionIndex}` : undefined}
-                              checked={option.is_correct}
-                              onChange={(e) => {
-                                if (question.question_type === 'single_answer') {
-                                  // For single answer, uncheck all other options first
-                                  const updatedOptions = question.options.map((opt, i) => ({
-                                    ...opt,
-                                    is_correct: i === optionIndex ? e.target.checked : false
-                                  }));
-                                  updateQuestion(questionIndex, { options: updatedOptions });
-                                } else {
-                                  updateOption(questionIndex, optionIndex, { is_correct: e.target.checked });
-                                }
-                              }}
-                              className="rounded"
-                            />
-                            Correct
-                          </label>
-                          <Button
-                            onClick={() => removeOption(questionIndex, optionIndex)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                   {(question.question_type === 'multiple_choice' || question.question_type === 'single_answer') && (
+                     <div className="space-y-3">
+                       <div className="flex items-center justify-between">
+                         <Label>Answer Options</Label>
+                         <Button
+                           onClick={() => addOption(questionIndex)}
+                           variant="outline"
+                           size="sm"
+                         >
+                           <Plus className="w-4 h-4 mr-2" />
+                           Add Option
+                         </Button>
+                       </div>
+                       
+                       {question.question_type === 'single_answer' ? (
+                         <RadioGroup
+                           value={question.options.find(opt => opt.is_correct)?.order_index?.toString() || ""}
+                           onValueChange={(value) => {
+                             const selectedIndex = parseInt(value);
+                             const updatedOptions = question.options.map((opt, i) => ({
+                               ...opt,
+                               is_correct: i === selectedIndex
+                             }));
+                             updateQuestion(questionIndex, { options: updatedOptions });
+                           }}
+                           className="space-y-3"
+                         >
+                           {question.options.map((option, optionIndex) => (
+                             <div key={optionIndex} className="flex items-center gap-2 p-3 border rounded">
+                               <Input
+                                 value={option.option_text}
+                                 onChange={(e) => updateOption(questionIndex, optionIndex, { option_text: e.target.value })}
+                                 placeholder={`Option ${optionIndex + 1}`}
+                                 className="flex-1"
+                               />
+                               
+                               <div className="flex items-center space-x-2">
+                                 <RadioGroupItem 
+                                   value={optionIndex.toString()}
+                                   id={`question_${questionIndex}_option_${optionIndex}`} 
+                                 />
+                                 <Label 
+                                   htmlFor={`question_${questionIndex}_option_${optionIndex}`} 
+                                   className="whitespace-nowrap cursor-pointer"
+                                 >
+                                   Correct
+                                 </Label>
+                               </div>
+                               
+                               <Button
+                                 onClick={() => removeOption(questionIndex, optionIndex)}
+                                 variant="ghost"
+                                 size="sm"
+                                 className="text-destructive hover:text-destructive"
+                               >
+                                 <Trash2 className="w-4 h-4" />
+                               </Button>
+                             </div>
+                           ))}
+                         </RadioGroup>
+                       ) : (
+                         <div className="space-y-3">
+                           {question.options.map((option, optionIndex) => (
+                             <div key={optionIndex} className="flex items-center gap-2 p-3 border rounded">
+                               <Input
+                                 value={option.option_text}
+                                 onChange={(e) => updateOption(questionIndex, optionIndex, { option_text: e.target.value })}
+                                 placeholder={`Option ${optionIndex + 1}`}
+                                 className="flex-1"
+                               />
+                               
+                               <div className="flex items-center space-x-2">
+                                 <Checkbox
+                                   id={`question_${questionIndex}_option_${optionIndex}`}
+                                   checked={option.is_correct}
+                                   onCheckedChange={(checked) => {
+                                     updateOption(questionIndex, optionIndex, { is_correct: checked as boolean });
+                                   }}
+                                 />
+                                 <Label 
+                                   htmlFor={`question_${questionIndex}_option_${optionIndex}`} 
+                                   className="whitespace-nowrap cursor-pointer"
+                                 >
+                                   Correct
+                                 </Label>
+                               </div>
+                               
+                               <Button
+                                 onClick={() => removeOption(questionIndex, optionIndex)}
+                                 variant="ghost"
+                                 size="sm"
+                                 className="text-destructive hover:text-destructive"
+                               >
+                                 <Trash2 className="w-4 h-4" />
+                               </Button>
+                             </div>
+                           ))}
+                         </div>
+                       )}
+                     </div>
+                   )}
 
                   {question.question_type === 'true_false' && (
                     <div className="text-sm text-muted-foreground">
