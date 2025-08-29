@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogScrollArea, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -537,12 +537,12 @@ export const EditVideoModal = ({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col">
-          <DialogHeader className="shrink-0">
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
             <DialogTitle>Edit Training Video</DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto">
+          <DialogScrollArea>
             <Tabs defaultValue="info" className="w-full">
               <TabsList>
                 <TabsTrigger value="info">Video Info</TabsTrigger>
@@ -813,9 +813,9 @@ export const EditVideoModal = ({
                 </div>
               </TabsContent>
             </Tabs>
-          </div>
+          </DialogScrollArea>
 
-          <DialogFooter className="!flex !flex-row !justify-between !items-center shrink-0">
+          <DialogFooter className="!flex !flex-row !justify-between !items-center">
             <Button variant="link" onClick={() => setDeleteDialogOpen(true)} className="text-destructive hover:text-destructive p-0 h-auto font-normal">
               <Trash2 className="w-4 h-4 mr-2" />
               Delete Video

@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogScrollArea, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -115,12 +115,12 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Create Quiz</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <DialogScrollArea className="space-y-6">
           <div className="space-y-4">
             <div>
               <Label htmlFor="title">Quiz Title</Label>
@@ -310,23 +310,23 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
               </Card>
             ))}
           </div>
+        </DialogScrollArea>
 
-          <div className="flex justify-end gap-4 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!canSubmit || isSubmitting}
-            >
-              {isSubmitting ? "Creating..." : "Create Quiz"}
-            </Button>
-          </div>
-        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!canSubmit || isSubmitting}
+          >
+            {isSubmitting ? "Creating..." : "Create Quiz"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

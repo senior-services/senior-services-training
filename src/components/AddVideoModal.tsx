@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogScrollArea, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -82,12 +82,12 @@ export const AddVideoModal = ({
   };
   const isValid = formData.title.trim() && formData.description.trim() && (formData.type === 'file' && selectedFile || formData.type === 'url' && formData.url?.trim());
   return <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Add Training Video</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-4">
+        <DialogScrollArea className="space-y-4">
           {/* Video Source */}
           <div className="space-y-2">
             <Label>Video Source</Label>
@@ -195,7 +195,7 @@ export const AddVideoModal = ({
             description: e.target.value
           }))} placeholder="Enter video description..." rows={3} required />
           </div>
-        </div>
+        </DialogScrollArea>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>

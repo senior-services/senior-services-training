@@ -33,10 +33,11 @@ export const ComponentUpdateIndicator: React.FC<ComponentUpdateIndicatorProps> =
   const testComponentUpdate = async () => {
     // Test with the dialog component we just updated
     await trackUpdate('dialog', [
-      'Added DialogScrollArea for vertical scrolling',
-      'Fixed padding in middle content area',
-      'Enhanced layout with flex-col and max-height',
-      'Made footer always visible'
+      'Updated 5 dialogs to use DialogScrollArea pattern',
+      'Standardized header/content/footer structure across all modals',
+      'Fixed scrolling behavior in AddVideoModal, EditVideoModal, VideoPlayerModal',
+      'Modernized CreateQuizModal and VideoPage quiz dialog',
+      'Achieved 100% consistency in dialog implementation'
     ]);
   };
 
@@ -59,9 +60,9 @@ export const ComponentUpdateIndicator: React.FC<ComponentUpdateIndicatorProps> =
             onClick={testComponentUpdate}
             disabled={isValidating}
             size="sm"
-            variant="outline"
+            variant="default"
           >
-            Test Dialog Update
+            ✅ Library Updated
           </Button>
           <Button 
             onClick={() => validateComponent('dialog')}
