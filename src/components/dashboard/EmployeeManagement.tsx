@@ -203,13 +203,27 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
         setEmployees(transformedEmployees);
         onCountChange?.(transformedEmployees.length);
         
+        // Get all video IDs that have quizzes
+        const { data: quizzesData } = await supabase
+          .from('quizzes')
+          .select('video_id');
+        
+        const videoIdsWithQuizzes = new Set(
+          quizzesData?.map(quiz => quiz.video_id) || []
+        );
+        
         // Load video assignments for each employee
         const videoMap = new Map();
         const quizMap = new Map();
         
         for (const employee of transformedEmployees) {
           if (employee.assignments && Array.isArray(employee.assignments)) {
-            videoMap.set(employee.id, employee.assignments);
+            // Add quiz availability info to assignments
+            const assignmentsWithQuizInfo = employee.assignments.map(assignment => ({
+              ...assignment,
+              hasQuiz: videoIdsWithQuizzes.has(assignment.video_id)
+            }));
+            videoMap.set(employee.id, assignmentsWithQuizInfo);
           } else {
             videoMap.set(employee.id, []);
           }
@@ -608,12 +622,16 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                                                   {assignment.video_title}
                                                 </TableCell>
                                                  <TableCell className="py-1">
-                                                   {quizAttempt ? (
-                                                     <span className="text-xs text-foreground whitespace-nowrap">
-                                                       {quizAttempt.score}/{quizAttempt.total_questions} Correct
-                                                     </span>
+                                                   {assignment.hasQuiz ? (
+                                                     quizAttempt ? (
+                                                       <span className="text-xs text-foreground whitespace-nowrap">
+                                                         {quizAttempt.score}/{quizAttempt.total_questions} Correct
+                                                       </span>
+                                                     ) : (
+                                                       <span className="text-xs text-muted-foreground whitespace-nowrap">Not Completed</span>
+                                                     )
                                                    ) : (
-                                                     <span className="text-xs text-muted-foreground whitespace-nowrap">Not Completed</span>
+                                                     <span className="text-xs text-muted-foreground whitespace-nowrap">N/A</span>
                                                    )}
                                                  </TableCell>
                                                 <TableCell className="py-1">
