@@ -31,6 +31,7 @@ import {
   DialogContent, 
   DialogFooter, 
   DialogHeader, 
+  DialogScrollArea,
   DialogTitle,
   DialogTrigger 
 } from "@/components/ui/dialog";
@@ -1437,9 +1438,23 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <DialogHeader>
                       <DialogTitle>Dialog Title</DialogTitle>
                     </DialogHeader>
-                    <div>
-                      <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
-                    </div>
+                    <DialogScrollArea>
+                      <div className="space-y-4">
+                        <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
+                        <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
+                        <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
+                        <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
+                        <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
+                        <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
+                        <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
+                        <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
+                        <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
+                        <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
+                        <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
+                        <p>Dialog content goes here. The body now automatically has proper padding while the header and footer extend full width with their own backgrounds.</p>
+                        <p>This is the last paragraph to test scrolling behavior.</p>
+                      </div>
+                    </DialogScrollArea>
                     <DialogFooter>
                       <Button variant="outline" className="shadow-md hover:shadow-lg transition-shadow">Cancel</Button>
                       <Button className="shadow-md hover:shadow-lg transition-shadow">Confirm</Button>
