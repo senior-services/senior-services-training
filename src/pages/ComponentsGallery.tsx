@@ -248,7 +248,13 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
               <span className="text-muted-foreground">|</span>
               <a href="#form-controls" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Form Controls</a>
               <span className="text-muted-foreground">|</span>
-              <a href="#feedback" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Feedback</a>
+              <a href="#alerts" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Alerts</a>
+              <span className="text-muted-foreground">|</span>
+              <a href="#badges" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Badges</a>
+              <span className="text-muted-foreground">|</span>
+              <a href="#progress" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Progress</a>
+              <span className="text-muted-foreground">|</span>
+              <a href="#toast" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Toast</a>
               <span className="text-muted-foreground">|</span>
               <a href="#data-display" className="text-sm text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors">Data Display</a>
               <span className="text-muted-foreground">|</span>
@@ -766,15 +772,14 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
             </CardContent>
           </Card>
 
-          {/* Feedback Components */}
-          <Card id="feedback" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+          {/* Alerts */}
+          <Card id="alerts" className="shadow-card hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
-              <CardTitle>Feedback Components</CardTitle>
-              <CardDescription>Alerts, badges, and progress indicators</CardDescription>
+              <CardTitle>Alerts</CardTitle>
+              <CardDescription>Alert components for notifications and status messages</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Alerts</h3>
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Info Alert</AlertTitle>
@@ -786,12 +791,20 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <AlertDescription>This is an error alert message.</AlertDescription>
                 </Alert>
               </div>
-              
+            </CardContent>
+          </Card>
+
+          {/* Badges */}
+          <Card id="badges" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+            <CardHeader>
+              <CardTitle>Badges</CardTitle>
+              <CardDescription>Status and labeling components in multiple variants</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Badges</h3>
                 <div className="space-y-3">
                   <div>
-                    <h4 className="text-sm font-medium mb-2 text-muted-foreground">Solid Badges</h4>
+                    <h4 className="text-sm font-bold uppercase text-secondary mb-3">Solid Variants</h4>
                       <div className="flex flex-wrap gap-2">
                         <Badge>Primary</Badge>
                         <Badge variant="secondary">Secondary</Badge>
@@ -807,7 +820,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       </div>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium mb-2 text-muted-foreground">Hollow Badges</h4>
+                    <h4 className="text-sm font-bold uppercase text-secondary mb-3">Hollow Variants</h4>
                      <div className="flex flex-wrap gap-2">
                         <Badge variant="hollow-primary">Primary</Badge>
                         <Badge variant="hollow-secondary">Secondary</Badge>
@@ -823,7 +836,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       </div>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium mb-2 text-muted-foreground">Ghost Badges</h4>
+                    <h4 className="text-sm font-bold uppercase text-secondary mb-3">Ghost Variants</h4>
                      <div className="flex flex-wrap gap-2">
                         <Badge variant="ghost-primary">Primary</Badge>
                         <Badge variant="ghost-secondary">Secondary</Badge>
@@ -857,9 +870,17 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   </div>
                 </div>
               </div>
-              
+            </CardContent>
+          </Card>
+
+          {/* Progress */}
+          <Card id="progress" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+            <CardHeader>
+              <CardTitle>Progress</CardTitle>
+              <CardDescription>Progress indicators and loading states</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Progress</h3>
                 <Progress value={progress} className="w-full" />
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => setProgress(Math.max(0, progress - 10))}>-10</Button>
@@ -867,9 +888,17 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <span className="text-sm text-muted-foreground">{progress}%</span>
                 </div>
               </div>
-              
+            </CardContent>
+          </Card>
+
+          {/* Toast */}
+          <Card id="toast" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+            <CardHeader>
+              <CardTitle>Toast</CardTitle>
+              <CardDescription>Toast notifications and messages</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Toast Messages</h3>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => showToast("default")}>Info Toast</Button>
                   <Button size="sm" onClick={() => showToast("success")}>Success Toast</Button>
