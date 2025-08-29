@@ -169,6 +169,15 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     font-size: 1rem;
   }
 
+  /* Exception: Radix UI form controls should maintain their compact size */
+  button[role="switch"],
+  button[role="checkbox"], 
+  button[role="radio"] {
+    min-height: auto !important;
+    padding: 0 !important;
+    font-size: inherit !important;
+  }
+
   /* Enhanced input sizing */
   input, textarea, select {
     min-height: 44px;
