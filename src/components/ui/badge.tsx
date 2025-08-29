@@ -54,6 +54,21 @@ const badgeVariants = cva(
           "border-transparent text-warning bg-transparent",
         "ghost-attention":
           "border-transparent text-attention bg-transparent",
+        // Soft variants (colored text with muted background)
+        "soft-primary":
+          "border-transparent text-primary bg-primary/10 shadow-sm",
+        "soft-secondary":
+          "border-transparent text-secondary bg-secondary/10 shadow-sm",
+        "soft-tertiary":
+          "border-transparent text-muted-foreground bg-muted shadow-sm",
+        "soft-destructive":
+          "border-transparent text-destructive bg-destructive/10 shadow-sm",
+        "soft-success":
+          "border-transparent text-success bg-success/10 shadow-sm",
+        "soft-warning":
+          "border-transparent text-warning bg-warning/10 shadow-sm",
+        "soft-attention":
+          "border-transparent text-attention bg-attention/10 shadow-sm",
       },
     },
     defaultVariants: {
@@ -71,16 +86,16 @@ export interface BadgeProps
 function Badge({ className, variant, showIcon, children, ...props }: BadgeProps) {
   return (
     <div className={cn(badgeVariants({ variant }), className)} {...props}>
-      {showIcon && (variant === "success" || variant === "hollow-success" || variant === "ghost-success") && (
+      {showIcon && (variant === "success" || variant === "hollow-success" || variant === "ghost-success" || variant === "soft-success") && (
         <Check className="w-3 h-3 mr-1" />
       )}
-      {showIcon && (variant === "destructive" || variant === "hollow-destructive" || variant === "ghost-destructive") && (
+      {showIcon && (variant === "destructive" || variant === "hollow-destructive" || variant === "ghost-destructive" || variant === "soft-destructive") && (
         <AlertTriangle className="w-3 h-3 mr-1" />
       )}
-      {showIcon && (variant === "warning" || variant === "hollow-warning" || variant === "ghost-warning") && (
+      {showIcon && (variant === "warning" || variant === "hollow-warning" || variant === "ghost-warning" || variant === "soft-warning") && (
         <AlertCircle className="w-3 h-3 mr-1" />
       )}
-      {showIcon && (variant === "attention" || variant === "hollow-attention" || variant === "ghost-attention") && (
+      {showIcon && (variant === "attention" || variant === "hollow-attention" || variant === "ghost-attention" || variant === "soft-attention") && (
         <AlertTriangle className="w-3 h-3 mr-1" />
       )}
       {children}
