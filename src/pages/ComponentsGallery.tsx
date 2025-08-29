@@ -247,28 +247,8 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   </a>
                 </li>
                 <li>
-                  <a href="#badges" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Badges
-                  </a>
-                </li>
-                <li>
-                  <a href="#buttons" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Buttons
-                  </a>
-                </li>
-                <li>
                   <a href="#calendar" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Calendar
-                  </a>
-                </li>
-                <li>
-                  <a href="#color-palette" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Color Palette
-                  </a>
-                </li>
-                <li>
-                  <a href="#data-display" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Data Display
                   </a>
                 </li>
                 <li>
@@ -277,23 +257,8 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   </a>
                 </li>
                 <li>
-                  <a href="#icons" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Icons
-                  </a>
-                </li>
-                <li>
-                  <a href="#interactive" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Interactive
-                  </a>
-                </li>
-                <li>
                   <a href="#layout" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Layout
-                  </a>
-                </li>
-                <li>
-                  <a href="#progress" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Progress
                   </a>
                 </li>
                 <li>
@@ -302,8 +267,43 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   </a>
                 </li>
                 <li>
+                  <a href="#badges" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Badges
+                  </a>
+                </li>
+                <li>
+                  <a href="#color-palette" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Color Palette
+                  </a>
+                </li>
+                <li>
+                  <a href="#icons" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Icons
+                  </a>
+                </li>
+                <li>
+                  <a href="#progress" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Progress
+                  </a>
+                </li>
+                <li>
                   <a href="#typography" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Typography
+                  </a>
+                </li>
+                <li>
+                  <a href="#buttons" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Buttons
+                  </a>
+                </li>
+                <li>
+                  <a href="#data-display" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Data Display
+                  </a>
+                </li>
+                <li>
+                  <a href="#interactive" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Interactive
                   </a>
                 </li>
               </ul>
