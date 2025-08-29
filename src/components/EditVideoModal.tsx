@@ -135,7 +135,7 @@ export const EditVideoModal = ({
         });
       }
       
-      onOpenChange(false);
+      handleClose();
     } catch (error) {
       logger.error('Error updating video', error as Error);
     } finally {
@@ -148,7 +148,7 @@ export const EditVideoModal = ({
     try {
       await onDelete(video.id);
       setDeleteDialogOpen(false);
-      onOpenChange(false);
+      handleClose();
     } catch (error) {
       logger.error('Error deleting video', error as Error);
     } finally {
@@ -156,13 +156,25 @@ export const EditVideoModal = ({
     }
   };
   const handleClose = () => {
+    // Clear all state
     setTitle('');
     setDescription('');
     setQuiz(null);
     setQuizTitle('');
     setQuizDescription('');
     setQuestions([]);
+    setQuizLoading(false);
+    setIsCreatingQuiz(false);
     onOpenChange(false);
+  };
+
+  // Handle modal close events (including ESC, click outside, etc.)
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      handleClose();
+    } else {
+      onOpenChange(open);
+    }
   };
 
   const addQuestion = () => {
@@ -428,7 +440,7 @@ export const EditVideoModal = ({
       : video.video_url)
     : storageUrl;
   return <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col">
           <DialogHeader className="shrink-0">
             <DialogTitle>Edit Training Video</DialogTitle>
