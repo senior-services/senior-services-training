@@ -11,34 +11,34 @@ const badgeVariants = cva(
       variant: {
         // Solid variants
         default:
-          "border-transparent bg-primary text-primary-foreground shadow-sm",
+          "border-transparent bg-primary text-primary-foreground shadow-md",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground shadow-sm",
+          "border-transparent bg-secondary text-secondary-foreground shadow-md",
         tertiary:
-          "border-transparent bg-muted text-muted-foreground shadow-sm",
+          "border-transparent bg-muted text-muted-foreground shadow-md",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow-sm",
+          "border-transparent bg-destructive text-destructive-foreground shadow-md",
         success:
-          "border-transparent bg-success text-success-foreground shadow-sm",
+          "border-transparent bg-success text-success-foreground shadow-md",
         warning:
-          "border-transparent bg-warning text-warning-foreground shadow-sm",
+          "border-transparent bg-warning text-warning-foreground shadow-md",
         attention:
-          "border-transparent bg-attention text-attention-foreground shadow-sm",
+          "border-transparent bg-attention text-attention-foreground shadow-md",
         // Hollow variants
         "hollow-primary":
-          "border-primary text-primary bg-transparent shadow-sm",
+          "border-primary text-primary bg-transparent shadow-md",
         "hollow-secondary":
-          "border-secondary text-secondary bg-transparent shadow-sm",
+          "border-secondary text-secondary bg-transparent shadow-md",
         "hollow-tertiary":
-          "border-muted-foreground text-muted-foreground bg-transparent shadow-sm",
+          "border-muted-foreground text-muted-foreground bg-transparent shadow-md",
         "hollow-destructive":
-          "border-destructive text-destructive bg-transparent shadow-sm",
+          "border-destructive text-destructive bg-transparent shadow-md",
         "hollow-success":
-          "border-success text-success bg-transparent shadow-sm",
+          "border-success text-success bg-transparent shadow-md",
         "hollow-warning":
-          "border-warning text-warning bg-transparent shadow-sm",
+          "border-warning text-warning bg-transparent shadow-md",
         "hollow-attention":
-          "border-attention text-attention bg-transparent shadow-sm",
+          "border-attention text-attention bg-transparent shadow-md",
         // Ghost variants (like hollow but without borders or shadows)
         "ghost-primary":
           "border-transparent text-primary bg-transparent",
