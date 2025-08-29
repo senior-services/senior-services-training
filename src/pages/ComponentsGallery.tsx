@@ -240,69 +240,69 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
             
             {/* Anchor Navigation */}
             <nav className="pt-4">
-              <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-w-4xl mx-auto">
+              <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1 text-left">
                 <li>
-                  <a href="#color-palette" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#color-palette" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Color Palette
                   </a>
                 </li>
                 <li>
-                  <a href="#typography" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#typography" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Typography
                   </a>
                 </li>
                 <li>
-                  <a href="#buttons" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#buttons" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Buttons
                   </a>
                 </li>
                 <li>
-                  <a href="#form-controls" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#form-controls" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Form Controls
                   </a>
                 </li>
                 <li>
-                  <a href="#alerts" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#alerts" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Alerts
                   </a>
                 </li>
                 <li>
-                  <a href="#badges" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#badges" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Badges
                   </a>
                 </li>
                 <li>
-                  <a href="#progress" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#progress" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Progress
                   </a>
                 </li>
                 <li>
-                  <a href="#toast" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#toast" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Toast
                   </a>
                 </li>
                 <li>
-                  <a href="#data-display" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#data-display" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Data Display
                   </a>
                 </li>
                 <li>
-                  <a href="#interactive" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#interactive" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Interactive
                   </a>
                 </li>
                 <li>
-                  <a href="#calendar" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#calendar" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Calendar
                   </a>
                 </li>
                 <li>
-                  <a href="#icons" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#icons" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Icons
                   </a>
                 </li>
                 <li>
-                  <a href="#layout" className="block text-sm text-primary hover:text-primary/80 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-center font-medium">
+                  <a href="#layout" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Layout
                   </a>
                 </li>
