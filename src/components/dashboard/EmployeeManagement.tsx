@@ -586,37 +586,46 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                                     </div>
                                   ) : (
                                      <Table>
-                                       <TableBody>
-                                         {videos.map((assignment) => {
-                                           const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent);
-                                           const employeeQuizData = employeeQuizzes.get(employee.id);
-                                           const quizAttempt = employeeQuizData?.get(assignment.video_id);
-                                           
-                                           return (
-                                             <TableRow key={assignment.assignment_id} className="hover:bg-transparent">
-                                               <TableCell className="py-1">
-                                                 {assignment.video_title}
-                                               </TableCell>
-                                               <TableCell className="text-right py-1">
-                                                 <div className="flex gap-2 justify-end">
-                                                    {quizAttempt && (
-                                                      <Badge variant="ghost-tertiary">
-                                                        Quiz: {quizAttempt.score} of {quizAttempt.total_questions} correct
-                                                      </Badge>
-                                                    )}
-                                                   <Badge 
-                                                     variant={badge.variant}
-                                                     showIcon={badge.showIcon}
-                                                   >
-                                                     {badge.text}
-                                                   </Badge>
-                                                 </div>
-                                               </TableCell>
-                                             </TableRow>
-                                           );
-                                         })}
-                                       </TableBody>
-                                     </Table>
+                                        <TableHeader>
+                                          <TableRow>
+                                            <TableHead className="text-xs font-medium uppercase text-muted-foreground">Video Title</TableHead>
+                                            <TableHead className="text-xs font-medium uppercase text-muted-foreground">Quiz Results</TableHead>
+                                            <TableHead className="text-xs font-medium uppercase text-muted-foreground text-right">Status</TableHead>
+                                          </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                          {videos.map((assignment) => {
+                                            const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent);
+                                            const employeeQuizData = employeeQuizzes.get(employee.id);
+                                            const quizAttempt = employeeQuizData?.get(assignment.video_id);
+                                            
+                                            return (
+                                              <TableRow key={assignment.assignment_id} className="hover:bg-transparent">
+                                                <TableCell className="py-1">
+                                                  {assignment.video_title}
+                                                </TableCell>
+                                                <TableCell className="py-1">
+                                                  {quizAttempt ? (
+                                                    <Badge variant="ghost-tertiary">
+                                                      {quizAttempt.score} of {quizAttempt.total_questions} correct
+                                                    </Badge>
+                                                  ) : (
+                                                    <span className="text-xs text-muted-foreground">No quiz taken</span>
+                                                  )}
+                                                </TableCell>
+                                                <TableCell className="text-right py-1">
+                                                  <Badge 
+                                                    variant={badge.variant}
+                                                    showIcon={badge.showIcon}
+                                                  >
+                                                    {badge.text}
+                                                  </Badge>
+                                                </TableCell>
+                                              </TableRow>
+                                            );
+                                          })}
+                                        </TableBody>
+                                      </Table>
                                   )}
                                 </div>
                               </CollapsibleContent>
