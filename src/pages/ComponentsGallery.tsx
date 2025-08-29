@@ -56,6 +56,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Calendar } from "@/components/ui/calendar";
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
+import { ComponentUpdateIndicator } from "@/components/ui/ComponentUpdateIndicator";
 import { 
   Table, 
   TableBody, 
@@ -1429,6 +1430,12 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
               <CardDescription>Dialogs, dropdowns, and overlays</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Component Update Tracking */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Component Update Tracking</h3>
+                <ComponentUpdateIndicator className="max-w-md" />
+              </div>
+              
               <div className="flex flex-wrap gap-4">
                 <Dialog>
                   <DialogTrigger asChild>
