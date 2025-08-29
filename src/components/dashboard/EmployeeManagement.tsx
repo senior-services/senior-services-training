@@ -491,25 +491,25 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                   let statusInfo;
                   if (requiredVideos.length === 0) {
                     statusInfo = {
-                      variant: "ghost-plain" as const,
+                      variant: "hollow-plain" as const,
                       text: "No Required Training",
                       showIcon: false
                     };
                   } else if (completedRequiredVideos.length === requiredVideos.length) {
                     statusInfo = {
-                      variant: "ghost-success" as const,
+                      variant: "hollow-success" as const,
                       text: "All Training Complete",
                       showIcon: true
                     };
                   } else if (overdueRequiredVideos.length > 0) {
                     statusInfo = {
-                      variant: "ghost-destructive" as const,
+                      variant: "hollow-destructive" as const,
                       text: `${overdueRequiredVideos.length} Overdue`,
                       showIcon: true
                     };
                   } else {
                     statusInfo = {
-                      variant: "ghost-secondary" as const,
+                      variant: "hollow-secondary" as const,
                       text: `${completedRequiredVideos.length}/${requiredVideos.length} Complete`,
                       showIcon: false
                     };
