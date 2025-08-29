@@ -361,8 +361,20 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                       <p>No training videos available</p>
                     </div>
                   ) : (
-                    <div className="space-y-0">
-                       {videos.map((video, index) => {
+                     <div className="space-y-0">
+                       {videos
+                         .sort((a, b) => {
+                           const aCompleted = completedVideoIds.has(a.id);
+                           const bCompleted = completedVideoIds.has(b.id);
+                           
+                           // Non-completed videos first
+                           if (!aCompleted && bCompleted) return -1;
+                           if (aCompleted && !bCompleted) return 1;
+                           
+                           // Within each group, maintain original order (by title)
+                           return a.title.localeCompare(b.title);
+                         })
+                         .map((video, index) => {
                          const isSelected = selectedVideoIds.has(video.id);
                          const wasOriginallyAssigned = assignedVideoIds.has(video.id);
                          const isCompleted = completedVideoIds.has(video.id);
