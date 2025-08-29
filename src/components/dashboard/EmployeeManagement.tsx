@@ -552,7 +552,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                         </TableCell>
 
                         <TableCell className="text-right py-3">
-                          <div className="flex gap-1 justify-end">
+                          <div className="flex gap-3 justify-end">
                             <Button 
                               variant="outline" 
                               size="sm" 
