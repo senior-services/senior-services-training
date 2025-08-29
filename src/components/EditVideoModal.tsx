@@ -421,11 +421,6 @@ export const EditVideoModal = ({
         }
       }
 
-      toast({
-        title: "Success",
-        description: "Quiz updated successfully",
-      });
-      
       // Reload quiz data and update original state
       await loadQuiz();
     } catch (error) {
@@ -487,11 +482,6 @@ export const EditVideoModal = ({
         }
       }
 
-      toast({
-        title: "Success",
-        description: "Quiz created successfully",
-      });
-      
       // Reload quiz data and update original state
       await loadQuiz();
     } catch (error) {
