@@ -180,7 +180,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('title')}
-                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary group ${
+                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${
                         sortColumn === 'title' 
                           ? 'font-bold' 
                           : 'font-medium'

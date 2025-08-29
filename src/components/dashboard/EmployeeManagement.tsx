@@ -416,7 +416,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('employee')}
-                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary group ${
+                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${
                         sortColumn === 'employee' 
                           ? 'font-bold' 
                           : 'font-medium'
@@ -438,7 +438,7 @@ export const EmployeeManagement: React.FC<{ onCountChange?: (count: number) => v
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('status')}
-                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary group ${
+                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${
                         sortColumn === 'status' 
                           ? 'font-bold' 
                           : 'font-medium'
