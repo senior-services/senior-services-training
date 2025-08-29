@@ -23,7 +23,6 @@ const badgeVariants = cva(
         warning:
           "border-transparent bg-warning text-warning-foreground shadow-sm",
         // Hollow variants  
-        outline: "text-foreground shadow-sm",
         "hollow-primary":
           "border-primary text-primary bg-transparent shadow-sm",
         "hollow-secondary":

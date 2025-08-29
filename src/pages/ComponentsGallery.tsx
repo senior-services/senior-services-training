@@ -816,7 +816,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                         <Badge variant="hollow-success" showIcon>Success with Icon</Badge>
                         <Badge variant="hollow-warning">Warning</Badge>
                         <Badge variant="hollow-warning" showIcon>Warning with Icon</Badge>
-                        <Badge variant="outline">Outline</Badge>
                       </div>
                   </div>
                   <div>
@@ -1265,9 +1264,9 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                                    </TableCell>
                                    
                                    <TableCell className="py-3">
-                                     <Badge variant={employee.department === "Engineering" ? "default" : employee.department === "Marketing" ? "secondary" : "outline"}>
-                                       {employee.department}
-                                     </Badge>
+                                      <Badge variant={employee.department === "Engineering" ? "default" : employee.department === "Marketing" ? "secondary" : "hollow-primary"}>
+                                        {employee.department}
+                                      </Badge>
                                    </TableCell>
                                    
                                    <TableCell className="py-3">

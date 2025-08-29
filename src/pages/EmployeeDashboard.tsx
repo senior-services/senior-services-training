@@ -376,7 +376,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
                 <Clock className="w-6 h-6 text-primary mr-3" aria-hidden="true" />
                 Required Training
               </h2>
-              {trainingData.required.length > 0 && <Badge variant="outline">
+              {trainingData.required.length > 0 && <Badge variant="hollow-primary">
                   {trainingData.required.length} pending
                 </Badge>}
             </div>

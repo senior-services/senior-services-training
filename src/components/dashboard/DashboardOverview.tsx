@@ -122,7 +122,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               <span className="text-sm">In Progress</span>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="w-3 h-3 p-0 rounded-full" />
+              <Badge variant="hollow-primary" className="w-3 h-3 p-0 rounded-full" />
               <span className="text-sm">Not Started</span>
             </div>
           </div>
