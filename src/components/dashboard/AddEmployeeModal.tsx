@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogScrollArea,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -118,48 +119,50 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <form id="add-employee-form" onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">
-              Email Address *
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="employee@company.com"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setHasChanges(true);
-              }}
-              required
-              disabled={isSubmitting}
-            />
-            <p className="text-xs text-muted-foreground">
-              The employee will be able to access assigned videos when they sign in with this email.
-            </p>
-          </div>
+        <DialogScrollArea>
+          <form id="add-employee-form" onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">
+                Email Address *
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="employee@company.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setHasChanges(true);
+                }}
+                required
+                disabled={isSubmitting}
+              />
+              <p className="text-xs text-muted-foreground">
+                The employee will be able to access assigned videos when they sign in with this email.
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="fullName">
-              Full Name (Optional)
-            </Label>
-            <Input
-              id="fullName"
-              type="text"
-              placeholder="John Doe"
-              value={fullName}
-              onChange={(e) => {
-                setFullName(e.target.value);
-                setHasChanges(true);
-              }}
-              disabled={isSubmitting}
-            />
-            <p className="text-xs text-muted-foreground">
-              This will be updated automatically from their Google account when they log in.
-            </p>
-          </div>
-        </form>
+            <div className="space-y-2">
+              <Label htmlFor="fullName">
+                Full Name (Optional)
+              </Label>
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="John Doe"
+                value={fullName}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  setHasChanges(true);
+                }}
+                disabled={isSubmitting}
+              />
+              <p className="text-xs text-muted-foreground">
+                This will be updated automatically from their Google account when they log in.
+              </p>
+            </div>
+          </form>
+        </DialogScrollArea>
 
         <DialogFooter>
           <Button
