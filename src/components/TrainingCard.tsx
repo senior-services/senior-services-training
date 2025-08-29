@@ -7,7 +7,7 @@
 import React, { memo, useMemo, useCallback, useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Clock, Play, AlertCircle, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, differenceInDays, isPast } from 'date-fns';
@@ -237,14 +237,14 @@ export const TrainingCard = memo<TrainingCardProps>(({
     });
   }, [thumbnailCandidates, thumbIndex, sanitizedVideo.id, sanitizedVideo.title]);
   return <article className={cn('training-card group relative overflow-hidden focus-within:ring-2 focus-within:ring-ring', className)} aria-label={ariaLabels.card} role="article">
-      <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-lg border-border-primary">
+      <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-card">
         {/* Video Thumbnail with Enhanced Accessibility */}
         <header className="relative">
           <button type="button" onClick={handlePlay} aria-label={ariaLabels.playButton} className="block focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-t-lg w-full text-left overflow-hidden">
             <img 
               src={thumbnailCandidates[thumbIndex]} 
               alt={`${sanitizedVideo.title} - Training video thumbnail`} 
-              className="w-full aspect-video object-cover bg-muted transition-transform duration-300 group-hover:scale-105 rounded-lg" 
+              className="w-full aspect-video object-cover bg-muted transition-transform duration-300 group-hover:scale-105 rounded-t-lg" 
               loading={priority ? "eager" : "lazy"}
               onError={handleImageError}
               onLoad={() => {
