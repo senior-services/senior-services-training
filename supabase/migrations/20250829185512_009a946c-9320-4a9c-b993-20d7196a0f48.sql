@@ -1,0 +1,1 @@
+DELETE FROM pending_admins WHERE email = 'jeri.vibe.test@gmail.com';
