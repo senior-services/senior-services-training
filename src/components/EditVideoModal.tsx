@@ -741,7 +741,7 @@ export const EditVideoModal = ({
                                       }));
                                       updateQuestion(questionIndex, { options: updatedOptions });
                                     }}
-                                    className="gap-0 space-y-3"
+                                    className="space-y-3"
                                   >
                                     {question.options.map((option, optionIndex) => (
                                       <div key={optionIndex} className="flex items-center gap-3">
