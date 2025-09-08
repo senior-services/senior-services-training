@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { logger } from '@/utils/logger';
+import { clearUserRoleCache } from '@/services/quizService';
 
 interface AuthState {
   user: User | null;
@@ -174,6 +175,10 @@ export function useAuth() {
         user: null,
         loading: false,
       });
+      
+      // Clear role cache on sign out
+      clearUserRoleCache();
+      
       toast.success('Successfully signed out');
       
     } catch (error: any) {
@@ -193,6 +198,9 @@ export function useAuth() {
         user: null,
         loading: false,
       });
+      
+      // Clear role cache on sign out
+      clearUserRoleCache();
       
       if (isSessionError) {
         toast.success('Successfully signed out');

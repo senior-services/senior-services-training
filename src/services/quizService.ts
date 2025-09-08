@@ -2,11 +2,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { Quiz, QuizQuestion, QuizQuestionOption, QuizWithQuestions, QuizSubmissionData, QuizAttemptWithDetails } from "@/types/quiz";
 import { logger } from "@/utils/logger";
 
-// Helper function to get current user role
+// Cache user role to avoid repeated database calls
+let userRoleCache: { role: 'admin' | 'employee' | null; expires: number } | null = null;
+const ROLE_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Helper function to get current user role with caching
 async function getCurrentUserRole(): Promise<'admin' | 'employee' | null> {
   try {
+    // Check cache first
+    if (userRoleCache && Date.now() < userRoleCache.expires) {
+      return userRoleCache.role;
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+    if (!user) {
+      userRoleCache = { role: null, expires: Date.now() + ROLE_CACHE_DURATION };
+      return null;
+    }
 
     const { data, error } = await supabase
       .from('user_roles')
@@ -14,12 +26,21 @@ async function getCurrentUserRole(): Promise<'admin' | 'employee' | null> {
       .eq('user_id', user.id)
       .single();
 
-    if (error || !data) return 'employee'; // Default to employee
-    return data.role as 'admin' | 'employee';
+    const role = (error || !data) ? 'employee' : data.role as 'admin' | 'employee';
+    userRoleCache = { role, expires: Date.now() + ROLE_CACHE_DURATION };
+    
+    return role;
   } catch (error) {
     logger.error('Error getting user role:', error);
-    return 'employee'; // Default to employee on error
+    const role = 'employee'; // Default to employee on error
+    userRoleCache = { role, expires: Date.now() + ROLE_CACHE_DURATION };
+    return role;
   }
+}
+
+// Clear role cache when needed
+export function clearUserRoleCache() {
+  userRoleCache = null;
 }
 
 // Helper function to get safe quiz options for employees
@@ -54,7 +75,7 @@ export const quizOperations = {
     }
   },
 
-  // Get quiz by ID with questions and options
+  // Get quiz by ID with questions and options (optimized)
   async getById(id: string): Promise<QuizWithQuestions | null> {
     try {
       const userRole = await getCurrentUserRole();
@@ -68,41 +89,39 @@ export const quizOperations = {
       if (quizError) throw quizError;
       if (!quiz) return null;
 
+      // Single query to get questions with their options
       const { data: questions, error: questionsError } = await supabase
         .from('quiz_questions')
-        .select('*')
+        .select(`
+          *,
+          quiz_question_options(*)
+        `)
         .eq('quiz_id', id)
         .order('order_index', { ascending: true });
 
       if (questionsError) throw questionsError;
 
-      // Fetch options based on user role
-      const questionsWithOptions = await Promise.all(
-        (questions || []).map(async (question) => {
-          let options: any[] = [];
-          
-          if (userRole === 'admin') {
-            // Admins can see all fields including is_correct
-            const { data: adminOptions, error: optionError } = await supabase
-              .from('quiz_question_options')
-              .select('*')
-              .eq('question_id', question.id)
-              .order('order_index', { ascending: true });
-              
-            if (optionError) throw optionError;
-            options = adminOptions || [];
-          } else {
-            // Employees get safe options without is_correct
-            options = await getSafeQuizOptions(question.id);
-          }
+      // Transform questions and handle role-based option filtering
+      const questionsWithOptions = (questions || []).map((question: any) => {
+        let options = question.quiz_question_options || [];
+        
+        // Sort options by order_index
+        options.sort((a: any, b: any) => a.order_index - b.order_index);
+        
+        // For employees, remove is_correct field
+        if (userRole !== 'admin') {
+          options = options.map((option: any) => {
+            const { is_correct, ...safeOption } = option;
+            return safeOption;
+          });
+        }
 
-          return {
-            ...question,
-            question_type: question.question_type as 'multiple_choice' | 'true_false' | 'single_answer',
-            options
-          };
-        })
-      );
+        return {
+          ...question,
+          question_type: question.question_type as 'multiple_choice' | 'true_false' | 'single_answer',
+          options
+        };
+      });
 
       return {
         ...quiz,
@@ -114,46 +133,42 @@ export const quizOperations = {
     }
   },
 
-  // Get quiz by video ID
+  // Get quiz by video ID (optimized)
   async getByVideoId(videoId: string): Promise<QuizWithQuestions | null> {
     try {
       const userRole = await getCurrentUserRole();
       
+      // Single query to get quiz with questions and options
       const { data: quiz, error: quizError } = await supabase
         .from('quizzes')
-        .select('*')
+        .select(`
+          *,
+          quiz_questions(
+            *,
+            quiz_question_options(*)
+          )
+        `)
         .eq('video_id', videoId)
         .maybeSingle();
 
       if (quizError) throw quizError;
       if (!quiz) return null; // No quiz found
 
-      const { data: questions, error: questionsError } = await supabase
-        .from('quiz_questions')
-        .select('*')
-        .eq('quiz_id', quiz.id)
-        .order('order_index', { ascending: true });
-
-      if (questionsError) throw questionsError;
-
-      // Fetch options based on user role
-      const questionsWithOptions = await Promise.all(
-        (questions || []).map(async (question) => {
-          let options: any[] = [];
+      // Transform questions and handle role-based option filtering
+      const questionsWithOptions = (quiz.quiz_questions || [])
+        .sort((a: any, b: any) => a.order_index - b.order_index)
+        .map((question: any) => {
+          let options = question.quiz_question_options || [];
           
-          if (userRole === 'admin') {
-            // Admins can see all fields including is_correct
-            const { data: adminOptions, error: optionError } = await supabase
-              .from('quiz_question_options')
-              .select('*')
-              .eq('question_id', question.id)
-              .order('order_index', { ascending: true });
-              
-            if (optionError) throw optionError;
-            options = adminOptions || [];
-          } else {
-            // Employees get safe options without is_correct
-            options = await getSafeQuizOptions(question.id);
+          // Sort options by order_index
+          options.sort((a: any, b: any) => a.order_index - b.order_index);
+          
+          // For employees, remove is_correct field
+          if (userRole !== 'admin') {
+            options = options.map((option: any) => {
+              const { is_correct, ...safeOption } = option;
+              return safeOption;
+            });
           }
 
           return {
@@ -161,8 +176,7 @@ export const quizOperations = {
             question_type: question.question_type as 'multiple_choice' | 'true_false' | 'single_answer',
             options
           };
-        })
-      );
+        });
 
       return {
         ...quiz,
@@ -171,6 +185,23 @@ export const quizOperations = {
     } catch (error) {
       logger.error('Error fetching quiz by video ID:', error);
       return null; // Return null instead of throwing to prevent breaking the UI
+    }
+  },
+
+  // Lightweight check for quiz presence (for VideoTable)
+  async hasQuiz(videoId: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from('quizzes')
+        .select('id')
+        .eq('video_id', videoId)
+        .limit(1);
+
+      if (error) throw error;
+      return data && data.length > 0;
+    } catch (error) {
+      logger.debug('Error checking quiz presence:', error);
+      return false;
     }
   },
 

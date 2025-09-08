@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { videoOperations } from '@/services/api';
-import { quizOperations } from '@/services/quizService';
+import { quizOperations, clearUserRoleCache } from '@/services/quizService';
 import { logger } from '@/utils/logger';
 import { withErrorHandler } from '@/utils/errorHandler';
 import type { Video } from '@/types';
@@ -50,6 +50,8 @@ export function useVideoData() {
     setVideo(null);
     setQuiz(null);
     setLoading(false);
+    // Clear role cache when resetting data (e.g., on logout)
+    clearUserRoleCache();
   }, []);
 
   return {

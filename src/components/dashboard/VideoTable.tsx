@@ -71,7 +71,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [videoQuizzes, setVideoQuizzes] = useState<Set<string>>(new Set());
 
-  // Load quiz data for each video
+  // Load quiz presence data for each video (optimized)
   useEffect(() => {
     const loadVideoQuizzes = async () => {
       if (!videos.length) return;
@@ -82,20 +82,20 @@ export const VideoTable: React.FC<VideoTableProps> = ({
         await Promise.all(
           videos.map(async (video) => {
             try {
-              const quiz = await quizOperations.getByVideoId(video.id);
-              if (quiz && quiz.questions && quiz.questions.length > 0) {
+              const hasQuiz = await quizOperations.hasQuiz(video.id);
+              if (hasQuiz) {
                 quizVideoIds.add(video.id);
               }
             } catch (error) {
               // Silently handle errors - video just won't show quiz badge
-              logger.debug(`No quiz found for video ${video.id}`, error);
+              logger.debug(`Error checking quiz for video ${video.id}`, error);
             }
           })
         );
         
         setVideoQuizzes(quizVideoIds);
       } catch (error) {
-        logger.error('Error loading video quizzes', error);
+        logger.error('Error loading video quiz presence', error);
       }
     };
 
