@@ -122,30 +122,11 @@ export const EditVideoModal = ({
         setOriginalQuizDescription(quizData.description || '');
         setOriginalQuestions(JSON.parse(JSON.stringify(loadedQuestions)));
       } else {
-        // No quiz found, initialize with default question for new quiz creation
+        // No quiz found, show empty state
         setQuiz(null);
         setQuizTitle('');
         setQuizDescription('');
-        
-        // Initialize with one default question with two default options
-        const defaultQuestion: EditableQuestionFormData = {
-          question_text: "",
-          question_type: "multiple_choice",
-          order_index: 0,
-          options: [
-            {
-              option_text: "",
-              is_correct: false,
-              order_index: 0
-            },
-            {
-              option_text: "",
-              is_correct: false,
-              order_index: 1
-            }
-          ]
-        };
-        setQuestions([defaultQuestion]);
+        setQuestions([]);
         
         // Clear original values too
         setOriginalQuizTitle('');
@@ -174,6 +155,33 @@ export const EditVideoModal = ({
     
     // Reindex all options
     return existingOptions.map((opt, i) => ({ ...opt, order_index: i }));
+  };
+
+  // Helper function to check if a question is valid
+  const isQuestionValid = (question: EditableQuestionFormData): boolean => {
+    // Question text must not be empty
+    if (!question.question_text.trim()) {
+      return false;
+    }
+    
+    if (question.question_type === 'true_false') {
+      // True/false questions only need non-empty question text
+      return true;
+    }
+    
+    if (question.question_type === 'multiple_choice' || question.question_type === 'single_answer') {
+      // Need at least 2 non-empty options
+      const nonEmptyOptions = question.options.filter(opt => opt.option_text.trim());
+      if (nonEmptyOptions.length < 2) {
+        return false;
+      }
+      
+      // Need at least one correct answer
+      const hasCorrectAnswer = nonEmptyOptions.some(opt => opt.is_correct);
+      return hasCorrectAnswer;
+    }
+    
+    return false;
   };
 
   const cleanupAndValidateQuestions = () => {
@@ -707,11 +715,14 @@ export const EditVideoModal = ({
                 <TabsTrigger value="info">Video Info</TabsTrigger>
                 <TabsTrigger value="quiz" className="flex items-center gap-2">
                   Quiz
-                  {questions.length > 0 && (
-                    <Badge variant="tertiary" className="text-xs px-1.5 py-0.5 min-w-[20px] h-5">
-                      {questions.length}
-                    </Badge>
-                  )}
+                  {(() => {
+                    const validQuestionCount = questions.filter(isQuestionValid).length;
+                    return validQuestionCount > 0 && (
+                      <Badge variant="tertiary" className="text-xs px-1.5 py-0.5 min-w-[20px] h-5">
+                        {validQuestionCount}
+                      </Badge>
+                    );
+                  })()}
                 </TabsTrigger>
               </TabsList>
 
@@ -1004,9 +1015,17 @@ export const EditVideoModal = ({
                       </Button>
 
                       {questions.length === 0 && (
-                        <p className="text-center text-muted-foreground py-8">
-                          No questions added yet. Click "Add Question" to get started.
-                        </p>
+                        <div className="text-center py-12 space-y-4">
+                          <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                            <FileQuestion className="w-8 h-8 text-muted-foreground" />
+                          </div>
+                          <div className="space-y-2">
+                            <p className="text-lg font-medium">No quiz questions yet</p>
+                            <p className="text-muted-foreground">
+                              Create questions to test understanding of this training video
+                            </p>
+                          </div>
+                        </div>
                       )}
                     </div>
                 </div>
