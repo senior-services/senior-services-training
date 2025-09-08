@@ -188,6 +188,12 @@ export const EditVideoModal = ({
     const errors: {[key: number]: string} = {};
     
     const cleanedQuestions = questions.map((question, index) => {
+      // Check if question text is empty for all question types
+      if (!question.question_text.trim()) {
+        errors[index] = 'Question text is required.';
+        return question;
+      }
+      
       if (question.question_type === 'multiple_choice') {
         // For multiple choice, filter out empty options for validation but keep them in UI
         const nonEmptyOptions = question.options.filter(opt => opt.option_text.trim());
@@ -237,6 +243,12 @@ export const EditVideoModal = ({
     const errors: {[key: number]: string} = {};
     
     questions.forEach((question, index) => {
+      // Check if question text is empty for all question types
+      if (!question.question_text.trim()) {
+        errors[index] = 'Question text is required.';
+        return;
+      }
+      
       if (question.question_type === 'multiple_choice') {
         const nonEmptyOptions = question.options.filter(opt => opt.option_text.trim());
         
@@ -875,7 +887,17 @@ export const EditVideoModal = ({
                                 value={question.question_text}
                                 onChange={(e) => updateQuestion(questionIndex, { question_text: e.target.value })}
                                 placeholder="Enter your question"
+                                className={cn(
+                                  questionValidationErrors[questionIndex]?.includes('Question text is required') 
+                                    ? "border-destructive focus-visible:ring-destructive" 
+                                    : ""
+                                )}
                               />
+                              {questionValidationErrors[questionIndex]?.includes('Question text is required') && (
+                                <div className="text-sm text-destructive mt-1">
+                                  Question text is required.
+                                </div>
+                              )}
                             </div>
 
                             {(question.question_type === 'multiple_choice' || question.question_type === 'single_answer') && (

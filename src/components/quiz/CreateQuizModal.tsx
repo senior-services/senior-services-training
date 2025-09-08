@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { QuizQuestion, QuizQuestionOption } from "@/types/quiz";
+import { cn } from "@/lib/utils";
 
 interface CreateQuizModalProps {
   open: boolean;
@@ -116,6 +117,12 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
     const errors: {[key: number]: string} = {};
     
     const cleanedQuestions = questions.map((question, index) => {
+      // Check if question text is empty for all question types
+      if (!question.question_text.trim()) {
+        errors[index] = 'Question text is required.';
+        return question;
+      }
+      
       if (question.question_type === 'multiple_choice') {
         // Remove empty options and reindex
         const nonEmptyOptions = question.options
@@ -239,7 +246,17 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                       value={question.question_text}
                       onChange={(e) => updateQuestion(questionIndex, { question_text: e.target.value })}
                       placeholder="Enter your question"
+                      className={cn(
+                        validationErrors[questionIndex]?.includes('Question text is required') 
+                          ? "border-destructive focus-visible:ring-destructive" 
+                          : ""
+                      )}
                     />
+                    {validationErrors[questionIndex]?.includes('Question text is required') && (
+                      <div className="text-sm text-destructive mt-1">
+                        Question text is required.
+                      </div>
+                    )}
                   </div>
 
                   <div>
