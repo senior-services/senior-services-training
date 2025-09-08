@@ -100,6 +100,13 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
 
   const removeOption = (questionIndex: number, optionIndex: number) => {
     const question = formData.questions[questionIndex];
+    
+    // Safety guard: prevent deletion if only 2 or fewer options remain for single_answer and multiple_choice
+    if ((question.question_type === 'single_answer' || question.question_type === 'multiple_choice') && 
+        question.options.length <= 2) {
+      return;
+    }
+    
     const updatedOptions = question.options.filter((_, i) => i !== optionIndex);
     
     updateQuestion(questionIndex, { options: updatedOptions });
@@ -307,14 +314,16 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                                     </Label>
                                   </div>
                                   
-                                  <Button
-                                    onClick={() => removeOption(questionIndex, optionIndex)}
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-destructive hover:text-destructive"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
+                                  {question.options.length > 2 && (
+                                    <Button
+                                      onClick={() => removeOption(questionIndex, optionIndex)}
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-destructive hover:text-destructive"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  )}
                                 </div>
                               ))}
                             </RadioGroup>
@@ -352,14 +361,16 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                                   </Label>
                                 </div>
                                 
-                                <Button
-                                  onClick={() => removeOption(questionIndex, optionIndex)}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-destructive hover:text-destructive"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
+                                {question.options.length > 2 && (
+                                  <Button
+                                    onClick={() => removeOption(questionIndex, optionIndex)}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-destructive hover:text-destructive"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                )}
                               </div>
                             ))}
                             

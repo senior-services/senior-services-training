@@ -462,6 +462,13 @@ export const EditVideoModal = ({
 
   const removeOption = (questionIndex: number, optionIndex: number) => {
     const question = questions[questionIndex];
+    
+    // Safety guard: prevent deletion if only 2 or fewer options remain for single_answer and multiple_choice
+    if ((question.question_type === 'single_answer' || question.question_type === 'multiple_choice') && 
+        question.options.length <= 2) {
+      return;
+    }
+    
     const updatedOptions = question.options.filter((_, i) => i !== optionIndex);
     
     // Ensure minimum options remain visible for single_answer and multiple_choice
@@ -892,14 +899,16 @@ export const EditVideoModal = ({
                                            </Label>
                                          </div>
                                          
-                                         <Button
-                                           onClick={() => removeOption(questionIndex, optionIndex)}
-                                           variant="ghost"
-                                           size="sm"
-                                           className="text-destructive hover:text-destructive"
-                                         >
-                                           <Trash2 className="w-4 h-4" />
-                                         </Button>
+                          {question.options.length > 2 && (
+                            <Button
+                              onClick={() => removeOption(questionIndex, optionIndex)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                                        </div>
                                      ))}
                                      </RadioGroup>
@@ -943,14 +952,16 @@ export const EditVideoModal = ({
                                            </Label>
                                          </div>
                                          
-                                         <Button
-                                           onClick={() => removeOption(questionIndex, optionIndex)}
-                                           variant="ghost"
-                                           size="sm"
-                                           className="text-destructive hover:text-destructive"
-                                         >
-                                           <Trash2 className="w-4 h-4" />
-                                         </Button>
+                          {question.options.length > 2 && (
+                            <Button
+                              onClick={() => removeOption(questionIndex, optionIndex)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                                        </div>
                                      ))}
                                      
