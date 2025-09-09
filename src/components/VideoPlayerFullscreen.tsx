@@ -68,6 +68,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const [allQuestionsAnswered, setAllQuestionsAnswered] = useState(false);
   const [hasQuizChanges, setHasQuizChanges] = useState(false);
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+  const [completedQuizResults, setCompletedQuizResults] = useState<QuizResponse[]>([]);
   
   // Hooks for authentication and user feedback
   const { user } = useAuth();
@@ -102,6 +103,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         setQuizStarted(false);
         setQuizSubmitted(false);
         setQuizResults([]);
+        setCompletedQuizResults([]);
         return;
       }
 
@@ -119,6 +121,21 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       // Load existing progress if user is authenticated
       if (user?.email) {
         await loadExistingProgress();
+        
+        // If training was ever completed, load the quiz attempt results
+        if (wasEverCompleted && quiz) {
+          try {
+            const attempts = await quizOperations.getUserAttempts(user.email);
+            const videoQuizAttempts = attempts.filter(attempt => attempt.quiz.video_id === videoId);
+            const latestAttempt = videoQuizAttempts[0]; // Most recent attempt
+            
+            if (latestAttempt?.responses) {
+              setCompletedQuizResults(latestAttempt.responses);
+            }
+          } catch (error) {
+            logger.warn('Failed to load completed quiz results', { videoId, error });
+          }
+        }
       }
     };
 
@@ -127,6 +144,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
   // Effect to show completion overlay when progress reaches completion threshold
   useEffect(() => {
+    // Never show completion overlay if training was ever completed
     if (!quiz || wasEverCompleted || overlayDismissed || quizStarted) return;
     
     // Show overlay if progress is 99% or higher and video has a quiz
@@ -258,6 +276,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     setHasQuizChanges(false);
     setQuizSubmitted(false);
     setQuizResults([]);
+    setCompletedQuizResults([]);
     
     // Scroll to quiz section
     setTimeout(() => {
@@ -314,6 +333,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     setHasQuizChanges(false);
     setQuizSubmitted(false);
     setQuizResults([]);
+    setCompletedQuizResults([]);
   }, []);
 
   // Handle dialog close
@@ -389,7 +409,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
               updateProgressToDatabase={async () => {}} // This is handled by the progress hook now
             />
             
-            {/* Completion Overlay */}
+            {/* Completion Overlay - Only show if training was never completed */}
             {showCompletionOverlay && (progress >= 100 || (progress >= 99 && quiz)) && !wasEverCompleted && (
               <CompletionOverlay
                 video={video}
@@ -402,22 +422,22 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           </div>
 
           {/* Quiz Section */}
-          {quizStarted && quiz && (
+          {((quizStarted && quiz) || (wasEverCompleted && quiz && completedQuizResults.length > 0)) && (
             <div id="quiz-section" className="mt-8 border-t pt-8">
               <QuizModal
                 quiz={quiz}
                 onSubmit={handleQuizSubmit}
                 onCancel={() => {}}
                 onResponsesChange={handleQuizResponsesChange}
-                quizResults={quizResults}
-                isSubmitted={quizSubmitted}
+                quizResults={wasEverCompleted ? completedQuizResults : quizResults}
+                isSubmitted={wasEverCompleted || quizSubmitted}
               />
             </div>
           )}
         </div>
 
-        {/* Dialog Footer */}
-        {quizStarted && quiz && (
+        {/* Dialog Footer - Only show for active quiz attempts, not completed ones */}
+        {quizStarted && quiz && !wasEverCompleted && (
           <DialogFooter>
             <AlertDialog open={showCancelConfirmation} onOpenChange={setShowCancelConfirmation}>
               <AlertDialogTrigger asChild>
