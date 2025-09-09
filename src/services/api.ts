@@ -559,15 +559,22 @@ export const progressOperations = {
     performanceTracker.start(operation);
     
     try {
+      // Build update object - only include completed_at if explicitly provided
+      const updateData: any = {
+        employee_id: employeeId,
+        video_id: videoId,
+        progress_percent: Math.max(0, Math.min(100, progressPercent)),
+        updated_at: new Date().toISOString()
+      };
+
+      // Only update completed_at if explicitly provided to prevent accidental nullification
+      if (completedAt !== undefined) {
+        updateData.completed_at = completedAt?.toISOString() || null;
+      }
+
       const { error } = await supabase
         .from('video_progress')
-        .upsert({
-          employee_id: employeeId,
-          video_id: videoId,
-          progress_percent: Math.max(0, Math.min(100, progressPercent)),
-          completed_at: completedAt?.toISOString() || null,
-          updated_at: new Date().toISOString()
-        }, {
+        .upsert(updateData, {
           onConflict: 'employee_id,video_id'
         });
 

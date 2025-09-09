@@ -25,6 +25,16 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
       return { success: false };
     }
 
+    // Prevent progress regression if video was already completed
+    if (wasEverCompleted && progressPercent < 100 && !forceComplete) {
+      logger.info('Preventing progress regression on completed video', {
+        videoId,
+        currentProgress: progress,
+        attemptedProgress: progressPercent
+      });
+      return { success: true };
+    }
+
     const updateResult = await withErrorHandler(
       async () => {
         // Only set completedAt if progress is 100% AND (no quiz exists OR forceComplete is true)
@@ -81,6 +91,12 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
   }, [updateProgressToDatabase, onProgressUpdate, hasQuiz, wasEverCompleted]);
 
   const markComplete = useCallback(async () => {
+    // Clear any pending debounced progress updates to prevent regression
+    if (progressUpdateTimeoutRef.current) {
+      clearTimeout(progressUpdateTimeoutRef.current);
+      progressUpdateTimeoutRef.current = undefined;
+    }
+
     setProgress(100);
     setIsCompleted(true);
     setWasEverCompleted(true);
