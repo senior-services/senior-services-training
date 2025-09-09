@@ -938,7 +938,10 @@ export const EditVideoModal = ({
                                   let newOptions = question.options;
                                   
                                   if (value === 'true_false') {
-                                    newOptions = [];
+                                    newOptions = [
+                                      { option_text: 'True', is_correct: false, order_index: 0 },
+                                      { option_text: 'False', is_correct: false, order_index: 1 }
+                                    ];
                                   } else if (value === 'single_answer') {
                                     // Ensure at least 2 options and only one correct
                                     newOptions = ensureMinOptions(question.options, 2);
