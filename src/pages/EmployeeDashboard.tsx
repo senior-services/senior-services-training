@@ -177,13 +177,16 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       completedAt: quizAttempt.completed_at
     } : undefined;
 
+    // Determine progress - if completed_at exists, force 100%, otherwise use progress_percent
+    const actualProgress = assignment?.completed_at ? 100 : Math.max(0, Math.min(100, assignment?.progress_percent || 0));
+    
     return {
       id: video.id,
       title: sanitizeText(video.title || 'Untitled Video'),
       description: sanitizeText(video.description || ''),
       thumbnail: video.thumbnail_url || '', // Use actual thumbnail_url from database
       duration: formatSeconds(video.duration_seconds || 0),
-      progress: Math.max(0, Math.min(100, assignment?.progress_percent || 0)),
+      progress: actualProgress,
       isRequired: video.type === 'Required',
       deadline: assignment?.due_date ? new Date(assignment.due_date).toLocaleDateString() : undefined,
       dueDate: assignment?.due_date || null,

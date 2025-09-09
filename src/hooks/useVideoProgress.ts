@@ -15,6 +15,7 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
   const [isCompleted, setIsCompleted] = useState(false);
   const [wasEverCompleted, setWasEverCompleted] = useState(false);
   const progressUpdateTimeoutRef = useRef<NodeJS.Timeout>();
+  const completionGuardRef = useRef<boolean>(false);
 
   const updateProgressToDatabase = useCallback(async (progressPercent: number, forceComplete?: boolean) => {
     if (!userEmail || !videoId) {
@@ -26,11 +27,12 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
     }
 
     // Prevent progress regression if video was already completed
-    if (wasEverCompleted && progressPercent < 100 && !forceComplete) {
+    if ((wasEverCompleted || completionGuardRef.current) && progressPercent < 100 && !forceComplete) {
       logger.info('Preventing progress regression on completed video', {
         videoId,
         currentProgress: progress,
-        attemptedProgress: progressPercent
+        attemptedProgress: progressPercent,
+        completionGuardActive: completionGuardRef.current
       });
       return { success: true };
     }
@@ -74,6 +76,15 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
   }, [userEmail, videoId, wasEverCompleted, hasQuiz]);
 
   const updateProgress = useCallback((progressPercent: number) => {
+    // Block any progress updates if completion guard is active
+    if (completionGuardRef.current && progressPercent < 100) {
+      logger.info('Blocking progress update due to completion guard', {
+        videoId,
+        attemptedProgress: progressPercent
+      });
+      return;
+    }
+    
     // Cap progress at 99% if quiz exists and hasn't been completed
     const cappedProgress = hasQuiz && progressPercent >= 100 && !wasEverCompleted ? 99 : progressPercent;
     
@@ -88,7 +99,7 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
     progressUpdateTimeoutRef.current = setTimeout(() => {
       updateProgressToDatabase(cappedProgress);
     }, 1000);
-  }, [updateProgressToDatabase, onProgressUpdate, hasQuiz, wasEverCompleted]);
+  }, [updateProgressToDatabase, onProgressUpdate, hasQuiz, wasEverCompleted, videoId]);
 
   const markComplete = useCallback(async () => {
     // Clear any pending debounced progress updates to prevent regression
@@ -97,6 +108,9 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
       progressUpdateTimeoutRef.current = undefined;
     }
 
+    // Activate completion guard to prevent any future sub-100% updates
+    completionGuardRef.current = true;
+    
     setProgress(100);
     setIsCompleted(true);
     setWasEverCompleted(true);
@@ -107,6 +121,7 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
   }, [updateProgressToDatabase, onProgressUpdate]);
 
   const resetProgress = useCallback(() => {
+    completionGuardRef.current = false;
     setProgress(0);
     setIsCompleted(false);
     setWasEverCompleted(false);
@@ -126,9 +141,14 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
         const progressPercent = progressData.progress_percent;
         
         setProgress(progressPercent);
-        const isVideoCompleted = progressPercent >= 100;
+        const isVideoCompleted = progressPercent >= 100 || !!progressData.completed_at;
         setIsCompleted(isVideoCompleted);
         setWasEverCompleted(isVideoCompleted);
+        
+        // Set completion guard if video is completed
+        if (isVideoCompleted) {
+          completionGuardRef.current = true;
+        }
         
         logger.videoEvent('progress_restored', videoId, {
           progress: progressPercent,
