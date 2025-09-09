@@ -121,26 +121,32 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       // Load existing progress if user is authenticated
       if (user?.email) {
         await loadExistingProgress();
-        
-        // If training was ever completed, load the quiz attempt results
-        if (wasEverCompleted && quiz) {
-          try {
-            const attempts = await quizOperations.getUserAttempts(user.email);
-            const videoQuizAttempts = attempts.filter(attempt => attempt.quiz.video_id === videoId);
-            const latestAttempt = videoQuizAttempts[0]; // Most recent attempt
-            
-            if (latestAttempt?.responses) {
-              setCompletedQuizResults(latestAttempt.responses);
-            }
-          } catch (error) {
-            logger.warn('Failed to load completed quiz results', { videoId, error });
-          }
-        }
       }
     };
 
     initializeVideo();
   }, [open, videoId, user?.email, loadVideoData, resetVideoData, resetProgress, loadExistingProgress, toast]);
+
+  // Separate effect to load completed quiz results when completion status is determined
+  useEffect(() => {
+    const loadCompletedQuizResults = async () => {
+      if (!wasEverCompleted || !quiz || !user?.email || !videoId) return;
+
+      try {
+        const attempts = await quizOperations.getUserAttempts(user.email);
+        const videoQuizAttempts = attempts.filter(attempt => attempt.quiz.video_id === videoId);
+        const latestAttempt = videoQuizAttempts[0]; // Most recent attempt
+        
+        if (latestAttempt?.responses) {
+          setCompletedQuizResults(latestAttempt.responses);
+        }
+      } catch (error) {
+        logger.warn('Failed to load completed quiz results', { videoId, error });
+      }
+    };
+
+    loadCompletedQuizResults();
+  }, [wasEverCompleted, quiz, user?.email, videoId]);
 
   // Effect to show completion overlay when progress reaches completion threshold
   useEffect(() => {
