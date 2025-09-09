@@ -20,7 +20,6 @@ interface QuizModalProps {
   quizResults?: QuizResponse[];
   isSubmitted?: boolean;
   correctOptions?: Record<string, string[]>;
-  showScoreSummary?: boolean;
 }
 
 // Extended response type for internal state management
@@ -31,7 +30,7 @@ interface ExtendedQuizResponse {
   text_answer?: string;
 }
 
-export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizResults, isSubmitted, correctOptions = {}, showScoreSummary = true }: QuizModalProps) {
+export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizResults, isSubmitted, correctOptions = {} }: QuizModalProps) {
   // Initialize responses with saved quiz results when viewing completed quiz
   const initializeResponses = () => {
     if (isSubmitted && quizResults) {
@@ -182,8 +181,8 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
   return (
     <div className="h-full overflow-y-auto">
       <div className="max-w-4xl mx-auto">
-        {/* Score Summary - shown when quiz is submitted and showScoreSummary is true */}
-        {isSubmitted && quizResults && showScoreSummary && (
+        {/* Score Summary - shown when quiz is submitted */}
+        {isSubmitted && quizResults && (
           <div className="mb-6">
             <QuizScoreSummary 
               quizResults={quizResults} 
