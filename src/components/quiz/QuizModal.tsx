@@ -227,14 +227,21 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                let optionClassName = `flex-1 ${isSubmitted ? 'cursor-default' : 'cursor-pointer'} flex items-center justify-between transition-colors`;
                                
                                // Check if user got any answer wrong for this question (for multiple choice)
-                               const hasIncorrectAnswers = questionResults.some(r => !r.is_correct);
+                                const hasIncorrectAnswers = questionResults.some(r => !r.is_correct);
+                                
+                                // Check if there are any correct answers that were not selected (missed correct)
+                                const correctOptionIds = question.options
+                                  ?.filter(opt => 'is_correct' in opt && opt.is_correct)
+                                  ?.map(opt => opt.id) || [];
+                                const selectedOptionIds = responses[question.id]?.selected_option_ids || [];
+                                const hasMissedCorrect = correctOptionIds.some(id => !selectedOptionIds.includes(id));
                                
                                 if (isSubmitted) {
                                   if (isSelected && isSelectedCorrect) {
                                     optionClassName += ' text-emerald-700 bg-emerald-50 border-emerald-200 rounded-md p-3 border';
                                   } else if (isSelected && !isSelectedCorrect) {
                                     optionClassName += ' text-red-700 bg-red-50 border-red-200 rounded-md p-3 border';
-                                  } else if (!isSelected && isCorrect && hasIncorrectAnswers) {
+                                  } else if (!isSelected && isCorrect && hasMissedCorrect) {
                                     optionClassName += ' text-emerald-700 bg-emerald-50 border-emerald-200 rounded-md p-3 border';
                                   }
                                 }
@@ -274,19 +281,19 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                           Incorrect
                                         </Badge>
                                       )}
-                                       {isSubmitted && !isSelected && isCorrect && hasIncorrectAnswers && (
-                                         <Badge variant="default" className="bg-emerald-100 text-emerald-800 text-xs">
-                                           Correct
-                                         </Badge>
-                                       )}
-                                       {isSubmitted && isSelected && (
-                                         isSelectedCorrect ? (
-                                           <CheckCircle className="w-5 h-5 text-emerald-600" />
-                                         ) : (
-                                           <XCircle className="w-5 h-5 text-red-600" />
-                                         )
-                                       )}
-                                       {isSubmitted && !isSelected && isCorrect && hasIncorrectAnswers && (
+                                        {isSubmitted && !isSelected && isCorrect && hasMissedCorrect && (
+                                          <Badge variant="default" className="bg-emerald-100 text-emerald-800 text-xs">
+                                            Also Correct
+                                          </Badge>
+                                        )}
+                                        {isSubmitted && isSelected && (
+                                          isSelectedCorrect ? (
+                                            <CheckCircle className="w-5 h-5 text-emerald-600" />
+                                          ) : (
+                                            <XCircle className="w-5 h-5 text-red-600" />
+                                          )
+                                        )}
+                                        {isSubmitted && !isSelected && isCorrect && hasMissedCorrect && (
                                          <CheckCircle className="w-5 h-5 text-emerald-600" />
                                        )}
                                     </div>
