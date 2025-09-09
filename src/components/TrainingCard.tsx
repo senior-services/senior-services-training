@@ -307,13 +307,13 @@ export const TrainingCard = memo<TrainingCardProps>(({
               <span className="text-sm text-muted-foreground">Quiz result:</span>
               <Badge 
                 variant={
-                  sanitizedVideo.quizSummary.percent >= 80 ? 'success' : 
-                  sanitizedVideo.quizSummary.percent >= 60 ? 'warning' : 'destructive'
+                  sanitizedVideo.quizSummary.percent >= 80 ? 'ghost-success' : 
+                  sanitizedVideo.quizSummary.percent >= 60 ? 'ghost-warning' : 'ghost-destructive'
                 }
                 className="text-xs"
                 aria-label={`Quiz score: ${sanitizedVideo.quizSummary.correct} of ${sanitizedVideo.quizSummary.total} correct, ${sanitizedVideo.quizSummary.percent} percent`}
               >
-                {sanitizedVideo.quizSummary.percent}% • {sanitizedVideo.quizSummary.correct} of {sanitizedVideo.quizSummary.total} correct
+                {sanitizedVideo.quizSummary.percent}%
               </Badge>
             </div>
           )}
