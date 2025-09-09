@@ -60,6 +60,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 }) => {
   // State management
   const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
+  const [overlayDismissed, setOverlayDismissed] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizResults, setQuizResults] = useState<QuizResponse[]>([]);
@@ -97,6 +98,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         resetVideoData();
         resetProgress();
         setShowCompletionOverlay(false);
+        setOverlayDismissed(false);
         setQuizStarted(false);
         setQuizSubmitted(false);
         setQuizResults([]);
@@ -122,6 +124,16 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
     initializeVideo();
   }, [open, videoId, user?.email, loadVideoData, resetVideoData, resetProgress, loadExistingProgress, toast]);
+
+  // Effect to show completion overlay when progress reaches completion threshold
+  useEffect(() => {
+    if (!quiz || wasEverCompleted || overlayDismissed || quizStarted) return;
+    
+    // Show overlay if progress is 99% or higher and video has a quiz
+    if (progress >= 99) {
+      setShowCompletionOverlay(true);
+    }
+  }, [progress, quiz, wasEverCompleted, overlayDismissed, quizStarted]);
 
   // Handle video completion
   const handleVideoCompletion = useCallback(() => {
@@ -240,6 +252,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
     setQuizStarted(true);
     setShowCompletionOverlay(false);
+    setOverlayDismissed(true);
     setQuizResponses([]);
     setAllQuestionsAnswered(false);
     setHasQuizChanges(false);
@@ -254,6 +267,12 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       }
     }, 100);
   }, [wasEverCompleted]);
+
+  // Handle closing the completion overlay
+  const handleCloseOverlay = useCallback(() => {
+    setShowCompletionOverlay(false);
+    setOverlayDismissed(true);
+  }, []);
 
   // Handle quiz responses change
   const handleQuizResponsesChange = useCallback((responses: QuizSubmissionData[], allAnswered: boolean) => {
@@ -341,6 +360,19 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             </div>
           )}
 
+          {/* Persistent Quiz CTA Button */}
+          {quiz && !wasEverCompleted && overlayDismissed && !quizStarted && progress >= 99 && (
+            <div className="pb-4">
+              <Button 
+                onClick={handleStartQuiz}
+                className="w-full"
+                size="lg"
+              >
+                Start Quiz to Complete Training
+              </Button>
+            </div>
+          )}
+
           <div 
             className="w-full aspect-video bg-black rounded-lg overflow-hidden shadow-inner flex-shrink-0 relative"
             data-video-container
@@ -364,6 +396,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 quiz={quiz}
                 onStartQuiz={handleStartQuiz}
                 onCompleteTraining={handleCompleteTraining}
+                onClose={quiz ? handleCloseOverlay : undefined}
               />
             )}
           </div>
