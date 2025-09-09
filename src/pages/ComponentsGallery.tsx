@@ -858,17 +858,26 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                {/* Default Banner */}
+                <h4 className="text-sm font-medium text-muted-foreground">Default Banner - All Variant Options</h4>
+                
+                {/* Default Banner - Basic */}
                 <Banner
                   title="Default Banner"
-                  description="This is a default banner with modern styling and shadow effects."
+                  description="Basic banner with icon and no actions."
                 />
 
-                {/* Info Banner */}
+                {/* Default Banner - With Close Action */}
                 <Banner
-                  variant="info"
-                  title="Information"
-                  description="This is an informational banner to highlight important updates or announcements."
+                  title="Default Banner with Close"
+                  description="Banner with dismissible close action."
+                  dismissible
+                  onDismiss={() => console.log("Banner dismissed")}
+                />
+
+                {/* Default Banner - With Button */}
+                <Banner
+                  title="Default Banner with Action"
+                  description="Banner with action button."
                   actions={
                     <Button variant="outline" size="sm">
                       Learn More
@@ -876,105 +885,56 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   }
                 />
 
+                {/* Default Banner - Without Button */}
+                <Banner
+                  title="Default Banner without Button"
+                  description="Banner with no action buttons (same as basic)."
+                />
+
+                {/* Default Banner - With Icon */}
+                <Banner
+                  title="Default Banner with Icon"
+                  description="Banner with icon displayed (default behavior)."
+                  showIcon={true}
+                />
+
+                {/* Default Banner - Without Icon */}
+                <Banner
+                  title="Default Banner without Icon"
+                  description="Banner with icon hidden."
+                  showIcon={false}
+                />
+
+                <Separator className="my-6" />
+
+                <h4 className="text-sm font-medium text-muted-foreground">Other Banner Types</h4>
+
+                {/* Info Banner */}
+                <Banner
+                  variant="info"
+                  title="Information"
+                  description="Informational banner for updates or announcements."
+                />
+
                 {/* Success Banner */}
                 <Banner
                   variant="success"
                   title="Success"
-                  description="Your action was completed successfully! All changes have been saved."
-                  actions={
-                    <Button variant="outline" size="sm">
-                      View Details
-                    </Button>
-                  }
+                  description="Success banner for completed operations."
                 />
 
                 {/* Warning Banner */}
                 <Banner
                   variant="warning"
                   title="Warning"
-                  description="Please review your settings before proceeding. Some actions cannot be undone."
-                  actions={
-                    <Button variant="outline" size="sm">
-                      Review Settings
-                    </Button>
-                  }
+                  description="Warning banner for important notices."
                 />
 
                 {/* Error Banner */}
                 <Banner
                   variant="error"
                   title="Error"
-                  description="An error occurred while processing your request. Please try again or contact support."
-                  actions={
-                    <Button variant="outline" size="sm">
-                      Contact Support
-                    </Button>
-                  }
-                />
-
-                {/* Destructive Banner (alias for error) */}
-                <Banner
-                  variant="destructive"
-                  title="Destructive Action"
-                  description="This action cannot be undone and may result in permanent data loss."
-                  actions={
-                    <Button variant="destructive" size="sm">
-                      Proceed Anyway
-                    </Button>
-                  }
-                />
-
-                {/* Dismissible Banner */}
-                <Banner
-                  variant="info"
-                  title="Dismissible Banner"
-                  description="This banner can be dismissed by clicking the X button in the top right corner."
-                  dismissible
-                  onDismiss={() => console.log("Banner dismissed")}
-                />
-
-                {/* Banner with Multiple Actions */}
-                <Banner
-                  variant="warning"
-                  title="Action Required"
-                  description="Your account needs verification to continue using all features."
-                  actions={
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline">
-                        Verify Now
-                      </Button>
-                      <Button size="sm" variant="ghost">
-                        Later
-                      </Button>
-                    </div>
-                  }
-                />
-
-                {/* Banner without Icon */}
-                <Banner
-                  variant="info"
-                  title="No Icon Banner"
-                  description="This banner demonstrates the option to hide the icon."
-                  showIcon={false}
-                />
-
-                {/* Banner with Dismissible and Actions */}
-                <Banner
-                  variant="success"
-                  title="Complete Banner"
-                  description="This banner shows all features: custom icon, title, description, actions, and dismissible functionality."
-                  dismissible
-                  onDismiss={() => console.log("Complete banner dismissed")}
-                  actions={
-                    <div className="flex space-x-2">
-                      <Button size="sm">
-                        Primary Action
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        Secondary
-                      </Button>
-                    </div>
-                  }
+                  description="Error banner for system issues or failures."
                 />
               </div>
             </CardContent>

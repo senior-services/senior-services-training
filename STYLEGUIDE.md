@@ -69,44 +69,59 @@ These components ensure consistent spacing across all form controls throughout t
 
 ### Banner Component Usage
 
-The `Banner` component is the unified component for notifications, alerts, status messages, and announcements. It replaces the deprecated `Alert` component.
+Use the `Banner` component as the unified solution for all notifications, alerts, and status messages. The deprecated `Alert` component should not be used.
 
-**Variants:**
-- `default` - neutral messaging
-- `info` - informational content (blue theme)
-- `success` - positive feedback (green theme)  
-- `warning` - cautionary messages (yellow theme)
-- `error` - error states (red theme)
-- `destructive` - destructive actions (red theme, alias for error)
+**Available Variants:**
+- `default` - Standard banner with neutral styling
+- `info` / `information` - Informational messages (blue styling)
+- `success` - Success confirmations (green styling)  
+- `warning` - Warnings and cautionary messages (yellow styling)
+- `error` / `destructive` - Error states and destructive actions (red styling)
 
-**Features:**
-- Optional title and description
-- Optional action buttons via `actions` prop
-- Optional dismiss functionality via `dismissible` and `onDismiss`
-- Optional icon display via `showIcon` prop
-- Built-in modern drop shadow (`shadow-card hover:shadow-lg`)
-- Accessibility support with `role="alert"`
+**Consistent Features (all variants support):**
+- **Close action**: Use `dismissible` prop and `onDismiss` callback
+- **Action buttons**: Use `actions` prop to add buttons
+- **Icon display**: Use `showIcon` prop (true by default)
+- **Custom content**: Use `title`, `description`, or `children` props
 
 **✅ Correct Usage:**
+
 ```tsx
-<Banner
+// Basic banner
+<Banner 
+  variant="info" 
+  title="Information" 
+  description="Your message here" 
+/>
+
+// With all options
+<Banner 
   variant="warning"
   title="Action Required"
-  description="Your account needs verification."
-  actions={
-    <Button size="sm" variant="outline">
-      Verify Now
-    </Button>
-  }
+  description="Important message"
   dismissible
   onDismiss={() => handleDismiss()}
+  showIcon={true}
+  actions={
+    <Button variant="outline" size="sm">
+      Take Action
+    </Button>
+  }
+/>
+
+// Without icon
+<Banner 
+  variant="success"
+  title="Success"
+  description="Operation completed"
+  showIcon={false}
 />
 ```
 
 **When to use Banner vs Toast vs AlertDialog:**
-- **Banner**: Persistent contextual information, status updates, or actionable messages that remain visible
-- **Toast**: Temporary feedback messages that auto-dismiss
-- **AlertDialog**: Critical decisions requiring user confirmation before proceeding
+- **Banner**: Persistent notifications, page-level alerts, status messages
+- **Toast**: Temporary feedback, success/error confirmations
+- **AlertDialog**: Modal confirmations, destructive action warnings
 
 ### ESLint Rules
 

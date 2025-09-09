@@ -12,10 +12,11 @@ const bannerVariants = cva(
       variant: {
         default: "bg-background text-foreground",
         info: "bg-blue-50 text-blue-900 border-blue-200 dark:bg-blue-950/20 dark:text-blue-100 dark:border-blue-900/50",
+        information: "bg-blue-50 text-blue-900 border-blue-200 dark:bg-blue-950/20 dark:text-blue-100 dark:border-blue-900/50", // Alias for info
         success: "bg-green-50 text-green-900 border-green-200 dark:bg-green-950/20 dark:text-green-100 dark:border-green-900/50",
         warning: "bg-yellow-50 text-yellow-900 border-yellow-200 dark:bg-yellow-950/20 dark:text-yellow-100 dark:border-yellow-900/50",
         error: "bg-red-50 text-red-900 border-red-200 dark:bg-red-950/20 dark:text-red-100 dark:border-red-900/50",
-        destructive: "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
+        destructive: "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive", // Alias for error
       },
     },
     defaultVariants: {
@@ -26,10 +27,11 @@ const bannerVariants = cva(
 
 const iconMap = {
   info: Info,
+  information: Info, // Alias for info
   success: CheckCircle,
   warning: AlertTriangle,
   error: XCircle,
-  destructive: XCircle,
+  destructive: XCircle, // Alias for error
   default: Info,
 }
 
