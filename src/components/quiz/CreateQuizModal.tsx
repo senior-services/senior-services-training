@@ -13,6 +13,7 @@ import { useState } from "react";
 import { QuizQuestion, QuizQuestionOption } from "@/types/quiz";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { OptionList, OptionRow } from "@/components/ui/option-list";
 
 interface CreateQuizModalProps {
   open: boolean;
@@ -306,78 +307,33 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                     </Select>
                   </div>
 
-                   {(question.question_type === 'multiple_choice' || question.question_type === 'single_answer') && (
-                     <div className="space-y-3">
-                       <div className="flex items-center justify-between">
-                         <Label>Answer Options</Label>
-                         <Button
-                           onClick={() => addOption(questionIndex)}
-                           variant="outline"
-                           size="sm"
-                         >
-                           <Plus className="w-4 h-4 mr-2" />
-                           Add Option
-                         </Button>
-                       </div>
-                       
-                        {question.question_type === 'single_answer' ? (
-                          <div className="space-y-3">
-                            <RadioGroup
-                              value={question.options.find(opt => opt.is_correct)?.order_index?.toString() || ""}
-                              onValueChange={(value) => {
-                                const selectedIndex = parseInt(value);
-                                const updatedOptions = question.options.map((opt, i) => ({
-                                  ...opt,
-                                  is_correct: i === selectedIndex
-                                }));
-                                updateQuestion(questionIndex, { options: updatedOptions });
-                              }}
-                              className="space-y-3"
-                            >
-                              {question.options.map((option, optionIndex) => (
-                                <div key={optionIndex} className="flex items-center gap-2 p-3 border rounded">
-                                  <Input
-                                    value={option.option_text}
-                                    onChange={(e) => updateOption(questionIndex, optionIndex, { option_text: e.target.value })}
-                                    placeholder={`Option ${optionIndex + 1}`}
-                                    className="flex-1"
-                                  />
-                                  
-                                  <div className="flex items-center space-x-2">
-                                    <RadioGroupItem 
-                                      value={optionIndex.toString()}
-                                      id={`question_${questionIndex}_option_${optionIndex}`} 
-                                    />
-                                    <Label 
-                                      htmlFor={`question_${questionIndex}_option_${optionIndex}`} 
-                                      className="whitespace-nowrap cursor-pointer"
-                                    >
-                                      Correct
-                                    </Label>
-                                  </div>
-                                  
-                                  {question.options.length > 2 && (
-                                    <Button
-                                      onClick={() => removeOption(questionIndex, optionIndex)}
-                                      variant="ghost"
-                                      size="sm"
-                                      className="text-destructive hover:text-destructive"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  )}
-                                </div>
-                              ))}
-                            </RadioGroup>
-                            
-                            {validationErrors[questionIndex] && (
-                              <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
-                                {validationErrors[questionIndex]}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="space-y-3">
+                  {(question.question_type === 'multiple_choice' || question.question_type === 'single_answer') && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label>Answer Options</Label>
+                        <Button
+                          onClick={() => addOption(questionIndex)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Option
+                        </Button>
+                      </div>
+                      
+                      {question.question_type === 'single_answer' ? (
+                        <div className="space-y-3">
+                          <RadioGroup
+                            value={question.options.find(opt => opt.is_correct)?.order_index?.toString() || ""}
+                            onValueChange={(value) => {
+                              const selectedIndex = parseInt(value);
+                              const updatedOptions = question.options.map((opt, i) => ({
+                                ...opt,
+                                is_correct: i === selectedIndex
+                              }));
+                              updateQuestion(questionIndex, { options: updatedOptions });
+                            }}
+                          >
                             {question.options.map((option, optionIndex) => (
                               <div key={optionIndex} className="flex items-center gap-2 p-3 border rounded">
                                 <Input
@@ -387,13 +343,10 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                                   className="flex-1"
                                 />
                                 
-                                <div className="flex items-center space-x-2">
-                                  <Checkbox
-                                    id={`question_${questionIndex}_option_${optionIndex}`}
-                                    checked={option.is_correct}
-                                    onCheckedChange={(checked) => {
-                                      updateOption(questionIndex, optionIndex, { is_correct: checked as boolean });
-                                    }}
+                                <OptionRow>
+                                  <RadioGroupItem 
+                                    value={optionIndex.toString()}
+                                    id={`question_${questionIndex}_option_${optionIndex}`} 
                                   />
                                   <Label 
                                     htmlFor={`question_${questionIndex}_option_${optionIndex}`} 
@@ -401,7 +354,7 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                                   >
                                     Correct
                                   </Label>
-                                </div>
+                                </OptionRow>
                                 
                                 {question.options.length > 2 && (
                                   <Button
@@ -415,16 +368,65 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                                 )}
                               </div>
                             ))}
-                            
-                            {validationErrors[questionIndex] && (
-                              <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
-                                {validationErrors[questionIndex]}
+                          </RadioGroup>
+                          
+                          {validationErrors[questionIndex] && (
+                            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                              {validationErrors[questionIndex]}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <OptionList>
+                            {question.options.map((option, optionIndex) => (
+                              <div key={optionIndex} className="flex items-center gap-2 p-3 border rounded">
+                                <Input
+                                  value={option.option_text}
+                                  onChange={(e) => updateOption(questionIndex, optionIndex, { option_text: e.target.value })}
+                                  placeholder={`Option ${optionIndex + 1}`}
+                                  className="flex-1"
+                                />
+                                
+                                <OptionRow>
+                                  <Checkbox
+                                    id={`question_${questionIndex}_option_${optionIndex}`}
+                                    checked={option.is_correct}
+                                    onCheckedChange={(checked) => {
+                                      updateOption(questionIndex, optionIndex, { is_correct: checked as boolean });
+                                    }}
+                                  />
+                                  <Label 
+                                    htmlFor={`question_${questionIndex}_option_${optionIndex}`} 
+                                    className="whitespace-nowrap cursor-pointer"
+                                  >
+                                    Correct
+                                  </Label>
+                                </OptionRow>
+                                
+                                {question.options.length > 2 && (
+                                  <Button
+                                    onClick={() => removeOption(questionIndex, optionIndex)}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-destructive hover:text-destructive"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        )}
-                     </div>
-                   )}
+                            ))}
+                          </OptionList>
+                          
+                          {validationErrors[questionIndex] && (
+                            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                              {validationErrors[questionIndex]}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {question.question_type === 'true_false' && (
                     <div className="text-sm text-muted-foreground">
@@ -445,7 +447,7 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
           >
             Cancel
           </Button>
-          <Button
+          <Button 
             onClick={handleSubmit}
             disabled={!canSubmit || isSubmitting}
           >

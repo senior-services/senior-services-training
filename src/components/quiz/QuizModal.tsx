@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle } from "lucide-react";
+import { OptionList, OptionRow } from "@/components/ui/option-list";
 
 interface QuizModalProps {
   quiz: QuizWithQuestions;
@@ -115,7 +116,7 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                               const showResult = isSubmitted && isSelected;
                               
                               return (
-                                <div key={option.id} className="flex items-center space-x-2">
+                                <OptionRow key={option.id}>
                                   <RadioGroupItem value={option.id} id={option.id} disabled={isSubmitted} />
                                   <Label htmlFor={option.id} className={`flex-1 ${isSubmitted ? 'cursor-default' : 'cursor-pointer'} flex items-center justify-between`}>
                                     <span>{option.option_text}</span>
@@ -130,7 +131,7 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                       <CheckCircle className="w-5 h-5 text-green-600 ml-2 opacity-50" />
                                     )}
                                   </Label>
-                                </div>
+                                </OptionRow>
                               );
                             })}
                         </RadioGroup>
@@ -161,7 +162,7 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                               const showResult = isSubmitted && isSelected;
                               
                               return (
-                                <div key={option.id} className="flex items-center space-x-2">
+                                <OptionRow key={option.id}>
                                   <RadioGroupItem value={option.id} id={option.id} disabled={isSubmitted} />
                                   <Label htmlFor={option.id} className={`${isSubmitted ? 'cursor-default' : 'cursor-pointer'} flex items-center justify-between`}>
                                     <span className="flex items-center">
@@ -183,7 +184,7 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                       <CheckCircle className="w-5 h-5 text-green-600 ml-2 opacity-50" />
                                     )}
                                   </Label>
-                                </div>
+                                </OptionRow>
                               );
                             })}
                         </RadioGroup>
@@ -214,7 +215,7 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                               const showResult = isSubmitted && isSelected;
                               
                               return (
-                                <div key={option.id} className="flex items-center space-x-2">
+                                <OptionRow key={option.id}>
                                   <RadioGroupItem value={option.id} id={option.id} disabled={isSubmitted} />
                                   <Label htmlFor={option.id} className={`flex-1 ${isSubmitted ? 'cursor-default' : 'cursor-pointer'} flex items-center justify-between`}>
                                     <span>{option.option_text}</span>
@@ -229,7 +230,7 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                       <CheckCircle className="w-5 h-5 text-green-600 ml-2 opacity-50" />
                                     )}
                                   </Label>
-                                </div>
+                                </OptionRow>
                               );
                             })}
                         </RadioGroup>

@@ -19,11 +19,22 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": [
-        "warn",
-        { allowConstantExport: true },
-      ],
-      "@typescript-eslint/no-unused-vars": "off",
+                    "react-refresh/only-export-components": [
+                        "warn",
+                        { allowConstantExport: true },
+                    ],
+                    "@typescript-eslint/no-unused-vars": "off",
+                    "no-restricted-syntax": [
+                        "error",
+                        {
+                            selector: "JSXElement[openingElement.name.name='RadioGroup'][openingElement.attributes.*.name.name='className']",
+                            message: "Do not use className on RadioGroup components. Use OptionList wrapper for spacing instead."
+                        },
+                        {
+                            selector: "JSXElement[openingElement.name.name='Checkbox'][openingElement.attributes.*.name.name='className']",
+                            message: "Do not use className on individual Checkbox components. Use OptionList wrapper for spacing instead."
+                        }
+                    ]
     },
   }
 );
