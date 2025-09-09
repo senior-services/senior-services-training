@@ -15,6 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Banner } from "@/components/ui/banner";
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -881,73 +882,83 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           <Card id="banners" className="shadow-card hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle>Banners</CardTitle>
-              <CardDescription>Banner-style notifications and announcements</CardDescription>
+              <CardDescription>Banner components for prominent notifications, announcements, and contextual information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 {/* Info Banner */}
-                <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
-                  <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <AlertTitle className="text-blue-800 dark:text-blue-200">Information</AlertTitle>
-                  <AlertDescription className="text-blue-700 dark:text-blue-300">
-                    This is an informational banner to highlight important updates or announcements.
-                  </AlertDescription>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-3 border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/20"
-                  >
-                    Learn More
-                  </Button>
-                </Alert>
+                <Banner
+                  variant="info"
+                  title="Information"
+                  description="This is an informational banner to highlight important updates or announcements."
+                  actions={
+                    <Button variant="outline" size="sm">
+                      Learn More
+                    </Button>
+                  }
+                />
 
                 {/* Success Banner */}
-                <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30">
-                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  <AlertTitle className="text-green-800 dark:text-green-200">Success</AlertTitle>
-                  <AlertDescription className="text-green-700 dark:text-green-300">
-                    Your action was completed successfully! All changes have been saved.
-                  </AlertDescription>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-3 border-green-300 text-green-700 hover:bg-green-100 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-900/20"
-                  >
-                    View Details
-                  </Button>
-                </Alert>
+                <Banner
+                  variant="success"
+                  title="Success"
+                  description="Your action was completed successfully! All changes have been saved."
+                  actions={
+                    <Button variant="outline" size="sm">
+                      View Details
+                    </Button>
+                  }
+                />
 
                 {/* Warning Banner */}
-                <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30">
-                  <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                  <AlertTitle className="text-yellow-800 dark:text-yellow-200">Warning</AlertTitle>
-                  <AlertDescription className="text-yellow-700 dark:text-yellow-300">
-                    Please review your settings before proceeding. Some actions cannot be undone.
-                  </AlertDescription>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-3 border-yellow-300 text-yellow-700 hover:bg-yellow-100 dark:border-yellow-700 dark:text-yellow-300 dark:hover:bg-yellow-900/20"
-                  >
-                    Review Settings
-                  </Button>
-                </Alert>
+                <Banner
+                  variant="warning"
+                  title="Warning"
+                  description="Please review your settings before proceeding. Some actions cannot be undone."
+                  actions={
+                    <Button variant="outline" size="sm">
+                      Review Settings
+                    </Button>
+                  }
+                />
 
                 {/* Error Banner */}
-                <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
-                  <X className="h-4 w-4 text-red-600 dark:text-red-400" />
-                  <AlertTitle className="text-red-800 dark:text-red-200">Error</AlertTitle>
-                  <AlertDescription className="text-red-700 dark:text-red-300">
-                    An error occurred while processing your request. Please try again or contact support.
-                  </AlertDescription>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-3 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/20"
-                  >
-                    Contact Support
-                  </Button>
-                </Alert>
+                <Banner
+                  variant="error"
+                  title="Error"
+                  description="An error occurred while processing your request. Please try again or contact support."
+                  actions={
+                    <Button variant="outline" size="sm">
+                      Contact Support
+                    </Button>
+                  }
+                />
+
+                {/* Dismissible Banner */}
+                <Banner
+                  variant="info"
+                  title="Dismissible Banner"
+                  description="This banner can be dismissed by clicking the X button."
+                  dismissible
+                  onDismiss={() => console.log("Banner dismissed")}
+                />
+
+                {/* Banner with Multiple Actions */}
+                <Banner
+                  variant="warning"
+                  title="Action Required"
+                  description="Your account needs verification to continue using all features."
+                  actions={
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline">
+                        Verify Now
+                      </Button>
+                      <Button size="sm" variant="ghost">
+                        Later
+                      </Button>
+                    </div>
+                  }
+                />
               </div>
             </CardContent>
           </Card>
