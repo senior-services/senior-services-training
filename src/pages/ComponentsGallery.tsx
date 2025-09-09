@@ -244,16 +244,21 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
             {/* Anchor Navigation */}
             <nav className="pt-4">
               <ul className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-x-6 text-left">
-                <li className="break-inside-avoid mb-1">
-                  <a href="#alerts" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Alerts
-                  </a>
-                </li>
-                <li className="break-inside-avoid mb-1">
-                  <a href="#badges" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
-                    Badges
-                  </a>
-                </li>
+                 <li className="break-inside-avoid mb-1">
+                   <a href="#alerts" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                     Alerts
+                   </a>
+                 </li>
+                 <li className="break-inside-avoid mb-1">
+                   <a href="#banners" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                     Banners
+                   </a>
+                 </li>
+                 <li className="break-inside-avoid mb-1">
+                   <a href="#badges" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                     Badges
+                   </a>
+                 </li>
                 <li className="break-inside-avoid mb-1">
                   <a href="#buttons" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Buttons
@@ -867,6 +872,81 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <X className="h-4 w-4" />
                   <AlertTitle>Error Alert</AlertTitle>
                   <AlertDescription>This is an error alert message.</AlertDescription>
+                </Alert>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Banners */}
+          <Card id="banners" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+            <CardHeader>
+              <CardTitle>Banners</CardTitle>
+              <CardDescription>Banner-style notifications and announcements</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                {/* Info Banner */}
+                <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
+                  <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <AlertTitle className="text-blue-800 dark:text-blue-200">Information</AlertTitle>
+                  <AlertDescription className="text-blue-700 dark:text-blue-300">
+                    This is an informational banner to highlight important updates or announcements.
+                  </AlertDescription>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-3 border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/20"
+                  >
+                    Learn More
+                  </Button>
+                </Alert>
+
+                {/* Success Banner */}
+                <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <AlertTitle className="text-green-800 dark:text-green-200">Success</AlertTitle>
+                  <AlertDescription className="text-green-700 dark:text-green-300">
+                    Your action was completed successfully! All changes have been saved.
+                  </AlertDescription>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-3 border-green-300 text-green-700 hover:bg-green-100 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-900/20"
+                  >
+                    View Details
+                  </Button>
+                </Alert>
+
+                {/* Warning Banner */}
+                <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30">
+                  <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                  <AlertTitle className="text-yellow-800 dark:text-yellow-200">Warning</AlertTitle>
+                  <AlertDescription className="text-yellow-700 dark:text-yellow-300">
+                    Please review your settings before proceeding. Some actions cannot be undone.
+                  </AlertDescription>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-3 border-yellow-300 text-yellow-700 hover:bg-yellow-100 dark:border-yellow-700 dark:text-yellow-300 dark:hover:bg-yellow-900/20"
+                  >
+                    Review Settings
+                  </Button>
+                </Alert>
+
+                {/* Error Banner */}
+                <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
+                  <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                  <AlertTitle className="text-red-800 dark:text-red-200">Error</AlertTitle>
+                  <AlertDescription className="text-red-700 dark:text-red-300">
+                    An error occurred while processing your request. Please try again or contact support.
+                  </AlertDescription>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-3 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/20"
+                  >
+                    Contact Support
+                  </Button>
                 </Alert>
               </div>
             </CardContent>
