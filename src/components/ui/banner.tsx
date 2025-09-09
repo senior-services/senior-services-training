@@ -38,7 +38,7 @@ export interface BannerProps
     VariantProps<typeof bannerVariants> {
   title?: string
   description?: string
-  icon?: React.ComponentType<{ className?: string }>
+  icon?: React.ElementType<{ className?: string }>
   showIcon?: boolean
   dismissible?: boolean
   onDismiss?: () => void
@@ -59,7 +59,7 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>(
     children, 
     ...props 
   }, ref) => {
-    const Icon = CustomIcon || iconMap[variant as keyof typeof iconMap] || iconMap.default
+    const IconComp = (CustomIcon || iconMap[variant as keyof typeof iconMap] || iconMap.default) as React.ElementType<{ className?: string }>
 
     return (
       <div
@@ -70,9 +70,9 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>(
       >
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3 flex-1">
-            {showIcon && (
-              <Icon className="h-5 w-5 mt-0.5 shrink-0" />
-            )}
+            {showIcon && IconComp ? (
+              <IconComp className="h-5 w-5 mt-0.5 shrink-0" />
+            ) : null}
             <div className="flex-1 min-w-0">
               {title && (
                 <h5 className="mb-1 font-medium leading-none tracking-tight">{title}</h5>
