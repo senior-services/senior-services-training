@@ -163,6 +163,14 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
         }
         
         return { ...question, options: nonEmptyOptions };
+      } else if (question.question_type === 'true_false') {
+        // For true/false questions, ensure exactly one correct answer
+        const hasCorrectAnswer = question.options.some(opt => opt.is_correct);
+        if (!hasCorrectAnswer) {
+          errors[index] = 'Please select the correct answer (True or False).';
+        }
+        
+        return question;
       }
       return question;
     });
@@ -290,12 +298,16 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                     <Label>Question Type</Label>
                     <Select
                       value={question.question_type}
-                      onValueChange={(value: any) => {
-                        updateQuestion(questionIndex, { 
-                          question_type: value,
-                          options: value === 'true_false' ? [] : question.options
-                        });
-                      }}
+                    onValueChange={(value: any) => {
+                      const newOptions = value === 'true_false' ? [
+                        { option_text: 'True', is_correct: false, order_index: 0 },
+                        { option_text: 'False', is_correct: false, order_index: 1 }
+                      ] : question.options;
+                      updateQuestion(questionIndex, { 
+                        question_type: value,
+                        options: newOptions
+                      });
+                    }}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -430,8 +442,42 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                   )}
 
                   {question.question_type === 'true_false' && (
-                    <div className="text-sm text-muted-foreground">
-                      True/False questions will be automatically generated with "True" and "False" options.
+                    <div className="space-y-3">
+                      <Label>Select Correct Answer</Label>
+                      <div className="space-y-3">
+                        <div className="text-sm text-muted-foreground mb-2">
+                          Choose which option is correct:
+                        </div>
+                        <RadioGroup
+                          value={question.options.find(opt => opt.is_correct)?.option_text || ""}
+                          onValueChange={(value) => {
+                            const updatedOptions = question.options.map(opt => ({
+                              ...opt,
+                              is_correct: opt.option_text === value
+                            }));
+                            updateQuestion(questionIndex, { options: updatedOptions });
+                          }}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="True" id={`question_${questionIndex}_true`} />
+                            <Label htmlFor={`question_${questionIndex}_true`} className="cursor-pointer">
+                              True
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="False" id={`question_${questionIndex}_false`} />
+                            <Label htmlFor={`question_${questionIndex}_false`} className="cursor-pointer">
+                              False
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                        
+                        {validationErrors[questionIndex] && (
+                          <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                            {validationErrors[questionIndex]}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </CardContent>

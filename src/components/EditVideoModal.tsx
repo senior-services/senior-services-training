@@ -230,6 +230,14 @@ export const EditVideoModal = ({
         // Ensure minimum 2 visible options in UI
         const optionsWithMinimum = ensureMinOptions(question.options, 2);
         return { ...question, options: optionsWithMinimum };
+      } else if (question.question_type === 'true_false') {
+        // For true/false questions, ensure exactly one correct answer
+        const hasCorrectAnswer = question.options.some(opt => opt.is_correct);
+        if (!hasCorrectAnswer) {
+          errors[index] = 'Please select the correct answer (True or False).';
+        }
+        
+        return question;
       }
       return question;
     });
@@ -270,6 +278,12 @@ export const EditVideoModal = ({
           if (!hasCorrectAnswer) {
             errors[index] = 'Please select one correct answer for this single answer question.';
           }
+        }
+      } else if (question.question_type === 'true_false') {
+        // For true/false questions, ensure exactly one correct answer
+        const hasCorrectAnswer = question.options.some(opt => opt.is_correct);
+        if (!hasCorrectAnswer) {
+          errors[index] = 'Please select the correct answer (True or False).';
         }
       }
     });
@@ -475,6 +489,14 @@ export const EditVideoModal = ({
     // Reset validation display when question type changes
     if (updates.question_type) {
       setShowQuizValidation(false);
+      
+      // Initialize true/false options when switching to true_false type
+      if (updates.question_type === 'true_false') {
+        updates.options = [
+          { option_text: 'True', is_correct: false, order_index: 0 },
+          { option_text: 'False', is_correct: false, order_index: 1 }
+        ];
+      }
     }
   };
 
@@ -600,20 +622,45 @@ export const EditVideoModal = ({
               });
             }
           }
-        } else if (questionData.question_type === 'true_false' && !questionData.id) {
-          // Only create True/False options for new true/false questions
-          await optionOperations.create({
-            question_id: question.id,
-            option_text: 'True',
-            is_correct: true,
-            order_index: 0
-          });
-          await optionOperations.create({
-            question_id: question.id,
-            option_text: 'False',
-            is_correct: false,
-            order_index: 1
-          });
+        } else if (questionData.question_type === 'true_false') {
+          if (!questionData.id) {
+            // Create True/False options for new questions based on user selection
+            const trueOption = questionData.options.find(opt => opt.option_text === 'True');
+            const falseOption = questionData.options.find(opt => opt.option_text === 'False');
+            
+            await optionOperations.create({
+              question_id: question.id,
+              option_text: 'True',
+              is_correct: trueOption?.is_correct || false,
+              order_index: 0
+            });
+            await optionOperations.create({
+              question_id: question.id,
+              option_text: 'False',
+              is_correct: falseOption?.is_correct || false,
+              order_index: 1
+            });
+          } else {
+            // Update existing True/False options
+            const trueOption = questionData.options.find(opt => opt.option_text === 'True');
+            const falseOption = questionData.options.find(opt => opt.option_text === 'False');
+            
+            if (trueOption?.id) {
+              await optionOperations.update(trueOption.id, {
+                option_text: 'True',
+                is_correct: trueOption.is_correct,
+                order_index: 0
+              });
+            }
+            
+            if (falseOption?.id) {
+              await optionOperations.update(falseOption.id, {
+                option_text: 'False',
+                is_correct: falseOption.is_correct,
+                order_index: 1
+              });
+            }
+          }
         }
       }
 
@@ -686,17 +733,20 @@ export const EditVideoModal = ({
             });
           }
         } else if (questionData.question_type === 'true_false') {
-          // Create True/False options
+          // Create True/False options based on user selection
+          const trueOption = questionData.options.find(opt => opt.option_text === 'True');
+          const falseOption = questionData.options.find(opt => opt.option_text === 'False');
+          
           await optionOperations.create({
             question_id: question.id,
             option_text: 'True',
-            is_correct: true,
+            is_correct: trueOption?.is_correct || false,
             order_index: 0
           });
           await optionOperations.create({
             question_id: question.id,
             option_text: 'False',
-            is_correct: false,
+            is_correct: falseOption?.is_correct || false,
             order_index: 1
           });
         }
@@ -1064,8 +1114,42 @@ export const EditVideoModal = ({
                             )}
 
                             {question.question_type === 'true_false' && (
-                              <div className="text-sm text-muted-foreground">
-                                True/False questions will be automatically generated with "True" and "False" options.
+                              <div className="space-y-3">
+                                <Label>Select Correct Answer</Label>
+                                <div className="space-y-3">
+                                  <div className="text-sm text-muted-foreground mb-2">
+                                    Choose which option is correct:
+                                  </div>
+                                  <RadioGroup
+                                    value={question.options.find(opt => opt.is_correct)?.option_text || ""}
+                                    onValueChange={(value) => {
+                                      const updatedOptions = question.options.map(opt => ({
+                                        ...opt,
+                                        is_correct: opt.option_text === value
+                                      }));
+                                      updateQuestion(questionIndex, { options: updatedOptions });
+                                    }}
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="True" id={`edit_question_${questionIndex}_true`} />
+                                      <Label htmlFor={`edit_question_${questionIndex}_true`} className="cursor-pointer">
+                                        True
+                                      </Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="False" id={`edit_question_${questionIndex}_false`} />
+                                      <Label htmlFor={`edit_question_${questionIndex}_false`} className="cursor-pointer">
+                                        False
+                                      </Label>
+                                    </div>
+                                  </RadioGroup>
+                                  
+                                  {showQuizValidation && questionValidationErrors[questionIndex] && (
+                                    <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                                      {questionValidationErrors[questionIndex]}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             )}
                           </CardContent>
