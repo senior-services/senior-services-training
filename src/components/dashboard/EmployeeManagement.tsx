@@ -513,8 +513,8 @@ export const EmployeeManagement: React.FC<{
                                                   {assignment.video_title}
                                                 </TableCell>
                                                  <TableCell className="py-1">
-                                                    {assignment.hasQuiz ? quizAttempt ? <span className="text-foreground whitespace-nowrap">
-                                                          {quizAttempt.score}/{quizAttempt.total_questions} Correct
+                                                     {assignment.hasQuiz ? quizAttempt ? <span className="text-foreground whitespace-nowrap">
+                                                          {Math.round((quizAttempt.score / quizAttempt.total_questions) * 100)}% ({quizAttempt.score}/{quizAttempt.total_questions} Correct)
                                                         </span> : <span className="text-foreground whitespace-nowrap">Not Completed</span> : <span className="text-muted-foreground whitespace-nowrap">--</span>}
                                                  </TableCell>
                                                 <TableCell className="py-1">

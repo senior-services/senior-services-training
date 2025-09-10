@@ -303,16 +303,16 @@ export const TrainingCard = memo<TrainingCardProps>(({
           
           {/* Quiz Results for Completed Training */}
           {trainingStatus.isCompleted && sanitizedVideo.quizSummary && (
-            <div className="mt-2 flex items-center gap-2" role="status" aria-label={`Quiz results: ${sanitizedVideo.quizSummary.percent}%`}>
+            <div className="mt-2 flex items-center gap-2" role="status" aria-label={`Quiz results: ${sanitizedVideo.quizSummary.percent}% (${sanitizedVideo.quizSummary.correct}/${sanitizedVideo.quizSummary.total} correct)`}>
               <Badge 
                 variant={
                   sanitizedVideo.quizSummary.percent >= 80 ? 'soft-success' : 
                   sanitizedVideo.quizSummary.percent >= 60 ? 'soft-warning' : 'soft-destructive'
                 }
                 className="text-xs"
-                aria-label={`Quiz results: ${sanitizedVideo.quizSummary.percent}%`}
+                aria-label={`Quiz results: ${sanitizedVideo.quizSummary.percent}% (${sanitizedVideo.quizSummary.correct}/${sanitizedVideo.quizSummary.total} correct)`}
               >
-                Quiz results: {sanitizedVideo.quizSummary.percent}%
+                Quiz Results: {sanitizedVideo.quizSummary.percent}% ({sanitizedVideo.quizSummary.correct}/{sanitizedVideo.quizSummary.total} Correct)
               </Badge>
             </div>
           )}
