@@ -227,7 +227,7 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                 // Enhanced styling for quiz results
                                 let optionClassName = `flex-1 ${isSubmitted ? 'cursor-default' : 'cursor-pointer'} flex items-center justify-between transition-colors`;
                                 
-                                // Check if user got any answer wrong for this question (for multiple choice)
+                                 // Check if user got any answer wrong for this question (for multiple choice)
                                  const hasIncorrectAnswers = questionResults.some(r => !r.is_correct);
                                  
                                  // Calculate correct options and determine if "Also Correct" should be shown
@@ -237,15 +237,18 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                  const totalCorrectCount = correctOptionIds.length;
                                  const selectedOptionIds = responses[question.id]?.selected_option_ids || [];
                                  const hasMissedCorrect = correctOptionIds.some(id => !selectedOptionIds.includes(id));
-                                 // Only show "Also Correct" if there are multiple correct answers AND user missed some
+                                 
+                                 // Show "Also Correct" for multiple correct answers when user missed some
                                  const shouldShowAlsoCorrect = totalCorrectCount > 1 && hasMissedCorrect;
+                                 // Show "Correct" for single correct answer when user got it wrong
+                                 const shouldShowSingleCorrect = totalCorrectCount === 1 && hasIncorrectAnswers && hasMissedCorrect;
                                
                                  if (isSubmitted) {
                                    if (isSelected && isSelectedCorrect) {
                                      optionClassName += ' text-emerald-700 bg-emerald-50 border-emerald-200 rounded-md p-3 border';
                                    } else if (isSelected && !isSelectedCorrect) {
                                      optionClassName += ' text-red-700 bg-red-50 border-red-200 rounded-md p-3 border';
-                                   } else if (!isSelected && isCorrect && shouldShowAlsoCorrect) {
+                                   } else if (!isSelected && isCorrect && (shouldShowAlsoCorrect || shouldShowSingleCorrect)) {
                                      optionClassName += ' text-emerald-700 bg-emerald-50 border-emerald-200 rounded-md p-3 border';
                                    }
                                  }
@@ -291,6 +294,11 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                           Also Correct
                                         </Badge>
                                       )}
+                                      {isSubmitted && !isSelected && isCorrect && shouldShowSingleCorrect && (
+                                        <Badge variant="default" className="bg-emerald-100 text-emerald-800 text-xs">
+                                          Correct
+                                        </Badge>
+                                      )}
                                       {isSubmitted && isSelected && (
                                         isSelectedCorrect ? (
                                           <CheckCircle className="w-5 h-5 text-emerald-600" />
@@ -298,7 +306,7 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                           <XCircle className="w-5 h-5 text-red-600" />
                                         )
                                       )}
-                                      {isSubmitted && !isSelected && isCorrect && shouldShowAlsoCorrect && (
+                                      {isSubmitted && !isSelected && isCorrect && (shouldShowAlsoCorrect || shouldShowSingleCorrect) && (
                                        <CheckCircle className="w-5 h-5 text-emerald-600" />
                                      )}
                                     </div>
