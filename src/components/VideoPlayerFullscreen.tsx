@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -364,13 +364,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
   // Handle dialog close
   const handleDialogOpenChange = useCallback((open: boolean) => {
-    if (!open && quizSubmitted) {
-      // If quiz was submitted and user is closing dialog, mark training complete
-      handleMarkTrainingComplete();
-      return;
-    }
     onOpenChange(open);
-  }, [quizSubmitted, handleMarkTrainingComplete, onOpenChange]);
+  }, [onOpenChange]);
 
 
   return (
@@ -463,52 +458,55 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           )}
         </div>
 
-        {/* Dialog Footer - Only show for active quiz attempts, not completed ones */}
-        {quizStarted && quiz && !wasEverCompleted && (
+        {/* Dialog Footer - Show for quiz interactions */}
+        {quiz && (quizStarted || quizSubmitted || wasEverCompleted) && (
           <DialogFooter>
-            <AlertDialog open={showCancelConfirmation} onOpenChange={setShowCancelConfirmation}>
-              <AlertDialogTrigger asChild>
+            {!quizSubmitted && !wasEverCompleted ? (
+              <>
+                <AlertDialog open={showCancelConfirmation} onOpenChange={setShowCancelConfirmation}>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      onClick={handleCancelClick}
+                      className="shadow-md hover:shadow-lg transition-shadow"
+                    >
+                      Cancel
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Cancel Quiz?</AlertDialogTitle>
+                    </AlertDialogHeader>
+                    <div>
+                      <AlertDialogDescription>
+                        You have unsaved changes to your quiz responses. If you cancel now, your answers will be lost and you won't complete this training.
+                      </AlertDialogDescription>
+                    </div>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Keep Working</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleConfirmedCancel}>
+                        Yes, Cancel Quiz
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                
                 <Button
-                  variant="outline"
-                  onClick={handleCancelClick}
+                  onClick={handleQuizSubmit}
+                  disabled={!allQuestionsAnswered}
                   className="shadow-md hover:shadow-lg transition-shadow"
                 >
-                  Cancel
+                  Submit Quiz
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Cancel Quiz?</AlertDialogTitle>
-                </AlertDialogHeader>
-                <div>
-                  <AlertDialogDescription>
-                    You have unsaved changes to your quiz responses. If you cancel now, your answers will be lost and you won't complete this training.
-                  </AlertDialogDescription>
-                </div>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Keep Working</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleConfirmedCancel}>
-                    Yes, Cancel Quiz
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            
-            {!quizSubmitted ? (
-              <Button
-                onClick={handleQuizSubmit}
-                disabled={!allQuestionsAnswered}
-                className="shadow-md hover:shadow-lg transition-shadow"
-              >
-                Submit Quiz
-              </Button>
+              </>
             ) : (
-              <Button
-                onClick={handleMarkTrainingComplete}
-                className="shadow-md hover:shadow-lg transition-shadow bg-green-600 hover:bg-green-700 focus:ring-green-500"
-              >
-                Mark Training Complete
-              </Button>
+              <DialogClose asChild>
+                <Button
+                  className="shadow-md hover:shadow-lg transition-shadow"
+                >
+                  Close
+                </Button>
+              </DialogClose>
             )}
           </DialogFooter>
         )}
