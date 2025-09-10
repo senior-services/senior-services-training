@@ -304,8 +304,9 @@ export const EmployeeManagement: React.FC<{
   };
 
   // Helper function to get deadline badge props
-  const getDeadlineBadge = (dueDate: string | null, progressPercent: number = 0) => {
-    const isCompleted = progressPercent >= 100;
+  const getDeadlineBadge = (dueDate: string | null, progressPercent: number = 0, hasQuizAttempt: boolean = false) => {
+    // Consider completed if progress is 100% OR if quiz attempt exists
+    const isCompleted = progressPercent >= 100 || hasQuizAttempt;
     if (isCompleted) {
       return {
         variant: "ghost-success" as const,
@@ -409,9 +410,18 @@ export const EmployeeManagement: React.FC<{
 
               // Calculate comprehensive status based on required training completion
               const requiredVideos = videos.filter(assignment => assignment.video_type === 'Required');
-              const completedRequiredVideos = requiredVideos.filter(assignment => assignment.progress_percent >= 100);
+              const employeeQuizMap = employeeQuizzes.get(employee.id) || new Map();
+              
+              const completedRequiredVideos = requiredVideos.filter(assignment => {
+                const hasQuizAttempt = employeeQuizMap.has(assignment.video_id);
+                return assignment.progress_percent >= 100 || hasQuizAttempt;
+              });
+              
               const overdueRequiredVideos = requiredVideos.filter(assignment => {
-                if (assignment.progress_percent >= 100) return false; // Completed videos can't be overdue
+                const hasQuizAttempt = employeeQuizMap.has(assignment.video_id);
+                const isCompleted = assignment.progress_percent >= 100 || hasQuizAttempt;
+                
+                if (isCompleted) return false; // Completed videos can't be overdue
                 if (!assignment.due_date) return false; // No due date = not overdue
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -504,10 +514,10 @@ export const EmployeeManagement: React.FC<{
                                           </TableRow>
                                         </TableHeader>
                                         <TableBody className="[&>tr:first-child]:border-t [&>tr:first-child]:border-muted-foreground/30">
-                                          {videos.map(assignment => {
-                                const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent);
+                                           {videos.map(assignment => {
                                 const employeeQuizData = employeeQuizzes.get(employee.id);
                                 const quizAttempt = employeeQuizData?.get(assignment.video_id);
+                                const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent, !!quizAttempt);
                                 return <TableRow key={assignment.assignment_id} className="hover:bg-transparent">
                                                 <TableCell className="py-1">
                                                   {assignment.video_title}

@@ -112,6 +112,37 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
         // Don't fail the entire load if quiz attempts fail
         setQuizAttemptsByVideo({});
       }
+
+      // Data reconciliation: Update video_progress for completed quizzes
+      try {
+        const attempts = await quizOperations.getUserAttempts(userEmail);
+        if (attempts && attempts.length > 0) {
+          for (const attempt of attempts) {
+            const videoId = attempt.quiz.video_id;
+            const correspondingAssignment = videoData.find(item => item.video.id === videoId);
+            
+            // If quiz is completed but video progress is less than 100%, update it
+            const assignmentProgress = (correspondingAssignment.assignment as any)?.progress_percent || 0;
+            if (correspondingAssignment && assignmentProgress < 100) {
+              try {
+                await progressOperations.updateByEmail(userEmail, videoId, 100, new Date(attempt.completed_at));
+              } catch (updateError) {
+                // Silent failure for reconciliation
+                logger.warn('Failed to reconcile video progress for quiz completion', { 
+                  videoId, 
+                  userEmail, 
+                  error: updateError instanceof Error ? updateError.message : String(updateError)
+                });
+              }
+            }
+          }
+        }
+      } catch (error) {
+        // Silent failure for reconciliation
+        logger.warn('Failed to reconcile quiz completion with video progress', { 
+          error: error instanceof Error ? error.message : String(error) 
+        });
+      }
       
       logger.info('Successfully loaded assigned videos', {
         videoCount: videoData.length,
@@ -177,8 +208,15 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       completedAt: quizAttempt.completed_at
     } : undefined;
 
-    // Determine progress - if completed_at exists, force 100%, otherwise use progress_percent
-    const actualProgress = assignment?.completed_at ? 100 : Math.max(0, Math.min(100, assignment?.progress_percent || 0));
+    // Calculate effective progress: if quiz completed, force 100%, otherwise use assignment progress
+    let effectiveProgress = assignment?.completed_at ? 100 : Math.max(0, Math.min(100, assignment?.progress_percent || 0));
+    let effectiveCompletedAt = assignment?.completed_at;
+
+    // If quiz attempt exists, consider video as completed
+    if (quizAttempt) {
+      effectiveProgress = 100;
+      effectiveCompletedAt = effectiveCompletedAt || quizAttempt.completed_at;
+    }
     
     return {
       id: video.id,
@@ -186,7 +224,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       description: sanitizeText(video.description || ''),
       thumbnail: video.thumbnail_url || '', // Use actual thumbnail_url from database
       duration: formatSeconds(video.duration_seconds || 0),
-      progress: actualProgress,
+      progress: effectiveProgress,
       isRequired: video.type === 'Required',
       deadline: assignment?.due_date ? new Date(assignment.due_date).toLocaleDateString() : undefined,
       dueDate: assignment?.due_date || null,
