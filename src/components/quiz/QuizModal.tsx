@@ -47,14 +47,14 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
       
       Object.entries(responsesByQuestion).forEach(([questionId, results]) => {
         const question = quiz.questions.find(q => q.id === questionId);
-        if (question?.question_type === 'multiple_choice' && results.length > 1) {
-          // Multiple selections for multiple choice
+        if (question?.question_type === 'multiple_choice') {
+          // Always use array format for multiple choice questions
           initialResponses[questionId] = {
             question_id: questionId,
             selected_option_ids: results.map(r => r.selected_option_id).filter(Boolean) as string[]
           };
         } else {
-          // Single selection or text answer
+          // Single selection or text answer for other question types
           const result = results[0];
           initialResponses[questionId] = {
             question_id: questionId,
@@ -214,7 +214,8 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                           {question.options
                             .sort((a, b) => a.order_index - b.order_index)
                             .map((option) => {
-                              const currentSelections = responses[question.id]?.selected_option_ids || [];
+                              const currentSelections = responses[question.id]?.selected_option_ids || 
+                                (responses[question.id]?.selected_option_id ? [responses[question.id].selected_option_id!] : []);
                               const isSelected = currentSelections.includes(option.id);
                               const questionResults = getQuestionResults(question.id);
                               const selectedResults = questionResults.filter(r => r.selected_option_id === option.id);
@@ -256,7 +257,8 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                     checked={isSelected}
                                     disabled={isSubmitted}
                                     onCheckedChange={(checked) => {
-                                      const currentSelections = responses[question.id]?.selected_option_ids || [];
+                                       const currentSelections = responses[question.id]?.selected_option_ids || 
+                                         (responses[question.id]?.selected_option_id ? [responses[question.id].selected_option_id!] : []);
                                       let newSelections: string[];
                                       
                                       if (checked) {
