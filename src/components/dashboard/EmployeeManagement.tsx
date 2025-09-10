@@ -141,6 +141,13 @@ export const EmployeeManagement: React.FC<{
       }, () => {
         logger.info('Employee progress changed, refreshing data...');
         loadEmployees();
+      }).on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'quiz_attempts'
+      }, () => {
+        logger.info('Quiz attempt changed, refreshing data...');
+        loadEmployees();
       }).subscribe();
     } catch (error) {
       // Silently fail if WebSockets aren't available (e.g., in insecure contexts)
@@ -202,14 +209,22 @@ export const EmployeeManagement: React.FC<{
               const quizAttempts = await quizOperations.getUserAttempts(employee.email);
               const videoQuizMap = new Map();
 
-              // Group quiz attempts by video_id
+              // Group quiz attempts by video_id, keeping only the latest attempt per video
               for (const attempt of quizAttempts) {
                 if (attempt.quiz?.video_id) {
-                  videoQuizMap.set(attempt.quiz.video_id, {
-                    score: attempt.score,
-                    total_questions: attempt.total_questions,
-                    completed_at: attempt.completed_at
-                  });
+                  const existingAttempt = videoQuizMap.get(attempt.quiz.video_id);
+                  const currentAttemptDate = new Date(attempt.completed_at);
+                  
+                  if (!existingAttempt || new Date(existingAttempt.completed_at) < currentAttemptDate) {
+                    if (existingAttempt) {
+                      logger.info(`Replacing older quiz attempt for video ${attempt.quiz.video_id} with newer attempt from ${attempt.completed_at}`);
+                    }
+                    videoQuizMap.set(attempt.quiz.video_id, {
+                      score: attempt.score,
+                      total_questions: attempt.total_questions,
+                      completed_at: attempt.completed_at
+                    });
+                  }
                 }
               }
               quizMap.set(employee.id, videoQuizMap);
