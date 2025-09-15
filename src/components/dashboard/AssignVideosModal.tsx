@@ -331,15 +331,15 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl h-[80vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Video className="w-5 h-5" />
             Assign Videos to {employee.full_name || employee.email}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 flex flex-col">
+        <DialogScrollArea>
           {loading ? (
             <div className="space-y-4 py-4">
               <LoadingSkeleton lines={1} className="h-16" />
@@ -348,7 +348,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
             </div>
           ) : (
             <>
-              <div className="space-y-3 py-3 flex-shrink-0 border-b">
+              <div className="space-y-3 py-3 border-b">
                 <ToggleGroup 
                   type="single" 
                   value={filterMode} 
@@ -392,108 +392,106 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                 </div>
               </div>
 
-              <DialogScrollArea>
-                   {filteredVideosCount === 0 ? (
-                     <div className="text-center py-8 text-muted-foreground">
-                       <Video className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                       <p>
-                         {filterMode === 'unassigned' && 'No unassigned videos available'}
-                         {filterMode === 'assigned' && 'No assigned videos available'}  
-                         {filterMode === 'all' && 'No training videos available'}
-                       </p>
-                     </div>
-                   ) : (
-                     <div className="space-y-0">
-                       {filteredVideos
-                         .sort((a, b) => a.title.localeCompare(b.title))
-                         .map((video, index) => {
-                         const isSelected = selectedVideoIds.has(video.id);
-                         const wasOriginallyAssigned = assignedVideoIds.has(video.id);
-                         
-                         return (
-                            <div
-                              key={video.id}
-                              className="flex items-center justify-between py-3 border-b last:border-b-0 border-border-primary/50 transition-colors min-h-[69px]"
-                            >
-                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                               <Checkbox
-                                 id={`video-${video.id}`}
-                                 checked={isSelected}
-                                 onCheckedChange={(checked) => 
-                                   handleVideoToggle(video.id, checked as boolean)
-                                 }
-                               />
-                               
-                               <Label 
-                                 htmlFor={`video-${video.id}`}
-                                 className="flex-1 min-w-0 cursor-pointer"
-                               >
-                                 <div className="font-medium text-sm line-clamp-2">
-                                   {video.title}
-                                 </div>
-                               </Label>
-                             </div>
+              {filteredVideosCount === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Video className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>
+                    {filterMode === 'unassigned' && 'No unassigned videos available'}
+                    {filterMode === 'assigned' && 'No assigned videos available'}  
+                    {filterMode === 'all' && 'No training videos available'}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-0">
+                  {filteredVideos
+                    .sort((a, b) => a.title.localeCompare(b.title))
+                    .map((video, index) => {
+                    const isSelected = selectedVideoIds.has(video.id);
+                    const wasOriginallyAssigned = assignedVideoIds.has(video.id);
+                    
+                    return (
+                       <div
+                         key={video.id}
+                         className="flex items-center justify-between py-3 border-b last:border-b-0 border-border-primary/50 transition-colors min-h-[69px]"
+                       >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <Checkbox
+                            id={`video-${video.id}`}
+                            checked={isSelected}
+                            onCheckedChange={(checked) => 
+                              handleVideoToggle(video.id, checked as boolean)
+                            }
+                          />
+                          
+                          <Label 
+                            htmlFor={`video-${video.id}`}
+                            className="flex-1 min-w-0 cursor-pointer"
+                          >
+                            <div className="font-medium text-sm line-clamp-2">
+                              {video.title}
+                            </div>
+                          </Label>
+                        </div>
 
-                             <div className="flex items-center gap-4">
-                               {isSelected && (
-                                 <Popover 
-                                   open={calendarOpen.get(video.id) || false}
-                                   onOpenChange={(open) => {
-                                     setCalendarOpen(prev => {
-                                       const newOpen = new Map(prev);
-                                       newOpen.set(video.id, open);
-                                       return newOpen;
-                                     });
-                                   }}
-                                 >
-                                   <PopoverTrigger asChild>
-                                     <Button
-                                       variant="outline"
-                                       size="sm"
-                                       className={cn(
-                                         "w-[160px] justify-start text-left font-normal",
-                                         !videoDeadlines.get(video.id) && "text-muted-foreground"
-                                       )}
-                                     >
-                                       <CalendarIcon className="mr-2 h-3 w-3" />
-                                       {videoDeadlines.get(video.id) ? (
-                                         format(videoDeadlines.get(video.id)!, "MMM dd, yyyy")
-                                       ) : (
-                                         <span className="text-xs">Pick due date</span>
-                                       )}
-                                     </Button>
-                                   </PopoverTrigger>
-                                   <PopoverContent 
-                                     className="w-auto p-0 z-[9999]" 
-                                     align="end"
-                                     side="bottom"
-                                     sideOffset={5}
-                                     avoidCollisions={true}
-                                     collisionPadding={20}
-                                   >
-                                     <Calendar
-                                       mode="single"
-                                       selected={videoDeadlines.get(video.id)}
-                                       onSelect={(date) => handleDeadlineChange(video.id, date)}
-                                       disabled={(date) =>
-                                         date < new Date(new Date().setHours(0, 0, 0, 0))
-                                       }
-                                       initialFocus
-                                       className="p-3 pointer-events-auto"
-                                     />
-                                   </PopoverContent>
-                                 </Popover>
-                               )}
-                             </div>
-                           </div>
-                         );
-                       })}
-                     </div>
-                   )}
-              </DialogScrollArea>
+                        <div className="flex items-center gap-4">
+                          {isSelected && (
+                            <Popover 
+                              open={calendarOpen.get(video.id) || false}
+                              onOpenChange={(open) => {
+                                setCalendarOpen(prev => {
+                                  const newOpen = new Map(prev);
+                                  newOpen.set(video.id, open);
+                                  return newOpen;
+                                });
+                              }}
+                            >
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className={cn(
+                                    "w-[160px] justify-start text-left font-normal",
+                                    !videoDeadlines.get(video.id) && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-3 w-3" />
+                                  {videoDeadlines.get(video.id) ? (
+                                    format(videoDeadlines.get(video.id)!, "MMM dd, yyyy")
+                                  ) : (
+                                    <span className="text-xs">Pick due date</span>
+                                  )}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent 
+                                className="w-auto p-0 z-[9999]" 
+                                align="end"
+                                side="bottom"
+                                sideOffset={5}
+                                avoidCollisions={true}
+                                collisionPadding={20}
+                              >
+                                <Calendar
+                                  mode="single"
+                                  selected={videoDeadlines.get(video.id)}
+                                  onSelect={(date) => handleDeadlineChange(video.id, date)}
+                                  disabled={(date) =>
+                                    date < new Date(new Date().setHours(0, 0, 0, 0))
+                                  }
+                                  initialFocus
+                                  className="p-3 pointer-events-auto"
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </>
           )}
-        </div>
+        </DialogScrollArea>
 
         <DialogFooter>
           <Button
