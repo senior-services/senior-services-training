@@ -14,11 +14,12 @@ export class AdminService {
    * Get all admin users including pending admins
    */
   static async getAdmins(): Promise<AdminUser[]> {
-    // Get actual admins
+    // Get admin roles with their grant dates
     const { data: adminRoles, error: rolesError } = await supabase
       .from('user_roles')
-      .select('user_id')
-      .eq('role', 'admin');
+      .select('user_id, created_at')
+      .eq('role', 'admin')
+      .order('created_at', { ascending: false });
 
     if (rolesError) {
       logger.error('Error fetching admin roles', rolesError as Error);
@@ -33,22 +34,27 @@ export class AdminService {
       // Get profiles for these users
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, email, full_name, created_at')
-        .in('user_id', adminUserIds)
-        .order('created_at', { ascending: false });
+        .select('user_id, email, full_name')
+        .in('user_id', adminUserIds);
 
       if (profilesError) {
         logger.error('Error fetching admin profiles', profilesError as Error);
         throw profilesError;
       }
 
-      actualAdmins = (profiles || []).map(profile => ({
-        id: profile.user_id,
-        email: profile.email,
-        full_name: profile.full_name,
-        created_at: profile.created_at,
-        isPending: false
-      }));
+      // Create a map for quick profile lookup
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
+      actualAdmins = adminRoles.map(role => {
+        const profile = profileMap.get(role.user_id);
+        return {
+          id: role.user_id,
+          email: profile?.email || '',
+          full_name: profile?.full_name,
+          created_at: role.created_at, // Use user_roles.created_at (admin grant date)
+          isPending: false
+        };
+      }).filter(admin => admin.email); // Filter out any without email
     }
 
     // Get pending admins
