@@ -11,7 +11,7 @@ const toggleGroupVariants = cva(
     variants: {
       variant: {
         default: "gap-1",
-        pill: "gap-0 bg-slate-300 dark:bg-slate-700 rounded-full p-1.5",
+        pill: "gap-0 bg-slate-400 dark:bg-slate-600 rounded-full p-1.5",
       },
     },
     defaultVariants: {

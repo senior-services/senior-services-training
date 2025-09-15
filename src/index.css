@@ -193,6 +193,14 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     font-size: inherit !important;
   }
 
+  /* Exception: Toggle components should use their own sizing */
+  [data-radix-toggle-root],
+  [data-radix-toggle-group-item] {
+    min-height: auto !important;
+    padding: 0 !important;
+    font-size: inherit !important;
+  }
+
   /* Enhanced input sizing */
   input, textarea, select {
     min-height: 44px;
