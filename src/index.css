@@ -177,35 +177,36 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   h5 { font-size: 1.125rem; } /* 18px */
   h6 { font-size: 1rem; } /* 16px */
 
-  /* Improved button and interactive element sizing */
-  button, .btn {
-    min-height: 44px; /* Minimum touch target size for seniors */
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-  }
-
-  /* Exception: Radix UI form controls should maintain their compact size */
-  button[role="switch"],
-  button[role="checkbox"], 
-  button[role="radio"] {
-    min-height: auto !important;
-    padding: 0 !important;
-    font-size: inherit !important;
-  }
-
-  /* Exception: Toggle components should use their own sizing */
-  [data-radix-toggle-root],
-  [data-radix-toggle-group-item] {
-    min-height: auto !important;
-    padding: 0 !important;
-    font-size: inherit !important;
-  }
-
   /* Enhanced input sizing */
   input, textarea, select {
     min-height: 44px;
     font-size: 1rem;
     border-width: 2px; /* Thicker borders for better visibility */
+  }
+}
+
+@layer components {
+  /* Button Base Classes - Component-Scoped Styling */
+  .btn-base {
+    min-height: 44px; /* Minimum touch target size for seniors */
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .btn-compact {
+    /* For form controls and toggle components */
+    min-height: auto;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  .btn-toggle {
+    /* Specific styling for toggle components */
+    min-height: auto;
+    padding: 0;
+    font-size: inherit;
+    box-sizing: border-box;
+    margin: 0;
   }
 
   /* Carbon Design System Form Controls */
@@ -230,13 +231,13 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply mb-2; /* 8px spacing between label and form control per Carbon spec */
   }
 
-  /* Radix UI Form Control Resets - Prevent Button Style Inheritance */
+  /* Radix UI Form Control Resets */
   [data-radix-checkbox-root],
   [data-radix-switch-root],
-  [data-radix-radio-group-item] {
-    @apply p-0; /* Reset any inherited padding */
-    box-sizing: border-box;
-    margin: 0;
+  [data-radix-radio-group-item],
+  [data-radix-toggle-root],
+  [data-radix-toggle-group-item] {
+    @apply btn-compact;
   }
 
   /* Ensure Radix UI switch thumb has proper positioning */
