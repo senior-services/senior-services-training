@@ -435,33 +435,22 @@ export const EmployeeManagement: React.FC<{
     };
   };
 
-  // Helper function to get status text with actual dates for Excel export
-  const getExcelStatusText = (dueDate: string | null, progressPercent: number = 0, hasQuizAttempt: boolean = false, completedAt?: string | null) => {
-    // Consider completed if progress is 100% OR if quiz attempt exists
-    const isCompleted = progressPercent >= 100 || hasQuizAttempt;
-    if (isCompleted) {
-      return completedAt 
-        ? `Completed (${format(new Date(completedAt), 'MMM dd, yyyy')})`
-        : "Completed";
-    }
+  // Helper function to format due date for Excel export
+  const formatDueDate = (dueDate: string | null) => {
     if (!dueDate) {
       return "No deadline";
     }
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const due = new Date(dueDate);
-    due.setHours(0, 0, 0, 0);
-    const daysUntilDue = differenceInDays(due, today);
-    
-    if (isPast(due) && daysUntilDue < 0) {
-      return `Overdue (Due: ${format(due, 'MMM dd, yyyy')})`;
+    return format(new Date(dueDate), 'MMM dd, yyyy');
+  };
+
+  // Helper function to format completion date for Excel export
+  const formatCompletionDate = (progressPercent: number = 0, hasQuizAttempt: boolean = false, completedAt?: string | null) => {
+    // Consider completed if progress is 100% OR if quiz attempt exists
+    const isCompleted = progressPercent >= 100 || hasQuizAttempt;
+    if (isCompleted && completedAt) {
+      return format(new Date(completedAt), 'MMM dd, yyyy');
     }
-    if (daysUntilDue === 0) {
-      return `Due Today (${format(due, 'MMM dd, yyyy')})`;
-    }
-    // For future dates, just show "Due [date]"
-    return `Due ${format(due, 'MMM dd, yyyy')}`;
+    return "N/A";
   };
 
   const handleDownloadData = async () => {
@@ -505,9 +494,9 @@ export const EmployeeManagement: React.FC<{
               }
             }
             
-            // Get status with actual dates for Excel export
-            const statusText = getExcelStatusText(
-              assignment.due_date, 
+            // Get due date and completion date for Excel export
+            const dueDate = formatDueDate(assignment.due_date);
+            const completionDate = formatCompletionDate(
               assignment.progress_percent, 
               !!quizAttempt, 
               assignment.completed_at
@@ -517,7 +506,8 @@ export const EmployeeManagement: React.FC<{
               'Employee Name': employee.full_name || 'Unknown',
               'Employee Email': employee.email || 'No Email',
               'Video Title': assignment.video_title || 'Unknown Video',
-              'Status': statusText,
+              'Due Date': dueDate,
+              'Completion Date': completionDate,
               'Quiz Results': quizResults
             });
           }
