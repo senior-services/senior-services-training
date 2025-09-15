@@ -260,7 +260,7 @@ export const AdminManagement: React.FC = () => {
                       <div className="flex justify-end">
                         <IconButtonWithTooltip
                           icon={Trash2}
-                          tooltip={getTooltipText('remove-admin', { name: admin.email, isPending: admin.isPending })}
+                          tooltip={getTooltipText('remove-admin')}
                           onClick={() => setDeleteConfirmAdmin(admin)}
                           variant="ghost"
                           className="text-destructive hover:text-destructive"

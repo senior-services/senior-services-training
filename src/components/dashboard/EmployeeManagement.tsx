@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { UserPlus, Mail, Users, Trash2, Edit, Clock, CheckCircle, XCircle, HelpCircle, Play, ChevronDown, ChevronUp, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, Download } from 'lucide-react';
+import { UserPlus, Mail, Users, Archive, Edit, Clock, CheckCircle, XCircle, HelpCircle, Play, ChevronDown, ChevronUp, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, Download } from 'lucide-react';
 import { IconButtonWithTooltip } from '@/components/ui/icon-button-with-tooltip';
 import { getTooltipText } from '@/utils/tooltipText';
 import * as XLSX from 'xlsx';
@@ -32,8 +32,8 @@ export const EmployeeManagement: React.FC<{
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [deleteConfirmEmployee, setDeleteConfirmEmployee] = useState<Employee | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [archiveConfirmEmployee, setArchiveConfirmEmployee] = useState<Employee | null>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
   const [sortColumn, setSortColumn] = useState<'employee' | 'status' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [videoSortState, setVideoSortState] = useState<Map<string, { column: 'title' | 'status'; direction: 'asc' | 'desc' }>>(new Map());
@@ -333,34 +333,34 @@ export const EmployeeManagement: React.FC<{
     setSelectedEmployee(employee);
     setShowAssignModal(true);
   };
-  const handleDeleteEmployee = async () => {
-    if (!deleteConfirmEmployee) return;
-    setIsDeleting(true);
+  const handleArchiveEmployee = async () => {
+    if (!archiveConfirmEmployee) return;
+    setIsArchiving(true);
     try {
-      const result = await employeeOperations.delete(deleteConfirmEmployee.id);
+      const result = await employeeOperations.delete(archiveConfirmEmployee.id);
       if (result.success) {
         setEmployees(prev => {
-          const updated = prev.filter(emp => emp.id !== deleteConfirmEmployee.id);
+          const updated = prev.filter(emp => emp.id !== archiveConfirmEmployee.id);
           onCountChange?.(updated.length);
           return updated;
         });
-        setDeleteConfirmEmployee(null);
+        setArchiveConfirmEmployee(null);
         toast({
           title: "Success",
-          description: "Employee deleted successfully"
+          description: "Employee archived successfully"
         });
       } else {
-        throw new Error(result.error || 'Failed to delete employee');
+        throw new Error(result.error || 'Failed to archive employee');
       }
     } catch (error) {
-      logger.error('Error deleting employee', error as Error);
+      logger.error('Error archiving employee', error as Error);
       toast({
         title: "Error",
-        description: "Failed to delete employee",
+        description: "Failed to archive employee",
         variant: "destructive"
       });
     } finally {
-      setIsDeleting(false);
+      setIsArchiving(false);
     }
   };
   const toggleEmployeeExpanded = (employeeId: string) => {
@@ -698,9 +698,9 @@ export const EmployeeManagement: React.FC<{
                               Assign Videos
                             </Button>
                             <IconButtonWithTooltip
-                              icon={Trash2}
-                              tooltip={getTooltipText('delete-employee', { name: employee.full_name || employee.email })}
-                              onClick={() => setDeleteConfirmEmployee(employee)}
+                              icon={Archive}
+                              tooltip={getTooltipText('archive-employee')}
+                              onClick={() => setArchiveConfirmEmployee(employee)}
                               variant="ghost"
                               className="text-destructive hover:text-destructive"
                             />
@@ -795,31 +795,31 @@ export const EmployeeManagement: React.FC<{
 
       <AssignVideosModal open={showAssignModal} onOpenChange={setShowAssignModal} employee={selectedEmployee} onAssignmentComplete={loadEmployees} />
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteConfirmEmployee} onOpenChange={() => setDeleteConfirmEmployee(null)}>
+      {/* Archive Confirmation Dialog */}
+      <AlertDialog open={!!archiveConfirmEmployee} onOpenChange={() => setArchiveConfirmEmployee(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Employee</AlertDialogTitle>
+            <AlertDialogTitle>Archive Employee</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deleteConfirmEmployee?.full_name || deleteConfirmEmployee?.email}"?
+              Are you sure you want to archive "{archiveConfirmEmployee?.full_name || archiveConfirmEmployee?.email}"?
               <br />
               <br />
-              This will permanently remove:
+              This will remove them from active employees and:
               <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>The employee record</li>
-                <li>All video assignments for this employee</li>
-                <li>Any progress tracking data</li>
+                <li>Remove the employee record from active view</li>
+                <li>Remove all video assignments for this employee</li>
+                <li>Archive any progress tracking data</li>
               </ul>
               <br />
-              <strong>This action cannot be undone.</strong>
+              <strong>This action will archive the employee's data.</strong>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
+            <AlertDialogCancel disabled={isArchiving}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteEmployee} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {isDeleting ? 'Deleting...' : 'Delete Employee'}
+            <AlertDialogAction onClick={handleArchiveEmployee} disabled={isArchiving} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {isArchiving ? 'Archiving...' : 'Archive Employee'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
