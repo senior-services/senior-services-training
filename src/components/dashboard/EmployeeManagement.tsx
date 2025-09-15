@@ -324,7 +324,7 @@ export const EmployeeManagement: React.FC<{
     const isCompleted = progressPercent >= 100 || hasQuizAttempt;
     if (isCompleted) {
       const completionText = completedAt 
-        ? `Completed • ${format(new Date(completedAt), 'MMM dd, yyyy')}`
+        ? `Completed (${format(new Date(completedAt), 'MMM dd, yyyy')})`
         : "Completed";
       return {
         variant: "ghost-success" as const,
