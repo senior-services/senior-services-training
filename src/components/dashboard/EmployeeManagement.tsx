@@ -319,14 +319,17 @@ export const EmployeeManagement: React.FC<{
   };
 
   // Helper function to get deadline badge props
-  const getDeadlineBadge = (dueDate: string | null, progressPercent: number = 0, hasQuizAttempt: boolean = false) => {
+  const getDeadlineBadge = (dueDate: string | null, progressPercent: number = 0, hasQuizAttempt: boolean = false, completedAt?: string | null) => {
     // Consider completed if progress is 100% OR if quiz attempt exists
     const isCompleted = progressPercent >= 100 || hasQuizAttempt;
     if (isCompleted) {
+      const completionText = completedAt 
+        ? `Completed • ${format(new Date(completedAt), 'MMM dd, yyyy')}`
+        : "Completed";
       return {
         variant: "ghost-success" as const,
         showIcon: true,
-        text: "Completed"
+        text: completionText
       };
     }
     if (!dueDate) {
@@ -341,6 +344,7 @@ export const EmployeeManagement: React.FC<{
     const due = new Date(dueDate);
     due.setHours(0, 0, 0, 0);
     const daysUntilDue = differenceInDays(due, today);
+    
     if (isPast(due) && daysUntilDue < 0) {
       return {
         variant: "ghost-destructive" as const,
@@ -348,9 +352,23 @@ export const EmployeeManagement: React.FC<{
         text: "Overdue"
       };
     }
-    if (daysUntilDue <= 5) {
+    if (daysUntilDue === 0) {
       return {
-        variant: "ghost-destructive" as const,
+        variant: "ghost-warning" as const,
+        showIcon: true,
+        text: "Due Today"
+      };
+    }
+    if (daysUntilDue <= 7) {
+      return {
+        variant: "ghost-secondary" as const,
+        showIcon: true,
+        text: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`
+      };
+    }
+    if (daysUntilDue <= 30) {
+      return {
+        variant: "ghost-secondary" as const,
         showIcon: true,
         text: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`
       };
@@ -358,7 +376,7 @@ export const EmployeeManagement: React.FC<{
     return {
       variant: "ghost-secondary" as const,
       showIcon: true,
-      text: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`
+      text: "Due in over a month"
     };
   };
   return <div className="space-y-6">
@@ -532,7 +550,7 @@ export const EmployeeManagement: React.FC<{
                                            {videos.map(assignment => {
                                 const employeeQuizData = employeeQuizzes.get(employee.id);
                                 const quizAttempt = employeeQuizData?.get(assignment.video_id);
-                                const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent, !!quizAttempt);
+                                const badge = getDeadlineBadge(assignment.due_date, assignment.progress_percent, !!quizAttempt, assignment.completed_at);
                                 return <TableRow key={assignment.assignment_id} className="hover:bg-transparent">
                                                 <TableCell className="py-1">
                                                   {assignment.video_title}
