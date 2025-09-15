@@ -74,7 +74,7 @@ import {
   TooltipTrigger 
 } from "@/components/ui/tooltip";
 import { IconButtonWithTooltip } from "@/components/ui/icon-button-with-tooltip";
-import { useTooltipText } from "@/hooks/useTooltipText";
+import { getTooltipText } from "@/utils/tooltipText";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Home, 
@@ -1521,12 +1521,12 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                                      <div className="flex gap-2 justify-end">
                                         <IconButtonWithTooltip
                                           icon={Edit}
-                                          tooltip={useTooltipText('edit-item', { name: 'John Doe' })}
+                                          tooltip={getTooltipText('edit-item', { name: 'John Doe' })}
                                           onClick={() => {}}
                                         />
                                         <IconButtonWithTooltip
                                           icon={Trash2}
-                                          tooltip={useTooltipText('delete-item', { name: 'John Doe' })}
+                                          tooltip={getTooltipText('delete-item', { name: 'John Doe' })}
                                           onClick={() => {}}
                                           className="text-destructive hover:text-destructive"
                                         />

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, Link as LinkIcon, FileVideo, CheckCircle, X } from "lucide-react";
 import { IconButtonWithTooltip } from "@/components/ui/icon-button-with-tooltip";
-import { useTooltipText } from "@/hooks/useTooltipText";
+import { getTooltipText } from "@/utils/tooltipText";
 import { cn } from "@/lib/utils";
 interface AddVideoModalProps {
   open: boolean;
@@ -163,7 +163,7 @@ export const AddVideoModal = ({
                       <CheckCircle className="w-4 h-4 text-success" />
                       <IconButtonWithTooltip
                         icon={X}
-                        tooltip={useTooltipText('remove-file')}
+                        tooltip={getTooltipText('remove-file')}
                         onClick={() => setSelectedFile(null)}
                         variant="ghost"
                         className="text-muted-foreground hover:text-foreground"

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { UserPlus, Trash2, Shield, Mail, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { IconButtonWithTooltip } from '@/components/ui/icon-button-with-tooltip';
-import { useTooltipText } from '@/hooks/useTooltipText';
+import { getTooltipText } from '@/utils/tooltipText';
 import { AdminService, AdminUser } from '@/services/adminService';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
 import { useToast } from '@/hooks/use-toast';
@@ -260,7 +260,7 @@ export const AdminManagement: React.FC = () => {
                       <div className="flex justify-end">
                         <IconButtonWithTooltip
                           icon={Trash2}
-                          tooltip={useTooltipText('remove-admin', { name: admin.email, isPending: admin.isPending })}
+                          tooltip={getTooltipText('remove-admin', { name: admin.email, isPending: admin.isPending })}
                           onClick={() => setDeleteConfirmAdmin(admin)}
                           variant="ghost"
                           className="text-destructive hover:text-destructive"
