@@ -6,6 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { UserPlus, Mail, Users, Trash2, Edit, Clock, CheckCircle, XCircle, HelpCircle, Play, ChevronDown, ChevronUp, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, Download } from 'lucide-react';
+import { IconButtonWithTooltip } from '@/components/ui/icon-button-with-tooltip';
+import { useTooltipText } from '@/hooks/useTooltipText';
 import * as XLSX from 'xlsx';
 import { employeeOperations } from '@/services/api';
 import type { EmployeeWithAssignments, Employee } from '@/types/employee';
@@ -695,9 +697,13 @@ export const EmployeeManagement: React.FC<{
                               <Edit className="w-4 h-4 mr-2" />
                               Assign Videos
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmEmployee(employee)} className="text-destructive hover:text-destructive">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <IconButtonWithTooltip
+                              icon={Trash2}
+                              tooltip={useTooltipText('delete-employee', { name: employee.full_name || employee.email })}
+                              onClick={() => setDeleteConfirmEmployee(employee)}
+                              variant="ghost"
+                              className="text-destructive hover:text-destructive"
+                            />
                           </div>
                         </TableCell>
                       </TableRow>

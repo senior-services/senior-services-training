@@ -71,9 +71,10 @@ import {
 import { 
   Tooltip, 
   TooltipContent, 
-  TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
+import { IconButtonWithTooltip } from "@/components/ui/icon-button-with-tooltip";
+import { useTooltipText } from "@/hooks/useTooltipText";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Home, 
@@ -228,8 +229,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
   };
 
   return (
-    <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
         <Header 
           userRole="admin" 
           userName={userName} 
@@ -1519,12 +1519,17 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                                    
                                    <TableCell className="text-right py-3">
                                      <div className="flex gap-2 justify-end">
-                                       <Button variant="ghost" size="sm">
-                                         <Edit className="w-4 h-4" />
-                                       </Button>
-                                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-                                          <Trash2 className="w-4 h-4" />
-                                        </Button>
+                                        <IconButtonWithTooltip
+                                          icon={Edit}
+                                          tooltip={useTooltipText('edit-item', { name: 'John Doe' })}
+                                          onClick={() => {}}
+                                        />
+                                        <IconButtonWithTooltip
+                                          icon={Trash2}
+                                          tooltip={useTooltipText('delete-item', { name: 'John Doe' })}
+                                          onClick={() => {}}
+                                          className="text-destructive hover:text-destructive"
+                                        />
                                      </div>
                                    </TableCell>
                                  </TableRow>
@@ -1787,6 +1792,5 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </Card>
         </main>
       </div>
-    </TooltipProvider>
   );
 };

@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, Link as LinkIcon, FileVideo, CheckCircle, X } from "lucide-react";
+import { IconButtonWithTooltip } from "@/components/ui/icon-button-with-tooltip";
+import { useTooltipText } from "@/hooks/useTooltipText";
 import { cn } from "@/lib/utils";
 interface AddVideoModalProps {
   open: boolean;
@@ -159,9 +161,13 @@ export const AddVideoModal = ({
                     </div>
                     <div className="flex items-center space-x-2">
                       <CheckCircle className="w-4 h-4 text-success" />
-                      <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedFile(null)} className="text-muted-foreground hover:text-foreground">
-                        <X className="w-4 h-4" />
-                      </Button>
+                      <IconButtonWithTooltip
+                        icon={X}
+                        tooltip={useTooltipText('remove-file')}
+                        onClick={() => setSelectedFile(null)}
+                        variant="ghost"
+                        className="text-muted-foreground hover:text-foreground"
+                      />
                     </div>
                   </div>}
               </TabsContent>
