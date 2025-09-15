@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { toggleVariants } from "@/components/ui/toggle"
 
 const toggleGroupVariants = cva(
-  "flex items-center justify-center",
+  "flex items-center w-fit",
   {
     variants: {
       variant: {
