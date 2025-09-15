@@ -3,9 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { UserPlus, Mail, Users, Archive, ArchiveRestore, Edit, Clock, CheckCircle, XCircle, HelpCircle, Play, ChevronDown, ChevronUp, ChevronRight, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, Download } from 'lucide-react';
+import { UserPlus, Mail, Users, Edit, Clock, CheckCircle, XCircle, HelpCircle, Play, ChevronDown, ChevronUp, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, Download, Trash2 } from 'lucide-react';
 import { IconButtonWithTooltip } from '@/components/ui/icon-button-with-tooltip';
 import { getTooltipText } from '@/utils/tooltipText';
 import * as XLSX from 'xlsx';
@@ -26,19 +25,15 @@ export const EmployeeManagement: React.FC<{
   onCountChange
 }) => {
   const [employees, setEmployees] = useState<EmployeeWithAssignments[]>([]);
-  const [archivedEmployees, setArchivedEmployees] = useState<{ id: string; email: string; full_name: string; archived_at: string }[]>([]);
   const [employeeVideos, setEmployeeVideos] = useState<Map<string, any[]>>(new Map());
   const [employeeQuizzes, setEmployeeQuizzes] = useState<Map<string, Map<string, any>>>(new Map());
   const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(new Set());
-  const [showArchived, setShowArchived] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [loadingArchived, setLoadingArchived] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [archiveConfirmEmployee, setArchiveConfirmEmployee] = useState<Employee | null>(null);
-  const [unarchiveConfirmEmployee, setUnarchiveConfirmEmployee] = useState<{ id: string; email: string; full_name: string } | null>(null);
-  const [isArchiving, setIsArchiving] = useState(false);
+  const [deleteConfirmEmployee, setDeleteConfirmEmployee] = useState<Employee | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [sortColumn, setSortColumn] = useState<'employee' | 'status' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [videoSortState, setVideoSortState] = useState<Map<string, { column: 'title' | 'status'; direction: 'asc' | 'desc' }>>(new Map());
@@ -178,29 +173,26 @@ export const EmployeeManagement: React.FC<{
 
   useEffect(() => {
     loadEmployees();
-    loadArchivedEmployees();
 
-    // Smart refresh: Use separate channels for better performance
-    let activeChannel: any = null;
-    let archivedChannel: any = null;
+    // Set up real-time subscription for employee data changes
+    let channel: any = null;
     
     try {
-      activeChannel = supabase.channel('active-employee-management')
+      channel = supabase.channel('employee-management')
         .on('postgres_changes', { 
           event: '*', 
           schema: 'public', 
           table: 'video_assignments' 
         }, () => {
-          logger.info('Video assignment changed, refreshing active employees...');
+          logger.info('Video assignment changed, refreshing employees...');
           loadEmployees();
         })
         .on('postgres_changes', { 
           event: '*', 
           schema: 'public', 
-          table: 'employees',
-          filter: 'archived=eq.false'
+          table: 'employees'
         }, () => {
-          logger.info('Active employee changed, refreshing data...');
+          logger.info('Employee changed, refreshing data...');
           loadEmployees();
         })
         .on('postgres_changes', { 
@@ -208,7 +200,7 @@ export const EmployeeManagement: React.FC<{
           schema: 'public', 
           table: 'video_progress' 
         }, () => {
-          logger.info('Video progress changed, refreshing active employees...');
+          logger.info('Video progress changed, refreshing employees...');
           loadEmployees();
         })
         .on('postgres_changes', { 
@@ -216,20 +208,8 @@ export const EmployeeManagement: React.FC<{
           schema: 'public', 
           table: 'quiz_attempts' 
         }, () => {
-          logger.info('Quiz attempt changed, refreshing active employees...');
+          logger.info('Quiz attempt changed, refreshing employees...');
           loadEmployees();
-        })
-        .subscribe();
-
-      archivedChannel = supabase.channel('archived-employee-management')
-        .on('postgres_changes', { 
-          event: '*', 
-          schema: 'public', 
-          table: 'employees',
-          filter: 'archived=eq.true'
-        }, () => {
-          logger.info('Archived employee changed, refreshing archived employees...');
-          loadArchivedEmployees();
         })
         .subscribe();
         
@@ -238,18 +218,11 @@ export const EmployeeManagement: React.FC<{
     }
     
     return () => {
-      if (activeChannel) {
+      if (channel) {
         try {
-          supabase.removeChannel(activeChannel);
+          supabase.removeChannel(channel);
         } catch (error) {
-          logger.error('Failed to remove active channel', error as Error);
-        }
-      }
-      if (archivedChannel) {
-        try {
-          supabase.removeChannel(archivedChannel);
-        } catch (error) {
-          logger.error('Failed to remove archived channel', error as Error);
+          logger.error('Failed to remove channel', error as Error);
         }
       }
     };
@@ -337,24 +310,6 @@ export const EmployeeManagement: React.FC<{
     }
   };
 
-  const loadArchivedEmployees = async () => {
-    setLoadingArchived(true);
-    try {
-      const result = await employeeOperations.getArchived();
-      
-      if (!result.success) {
-        logger.error('Error loading archived employees:', result.error);
-        return;
-      }
-
-      setArchivedEmployees(result.data);
-    } catch (error) {
-      logger.error('Unexpected error loading archived employees:', error);
-    } finally {
-      setLoadingArchived(false);
-    }
-  };
-
   const handleAddEmployee = (employee: Employee) => {
     setEmployees(prev => {
       const transformedEmployee: EmployeeWithAssignments = {
@@ -381,60 +336,34 @@ export const EmployeeManagement: React.FC<{
     setShowAssignModal(true);
   };
 
-  const handleArchiveEmployee = async () => {
-    if (!archiveConfirmEmployee) return;
-    setIsArchiving(true);
+  const handleDeleteEmployee = async () => {
+    if (!deleteConfirmEmployee) return;
+    setIsDeleting(true);
     try {
-      const result = await employeeOperations.archive(archiveConfirmEmployee.id);
+      const result = await employeeOperations.delete(deleteConfirmEmployee.id);
       if (result.success) {
         setEmployees(prev => {
-          const updated = prev.filter(emp => emp.id !== archiveConfirmEmployee.id);
+          const updated = prev.filter(emp => emp.id !== deleteConfirmEmployee.id);
           onCountChange?.(updated.length);
           return updated;
         });
-        setArchiveConfirmEmployee(null);
-        await loadArchivedEmployees(); // Refresh archived list
+        setDeleteConfirmEmployee(null);
         toast({
           title: "Success",
-          description: "Employee archived successfully"
+          description: "Employee deleted successfully"
         });
       } else {
-        throw new Error(result.error || 'Failed to archive employee');
+        throw new Error(result.error || 'Failed to delete employee');
       }
     } catch (error) {
-      logger.error('Error archiving employee', error as Error);
+      logger.error('Error deleting employee', error as Error);
       toast({
         title: "Error",
-        description: "Failed to archive employee",
+        description: "Failed to delete employee",
         variant: "destructive"
       });
     } finally {
-      setIsArchiving(false);
-    }
-  };
-
-  const handleUnarchiveEmployee = async () => {
-    if (!unarchiveConfirmEmployee) return;
-    try {
-      const result = await employeeOperations.unarchive(unarchiveConfirmEmployee.id);
-      if (result.success) {
-        setUnarchiveConfirmEmployee(null);
-        await loadEmployees(); // Refresh active list
-        await loadArchivedEmployees(); // Refresh archived list
-        toast({
-          title: "Success",
-          description: "Employee unarchived successfully"
-        });
-      } else {
-        throw new Error(result.error || 'Failed to unarchive employee');
-      }
-    } catch (error) {
-      logger.error('Error unarchiving employee', error as Error);
-      toast({
-        title: "Error",
-        description: "Failed to unarchive employee",
-        variant: "destructive"
-      });
+      setIsDeleting(false);
     }
   };
 
@@ -451,177 +380,203 @@ export const EmployeeManagement: React.FC<{
   };
 
   // Helper function to get deadline badge props
-  const getDeadlineBadge = (dueDate: string | null, progressPercent: number = 0, hasQuizAttempt: boolean = false, completedAt?: string | null) => {
-    const isCompleted = progressPercent >= 100 || hasQuizAttempt;
-    if (isCompleted) {
-      const completionText = completedAt 
-        ? `Completed (${format(new Date(completedAt), 'MMM dd, yyyy')})`
-        : "Completed";
-      return {
-        variant: "ghost-success" as const,
-        showIcon: true,
-        text: completionText
-      };
-    }
-    if (!dueDate) {
-      return {
-        variant: "ghost-tertiary" as const,
-        showIcon: true,
-        text: "No deadline"
-      };
-    }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const due = new Date(dueDate);
-    due.setHours(0, 0, 0, 0);
-    const daysUntilDue = differenceInDays(due, today);
+  const getDeadlineBadge = (assignment: any, employeeId: string) => {
+    const employeeQuizData = employeeQuizzes.get(employeeId);
+    const quizAttempt = employeeQuizData?.get(assignment.video_id);
+    const isCompleted = assignment.progress_percent >= 100 || !!quizAttempt;
     
-    if (isPast(due) && daysUntilDue < 0) {
-      return {
-        variant: "ghost-destructive" as const,
-        showIcon: true,
-        text: "Overdue"
-      };
-    }
-    if (daysUntilDue === 0) {
-      return {
-        variant: "ghost-warning" as const,
-        showIcon: true,
-        text: "Due Today"
-      };
-    }
-    if (daysUntilDue <= 7) {
-      return {
-        variant: "ghost-tertiary" as const,
-        showIcon: true,
-        text: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`
-      };
-    }
-    if (daysUntilDue <= 30) {
-      return {
-        variant: "ghost-tertiary" as const,
-        showIcon: true,
-        text: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`
-      };
-    }
-    return {
-      variant: "ghost-tertiary" as const,
-      showIcon: true,
-      text: "Due in over a month"
-    };
-  };
-
-  // Helper function to format due date for Excel export
-  const formatDueDate = (dueDate: string | null) => {
-    if (!dueDate) {
-      return "No deadline";
-    }
-    return format(new Date(dueDate), 'MMM dd, yyyy');
-  };
-
-  // Helper function to format completion date for Excel export
-  const formatCompletionDate = (progressPercent: number = 0, hasQuizAttempt: boolean = false, completedAt?: string | null) => {
-    const isCompleted = progressPercent >= 100 || hasQuizAttempt;
     if (isCompleted) {
-      return completedAt ? format(new Date(completedAt), 'MMM dd, yyyy') : "Completed (no date)";
+      return <Badge className="bg-success text-success-foreground">Completed</Badge>;
     }
-    return "Not completed";
-  };
-
-  // Helper function to get assignment status for Excel export
-  const getAssignmentStatus = (assignment: any, hasQuizAttempt: boolean = false) => {
-    const isCompleted = assignment.progress_percent >= 100 || hasQuizAttempt;
-    if (isCompleted) {
-      return "Completed";
-    }
+    
     if (!assignment.due_date) {
-      return "No deadline";
+      return <Badge variant="secondary">No Deadline</Badge>;
     }
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const due = new Date(assignment.due_date);
     due.setHours(0, 0, 0, 0);
     const daysUntilDue = differenceInDays(due, today);
-    
+
     if (isPast(due) && daysUntilDue < 0) {
-      return "Overdue";
+      return <Badge className="bg-destructive text-destructive-foreground">Overdue ({Math.abs(daysUntilDue)} days)</Badge>;
     }
+    
     if (daysUntilDue === 0) {
-      return "Due Today";
+      return <Badge className="bg-yellow-500 text-white">Due Today</Badge>;
     }
+    
     if (daysUntilDue <= 7) {
-      return `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`;
+      return <Badge className="bg-orange-500 text-white">Due in {daysUntilDue} days</Badge>;
     }
-    if (daysUntilDue <= 30) {
-      return `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`;
-    }
-    return "Due in over a month";
+    return <Badge variant="outline">Due in {daysUntilDue} days</Badge>;
   };
 
-  // Download employee data as Excel
+  const formatDueDate = (dateString: string | null) => {
+    if (!dateString) return '';
+    return format(new Date(dateString), 'MMM dd, yyyy');
+  };
+
+  const formatCompletionDate = (dateString: string | null) => {
+    if (!dateString) return '';
+    return format(new Date(dateString), 'MMM dd, yyyy');
+  };
+
+  const getAssignmentStatus = (assignment: any, employeeId: string) => {
+    const employeeQuizData = employeeQuizzes.get(employeeId);
+    const quizAttempt = employeeQuizData?.get(assignment.video_id);
+    
+    if (assignment.progress_percent >= 100 || quizAttempt) {
+      const completionDate = quizAttempt?.completed_at || assignment.completed_at;
+      const completionText = completionDate ? formatCompletionDate(completionDate) : '';
+      return (
+        <div className="flex items-center space-x-2">
+          <CheckCircle className="w-4 h-4 text-success" />
+          <span className="text-success">Completed</span>
+          {completionText && <span className="text-muted-foreground">({completionText})</span>}
+        </div>
+      );
+    } else if (assignment.progress_percent > 0) {
+      return (
+        <div className="flex items-center space-x-2">
+          <Play className="w-4 h-4 text-warning" />
+          <span className="text-warning">In Progress ({assignment.progress_percent}%)</span>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex items-center space-x-2">
+          <Clock className="w-4 h-4 text-muted-foreground" />
+          <span className="text-muted-foreground">Not Started</span>
+        </div>
+      );
+    }
+  };
+
+  const getEmployeeOverallStatus = (employeeId: string) => {
+    const videos = employeeVideos.get(employeeId) || [];
+    const requiredVideos = videos.filter(assignment => assignment.video_type === 'Required');
+    
+    if (requiredVideos.length === 0) {
+      return (
+        <div className="flex items-center space-x-2">
+          <HelpCircle className="w-4 h-4 text-muted-foreground" />
+          <span className="text-muted-foreground">No Required Training</span>
+        </div>
+      );
+    }
+
+    const completedRequired = requiredVideos.filter(assignment => assignment.progress_percent >= 100);
+    const overdueRequired = requiredVideos.filter(assignment => {
+      if (assignment.progress_percent >= 100) return false;
+      if (!assignment.due_date) return false;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const due = new Date(assignment.due_date);
+      due.setHours(0, 0, 0, 0);
+      const daysUntilDue = differenceInDays(due, today);
+      return isPast(due) && daysUntilDue < 0;
+    });
+
+    if (overdueRequired.length > 0) {
+      return (
+        <div className="flex items-center space-x-2">
+          <XCircle className="w-4 h-4 text-destructive" />
+          <span className="text-destructive">Overdue Training ({overdueRequired.length})</span>
+        </div>
+      );
+    }
+
+    if (completedRequired.length === requiredVideos.length) {
+      return (
+        <div className="flex items-center space-x-2">
+          <CheckCircle className="w-4 h-4 text-success" />
+          <span className="text-success">All Training Complete</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center space-x-2">
+        <Clock className="w-4 h-4 text-warning" />
+        <span className="text-warning">Incomplete Training ({completedRequired.length}/{requiredVideos.length})</span>
+      </div>
+    );
+  };
+
   const handleDownloadData = async () => {
     setIsDownloading(true);
     try {
-      const exportData: any[] = [];
+      const data = await employeeOperations.getAll();
+      if (!data.success || !data.data) {
+        throw new Error(data.error || 'Failed to fetch employee data');
+      }
 
-      employees.forEach(employee => {
-        const assignments = employeeVideos.get(employee.id) || [];
-        const employeeQuizData = employeeQuizzes.get(employee.id) || new Map();
-
+      const worksheetData = [];
+      for (const employee of data.data) {
+        const assignments = employee.assignments || [];
+        
         if (assignments.length === 0) {
-          // Employee with no assignments
-          exportData.push({
-            'Employee Name': employee.full_name || employee.email,
-            'Employee Email': employee.email,
+          worksheetData.push({
+            'Employee Name': employee.name || 'Unknown',
+            'Email': employee.email || 'Unknown',
             'Video Title': 'No assignments',
             'Video Type': '',
-            'Progress (%)': '',
+            'Progress': '',
+            'Status': '',
             'Due Date': '',
-            'Completion Date': '',
-            'Status': 'No assignments',
-            'Quiz Score': '',
-            'Quiz Total Questions': '',
-            'Quiz Completion Date': ''
+            'Assigned Date': '',
+            'Completed Date': ''
           });
         } else {
-          assignments.forEach(assignment => {
-            const quizAttempt = employeeQuizData.get(assignment.video_id);
-            const hasQuizAttempt = !!quizAttempt;
+          for (const assignment of assignments) {
+            const videos = employeeVideos.get(employee.id) || [];
+            const assignmentDetails = videos.find(v => v.assignment_id === assignment.id);
+            const employeeQuizData = employeeQuizzes.get(employee.id);
+            const quizAttempt = employeeQuizData?.get(assignment.video_id);
+            
+            const isCompleted = assignment.progress_percent >= 100 || !!quizAttempt;
+            const completionDate = isCompleted ? (quizAttempt?.completed_at || assignment.completed_at) : null;
+            
+            let status = 'Not Started';
+            if (isCompleted) {
+              status = 'Completed';
+            } else if (assignment.progress_percent > 0) {
+              status = `In Progress (${assignment.progress_percent}%)`;
+            }
 
-            exportData.push({
-              'Employee Name': employee.full_name || employee.email,
-              'Employee Email': employee.email,
-              'Video Title': assignment.video_title,
-              'Video Type': assignment.video_type,
-              'Progress (%)': assignment.progress_percent,
-              'Due Date': formatDueDate(assignment.due_date),
-              'Completion Date': formatCompletionDate(assignment.progress_percent, hasQuizAttempt, assignment.completed_at),
-              'Status': getAssignmentStatus(assignment, hasQuizAttempt),
-              'Quiz Score': quizAttempt?.score || '',
-              'Quiz Total Questions': quizAttempt?.total_questions || '',
-              'Quiz Completion Date': quizAttempt?.completed_at ? format(new Date(quizAttempt.completed_at), 'MMM dd, yyyy') : ''
+            worksheetData.push({
+              'Employee Name': employee.name || 'Unknown',
+              'Email': employee.email || 'Unknown',
+              'Video Title': assignmentDetails?.video_title || 'Unknown',
+              'Video Type': assignmentDetails?.video_type || 'Unknown',
+              'Progress': `${assignment.progress_percent || 0}%`,
+              'Status': status,
+              'Due Date': assignment.due_date ? formatDueDate(assignment.due_date) : 'No deadline',
+              'Assigned Date': formatDueDate(assignment.created_at),
+              'Completed Date': completionDate ? formatCompletionDate(completionDate) : ''
             });
-          });
+          }
         }
-      });
+      }
 
-      const ws = XLSX.utils.json_to_sheet(exportData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Employee Training Data');
-
-      const fileName = `employee_training_data_${format(new Date(), 'yyyy-MM-dd_HHmm')}.xlsx`;
-      XLSX.writeFile(wb, fileName);
-
+      const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Employee Training Data');
+      
+      const fileName = `employee-training-data-${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+      
       toast({
         title: "Success",
-        description: "Employee training data exported successfully"
+        description: "Employee training data downloaded successfully"
       });
     } catch (error) {
-      logger.error('Error downloading employee data:', error);
+      logger.error('Error downloading employee data', error as Error);
       toast({
         title: "Error",
-        description: "Failed to export employee data",
+        description: "Failed to download employee data",
         variant: "destructive"
       });
     } finally {
@@ -631,475 +586,274 @@ export const EmployeeManagement: React.FC<{
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <LoadingSkeleton />
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Employee Management</h2>
+        </div>
+        <Card>
+          <CardContent className="p-6">
+            <LoadingSkeleton />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   const sortedEmployees = getSortedEmployees();
 
   return (
-    <Card>
-      <CardContent className="p-6">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Users className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold">Employee Management</h2>
-              <p className="text-sm text-muted-foreground">
-                Manage employee accounts, assign training videos, and track progress
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleDownloadData}
-              variant="outline"
-              size="sm"
-              disabled={isDownloading}
-              className="gap-2"
-            >
-              <Download className="h-4 w-4" />
-              {isDownloading ? "Exporting..." : "Download Data"}
-            </Button>
-            <Button onClick={() => setShowAddModal(true)} size="sm" className="gap-2">
-              <UserPlus className="h-4 w-4" />
-              Add Employee
-            </Button>
-          </div>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Employee Management</h2>
+        <div className="flex space-x-2">
+          <Button
+            onClick={handleDownloadData}
+            disabled={isDownloading}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            {isDownloading ? 'Downloading...' : 'Download Data'}
+          </Button>
+          <Button onClick={() => setShowAddModal(true)}>
+            <UserPlus className="w-4 h-4 mr-2" />
+            Add Employee
+          </Button>
         </div>
+      </div>
 
-        {/* Active Employees Table */}
-        {employees.length === 0 ? (
-          <div className="text-center py-12">
-            <Users className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-            <h3 className="text-lg font-medium text-muted-foreground mb-2">No employees found</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Get started by adding your first employee to the system.
-            </p>
-            <Button onClick={() => setShowAddModal(true)} className="gap-2">
-              <UserPlus className="h-4 w-4" />
-              Add Your First Employee
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">
-                    <span className="sr-only">Expand</span>
-                  </TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort('employee')}
-                      className="h-auto p-0 font-medium hover:bg-transparent justify-start"
-                      aria-label="Sort by employee name"
-                    >
-                      Employee Name
-                      {sortColumn === 'employee' ? (
-                        sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />
-                      ) : (
-                        <ArrowUpDown className="ml-1 h-3 w-3 text-muted-foreground/50" />
-                      )}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort('status')}
-                      className="h-auto p-0 font-medium hover:bg-transparent justify-start"
-                      aria-label="Sort by status"
-                    >
-                      Status
-                      {sortColumn === 'status' ? (
-                        sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />
-                      ) : (
-                        <ArrowUpDown className="ml-1 h-3 w-3 text-muted-foreground/50" />
-                      )}
-                    </Button>
-                  </TableHead>
-                  <TableHead className="text-right w-[120px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedEmployees.map((employee) => {
-                  const assignments = employeeVideos.get(employee.id) || [];
-                  const employeeQuizData = employeeQuizzes.get(employee.id) || new Map();
-                  const isExpanded = expandedEmployees.has(employee.id);
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12"></TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => handleSort('employee')}
+                    className="h-auto p-0 font-semibold"
+                  >
+                    Employee
+                    {sortColumn === 'employee' && (
+                      sortDirection === 'asc' ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" />
+                    )}
+                    {sortColumn !== 'employee' && <ArrowUpDown className="w-4 h-4 ml-1" />}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => handleSort('status')}
+                    className="h-auto p-0 font-semibold"
+                  >
+                    Status
+                    {sortColumn === 'status' && (
+                      sortDirection === 'asc' ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" />
+                    )}
+                    {sortColumn !== 'status' && <ArrowUpDown className="w-4 h-4 ml-1" />}
+                  </Button>
+                </TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedEmployees.map((employee) => {
+                const isExpanded = expandedEmployees.has(employee.id);
+                const videos = employeeVideos.get(employee.id) || [];
+                const hasVideos = videos.length > 0;
 
-                  // Calculate status based on required videos
-                  const requiredVideos = assignments.filter(assignment => assignment.video_type === 'Required');
-                  const completedRequired = requiredVideos.filter(assignment => assignment.progress_percent >= 100);
-                  const overdueRequired = requiredVideos.filter(assignment => {
-                    if (assignment.progress_percent >= 100) return false;
-                    if (!assignment.due_date) return false;
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const due = new Date(assignment.due_date);
-                    due.setHours(0, 0, 0, 0);
-                    const daysUntilDue = differenceInDays(due, today);
-                    return isPast(due) && daysUntilDue < 0;
-                  });
-
-                  let statusBadge;
-                  if (requiredVideos.length === 0) {
-                    statusBadge = (
-                      <Badge variant="ghost-secondary" className="gap-1">
-                        <HelpCircle className="h-3 w-3" />
-                        No required training
-                      </Badge>
-                    );
-                  } else if (overdueRequired.length > 0) {
-                    statusBadge = (
-                      <Badge variant="ghost-destructive" className="gap-1">
-                        <XCircle className="h-3 w-3" />
-                        Overdue ({overdueRequired.length})
-                      </Badge>
-                    );
-                  } else if (completedRequired.length === requiredVideos.length) {
-                    statusBadge = (
-                      <Badge variant="ghost-success" className="gap-1">
-                        <CheckCircle className="h-3 w-3" />
-                        All training complete
-                      </Badge>
-                    );
-                  } else {
-                    statusBadge = (
-                      <Badge variant="ghost-tertiary" className="gap-1">
-                        <Clock className="h-3 w-3" />
-                        Incomplete training ({completedRequired.length}/{requiredVideos.length})
-                      </Badge>
-                    );
-                  }
-
-                  return (
-                    <React.Fragment key={employee.id}>
-                      <TableRow className="hover:bg-muted/50">
-                        <TableCell>
+                return (
+                  <React.Fragment key={employee.id}>
+                    <TableRow>
+                      <TableCell>
+                        {hasVideos && (
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => toggleEmployeeExpanded(employee.id)}
-                            className="h-8 w-8 p-0 hover:bg-muted"
-                            aria-label={isExpanded ? "Collapse employee details" : "Expand employee details"}
-                            aria-expanded={isExpanded}
-                            aria-controls={`employee-${employee.id}-details`}
+                            className="p-1"
                           >
                             {isExpanded ? (
-                              <ChevronUp className="h-4 w-4" />
+                              <ChevronDown className="w-4 h-4" />
                             ) : (
-                              <ChevronDown className="h-4 w-4" />
+                              <ChevronRight className="w-4 h-4" />
                             )}
                           </Button>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="font-medium">{employee.full_name || employee.email}</div>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Mail className="h-3 w-3" />
-                              {employee.email}
-                            </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">
+                            {employee.full_name || employee.email?.split('@')[0] || 'Unknown'}
                           </div>
-                        </TableCell>
-                        <TableCell>{statusBadge}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-end gap-1">
-                            <IconButtonWithTooltip
-                              icon={<UserPlus className="h-4 w-4" />}
-                              tooltip={getTooltipText('assign-videos')}
-                              onClick={() => handleAssignVideos(employee)}
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                            />
-                            <IconButtonWithTooltip
-                              icon={<Archive className="h-4 w-4" />}
-                              tooltip={getTooltipText('archive-employee')}
-                              onClick={() => setArchiveConfirmEmployee(employee)}
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                            />
+                          <div className="text-sm text-muted-foreground flex items-center">
+                            <Mail className="w-3 h-3 mr-1" />
+                            {employee.email}
                           </div>
-                        </TableCell>
-                      </TableRow>
-                      {isExpanded && (
-                        <TableRow>
-                          <TableCell colSpan={4} className="p-0">
-                            <Collapsible open={true}>
-                              <CollapsibleContent 
-                                id={`employee-${employee.id}-details`}
-                                className="border-t bg-muted/25 p-4"
-                              >
-                                <div className="space-y-4">
-                                  <div className="flex items-center justify-between">
-                                    <h4 className="font-medium">Video Assignments ({assignments.length})</h4>
-                                    {assignments.length > 0 && (
-                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <span>Sort by:</span>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => handleVideoSort(employee.id, 'title')}
-                                          className="h-6 px-2 text-xs"
-                                        >
-                                          Title
-                                          {videoSortState.get(employee.id)?.column === 'title' ? (
-                                            videoSortState.get(employee.id)?.direction === 'asc' ? 
-                                              <ArrowUp className="ml-1 h-3 w-3" /> : 
-                                              <ArrowDown className="ml-1 h-3 w-3" />
-                                          ) : (
-                                            <ArrowUpDown className="ml-1 h-3 w-3" />
-                                          )}
-                                        </Button>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => handleVideoSort(employee.id, 'status')}
-                                          className="h-6 px-2 text-xs"
-                                        >
-                                          Status
-                                          {videoSortState.get(employee.id)?.column === 'status' ? (
-                                            videoSortState.get(employee.id)?.direction === 'asc' ? 
-                                              <ArrowUp className="ml-1 h-3 w-3" /> : 
-                                              <ArrowDown className="ml-1 h-3 w-3" />
-                                          ) : (
-                                            <ArrowUpDown className="ml-1 h-3 w-3" />
-                                          )}
-                                        </Button>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {assignments.length === 0 ? (
-                                    <div className="text-center py-8 text-muted-foreground">
-                                      <Play className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                                      <p>No video assignments yet</p>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleAssignVideos(employee)}
-                                        className="mt-2"
-                                      >
-                                        <UserPlus className="h-4 w-4 mr-2" />
-                                        Assign Videos
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <div className="space-y-2">
-                                      {getSortedVideosForEmployee(employee.id, assignments).map((assignment) => {
-                                        const quizAttempt = employeeQuizData.get(assignment.video_id);
-                                        const hasQuizAttempt = !!quizAttempt;
-                                        const badge = getDeadlineBadge(
-                                          assignment.due_date, 
-                                          assignment.progress_percent, 
-                                          hasQuizAttempt,
-                                          assignment.completed_at
-                                        );
-
-                                        return (
-                                          <div
-                                            key={assignment.assignment_id}
-                                            className="flex items-center justify-between p-3 bg-card rounded-md border"
-                                          >
-                                            <div className="flex items-center gap-3">
-                                              <div className="flex flex-col">
-                                                <div className="flex items-center gap-2">
-                                                  <span className="font-medium text-sm">{assignment.video_title}</span>
-                                                  <Badge variant={assignment.video_type === 'Required' ? 'destructive' : 'secondary'} className="text-xs">
-                                                    {assignment.video_type}
-                                                  </Badge>
-                                  {assignment.hasQuiz && (
-                                    <Badge variant="secondary" className="text-xs gap-1">
-                                      <HelpCircle className="h-3 w-3" />
-                                      Quiz
-                                    </Badge>
-                                  )}
-                                                </div>
-                                                <div className="flex items-center gap-4 mt-1">
-                                                  <span className="text-xs text-muted-foreground">
-                                                    Progress: {assignment.progress_percent}%
-                                                  </span>
-                                                  {assignment.due_date && (
-                                                    <span className="text-xs text-muted-foreground">
-                                                      Due: {format(new Date(assignment.due_date), 'MMM dd, yyyy')}
-                                                    </span>
-                                                  )}
-                                                  {quizAttempt && (
-                                                    <span className="text-xs text-muted-foreground">
-                                                      Quiz: {quizAttempt.score}/{quizAttempt.total_questions}
-                                                    </span>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <Badge variant={badge.variant} className="gap-1">
-                                              {badge.showIcon && (
-                                                badge.variant === "ghost-success" ? <CheckCircle className="h-3 w-3" /> :
-                                                badge.variant === "ghost-destructive" ? <XCircle className="h-3 w-3" /> :
-                                                badge.variant === "ghost-warning" ? <Clock className="h-3 w-3" /> :
-                                                <Clock className="h-3 w-3" />
-                                              )}
-                                              {badge.text}
-                                            </Badge>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  )}
-                                </div>
-                              </CollapsibleContent>
-                            </Collapsible>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
-
-      {/* Archived Employees Section */}
-      <CardContent className="pt-0">
-        <Collapsible open={showArchived} onOpenChange={setShowArchived}>
-          <CollapsibleTrigger asChild>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-between p-4 h-auto border border-dashed border-muted-foreground/25 hover:border-muted-foreground/50"
-              aria-expanded={showArchived}
-              aria-controls="archived-employees-section"
-            >
-              <div className="flex items-center gap-2">
-                <Archive className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-muted-foreground">
-                  Archived Employees ({archivedEmployees.length})
-                </span>
-              </div>
-              {showArchived ? (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              )}
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent id="archived-employees-section" className="space-y-4 mt-4">
-            {loadingArchived ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <div role="status" aria-live="polite">Loading archived employees...</div>
-              </div>
-            ) : archivedEmployees.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Archive className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                <p>No archived employees</p>
-              </div>
-            ) : (
-              <div className="rounded-lg border border-muted bg-muted/30">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-muted">
-                      <TableHead className="text-muted-foreground">Employee Name</TableHead>
-                      <TableHead className="text-muted-foreground">Email</TableHead>
-                      <TableHead className="text-muted-foreground">Archived Date</TableHead>
-                      <TableHead className="text-muted-foreground w-[100px]">
-                        <span className="sr-only">Actions</span>
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {archivedEmployees.map((employee) => (
-                      <TableRow key={employee.id} className="border-muted">
-                        <TableCell className="font-medium text-muted-foreground">
-                          {employee.full_name || employee.email}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {employee.email}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {format(new Date(employee.archived_at), 'MMM d, yyyy')}
-                        </TableCell>
-                        <TableCell>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {getEmployeeOverallStatus(employee.id)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
                           <IconButtonWithTooltip
-                            icon={<ArchiveRestore className="h-4 w-4" />}
-                            tooltip={getTooltipText('unarchive-employee')}
-                            onClick={() => setUnarchiveConfirmEmployee(employee)}
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                            icon={Edit}
+                            onClick={() => handleAssignVideos(employee)}
+                            tooltip={getTooltipText('assign-videos')}
                           />
+                          <IconButtonWithTooltip
+                            icon={Trash2}
+                            onClick={() => setDeleteConfirmEmployee(employee)}
+                            tooltip={getTooltipText('delete-item', { name: employee.full_name || 'employee' })}
+                            variant="destructive"
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+
+                    {isExpanded && hasVideos && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="p-0">
+                          <div className="bg-muted/50 p-4">
+                            <h4 className="font-medium mb-3">Video Assignments</h4>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>
+                                    <Button 
+                                      variant="ghost" 
+                                      onClick={() => handleVideoSort(employee.id, 'title')}
+                                      className="h-auto p-0 font-semibold"
+                                    >
+                                      Video Title
+                                      {videoSortState.get(employee.id)?.column === 'title' && (
+                                        videoSortState.get(employee.id)?.direction === 'asc' 
+                                          ? <ArrowUp className="w-4 h-4 ml-1" /> 
+                                          : <ArrowDown className="w-4 h-4 ml-1" />
+                                      )}
+                                      {videoSortState.get(employee.id)?.column !== 'title' && <ArrowUpDown className="w-4 h-4 ml-1" />}
+                                    </Button>
+                                  </TableHead>
+                                  <TableHead>Type</TableHead>
+                                  <TableHead>
+                                    <Button 
+                                      variant="ghost" 
+                                      onClick={() => handleVideoSort(employee.id, 'status')}
+                                      className="h-auto p-0 font-semibold"
+                                    >
+                                      Status
+                                      {videoSortState.get(employee.id)?.column === 'status' && (
+                                        videoSortState.get(employee.id)?.direction === 'asc' 
+                                          ? <ArrowUp className="w-4 h-4 ml-1" /> 
+                                          : <ArrowDown className="w-4 h-4 ml-1" />
+                                      )}
+                                      {videoSortState.get(employee.id)?.column !== 'status' && <ArrowUpDown className="w-4 h-4 ml-1" />}
+                                    </Button>
+                                  </TableHead>
+                                  <TableHead>Due Date</TableHead>
+                                  <TableHead>Progress</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {getSortedVideosForEmployee(employee.id, videos).map((assignment) => (
+                                  <TableRow key={assignment.assignment_id}>
+                                    <TableCell>
+                                      <div className="font-medium">{assignment.video_title}</div>
+                                      {assignment.video_description && (
+                                        <div className="text-sm text-muted-foreground">
+                                          {assignment.video_description}
+                                        </div>
+                                      )}
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant={assignment.video_type === 'Required' ? 'default' : 'secondary'}>
+                                        {assignment.video_type}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      {getAssignmentStatus(assignment, employee.id)}
+                                    </TableCell>
+                                    <TableCell>
+                                      {getDeadlineBadge(assignment, employee.id)}
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-24 bg-muted rounded-full h-2">
+                                          <div 
+                                            className="bg-primary h-2 rounded-full transition-all duration-300 ease-in-out" 
+                                            style={{ width: `${assignment.progress_percent || 0}%` }}
+                                          />
+                                        </div>
+                                        <span className="text-sm font-medium">{assignment.progress_percent || 0}%</span>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CollapsibleContent>
-        </Collapsible>
-      </CardContent>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </TableBody>
+          </Table>
+
+          {employees.length === 0 && (
+            <div className="p-8 text-center">
+              <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">No employees found</h3>
+              <p className="text-muted-foreground mb-4">
+                Get started by adding your first employee.
+              </p>
+              <Button onClick={() => setShowAddModal(true)}>
+                <UserPlus className="w-4 h-4 mr-2" />
+                Add Employee
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <AddEmployeeModal
         open={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onOpenChange={setShowAddModal}
         onAddEmployee={handleAddEmployee}
       />
-      
+
       <AssignVideosModal
         open={showAssignModal}
-        onClose={() => setShowAssignModal(false)}
-        employeeId={selectedEmployee?.id || null}
+        onOpenChange={setShowAssignModal}
+        employeeId={selectedEmployee?.id || ''}
         onAssignVideos={() => {
           setShowAssignModal(false);
           loadEmployees();
         }}
       />
 
-      <AlertDialog open={!!archiveConfirmEmployee} onOpenChange={() => setArchiveConfirmEmployee(null)}>
+      <AlertDialog open={!!deleteConfirmEmployee} onOpenChange={() => setDeleteConfirmEmployee(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Archive Employee</AlertDialogTitle>
+            <AlertDialogTitle>Delete Employee</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to archive this employee? They will be moved to the archived employees section and can be restored later.
+              Are you sure you want to delete this employee? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={handleArchiveEmployee}
-              disabled={isArchiving}
+              onClick={handleDeleteEmployee}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isArchiving ? "Archiving..." : "Archive"}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <AlertDialog open={!!unarchiveConfirmEmployee} onOpenChange={() => setUnarchiveConfirmEmployee(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Unarchive Employee</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to unarchive this employee? They will be restored to the active employees list.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleUnarchiveEmployee}>
-              Unarchive
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </Card>
+    </div>
   );
 };

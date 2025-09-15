@@ -259,12 +259,12 @@ export const employeeOperations = {
     performanceTracker.start(operation);
     
     try {
-      // Use the database function to get active employees with assignments
+      // Use the database function to get all employees with assignments
       const { data: employeeAssignments, error } = await supabase
-        .rpc('get_active_employee_assignments');
+        .rpc('get_all_employee_assignments');
 
       if (error) {
-        logger.error('Failed to fetch active employees with assignments', undefined, { supabaseError: error.message });
+        logger.error('Failed to fetch employees with assignments', undefined, { supabaseError: error.message });
         return { data: null, error: error.message, success: false };
       }
 
@@ -287,7 +287,126 @@ export const employeeOperations = {
         };
       }) || [];
 
-      logger.info('Active employees with assignments fetched successfully', { count: result.length });
+      logger.info('Employees with assignments fetched successfully', { count: result.length });
+      return { data: result, error: null, success: true };
+    } catch (error) {
+      logger.error('Unexpected error fetching employees with assignments', error as Error);
+      return { data: null, error: 'Failed to fetch employees', success: false };
+    } finally {
+      performanceTracker.end(operation);
+    }
+  },
+
+  calculateStatus(completedVideos: number, totalVideos: number): 'completed' | 'on-track' | 'behind' {
+    if (totalVideos === 0) return 'on-track';
+    const progressPercent = (completedVideos / totalVideos) * 100;
+    
+    if (progressPercent === 100) return 'completed';
+    if (progressPercent >= 75) return 'on-track';
+    return 'behind';
+  },
+
+  async add(email: string, fullName?: string): Promise<ApiResult<EmployeeWithAssignments>> {
+    const operation = 'employee.add';
+    performanceTracker.start(operation);
+    
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .insert({
+          email: email.toLowerCase(),
+          full_name: fullName || null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        logger.error('Failed to add employee', undefined, { email, supabaseError: error.message });
+        return { data: null, error: error.message, success: false };
+      }
+
+      const employeeWithAssignments: EmployeeWithAssignments = {
+        id: data.id,
+        name: data.full_name || data.email?.split('@')[0] || 'Unknown',
+        email: data.email || '',
+        requiredProgress: 0,
+        completedVideos: 0,
+        totalVideos: 0,
+        status: 'behind',
+        assignments: [],
+        created_at: data.created_at,
+        updated_at: data.updated_at
+      };
+
+      logger.info('Employee added successfully', { employeeId: data.id, email });
+      return { data: employeeWithAssignments, error: null, success: true };
+    } catch (error) {
+      logger.error('Unexpected error adding employee', error as Error, { email });
+      return { data: null, error: 'Failed to add employee', success: false };
+    } finally {
+      performanceTracker.end(operation);
+    }
+  },
+
+  async delete(employeeId: string): Promise<ApiResult<boolean>> {
+    const operation = 'employee.delete';
+    performanceTracker.start(operation);
+    
+    try {
+      const { error } = await supabase
+        .from('employees')
+        .delete()
+        .eq('id', employeeId);
+
+      if (error) {
+        logger.error('Failed to delete employee', undefined, { employeeId, supabaseError: error.message });
+        return { data: null, error: error.message, success: false };
+      }
+
+      logger.info('Employee deleted successfully', { employeeId });
+      return { data: true, error: null, success: true };
+    } catch (error) {
+      logger.error('Unexpected error deleting employee', error as Error, { employeeId });
+      return { data: null, error: 'Failed to delete employee', success: false };
+    } finally {
+      performanceTracker.end(operation);
+    }
+  }
+};
+  async getAll(): Promise<ApiResult<EmployeeWithAssignments[]>> {
+    const operation = 'employee.getAll';
+    performanceTracker.start(operation);
+    
+    try {
+      // Use the database function to get all employees with assignments
+      const { data: employeeAssignments, error } = await supabase
+        .rpc('get_all_employee_assignments');
+
+      if (error) {
+        logger.error('Failed to fetch employees with assignments', undefined, { supabaseError: error.message });
+        return { data: null, error: error.message, success: false };
+      }
+
+      const result: EmployeeWithAssignments[] = employeeAssignments?.map((emp: any) => {
+        const assignments = Array.isArray(emp.assignments) ? emp.assignments : [];
+        const completedVideos = assignments.filter((a: any) => a.progress_percent === 100).length;
+        const totalVideos = assignments.length;
+        
+        return {
+          id: emp.employee_id,
+          name: emp.employee_full_name || emp.employee_email?.split('@')[0] || 'Unknown',
+          email: emp.employee_email || '',
+          requiredProgress: 0,
+          completedVideos,
+          totalVideos,
+          status: employeeOperations.calculateStatus(completedVideos, totalVideos),
+          assignments,
+          created_at: emp.created_at,
+          updated_at: emp.updated_at
+        };
+      }) || [];
+
+      logger.info('Employees with assignments fetched successfully', { count: result.length });
       return { data: result, error: null, success: true };
     } catch (error) {
       logger.error('Unexpected error fetching active employees with assignments', error as Error);
@@ -348,78 +467,26 @@ export const employeeOperations = {
     }
   },
 
-  async archive(employeeId: string): Promise<ApiResult<boolean>> {
-    const operation = 'employee.archive';
+  async delete(employeeId: string): Promise<ApiResult<boolean>> {
+    const operation = 'employee.delete';
     performanceTracker.start(operation);
     
     try {
-      const { error } = await supabase.rpc('archive_employee', {
-        p_employee_id: employeeId
-      });
+      const { error } = await supabase
+        .from('employees')
+        .delete()
+        .eq('id', employeeId);
 
       if (error) {
-        logger.error('Failed to archive employee', undefined, { employeeId, supabaseError: error.message });
+        logger.error('Failed to delete employee', undefined, { employeeId, supabaseError: error.message });
         return { data: null, error: error.message, success: false };
       }
 
-      logger.info('Employee archived successfully', { employeeId });
+      logger.info('Employee deleted successfully', { employeeId });
       return { data: true, error: null, success: true };
     } catch (error) {
-      logger.error('Unexpected error archiving employee', error as Error, { employeeId });
-      return { data: null, error: 'Failed to archive employee', success: false };
-    } finally {
-      performanceTracker.end(operation);
-    }
-  },
-
-  async unarchive(employeeId: string): Promise<ApiResult<boolean>> {
-    const operation = 'employee.unarchive';
-    performanceTracker.start(operation);
-    
-    try {
-      const { error } = await supabase.rpc('unarchive_employee', {
-        p_employee_id: employeeId
-      });
-
-      if (error) {
-        logger.error('Failed to unarchive employee', undefined, { employeeId, supabaseError: error.message });
-        return { data: null, error: error.message, success: false };
-      }
-
-      logger.info('Employee unarchived successfully', { employeeId });
-      return { data: true, error: null, success: true };
-    } catch (error) {
-      logger.error('Unexpected error unarchiving employee', error as Error, { employeeId });
-      return { data: null, error: 'Failed to unarchive employee', success: false };
-    } finally {
-      performanceTracker.end(operation);
-    }
-  },
-
-  async getArchived(): Promise<ApiResult<{ id: string; email: string; full_name: string; archived_at: string }[]>> {
-    const operation = 'employee.getArchived';
-    performanceTracker.start(operation);
-    
-    try {
-      const { data, error } = await supabase.rpc('get_archived_employees');
-
-      if (error) {
-        logger.error('Failed to fetch archived employees', undefined, { supabaseError: error.message });
-        return { data: null, error: error.message, success: false };
-      }
-
-      const result = data?.map((emp: any) => ({
-        id: emp.employee_id,
-        email: emp.employee_email,
-        full_name: emp.employee_full_name,
-        archived_at: emp.archived_at
-      })) || [];
-
-      logger.info('Archived employees fetched successfully', { count: result.length });
-      return { data: result, error: null, success: true };
-    } catch (error) {
-      logger.error('Unexpected error fetching archived employees', error as Error);
-      return { data: null, error: 'Failed to fetch archived employees', success: false };
+      logger.error('Unexpected error deleting employee', error as Error, { employeeId });
+      return { data: null, error: 'Failed to delete employee', success: false };
     } finally {
       performanceTracker.end(operation);
     }
