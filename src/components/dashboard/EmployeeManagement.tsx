@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { UserPlus, Mail, Users, Clock, CheckCircle, XCircle, HelpCircle, ChevronDown, ChevronUp, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, Trash2, Edit } from 'lucide-react';
 import { IconButtonWithTooltip } from '@/components/ui/icon-button-with-tooltip';
@@ -498,13 +499,21 @@ export const EmployeeManagement: React.FC<{
               const hasVideos = videos.length > 0;
               const displayName = createSafeDisplayName(employee.full_name || '', employee.email || '');
               return <React.Fragment key={employee.id}>
-                    <TableRow>
-                      <TableCell>
-                        {hasVideos && <Button variant="ghost" size="sm" onClick={() => toggleEmployeeExpanded(employee.id)} className="p-1" {...createButtonAriaProps(`${isExpanded ? 'Collapse' : 'Expand'} video assignments for ${displayName}`, isExpanded)}>
-                            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                          </Button>}
+                    <TableRow className={`group transition-colors ${isExpanded ? 'border-b-0 bg-muted/50' : 'hover:bg-slate-100'}`}>
+                      <TableCell className="py-3">
+                        {hasVideos ? (
+                          <Collapsible open={isExpanded} onOpenChange={() => toggleEmployeeExpanded(employee.id)}>
+                            <CollapsibleTrigger asChild>
+                              <div className="flex items-center gap-3 cursor-pointer" {...createButtonAriaProps(`${isExpanded ? 'Collapse' : 'Expand'} video assignments for ${displayName}`, isExpanded)}>
+                                <div className="flex items-center gap-2">
+                                  {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                                </div>
+                              </div>
+                            </CollapsibleTrigger>
+                          </Collapsible>
+                        ) : null}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-3">
                         <div>
                           <div className="font-medium">
                             {displayName}
@@ -515,10 +524,10 @@ export const EmployeeManagement: React.FC<{
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-3">
                         {getEmployeeOverallStatus(employee.id)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-3">
                         <div className="flex space-x-2">
                           <Button variant="outline" size="sm" onClick={() => handleAssignVideos(employee)} {...createButtonAriaProps(`Assign videos to ${displayName}`)}>
                             <Edit className="w-4 h-4 mr-2" />
@@ -531,11 +540,12 @@ export const EmployeeManagement: React.FC<{
                       </TableCell>
                     </TableRow>
 
-                    {isExpanded && hasVideos && <TableRow>
-                        <TableCell colSpan={4} className="p-0">
-                          <div className="bg-muted/50 p-4">
-                            
-                            <Table>
+                    {isExpanded && hasVideos && <TableRow className="bg-muted/50">
+                        <TableCell colSpan={4} className="py-0">
+                          <Collapsible open={isExpanded}>
+                            <CollapsibleContent>
+                              <div className="px-4 pb-4">
+                                <Table>
                               <TableHeader>
                                 <TableRow>
                                   <TableHead>
@@ -602,8 +612,10 @@ export const EmployeeManagement: React.FC<{
                                      </TableCell>
                                   </TableRow>)}
                               </TableBody>
-                            </Table>
-                          </div>
+                                </Table>
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
                         </TableCell>
                       </TableRow>}
                   </React.Fragment>;
