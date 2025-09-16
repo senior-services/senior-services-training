@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,7 @@ import { AssignVideosModal } from './AssignVideosModal';
 import { logger } from '@/utils/logger';
 import { format, differenceInDays, isPast } from 'date-fns';
 import { quizOperations } from '@/services/quizService';
+import { sanitizeText, createSafeDisplayName, validateUserRole } from '@/utils/security';
 
 export const EmployeeManagement: React.FC<{
   onCountChange?: (count: number) => void;
@@ -88,17 +89,17 @@ export const EmployeeManagement: React.FC<{
     };
   }, []);
 
-  const loadEmployees = async () => {
+  const loadEmployees = useCallback(async () => {
     try {
       setLoading(true);
       const data = await employeeOperations.getAll();
       
       if (data.success && data.data) {
-        // Transform API data to match local types
+        // Transform API data to match local types with sanitization
         const transformedEmployees: EmployeeWithAssignments[] = data.data.map(employee => ({
           id: employee.id,
           email: employee.email,
-          full_name: employee.name, // API uses 'name', component expects 'full_name'
+          full_name: createSafeDisplayName(employee.name || '', employee.email || ''), // Sanitized display name
           created_at: employee.created_at || new Date().toISOString(),
           updated_at: employee.updated_at || new Date().toISOString(),
           assignments: employee.assignments || []
@@ -171,14 +172,14 @@ export const EmployeeManagement: React.FC<{
     } finally {
       setLoading(false);
     }
-  };
+  }, [onCountChange, toast]);
 
-  const handleAddEmployee = (employee: Employee) => {
+  const handleAddEmployee = useCallback((employee: Employee) => {
     setEmployees(prev => {
       const transformedEmployee: EmployeeWithAssignments = {
         id: employee.id,
         email: employee.email,
-        full_name: employee.full_name || employee.email?.split('@')[0] || 'Unknown',
+        full_name: createSafeDisplayName(employee.full_name || '', employee.email || ''),
         created_at: employee.created_at,
         updated_at: employee.updated_at,
         assignments: []
@@ -192,12 +193,12 @@ export const EmployeeManagement: React.FC<{
       title: "Success",
       description: "Employee added successfully"
     });
-  };
+  }, [onCountChange, toast]);
 
-  const handleAssignVideos = (employee: Employee) => {
+  const handleAssignVideos = useCallback((employee: Employee) => {
     setSelectedEmployee(employee);
     setShowAssignModal(true);
-  };
+  }, []);
 
   const handleDeleteEmployee = async () => {
     if (!deleteConfirmEmployee) return;
@@ -231,7 +232,7 @@ export const EmployeeManagement: React.FC<{
     }
   };
 
-  const toggleEmployeeExpanded = (employeeId: string) => {
+  const toggleEmployeeExpanded = useCallback((employeeId: string) => {
     setExpandedEmployees(prev => {
       const newExpanded = new Set(prev);
       if (newExpanded.has(employeeId)) {
@@ -241,7 +242,7 @@ export const EmployeeManagement: React.FC<{
       }
       return newExpanded;
     });
-  };
+  }, []);
 
   const getEmployeeStatus = (employeeId: string) => {
     const videos = employeeVideos.get(employeeId) || [];
@@ -303,7 +304,7 @@ export const EmployeeManagement: React.FC<{
     }
 
     if (daysUntilDue === 0) {
-      return <Badge className="bg-yellow-500 text-white">Due Today</Badge>;
+      return <Badge className="bg-warning text-warning-foreground">Due Today</Badge>;
     }
 
     if (daysUntilDue <= 7) {
@@ -377,39 +378,46 @@ export const EmployeeManagement: React.FC<{
                             onOpenChange={() => toggleEmployeeExpanded(employee.id)}
                           >
                             <CollapsibleTrigger asChild>
-                              <div className="flex items-center gap-3 cursor-pointer">
-                                <div className="flex items-center gap-2">
-                                  {isExpanded ? (
-                                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                                  ) : (
-                                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                                  )}
-                                  <span>{employee.full_name || employee.email?.split('@')[0] || 'Unknown'}</span>
-                                </div>
-                              </div>
+                               <div className="flex items-center gap-3 cursor-pointer" 
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-expanded={isExpanded}
+                                    aria-label={`${isExpanded ? 'Collapse' : 'Expand'} details for ${sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown')}`}
+                                    onKeyDown={(e) => e.key === 'Enter' && toggleEmployeeExpanded(employee.id)}>
+                                 <div className="flex items-center gap-2">
+                                   {isExpanded ? (
+                                     <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                                   ) : (
+                                     <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                                   )}
+                                   <span>{sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown')}</span>
+                                 </div>
+                               </div>
                             </CollapsibleTrigger>
                           </Collapsible>
                         </TableCell>
-                        <TableCell className="py-3">{employee.email}</TableCell>
+                        <TableCell className="py-3">{sanitizeText(employee.email || '')}</TableCell>
                         <TableCell className="py-3">
                           {getEmployeeStatus(employee.id)}
                         </TableCell>
                         <TableCell className="text-right py-3">
                           <div className="flex gap-2 justify-end">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleAssignVideos(employee)}
-                            >
-                              Assign Videos
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setDeleteConfirmEmployee(employee)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               onClick={() => handleAssignVideos(employee)}
+                               aria-label={`Assign videos to ${sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown')}`}
+                             >
+                               Assign Videos
+                             </Button>
+                             <Button
+                               variant="ghost"
+                               size="sm"
+                               onClick={() => setDeleteConfirmEmployee(employee)}
+                               aria-label={`Delete ${sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown')}`}
+                             >
+                               <Trash2 className="h-4 w-4" />
+                             </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -428,7 +436,7 @@ export const EmployeeManagement: React.FC<{
                                     ) : (
                                       <Table>
                                         <TableHeader>
-                                          <TableRow>
+                                          <TableRow className="border-b">
                                             <TableHead className="text-xs font-medium uppercase text-muted-foreground">VIDEO TITLE</TableHead>
                                             <TableHead className="text-xs font-medium uppercase text-muted-foreground">QUIZ RESULTS</TableHead>
                                             <TableHead className="text-xs font-medium uppercase text-muted-foreground">STATUS</TableHead>
@@ -437,7 +445,7 @@ export const EmployeeManagement: React.FC<{
                                         <TableBody>
                                           {employeeVideos.get(employee.id)?.map((assignment: any) => (
                                             <TableRow key={assignment.video_id}>
-                                              <TableCell>{assignment.video_title}</TableCell>
+                                              <TableCell>{sanitizeText(assignment.video_title || '')}</TableCell>
                                               <TableCell>{getQuizResults(assignment, employee.id)}</TableCell>
                                               <TableCell>{getVideoStatus(assignment, employee.id)}</TableCell>
                                             </TableRow>
