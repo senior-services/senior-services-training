@@ -500,29 +500,38 @@ export const EmployeeManagement: React.FC<{
               const displayName = createSafeDisplayName(employee.full_name || '', employee.email || '');
               return <React.Fragment key={employee.id}>
                     <TableRow className={`group transition-colors ${isExpanded ? 'border-b-0 bg-muted/50' : 'hover:bg-slate-100'}`}>
-                      <TableCell className="py-3">
+                      <TableCell className="py-3" colSpan={2}>
                         {hasVideos ? (
                           <Collapsible open={isExpanded} onOpenChange={() => toggleEmployeeExpanded(employee.id)}>
                             <CollapsibleTrigger asChild>
-                              <div className="flex items-center gap-3 cursor-pointer" {...createButtonAriaProps(`${isExpanded ? 'Collapse' : 'Expand'} video assignments for ${displayName}`, isExpanded)}>
-                                <div className="flex items-center gap-2">
-                                  {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                              <div className="flex items-center gap-3 cursor-pointer w-full" {...createButtonAriaProps(`${isExpanded ? 'Collapse' : 'Expand'} video assignments for ${displayName}`, isExpanded)}>
+                                {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                                <div className="flex-1">
+                                  <div className="font-medium">
+                                    {displayName}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground flex items-center">
+                                    <Mail className="w-3 h-3 mr-1" />
+                                    {sanitizeText(employee.email || '')}
+                                  </div>
                                 </div>
                               </div>
                             </CollapsibleTrigger>
                           </Collapsible>
-                        ) : null}
-                      </TableCell>
-                      <TableCell className="py-3">
-                        <div>
-                          <div className="font-medium">
-                            {displayName}
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <div className="w-4 h-4" />
+                            <div className="flex-1">
+                              <div className="font-medium">
+                                {displayName}
+                              </div>
+                              <div className="text-sm text-muted-foreground flex items-center">
+                                <Mail className="w-3 h-3 mr-1" />
+                                {sanitizeText(employee.email || '')}
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-sm text-muted-foreground flex items-center">
-                            <Mail className="w-3 h-3 mr-1" />
-                            {sanitizeText(employee.email || '')}
-                          </div>
-                        </div>
+                        )}
                       </TableCell>
                       <TableCell className="py-3">
                         {getEmployeeOverallStatus(employee.id)}
@@ -546,31 +555,31 @@ export const EmployeeManagement: React.FC<{
                             <CollapsibleContent>
                               <div className="px-4 pb-4">
                                 <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead>
-                                    <Button variant="ghost" onClick={() => handleVideoSort(employee.id, 'title')} className="h-auto p-0 font-semibold">
-                                      Video Title
-                                      {videoSortState.get(employee.id)?.column === 'title' && (videoSortState.get(employee.id)?.direction === 'asc' ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" />)}
-                                      {videoSortState.get(employee.id)?.column !== 'title' && <ArrowUpDown className="w-4 h-4 ml-1" />}
-                                    </Button>
-                                  </TableHead>
+                               <TableHeader>
+                                 <TableRow className="border-b">
                                    <TableHead>
-                                     <Button variant="ghost" onClick={() => handleVideoSort(employee.id, 'status')} className="h-auto p-0 font-semibold">
-                                       Status
-                                       {videoSortState.get(employee.id)?.column === 'status' && (videoSortState.get(employee.id)?.direction === 'asc' ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" />)}
-                                       {videoSortState.get(employee.id)?.column !== 'status' && <ArrowUpDown className="w-4 h-4 ml-1" />}
+                                     <Button variant="ghost" onClick={() => handleVideoSort(employee.id, 'title')} className="h-auto p-0 font-semibold">
+                                       Video Title
+                                       {videoSortState.get(employee.id)?.column === 'title' && (videoSortState.get(employee.id)?.direction === 'asc' ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" />)}
+                                       {videoSortState.get(employee.id)?.column !== 'title' && <ArrowUpDown className="w-4 h-4 ml-1" />}
                                      </Button>
                                    </TableHead>
-                                   <TableHead>
-                                     <Button variant="ghost" onClick={() => handleVideoSort(employee.id, 'quiz')} className="h-auto p-0 font-semibold">
-                                       Quiz Results
-                                       {videoSortState.get(employee.id)?.column === 'quiz' && (videoSortState.get(employee.id)?.direction === 'asc' ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" />)}
-                                       {videoSortState.get(employee.id)?.column !== 'quiz' && <ArrowUpDown className="w-4 h-4 ml-1" />}
-                                     </Button>
-                                   </TableHead>
-                                </TableRow>
-                              </TableHeader>
+                                    <TableHead>
+                                      <Button variant="ghost" onClick={() => handleVideoSort(employee.id, 'status')} className="h-auto p-0 font-semibold">
+                                        Status
+                                        {videoSortState.get(employee.id)?.column === 'status' && (videoSortState.get(employee.id)?.direction === 'asc' ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" />)}
+                                        {videoSortState.get(employee.id)?.column !== 'status' && <ArrowUpDown className="w-4 h-4 ml-1" />}
+                                      </Button>
+                                    </TableHead>
+                                    <TableHead>
+                                      <Button variant="ghost" onClick={() => handleVideoSort(employee.id, 'quiz')} className="h-auto p-0 font-semibold">
+                                        Quiz Results
+                                        {videoSortState.get(employee.id)?.column === 'quiz' && (videoSortState.get(employee.id)?.direction === 'asc' ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" />)}
+                                        {videoSortState.get(employee.id)?.column !== 'quiz' && <ArrowUpDown className="w-4 h-4 ml-1" />}
+                                      </Button>
+                                    </TableHead>
+                                 </TableRow>
+                               </TableHeader>
                               <TableBody>
                                 {getSortedVideosForEmployee(employee.id, videos).map(assignment => <TableRow key={assignment.assignment_id}>
                                     <TableCell>
