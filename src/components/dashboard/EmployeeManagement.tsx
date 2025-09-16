@@ -595,84 +595,83 @@ export const EmployeeManagement: React.FC<{
                                   </div>
                                 </div>
 
-                                {/* Video Assignment Cards Grid */}
-                                <div className="space-y-3 border-l-2 border-muted pl-4">
-                                  {getSortedVideosForEmployee(employee.id, videos).map(assignment => (
-                                    <div 
-                                      key={assignment.assignment_id}
-                                      className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-3 rounded-lg bg-card border border-border hover:shadow-sm transition-shadow"
-                                    >
-                                      {/* Video Information */}
-                                      <div className="lg:col-span-1 space-y-1">
-                                        <h5 className="font-medium text-foreground leading-tight">
-                                          {assignment.video_title}
-                                        </h5>
-                                        {assignment.video_description && (
-                                          <p className="text-sm text-muted-foreground line-clamp-2">
-                                            {assignment.video_description}
-                                          </p>
-                                        )}
-                                        <div className="flex items-center gap-2 mt-2">
-                                          <Badge variant="hollow-secondary" className="text-xs">
-                                            {assignment.video_type}
-                                          </Badge>
-                                          {assignment.due_date && (
-                                            <span className="text-xs text-muted-foreground">
-                                              Due: {formatDueDate(assignment.due_date)}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </div>
-
-                                      {/* Status Information */}
-                                      <div className="lg:col-span-1 flex flex-col justify-center">
-                                        <div className="space-y-2">
-                                          <div className="flex items-center justify-between">
-                                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</span>
-                                            {getDeadlineBadge(assignment, employee.id)}
-                                          </div>
-                                          {getAssignmentStatus(assignment, employee.id)}
-                                        </div>
-                                      </div>
-
-                                      {/* Quiz Results */}
-                                      <div className="lg:col-span-1 flex flex-col justify-center">
-                                        <div className="space-y-2">
-                                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Quiz Results</span>
-                                          {(() => {
-                                            const employeeQuizData = employeeQuizzes.get(employee.id);
-                                            const quizAttempt = employeeQuizData?.get(assignment.video_id);
-                                            if (!assignment.hasQuiz) {
-                                              return <span className="text-sm text-muted-foreground">No Quiz Required</span>;
-                                            }
-                                            if (!quizAttempt) {
-                                              return <Badge variant="soft-secondary">Not Taken</Badge>;
-                                            }
-                                            const scorePercentage = Math.round(quizAttempt.score / quizAttempt.total_questions * 100);
-                                            const scoreDisplay = `${quizAttempt.score}/${quizAttempt.total_questions}`;
-                                            let badgeVariant: string;
-                                            if (scorePercentage >= 80) {
-                                              badgeVariant = "success";
-                                            } else if (scorePercentage >= 60) {
-                                              badgeVariant = "warning";
-                                            } else {
-                                              badgeVariant = "destructive";
-                                            }
-                                            return (
-                                              <div className="flex items-center space-x-2">
-                                                <Badge variant={badgeVariant as any}>
-                                                  {scoreDisplay}
+                                {/* Video Assignment Table */}
+                                <div className="border-l-2 border-muted pl-4">
+                                  <Table>
+                                    <TableHeader>
+                                      <TableRow>
+                                        <TableHead className="border-b">VIDEO TITLE</TableHead>
+                                        <TableHead className="border-b">QUIZ RESULTS</TableHead>
+                                        <TableHead className="border-b">STATUS</TableHead>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {getSortedVideosForEmployee(employee.id, videos).map(assignment => (
+                                        <TableRow key={assignment.assignment_id}>
+                                          <TableCell>
+                                            <div className="space-y-1">
+                                              <h5 className="font-medium text-foreground leading-tight">
+                                                {assignment.video_title}
+                                              </h5>
+                                              {assignment.video_description && (
+                                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                                  {assignment.video_description}
+                                                </p>
+                                              )}
+                                              <div className="flex items-center gap-2 mt-2">
+                                                <Badge variant="hollow-secondary" className="text-xs">
+                                                  {assignment.video_type}
                                                 </Badge>
-                                                <span className="text-sm text-muted-foreground">
-                                                  ({scorePercentage}%)
-                                                </span>
+                                                {assignment.due_date && (
+                                                  <span className="text-xs text-muted-foreground">
+                                                    Due: {formatDueDate(assignment.due_date)}
+                                                  </span>
+                                                )}
                                               </div>
-                                            );
-                                          })()}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
+                                            </div>
+                                          </TableCell>
+                                          <TableCell>
+                                            {(() => {
+                                              const employeeQuizData = employeeQuizzes.get(employee.id);
+                                              const quizAttempt = employeeQuizData?.get(assignment.video_id);
+                                              if (!assignment.hasQuiz) {
+                                                return <span className="text-sm text-muted-foreground">No Quiz Required</span>;
+                                              }
+                                              if (!quizAttempt) {
+                                                return <Badge variant="soft-secondary">Not Taken</Badge>;
+                                              }
+                                              const scorePercentage = Math.round(quizAttempt.score / quizAttempt.total_questions * 100);
+                                              const scoreDisplay = `${quizAttempt.score}/${quizAttempt.total_questions}`;
+                                              let badgeVariant: string;
+                                              if (scorePercentage >= 80) {
+                                                badgeVariant = "success";
+                                              } else if (scorePercentage >= 60) {
+                                                badgeVariant = "warning";
+                                              } else {
+                                                badgeVariant = "destructive";
+                                              }
+                                              return (
+                                                <div className="flex items-center space-x-2">
+                                                  <Badge variant={badgeVariant as any}>
+                                                    {scoreDisplay}
+                                                  </Badge>
+                                                  <span className="text-sm text-muted-foreground">
+                                                    ({scorePercentage}%)
+                                                  </span>
+                                                </div>
+                                              );
+                                            })()}
+                                          </TableCell>
+                                          <TableCell>
+                                            <div className="flex flex-col space-y-2">
+                                              {getDeadlineBadge(assignment, employee.id)}
+                                              {getAssignmentStatus(assignment, employee.id)}
+                                            </div>
+                                          </TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
                                 </div>
                               </div>
                             </CollapsibleContent>
