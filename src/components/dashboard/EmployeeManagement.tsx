@@ -37,7 +37,7 @@ export const EmployeeManagement: React.FC<{
   const [isDeleting, setIsDeleting] = useState(false);
   const [sortColumn, setSortColumn] = useState<'employee' | 'status' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [videoSortState, setVideoSortState] = useState<Map<string, { column: 'title' | 'status'; direction: 'asc' | 'desc' }>>(new Map());
+  const [videoSortState, setVideoSortState] = useState<Map<string, { column: 'title' | 'status' | 'quiz'; direction: 'asc' | 'desc' }>>(new Map());
   const { toast } = useToast();
 
   const handleSort = (column: 'employee' | 'status') => {
@@ -49,7 +49,7 @@ export const EmployeeManagement: React.FC<{
     }
   };
 
-  const handleVideoSort = (employeeId: string, column: 'title' | 'status') => {
+  const handleVideoSort = (employeeId: string, column: 'title' | 'status' | 'quiz') => {
     const currentSort = videoSortState.get(employeeId);
     const newSort = {
       column,
@@ -69,6 +69,16 @@ export const EmployeeManagement: React.FC<{
       if (sortState.column === 'title') {
         aValue = a.video_title || '';
         bValue = b.video_title || '';
+      } else if (sortState.column === 'quiz') {
+        // quiz sorting - sort by quiz score (completed first, then by score percentage)
+        const aQuizAttempt = employeeQuizzes.get(employeeId)?.get(a.video_id);
+        const bQuizAttempt = employeeQuizzes.get(employeeId)?.get(b.video_id);
+        
+        const aScore = aQuizAttempt ? (aQuizAttempt.score / aQuizAttempt.total_questions) * 100 : -1;
+        const bScore = bQuizAttempt ? (bQuizAttempt.score / bQuizAttempt.total_questions) * 100 : -1;
+        
+        aValue = aScore.toString().padStart(6, '0');
+        bValue = bScore.toString().padStart(6, '0');
       } else {
         // status sorting - get priority values based on getDeadlineBadge logic
         const getStatusPriority = (assignment: any) => {
@@ -633,23 +643,36 @@ export const EmployeeManagement: React.FC<{
                                       {videoSortState.get(employee.id)?.column !== 'title' && <ArrowUpDown className="w-4 h-4 ml-1" />}
                                     </Button>
                                   </TableHead>
-                                  <TableHead>Type</TableHead>
-                                  <TableHead>
-                                    <Button 
-                                      variant="ghost" 
-                                      onClick={() => handleVideoSort(employee.id, 'status')}
-                                      className="h-auto p-0 font-semibold"
-                                    >
-                                      Status
-                                      {videoSortState.get(employee.id)?.column === 'status' && (
-                                        videoSortState.get(employee.id)?.direction === 'asc' 
-                                          ? <ArrowUp className="w-4 h-4 ml-1" /> 
-                                          : <ArrowDown className="w-4 h-4 ml-1" />
-                                      )}
-                                      {videoSortState.get(employee.id)?.column !== 'status' && <ArrowUpDown className="w-4 h-4 ml-1" />}
-                                    </Button>
-                                  </TableHead>
-                                   <TableHead>Due Date</TableHead>
+                                   <TableHead>
+                                     <Button 
+                                       variant="ghost" 
+                                       onClick={() => handleVideoSort(employee.id, 'status')}
+                                       className="h-auto p-0 font-semibold"
+                                     >
+                                       Status
+                                       {videoSortState.get(employee.id)?.column === 'status' && (
+                                         videoSortState.get(employee.id)?.direction === 'asc' 
+                                           ? <ArrowUp className="w-4 h-4 ml-1" /> 
+                                           : <ArrowDown className="w-4 h-4 ml-1" />
+                                       )}
+                                       {videoSortState.get(employee.id)?.column !== 'status' && <ArrowUpDown className="w-4 h-4 ml-1" />}
+                                     </Button>
+                                   </TableHead>
+                                   <TableHead>
+                                     <Button 
+                                       variant="ghost" 
+                                       onClick={() => handleVideoSort(employee.id, 'quiz')}
+                                       className="h-auto p-0 font-semibold"
+                                     >
+                                       Quiz Results
+                                       {videoSortState.get(employee.id)?.column === 'quiz' && (
+                                         videoSortState.get(employee.id)?.direction === 'asc' 
+                                           ? <ArrowUp className="w-4 h-4 ml-1" /> 
+                                           : <ArrowDown className="w-4 h-4 ml-1" />
+                                       )}
+                                       {videoSortState.get(employee.id)?.column !== 'quiz' && <ArrowUpDown className="w-4 h-4 ml-1" />}
+                                     </Button>
+                                   </TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
@@ -663,16 +686,45 @@ export const EmployeeManagement: React.FC<{
                                         </div>
                                       )}
                                     </TableCell>
-                                    <TableCell>
-                                      <Badge variant={assignment.video_type === 'Required' ? 'default' : 'secondary'}>
-                                        {assignment.video_type}
-                                      </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                      {getAssignmentStatus(assignment, employee.id)}
-                                    </TableCell>
                                      <TableCell>
-                                       {getDeadlineBadge(assignment, employee.id)}
+                                       {getAssignmentStatus(assignment, employee.id)}
+                                     </TableCell>
+                                     <TableCell>
+                                       {(() => {
+                                         const employeeQuizData = employeeQuizzes.get(employee.id);
+                                         const quizAttempt = employeeQuizData?.get(assignment.video_id);
+                                         
+                                         if (!assignment.hasQuiz) {
+                                           return <span className="text-muted-foreground">No Quiz</span>;
+                                         }
+                                         
+                                         if (!quizAttempt) {
+                                           return <Badge variant="soft-secondary">Not Taken</Badge>;
+                                         }
+                                         
+                                         const scorePercentage = Math.round((quizAttempt.score / quizAttempt.total_questions) * 100);
+                                         const scoreDisplay = `${quizAttempt.score}/${quizAttempt.total_questions}`;
+                                         
+                                         let badgeVariant: string;
+                                         if (scorePercentage >= 80) {
+                                           badgeVariant = "success";
+                                         } else if (scorePercentage >= 60) {
+                                           badgeVariant = "warning";
+                                         } else {
+                                           badgeVariant = "destructive";
+                                         }
+                                         
+                                         return (
+                                           <div className="flex items-center space-x-2">
+                                             <Badge variant={badgeVariant as any}>
+                                               {scoreDisplay}
+                                             </Badge>
+                                             <span className="text-sm text-muted-foreground">
+                                               ({scorePercentage}%)
+                                             </span>
+                                           </div>
+                                         );
+                                       })()}
                                      </TableCell>
                                   </TableRow>
                                 ))}
