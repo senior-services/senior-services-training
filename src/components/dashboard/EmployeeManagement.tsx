@@ -271,11 +271,11 @@ export const EmployeeManagement: React.FC<{
     });
 
     if (overdueRequired.length > 0) {
-      return <Badge variant="destructive">{overdueRequired.length} Overdue</Badge>;
+      return <Badge variant="soft-destructive">{overdueRequired.length} Overdue</Badge>;
     }
 
     if (completedRequired.length === requiredVideos.length) {
-      return <Badge className="bg-success text-success-foreground">All Training Complete</Badge>;
+      return <Badge variant="soft-success">All Training Complete</Badge>;
     }
 
     return <Badge variant="secondary">{completedRequired.length}/{requiredVideos.length} Complete</Badge>;
@@ -286,7 +286,7 @@ export const EmployeeManagement: React.FC<{
     const quizAttempt = employeeQuizData?.get(assignment.video_id);
     
     if (quizAttempt) {
-      return <Badge className="bg-success text-success-foreground">Completed</Badge>;
+      return <Badge variant="ghost-success">Completed</Badge>;
     }
 
     if (!assignment.due_date) {
@@ -300,15 +300,15 @@ export const EmployeeManagement: React.FC<{
     const daysUntilDue = differenceInDays(due, today);
 
     if (isPast(due) && daysUntilDue < 0) {
-      return <Badge variant="destructive">Overdue ({Math.abs(daysUntilDue)} days)</Badge>;
+      return <Badge variant="ghost-destructive">Overdue ({Math.abs(daysUntilDue)} days)</Badge>;
     }
 
     if (daysUntilDue === 0) {
-      return <Badge className="bg-warning text-warning-foreground">Due Today</Badge>;
+      return <Badge variant="ghost-warning">Due Today</Badge>;
     }
 
     if (daysUntilDue <= 7) {
-      return <Badge className="bg-orange-500 text-white">Due in {daysUntilDue} days</Badge>;
+      return <Badge variant="ghost-warning">Due in {daysUntilDue} days</Badge>;
     }
 
     return <Badge variant="secondary">Due in {daysUntilDue} days</Badge>;
