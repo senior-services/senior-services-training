@@ -7,6 +7,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { UserPlus, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { employeeOperations } from '@/services/api';
+import { IconButtonWithTooltip } from '@/components/ui/icon-button-with-tooltip';
+import { getTooltipText } from '@/utils/tooltipText';
 import type { EmployeeWithAssignments, Employee } from '@/types/employee';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
 import { useToast } from '@/hooks/use-toast';
@@ -410,14 +412,13 @@ export const EmployeeManagement: React.FC<{
                              >
                                Assign Videos
                              </Button>
-                             <Button
-                               variant="ghost"
-                               size="sm"
+                             <IconButtonWithTooltip
+                               icon={Trash2}
+                               tooltip={getTooltipText('delete-item', { name: sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown') })}
                                onClick={() => setDeleteConfirmEmployee(employee)}
-                               aria-label={`Delete ${sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown')}`}
-                             >
-                               <Trash2 className="h-4 w-4" />
-                             </Button>
+                               variant="ghost"
+                               className="text-destructive hover:text-destructive"
+                             />
                           </div>
                         </TableCell>
                       </TableRow>
