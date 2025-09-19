@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { UserPlus, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { UserPlus, ChevronDown, ChevronUp, Trash2, Download } from 'lucide-react';
 import { employeeOperations } from '@/services/api';
 import { IconButtonWithTooltip } from '@/components/ui/icon-button-with-tooltip';
 import { getTooltipText } from '@/utils/tooltipText';
@@ -18,6 +18,7 @@ import { logger } from '@/utils/logger';
 import { format, differenceInDays, isPast } from 'date-fns';
 import { quizOperations } from '@/services/quizService';
 import { sanitizeText, createSafeDisplayName, validateUserRole } from '@/utils/security';
+import * as XLSX from 'xlsx';
 
 export const EmployeeManagement: React.FC<{
   onCountChange?: (count: number) => void;
@@ -351,6 +352,105 @@ export const EmployeeManagement: React.FC<{
     return <span className="text-muted-foreground">--</span>;
   };
 
+  const exportToExcel = useCallback(() => {
+    const exportData: any[] = [];
+    
+    employees.forEach(employee => {
+      const videos = employeeVideos.get(employee.id) || [];
+      const employeeName = employee.full_name || employee.email?.split('@')[0] || 'Unknown';
+      const employeeEmail = employee.email || '';
+      
+      if (videos.length === 0) {
+        // Employee with no assignments
+        exportData.push({
+          Name: employeeName,
+          Email: employeeEmail,
+          'Video Title': 'No assignments',
+          Status: 'No Required Training',
+          'Quiz Results': '--',
+          'Date Completed': '--'
+        });
+      } else {
+        // Employee with video assignments
+        videos.forEach(assignment => {
+          const employeeQuizData = employeeQuizzes.get(employee.id);
+          const quizAttempt = employeeQuizData?.get(assignment.video_id);
+          
+          // Get status
+          let status = 'Pending';
+          if (quizAttempt) {
+            status = 'Completed';
+          } else if (assignment.due_date) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const due = new Date(assignment.due_date);
+            due.setHours(0, 0, 0, 0);
+            const daysUntilDue = differenceInDays(due, today);
+            
+            if (isPast(due) && daysUntilDue < 0) {
+              status = `Overdue (${Math.abs(daysUntilDue)} days)`;
+            } else if (daysUntilDue === 0) {
+              status = 'Due Today';
+            } else if (daysUntilDue <= 7) {
+              status = `Due in ${daysUntilDue} days`;
+            } else {
+              status = `Due in ${daysUntilDue} days`;
+            }
+          } else {
+            status = 'No Deadline';
+          }
+          
+          // Get quiz results
+          let quizResults = '--';
+          if (!assignment.hasQuiz) {
+            quizResults = '--';
+          } else if (!quizAttempt) {
+            quizResults = 'Not Completed';
+          } else {
+            const percentage = Math.round((quizAttempt.score / quizAttempt.total_questions) * 100);
+            quizResults = `${percentage}% (${quizAttempt.score}/${quizAttempt.total_questions} Correct)`;
+          }
+          
+          // Get completion date
+          let completionDate = '--';
+          if (quizAttempt && quizAttempt.completed_at) {
+            completionDate = format(new Date(quizAttempt.completed_at), 'MMM dd, yyyy');
+          } else if (assignment.completed_at) {
+            completionDate = format(new Date(assignment.completed_at), 'MMM dd, yyyy');
+          }
+          
+          exportData.push({
+            Name: employeeName,
+            Email: employeeEmail,
+            'Video Title': assignment.video_title || '',
+            Status: status,
+            'Quiz Results': quizResults,
+            'Date Completed': completionDate
+          });
+        });
+      }
+    });
+    
+    // Create workbook and worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Employee Training Data');
+    
+    // Generate filename with current date
+    const now = new Date();
+    const filename = `employee_training_data_${format(now, 'yyyy-MM-dd')}.xlsx`;
+    
+    // Save the file
+    XLSX.writeFile(workbook, filename);
+    
+    toast({
+      title: "Success",
+      description: "Employee training data exported successfully"
+    });
+  }, [employees, employeeVideos, employeeQuizzes, toast]);
+
   if (loading) {
     return <LoadingSkeleton />;
   }
@@ -362,10 +462,16 @@ export const EmployeeManagement: React.FC<{
           <h3 className="text-xl font-semibold">Employee Management</h3>
           <p className="text-muted-foreground">Manage employees and track their training progress</p>
         </div>
-        <Button onClick={() => setShowAddModal(true)}>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Add Employee
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={exportToExcel}>
+            <Download className="h-4 w-4 mr-2" />
+            Download Data
+          </Button>
+          <Button onClick={() => setShowAddModal(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add Employee
+          </Button>
+        </div>
       </div>
 
       {employees.length === 0 ? (
