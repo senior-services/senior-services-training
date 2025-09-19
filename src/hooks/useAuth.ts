@@ -4,11 +4,41 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { logger } from '@/utils/logger';
 import { clearUserRoleCache } from '@/services/quizService';
+import { APP_CONFIG } from '@/constants';
 
 interface AuthState {
   user: User | null;
   session: Session | null;
   loading: boolean;
+}
+
+// Helper function to detect company email restriction errors
+function isCompanyEmailError(error: any): boolean {
+  if (!error || !error.message) return false;
+  
+  const message = error.message.toLowerCase();
+  return message.includes('company email') || 
+         message.includes('domain') || 
+         message.includes('southsoundseniors.org') ||
+         message.includes('organization email');
+}
+
+// Helper function to get user-friendly error message
+function getAuthErrorMessage(error: any): string {
+  if (isCompanyEmailError(error)) {
+    return `Only @southsoundseniors.org email addresses are allowed. Need access? Contact ${APP_CONFIG.supportEmail}`;
+  }
+  
+  // Handle other common auth errors
+  if (error.message?.includes('Invalid login credentials')) {
+    return 'Invalid email or password. Please check your credentials and try again.';
+  }
+  
+  if (error.message?.includes('Email not confirmed')) {
+    return 'Please check your email and click the confirmation link to verify your account.';
+  }
+  
+  return error.message || 'Authentication failed. Please try again.';
 }
 
 export function useAuth() {
@@ -90,8 +120,9 @@ export function useAuth() {
       });
 
       if (error) {
+        const userMessage = getAuthErrorMessage(error);
         logger.error('Google sign in error', error as Error);
-        toast.error(error.message || 'Failed to sign in with Google');
+        toast.error(userMessage);
       }
     } catch (error) {
       logger.error('Google sign in error', error as Error);
@@ -115,8 +146,9 @@ export function useAuth() {
       });
 
       if (error) {
+        const userMessage = getAuthErrorMessage(error);
         logger.error('Sign up error', error as Error);
-        toast.error(error.message || 'Failed to sign up');
+        toast.error(userMessage);
         return { error };
       }
 
@@ -137,8 +169,9 @@ export function useAuth() {
       });
 
       if (error) {
+        const userMessage = getAuthErrorMessage(error);
         logger.error('Sign in error', error as Error);
-        toast.error(error.message || 'Failed to sign in');
+        toast.error(userMessage);
         return { error };
       }
 

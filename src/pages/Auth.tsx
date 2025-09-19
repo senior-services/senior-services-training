@@ -4,18 +4,48 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogIn, Mail, Shield, User } from "lucide-react";
+import { Banner } from "@/components/ui/banner";
+import { LogIn, Mail, Shield, User, Info } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
+import { APP_CONFIG } from '@/constants';
 export const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
   const {
     signIn,
     signUp,
     signInWithGoogle
   } = useAuth();
+
+  // Client-side email domain validation (UX only, not security)
+  const validateEmailDomain = (email: string) => {
+    if (!email) {
+      setEmailError('');
+      return true;
+    }
+    
+    if (!email.includes('@')) {
+      setEmailError('');
+      return true; // Let browser handle basic email validation
+    }
+    
+    const domain = email.split('@')[1];
+    if (domain && !domain.toLowerCase().includes('southsoundseniors.org')) {
+      setEmailError('Only @southsoundseniors.org email addresses are allowed');
+      return false;
+    }
+    
+    setEmailError('');
+    return true;
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    validateEmailDomain(value);
+  };
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -81,8 +111,29 @@ export const Auth = () => {
           
         </div>
 
+        {/* Company Email Notice */}
+        <div className="mb-4" role="region" aria-label="Company email requirement">
+          <Banner 
+            variant="info"
+            title="Company Email Required"
+            description={`Only @southsoundseniors.org employees can access this portal. Need access? Contact ${APP_CONFIG.supportEmail}`}
+            icon={Info}
+            showIcon={true}
+            className="text-left"
+          />
+        </div>
+
         <Card>
           <CardHeader className="space-y-1">
+            {/* ARIA live region for error announcements */}
+            <div 
+              aria-live="polite" 
+              aria-atomic="true" 
+              className="sr-only"
+              id="auth-errors"
+            >
+              {emailError && `Email validation error: ${emailError}`}
+            </div>
             {/* Development Testing Section */}
             <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <div className="text-center mb-3">
@@ -137,8 +188,38 @@ export const Auth = () => {
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
-                    <Input id="signin-email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required />
+                    <Label htmlFor="signin-email">
+                      Email
+                      <span className="text-xs text-muted-foreground ml-2">(@southsoundseniors.org required)</span>
+                    </Label>
+                    <Input 
+                      id="signin-email" 
+                      type="email" 
+                      placeholder="Enter your @southsoundseniors.org email" 
+                      value={email} 
+                      onChange={e => handleEmailChange(e.target.value)} 
+                      required 
+                      aria-describedby={emailError ? "email-error" : "email-hint"}
+                      aria-invalid={emailError ? "true" : "false"}
+                    />
+                    {emailError && (
+                      <div 
+                        id="email-error" 
+                        className="text-sm text-destructive" 
+                        role="alert"
+                        aria-live="polite"
+                      >
+                        {emailError}
+                      </div>
+                    )}
+                    {!emailError && (
+                      <div 
+                        id="email-hint" 
+                        className="text-xs text-muted-foreground"
+                      >
+                        Use your company email address to access the training portal
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signin-password">Password</Label>
@@ -158,8 +239,38 @@ export const Auth = () => {
                     <Input id="signup-name" type="text" placeholder="Enter your full name" value={fullName} onChange={e => setFullName(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input id="signup-email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required />
+                    <Label htmlFor="signup-email">
+                      Email
+                      <span className="text-xs text-muted-foreground ml-2">(@southsoundseniors.org required)</span>
+                    </Label>
+                    <Input 
+                      id="signup-email" 
+                      type="email" 
+                      placeholder="Enter your @southsoundseniors.org email" 
+                      value={email} 
+                      onChange={e => handleEmailChange(e.target.value)} 
+                      required 
+                      aria-describedby={emailError ? "signup-email-error" : "signup-email-hint"}
+                      aria-invalid={emailError ? "true" : "false"}
+                    />
+                    {emailError && (
+                      <div 
+                        id="signup-email-error" 
+                        className="text-sm text-destructive" 
+                        role="alert"
+                        aria-live="polite"
+                      >
+                        {emailError}
+                      </div>
+                    )}
+                    {!emailError && (
+                      <div 
+                        id="signup-email-hint" 
+                        className="text-xs text-muted-foreground"
+                      >
+                        Use your company email address to create your training account
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
