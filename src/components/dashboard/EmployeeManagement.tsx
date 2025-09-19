@@ -379,7 +379,7 @@ export const EmployeeManagement: React.FC<{
       ) : (
         <Card>
           <CardContent className="p-0">
-            <Table>
+            <Table className="table-fixed w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead className="px-4 py-3 text-xs font-medium uppercase text-muted-foreground">NAME</TableHead>
@@ -411,7 +411,7 @@ export const EmployeeManagement: React.FC<{
                               }
                             }}
                           >
-                            <TableCell className="px-4 py-3 font-medium">
+                            <TableCell className="py-3 font-medium">
                               <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-2">
                                   {isExpanded ? (
@@ -423,11 +423,11 @@ export const EmployeeManagement: React.FC<{
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="px-4 py-3">{sanitizeText(employee.email || '')}</TableCell>
-                            <TableCell className="px-4 py-3">
+                            <TableCell className="py-3">{sanitizeText(employee.email || '')}</TableCell>
+                            <TableCell className="py-3">
                               {getEmployeeStatus(employee.id)}
                             </TableCell>
-                            <TableCell className="px-4 py-3 text-right pointer-events-none">
+                            <TableCell className="py-3 text-right pointer-events-none">
                               <div className="flex gap-2 justify-end pointer-events-auto">
                                  <Button
                                    variant="outline"
