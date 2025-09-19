@@ -358,7 +358,10 @@ export const EmployeeManagement: React.FC<{
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Employee Management</h2>
+        <div>
+          <h3 className="text-xl font-semibold">Employee Management</h3>
+          <p className="text-muted-foreground">Manage employees and track their training progress</p>
+        </div>
         <Button onClick={() => setShowAddModal(true)}>
           <UserPlus className="h-4 w-4 mr-2" />
           Add Employee
