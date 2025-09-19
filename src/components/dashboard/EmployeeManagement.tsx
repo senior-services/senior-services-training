@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { UserPlus, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { employeeOperations } from '@/services/api';
@@ -393,96 +392,96 @@ export const EmployeeManagement: React.FC<{
                   const isExpanded = expandedEmployees.has(employee.id);
                   return (
                     <React.Fragment key={employee.id}>
-                      <Collapsible
-                        open={isExpanded}
-                        onOpenChange={() => toggleEmployeeExpanded(employee.id)}
+                      <TableRow 
+                        className={`group transition-colors cursor-pointer ${isExpanded ? 'border-b-0 bg-muted/50' : 'hover:bg-slate-100'}`}
+                        role="button"
+                        tabIndex={0}
+                        aria-expanded={isExpanded}
+                        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} details for ${sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown')}`}
+                        onClick={() => toggleEmployeeExpanded(employee.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            toggleEmployeeExpanded(employee.id);
+                          }
+                        }}
                       >
-                        <CollapsibleTrigger asChild>
-                          <TableRow 
-                            className={`group transition-colors cursor-pointer ${isExpanded ? 'border-b-0 bg-muted/50' : 'hover:bg-slate-100'}`}
-                            role="button"
-                            tabIndex={0}
-                            aria-expanded={isExpanded}
-                            aria-label={`${isExpanded ? 'Collapse' : 'Expand'} details for ${sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown')}`}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                toggleEmployeeExpanded(employee.id);
-                              }
-                            }}
-                          >
-                            <TableCell className="py-3 font-medium">
-                              <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2">
-                                  {isExpanded ? (
-                                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                                  ) : (
-                                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                                  )}
-                                  <span>{sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown')}</span>
+                        <TableCell className="py-3 font-medium">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                              {isExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                              )}
+                              <span>{sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown')}</span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-3">{sanitizeText(employee.email || '')}</TableCell>
+                        <TableCell className="py-3">
+                          {getEmployeeStatus(employee.id)}
+                        </TableCell>
+                        <TableCell className="py-3 text-right pointer-events-none">
+                          <div className="flex gap-2 justify-end pointer-events-auto">
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 handleAssignVideos(employee);
+                               }}
+                               aria-label={`Assign videos to ${sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown')}`}
+                             >
+                               Assign Videos
+                             </Button>
+                             <IconButtonWithTooltip
+                               icon={Trash2}
+                               tooltip={getTooltipText('delete-item', { name: sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown') })}
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 setDeleteConfirmEmployee(employee);
+                               }}
+                               variant="ghost"
+                               className="text-destructive hover:text-destructive"
+                             />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      
+                      {isExpanded && (
+                        <TableRow className="bg-muted/50">
+                          <TableCell colSpan={4} className="py-4">
+                            {employeeVideos.get(employee.id)?.length === 0 ? (
+                              <p className="text-muted-foreground text-center py-4">
+                                No video assignments found for this employee.
+                              </p>
+                            ) : (
+                              <div className="space-y-3">
+                                 {/* Headers for video assignments */}
+                                 <div className="grid grid-cols-4 gap-6 px-4 py-2 border-b">
+                                   <div className="text-xs font-medium uppercase text-muted-foreground">VIDEO TITLE</div>
+                                   <div className="text-xs font-medium uppercase text-muted-foreground">STATUS</div>
+                                   <div className="text-xs font-medium uppercase text-muted-foreground">QUIZ RESULTS</div>
+                                   <div className="text-xs font-medium uppercase text-muted-foreground">DATE COMPLETED</div>
+                                 </div>
+                                
+                                {/* Video assignments */}
+                                <div className="space-y-2">
+                                   {employeeVideos.get(employee.id)?.map((assignment: any) => (
+                                     <div key={assignment.video_id} className="grid grid-cols-4 gap-6 px-4 py-2 border-b border-border/50 last:border-b-0">
+                                       <div className="font-medium">{sanitizeText(assignment.video_title || '')}</div>
+                                       <div>{getVideoStatus(assignment, employee.id)}</div>
+                                       <div>{getQuizResults(assignment, employee.id)}</div>
+                                       <div>{getCompletionDate(assignment, employee.id)}</div>
+                                     </div>
+                                   ))}
                                 </div>
                               </div>
-                            </TableCell>
-                            <TableCell className="py-3">{sanitizeText(employee.email || '')}</TableCell>
-                            <TableCell className="py-3">
-                              {getEmployeeStatus(employee.id)}
-                            </TableCell>
-                            <TableCell className="py-3 text-right pointer-events-none">
-                              <div className="flex gap-2 justify-end pointer-events-auto">
-                                 <Button
-                                   variant="outline"
-                                   size="sm"
-                                   onClick={() => handleAssignVideos(employee)}
-                                   aria-label={`Assign videos to ${sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown')}`}
-                                 >
-                                   Assign Videos
-                                 </Button>
-                                 <IconButtonWithTooltip
-                                   icon={Trash2}
-                                   tooltip={getTooltipText('delete-item', { name: sanitizeText(employee.full_name || employee.email?.split('@')[0] || 'Unknown') })}
-                                   onClick={() => setDeleteConfirmEmployee(employee)}
-                                   variant="ghost"
-                                   className="text-destructive hover:text-destructive"
-                                 />
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                         </CollapsibleTrigger>
-                         
-                         {isExpanded && (
-                           <TableRow className="bg-muted/50">
-                             <TableCell colSpan={4} className="py-4">
-                               {employeeVideos.get(employee.id)?.length === 0 ? (
-                                 <p className="text-muted-foreground text-center py-4">
-                                   No video assignments found for this employee.
-                                 </p>
-                               ) : (
-                                 <div className="space-y-3">
-                                    {/* Headers for video assignments */}
-                                    <div className="grid grid-cols-4 gap-6 px-4 py-2 border-b">
-                                      <div className="text-xs font-medium uppercase text-muted-foreground">VIDEO TITLE</div>
-                                      <div className="text-xs font-medium uppercase text-muted-foreground">STATUS</div>
-                                      <div className="text-xs font-medium uppercase text-muted-foreground">QUIZ RESULTS</div>
-                                      <div className="text-xs font-medium uppercase text-muted-foreground">DATE COMPLETED</div>
-                                    </div>
-                                   
-                                   {/* Video assignments */}
-                                   <div className="space-y-2">
-                                      {employeeVideos.get(employee.id)?.map((assignment: any) => (
-                                        <div key={assignment.video_id} className="grid grid-cols-4 gap-6 px-4 py-2 border-b border-border/50 last:border-b-0">
-                                          <div className="font-medium">{sanitizeText(assignment.video_title || '')}</div>
-                                          <div>{getVideoStatus(assignment, employee.id)}</div>
-                                          <div>{getQuizResults(assignment, employee.id)}</div>
-                                          <div>{getCompletionDate(assignment, employee.id)}</div>
-                                        </div>
-                                      ))}
-                                   </div>
-                                 </div>
-                               )}
-                             </TableCell>
-                           </TableRow>
-                         )}
-                       </Collapsible>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </React.Fragment>
                   );
                 })}
