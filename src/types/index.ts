@@ -39,6 +39,7 @@ export interface Video {
   type: VideoType;
   completion_rate: number;
   duration_seconds: number;
+  archived_at?: string | null;
   created_at: string;
   updated_at: string;
 }

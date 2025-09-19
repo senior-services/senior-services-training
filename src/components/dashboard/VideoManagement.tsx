@@ -4,21 +4,16 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { Archive, ChevronDown, RotateCcw } from 'lucide-react';
 import { VideoTable } from './VideoTable';
 import { AddVideoModal, VideoFormData } from '../AddVideoModal';
 import { EditVideoModal } from '../EditVideoModal';
 import { VideoPlayerModal } from '../VideoPlayerModal';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
+import { IconButtonWithTooltip } from '../ui/icon-button-with-tooltip';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
+import { Badge } from '../ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { videoOperations } from '@/services/api';
 import { supabase } from '@/integrations/supabase/client';
 import { logger, performanceTracker } from '@/utils/logger';
@@ -36,17 +31,18 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
 }) => {
   // State management
   const [videos, setVideos] = useState<Video[]>([]);
+  const [archivedVideos, setArchivedVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddVideoModalOpen, setIsAddVideoModalOpen] = useState(false);
   const [isEditVideoModalOpen, setIsEditVideoModalOpen] = useState(false);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
-  const { toast } = useToast();
   const [editingVideo, setEditingVideo] = useState<Video | null>(null);
 
   // Load videos on mount
   useEffect(() => {
     loadVideos();
+    loadArchivedVideos();
   }, []);
 
   /**
@@ -60,16 +56,12 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        toast({
-          title: 'Authentication Required',
-          description: 'Please log in to view videos',
-          variant: 'destructive'
-        });
+        toast.error('Please log in to view videos');
         setLoading(false);
         return;
       }
       
-      const result = await videoOperations.getAll();
+      const result = await videoOperations.getAll(false); // Only get non-archived videos
       
       if (result.success && result.data) {
         setVideos(result.data);
@@ -83,21 +75,33 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
           error: result.error,
           adminUser: userEmail 
         });
-        toast({
-          title: 'Error loading videos',
-          description: result.error || 'Failed to load videos',
-          variant: 'destructive'
-        });
+        toast.error(result.error || 'Failed to load videos');
       }
     } catch (error) {
-      toast({
-        title: 'Error loading videos',
-        description: error instanceof Error ? error.message : 'An unexpected error occurred while loading videos',
-        variant: 'destructive'
-      });
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred while loading videos');
     }
     
     setLoading(false);
+  };
+
+  /**
+   * Loads archived videos
+   */
+  const loadArchivedVideos = async () => {
+    try {
+      const result = await videoOperations.getArchived();
+      
+      if (result.success && result.data) {
+        setArchivedVideos(result.data);
+      } else {
+        logger.error('Failed to load archived videos', undefined, { 
+          error: result.error,
+          adminUser: userEmail 
+        });
+      }
+    } catch (error) {
+      logger.error('Error loading archived videos', error as Error);
+    }
   };
 
   /**
@@ -120,18 +124,11 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
     const result = await videoOperations.create(sanitizedData);
     
     if (result.success) {
-      toast({
-        title: 'Video Added Successfully',
-        description: `"${sanitizedData.title}" has been added to the training library.`
-      });
+      toast.success(`"${sanitizedData.title}" has been added to the training library.`);
       await loadVideos();
       setIsAddVideoModalOpen(false);
     } else {
-      toast({
-        title: 'Error Adding Video',
-        description: result.error || 'Failed to add video',
-        variant: 'destructive'
-      });
+      toast.error(result.error || 'Failed to add video');
     }
 
     performanceTracker.end(operation);
@@ -168,19 +165,12 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
     const result = await videoOperations.update(videoId, sanitizedUpdates);
     
     if (result.success) {
-      toast({
-        title: 'Video Updated Successfully',
-        description: 'Video details have been updated.'
-      });
+      toast.success('Video details have been updated.');
       await loadVideos();
       setIsEditVideoModalOpen(false);
       setEditingVideo(null);
     } else {
-      toast({
-        title: 'Error Updating Video',
-        description: result.error || 'Failed to update video',
-        variant: 'destructive'
-      });
+      toast.error(result.error || 'Failed to update video');
     }
 
     performanceTracker.end(operation);
@@ -193,19 +183,12 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
     const result = await videoOperations.delete(videoId);
     
     if (result.success) {
-      toast({
-        title: 'Video Deleted Successfully',
-        description: 'Video has been removed from the library.'
-      });
+      toast.success('Video has been removed from the library.');
       await loadVideos();
       setIsEditVideoModalOpen(false);
       setEditingVideo(null);
     } else {
-      toast({
-        title: 'Error Deleting Video',
-        description: result.error || 'Failed to delete video',
-        variant: 'destructive'
-      });
+      toast.error(result.error || 'Failed to delete video');
     }
   };
 
@@ -229,6 +212,48 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
     setIsVideoPlayerOpen(true);
   };
 
+  /**
+   * Handles archiving a video
+   */
+  const handleArchiveVideo = async (video: Video) => {
+    const result = await videoOperations.archive(video.id);
+    
+    if (result.success) {
+      toast.success(`"${video.title}" has been archived`);
+      await loadVideos();
+      await loadArchivedVideos();
+    } else {
+      toast.error(result.error || 'Failed to archive video');
+    }
+  };
+
+  /**
+   * Handles unarchiving a video
+   */
+  const handleUnarchiveVideo = async (video: Video) => {
+    const result = await videoOperations.unarchive(video.id);
+    
+    if (result.success) {
+      toast.success(`"${video.title}" has been unarchived`);
+      await loadVideos();
+      await loadArchivedVideos();
+    } else {
+      toast.error(result.error || 'Failed to unarchive video');
+    }
+  };
+
+  /**
+   * Generates thumbnail color for video placeholders
+   */
+  const generateThumbnailColor = (title: string): string => {
+    const colors = [
+      'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500',
+      'bg-indigo-500', 'bg-teal-500', 'bg-orange-500', 'bg-red-500'
+    ];
+    const index = title.charCodeAt(0) % colors.length;
+    return colors[index];
+  };
+
   return (
     <div className="space-y-6">
       <VideoTable
@@ -237,7 +262,83 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
         onEdit={handleEditVideo}
         onPlay={handlePlayVideo}
         onAddVideo={() => setIsAddVideoModalOpen(true)}
+        onArchive={handleArchiveVideo}
       />
+
+      {/* Archive Section */}
+      {archivedVideos.length > 0 && (
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="archived" className="border rounded-lg">
+            <AccordionTrigger className="px-6 py-4 hover:no-underline">
+              <div className="flex items-center gap-3">
+                <Archive className="w-5 h-5 text-muted-foreground" />
+                <span className="text-lg font-semibold">Archived Videos</span>
+                <Badge variant="secondary" className="ml-2">
+                  {archivedVideos.length}
+                </Badge>
+              </div>
+              <ChevronDown className="w-4 h-4 transition-transform duration-200" />
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-6">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-20">Thumbnail</TableHead>
+                      <TableHead>Title & Description</TableHead>
+                      <TableHead className="w-32 text-center">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {archivedVideos.map((video) => (
+                      <TableRow key={video.id}>
+                        <TableCell>
+                          <div className="flex items-center justify-center">
+                            {video.thumbnail_url ? (
+                              <img
+                                src={video.thumbnail_url}
+                                alt={`${video.title} thumbnail`}
+                                className="w-12 h-8 object-cover rounded border"
+                              />
+                            ) : (
+                              <div className={`w-12 h-8 rounded border flex items-center justify-center text-white text-xs font-bold ${generateThumbnailColor(video.title)}`}>
+                                {video.title.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium text-sm">{video.title}</div>
+                            {video.description && (
+                              <div className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                                {video.description}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-center">
+                            <IconButtonWithTooltip
+                              icon={RotateCcw}
+                              tooltip="Unarchive video"
+                              onClick={() => handleUnarchiveVideo(video)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-muted-foreground hover:text-foreground"
+                              ariaLabel={`Unarchive ${video.title}`}
+                            />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )}
 
       {/* Add Video Modal */}
       <AddVideoModal

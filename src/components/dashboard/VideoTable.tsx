@@ -23,7 +23,8 @@ import {
   Play,
   ArrowUp,
   ArrowDown,
-  ArrowUpDown
+  ArrowUpDown,
+  Archive
 } from 'lucide-react';
 import { isYouTubeUrl, getYouTubeVideoId, isGoogleDriveUrl, getGoogleDriveFileId } from '@/utils/videoUtils';
 import { Video } from '@/types';
@@ -35,6 +36,7 @@ import {
 import { cn } from '@/lib/utils';
 import { quizOperations } from '@/services/quizService';
 import { logger } from '@/utils/logger';
+import { IconButtonWithTooltip } from '../ui/icon-button-with-tooltip';
 
 interface VideoTableProps {
   videos: Video[];
@@ -42,6 +44,7 @@ interface VideoTableProps {
   onEdit: (video: Video) => void;
   onPlay: (video: Video) => void;
   onAddVideo: () => void;
+  onArchive?: (video: Video) => void;
   className?: string;
 }
 
@@ -65,6 +68,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
   onEdit,
   onPlay,
   onAddVideo,
+  onArchive,
   className,
 }) => {
   const [sortColumn, setSortColumn] = useState<'title'>('title');
@@ -349,19 +353,37 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       {/* Action buttons */}
                       <TableCell className="text-right py-2 w-auto shrink-0">
                         <div 
-                          className="flex gap-3 justify-end"
+                          className="flex gap-2 justify-end"
                           role="group"
                           aria-label={`Actions for video: ${video.title}`}
                         >
-                          <Button 
-                            variant="outline" 
-                            size="sm"
+                          <IconButtonWithTooltip
+                            icon={Edit}
+                            tooltip="Edit video"
                             onClick={() => handleVideoAction('Edit video', video, () => onEdit(video))}
-                            aria-label={`Edit video: ${video.title}`}
-                          >
-                            <Edit className="w-4 h-4 mr-2" aria-hidden="true" />
-                            Edit
-                          </Button>
+                            variant="ghost"
+                            size="sm"
+                            ariaLabel={`Edit ${video.title}`}
+                          />
+                          {onArchive && (
+                            <IconButtonWithTooltip
+                              icon={Archive}
+                              tooltip="Archive video"
+                              onClick={() => handleVideoAction('Archive video', video, () => onArchive(video))}
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive"
+                              ariaLabel={`Archive ${video.title}`}
+                            />
+                          )}
+                          <IconButtonWithTooltip
+                            icon={Play}
+                            tooltip="Play video"
+                            onClick={() => handleVideoAction('Play video', video, () => onPlay(video))}
+                            variant="ghost"
+                            size="sm"
+                            ariaLabel={`Play ${video.title}`}
+                          />
                         </div>
                       </TableCell>
                     </TableRow>

@@ -79,16 +79,21 @@ const generateThumbnailUrl = (videoUrl: string | null): string | null => {
  * Unified Video Operations
  */
 export const videoOperations = {
-  async getAll(): Promise<ApiResult<Video[]>> {
+  async getAll(includeArchived: boolean = false): Promise<ApiResult<Video[]>> {
     const operation = 'video.getAll';
     performanceTracker.start(operation);
     
     try {
-      // Get videos with assignment counts
-      const { data: videos, error: videosError } = await supabase
+      let query = supabase
         .from('videos')
         .select('*')
         .order('created_at', { ascending: false });
+
+      if (!includeArchived) {
+        query = query.is('archived_at', null);
+      }
+
+      const { data: videos, error: videosError } = await query;
 
       if (videosError) {
         logger.error('Failed to fetch videos', undefined, { supabaseError: videosError.message });
@@ -102,6 +107,32 @@ export const videoOperations = {
     } catch (error) {
       logger.error('Unexpected error fetching videos', error as Error);
       return { data: null, error: 'Failed to fetch videos', success: false };
+    } finally {
+      performanceTracker.end(operation);
+    }
+  },
+
+  async getArchived(): Promise<ApiResult<Video[]>> {
+    const operation = 'video.getArchived';
+    performanceTracker.start(operation);
+    
+    try {
+      const { data: videos, error } = await supabase
+        .from('videos')
+        .select('*')
+        .not('archived_at', 'is', null)
+        .order('archived_at', { ascending: false });
+
+      if (error) {
+        logger.error('Failed to fetch archived videos', undefined, { supabaseError: error.message });
+        return { data: null, error: error.message, success: false };
+      }
+
+      logger.info('Archived videos fetched successfully', { count: videos?.length || 0 });
+      return { data: (videos || []) as Video[], error: null, success: true };
+    } catch (error) {
+      logger.error('Unexpected error fetching archived videos', error as Error);
+      return { data: null, error: 'Failed to fetch archived videos', success: false };
     } finally {
       performanceTracker.end(operation);
     }
@@ -244,6 +275,56 @@ export const videoOperations = {
     } catch (error) {
       logger.error('Unexpected error deleting video', error as Error, { videoId: id });
       return { data: null, error: 'Failed to delete video', success: false };
+    } finally {
+      performanceTracker.end(operation);
+    }
+  },
+
+  async archive(id: string): Promise<ApiResult<boolean>> {
+    const operation = 'video.archive';
+    performanceTracker.start(operation);
+    
+    try {
+      const { error } = await supabase
+        .from('videos')
+        .update({ archived_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) {
+        logger.error('Failed to archive video', undefined, { videoId: id, supabaseError: error.message });
+        return { data: null, error: error.message, success: false };
+      }
+
+      logger.info('Video archived successfully', { videoId: id });
+      return { data: true, error: null, success: true };
+    } catch (error) {
+      logger.error('Unexpected error archiving video', error as Error, { videoId: id });
+      return { data: null, error: 'Failed to archive video', success: false };
+    } finally {
+      performanceTracker.end(operation);
+    }
+  },
+
+  async unarchive(id: string): Promise<ApiResult<boolean>> {
+    const operation = 'video.unarchive';
+    performanceTracker.start(operation);
+    
+    try {
+      const { error } = await supabase
+        .from('videos')
+        .update({ archived_at: null })
+        .eq('id', id);
+
+      if (error) {
+        logger.error('Failed to unarchive video', undefined, { videoId: id, supabaseError: error.message });
+        return { data: null, error: error.message, success: false };
+      }
+
+      logger.info('Video unarchived successfully', { videoId: id });
+      return { data: true, error: null, success: true };
+    } catch (error) {
+      logger.error('Unexpected error unarchiving video', error as Error, { videoId: id });
+      return { data: null, error: 'Failed to unarchive video', success: false };
     } finally {
       performanceTracker.end(operation);
     }
