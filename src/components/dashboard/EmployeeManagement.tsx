@@ -432,39 +432,36 @@ export const EmployeeManagement: React.FC<{
                       
                       {isExpanded && (
                         <TableRow className="bg-muted/50">
-                          <TableCell colSpan={4} className="py-0">
-                            <Collapsible open={isExpanded}>
-                              <CollapsibleContent>
-                                <div className="px-4 pb-4 ml-6">
-                                  <div className="border-l-2 border-muted pl-4">
-                                    {employeeVideos.get(employee.id)?.length === 0 ? (
-                                      <p className="text-muted-foreground text-center py-4">
-                                        No video assignments found for this employee.
-                                      </p>
-                                    ) : (
-                                      <Table>
-                                        <TableHeader>
-                                          <TableRow className="border-b">
-                                            <TableHead className="text-xs font-medium uppercase text-muted-foreground">VIDEO TITLE</TableHead>
-                                            <TableHead className="text-xs font-medium uppercase text-muted-foreground">QUIZ RESULTS</TableHead>
-                                            <TableHead className="text-xs font-medium uppercase text-muted-foreground">STATUS</TableHead>
-                                          </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                          {employeeVideos.get(employee.id)?.map((assignment: any) => (
-                                            <TableRow key={assignment.video_id}>
-                                              <TableCell>{sanitizeText(assignment.video_title || '')}</TableCell>
-                                              <TableCell>{getQuizResults(assignment, employee.id)}</TableCell>
-                                              <TableCell>{getVideoStatus(assignment, employee.id)}</TableCell>
-                                            </TableRow>
-                                          ))}
-                                        </TableBody>
-                                      </Table>
-                                    )}
+                          <TableCell colSpan={4} className="py-4">
+                            <CollapsibleContent>
+                              {employeeVideos.get(employee.id)?.length === 0 ? (
+                                <p className="text-muted-foreground text-center py-4">
+                                  No video assignments found for this employee.
+                                </p>
+                              ) : (
+                                <div className="space-y-3">
+                                  {/* Headers aligned with table columns */}
+                                  <div className="grid grid-cols-4 gap-4 px-4 py-2 border-b">
+                                    <div className="text-xs font-medium uppercase text-muted-foreground">VIDEO TITLE</div>
+                                    <div className="text-xs font-medium uppercase text-muted-foreground">EMAIL</div>
+                                    <div className="text-xs font-medium uppercase text-muted-foreground">QUIZ RESULTS</div>
+                                    <div className="text-xs font-medium uppercase text-muted-foreground">STATUS</div>
+                                  </div>
+                                  
+                                  {/* Video assignments */}
+                                  <div className="space-y-2">
+                                    {employeeVideos.get(employee.id)?.map((assignment: any) => (
+                                      <div key={assignment.video_id} className="grid grid-cols-4 gap-4 px-4 py-2 border-b border-border/50 last:border-b-0">
+                                        <div className="font-medium">{sanitizeText(assignment.video_title || '')}</div>
+                                        <div className="text-muted-foreground">-</div>
+                                        <div>{getQuizResults(assignment, employee.id)}</div>
+                                        <div>{getVideoStatus(assignment, employee.id)}</div>
+                                      </div>
+                                    ))}
                                   </div>
                                 </div>
-                              </CollapsibleContent>
-                            </Collapsible>
+                              )}
+                            </CollapsibleContent>
                           </TableCell>
                         </TableRow>
                       )}
