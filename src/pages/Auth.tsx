@@ -76,7 +76,7 @@ export const Auth = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center">
-          <img src="/lovable-uploads/SS_2019_logo_Reversed.png" alt="Senior Services for South Sound" className="mx-auto h-16 w-auto mb-4" />
+          <img src="/lovable-uploads/SS_2019_logo_Reversed.png" alt="Senior Services for South Sound" className="mx-auto h-32 w-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-2">Training Portal</h1>
           
         </div>
