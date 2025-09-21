@@ -439,23 +439,19 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                     .sort((a, b) => {
                       const aAssigned = assignedVideoIds.has(a.id);
                       const bAssigned = assignedVideoIds.has(b.id);
+                      const aCompleted = completedVideoIds.has(a.id);
+                      const bCompleted = completedVideoIds.has(b.id);
                       
-                      // Primary sort: assigned videos first
-                      if (aAssigned !== bAssigned) {
-                        return aAssigned ? -1 : 1; // Assigned (true) comes first
+                      // Create priority scores: 0 = assigned, 1 = unassigned, 2 = completed
+                      const aPriority = aAssigned ? 0 : (aCompleted ? 2 : 1);
+                      const bPriority = bAssigned ? 0 : (bCompleted ? 2 : 1);
+                      
+                      // Primary sort: by group priority
+                      if (aPriority !== bPriority) {
+                        return aPriority - bPriority;
                       }
                       
-                      if (filterMode === 'all') {
-                        // Secondary sort: completion status within each assignment group
-                        const aCompleted = completedVideoIds.has(a.id);
-                        const bCompleted = completedVideoIds.has(b.id);
-                        
-                        if (aCompleted !== bCompleted) {
-                          return aCompleted ? 1 : -1; // Unassigned (false) comes first
-                        }
-                      }
-                      
-                      // Tertiary sort: alphabetically within each sub-group
+                      // Secondary sort: alphabetically within each group
                       return a.title.localeCompare(b.title);
                     })
                      .map((video, index) => {
