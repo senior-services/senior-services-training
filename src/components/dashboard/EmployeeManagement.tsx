@@ -288,11 +288,11 @@ export const EmployeeManagement: React.FC<{
     const quizAttempt = employeeQuizData?.get(assignment.video_id);
     
     if (quizAttempt) {
-      return <Badge variant="ghost-success">Completed</Badge>;
+      return <Badge variant="soft-success">Completed</Badge>;
     }
 
     if (!assignment.due_date) {
-      return <Badge variant="ghost-tertiary">No Deadline</Badge>;
+      return <Badge variant="soft-tertiary">No Deadline</Badge>;
     }
 
     const today = new Date();
@@ -302,18 +302,18 @@ export const EmployeeManagement: React.FC<{
     const daysUntilDue = differenceInDays(due, today);
 
     if (isPast(due) && daysUntilDue < 0) {
-      return <Badge variant="ghost-destructive">Overdue ({Math.abs(daysUntilDue)} days)</Badge>;
+      return <Badge variant="soft-destructive">Overdue ({Math.abs(daysUntilDue)} days)</Badge>;
     }
 
     if (daysUntilDue === 0) {
-      return <Badge variant="ghost-warning">Due Today</Badge>;
+      return <Badge variant="soft-warning">Due Today</Badge>;
     }
 
     if (daysUntilDue <= 7) {
-      return <Badge variant="ghost-warning">Due in {daysUntilDue} days</Badge>;
+      return <Badge variant="soft-warning">Due in {daysUntilDue} days</Badge>;
     }
 
-    return <Badge variant="ghost-tertiary">Due in {daysUntilDue} days</Badge>;
+    return <Badge variant="soft-tertiary">Due in {daysUntilDue} days</Badge>;
   };
 
   const getQuizResults = (assignment: any, employeeId: string) => {
