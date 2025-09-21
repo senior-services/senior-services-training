@@ -357,14 +357,15 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                           role="group"
                           aria-label={`Actions for video: ${video.title}`}
                         >
-                          <IconButtonWithTooltip
-                            icon={Edit}
-                            tooltip="Edit video"
-                            onClick={() => handleVideoAction('Edit video', video, () => onEdit(video))}
-                            variant="ghost"
+                          <Button
+                            variant="outline"
                             size="sm"
-                            ariaLabel={`Edit ${video.title}`}
-                          />
+                            onClick={() => handleVideoAction('Edit video', video, () => onEdit(video))}
+                            aria-label={`Edit ${video.title}`}
+                          >
+                            <Edit className="w-4 h-4 mr-2" aria-hidden="true" />
+                            Edit
+                          </Button>
                           {onArchive && (
                             <IconButtonWithTooltip
                               icon={Archive}
@@ -376,14 +377,6 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                               ariaLabel={`Archive ${video.title}`}
                             />
                           )}
-                          <IconButtonWithTooltip
-                            icon={Play}
-                            tooltip="Play video"
-                            onClick={() => handleVideoAction('Play video', video, () => onPlay(video))}
-                            variant="ghost"
-                            size="sm"
-                            ariaLabel={`Play ${video.title}`}
-                          />
                         </div>
                       </TableCell>
                     </TableRow>
