@@ -22,12 +22,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -35,7 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Video, Play, Check, X, CalendarIcon } from 'lucide-react';
+import { Video, Play, X, CalendarIcon } from 'lucide-react';
 import { format, differenceInDays, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { videoOperations, assignmentOperations, progressOperations } from '@/services/api';
@@ -517,22 +511,10 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                             )}
                           >
                             <div className={cn(
-                              "font-medium text-sm line-clamp-2 flex items-center gap-2",
+                              "font-medium text-sm line-clamp-2",
                               isCompleted && "text-muted-foreground"
                             )}>
                               {video.title}
-                              {wasOriginallyAssigned && !isCompleted && assignmentData.get(video.id) && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Assigned {format(new Date(assignmentData.get(video.id)!.created_at), 'MMM dd, yyyy')}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
                             </div>
                           </Label>
                         </div>
