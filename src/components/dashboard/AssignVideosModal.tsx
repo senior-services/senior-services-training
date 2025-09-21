@@ -442,9 +442,9 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                       const aCompleted = completedVideoIds.has(a.id);
                       const bCompleted = completedVideoIds.has(b.id);
                       
-                      // Create priority scores: 0 = assigned, 1 = unassigned, 2 = completed
-                      const aPriority = aAssigned ? 0 : (aCompleted ? 2 : 1);
-                      const bPriority = bAssigned ? 0 : (bCompleted ? 2 : 1);
+                      // Create priority scores: 0 = assigned not completed, 1 = unassigned, 2 = completed
+                      const aPriority = aCompleted ? 2 : (aAssigned ? 0 : 1);
+                      const bPriority = bCompleted ? 2 : (bAssigned ? 0 : 1);
                       
                       // Primary sort: by group priority
                       if (aPriority !== bPriority) {
