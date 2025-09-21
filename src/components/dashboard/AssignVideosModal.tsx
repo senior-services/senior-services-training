@@ -357,13 +357,17 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const getFilteredVideos = () => {    
     switch (filterMode) {
       case 'unassigned':
-        // Show videos that are not assigned and not completed
-        return videos.filter(v => !assignedVideoIds.has(v.id) && !completedVideoIds.has(v.id));
+        // Show videos that are not assigned and not completed, sorted alphabetically
+        return videos
+          .filter(v => !assignedVideoIds.has(v.id) && !completedVideoIds.has(v.id))
+          .sort((a, b) => a.title.localeCompare(b.title));
       case 'assigned':
-        // Show videos currently assigned to employee (regardless of completion)
-        return videos.filter(v => assignedVideoIds.has(v.id));
+        // Show videos currently assigned to employee (regardless of completion), sorted alphabetically
+        return videos
+          .filter(v => assignedVideoIds.has(v.id))
+          .sort((a, b) => a.title.localeCompare(b.title));
       default: // 'all'
-        // Show all videos in order: Assigned, Unassigned, Completed, Hidden
+        // Show all videos in order: Assigned, Unassigned, Completed, Hidden (alphabetically within each category)
         return videos.sort((a, b) => {
           const aAssigned = assignedVideoIds.has(a.id);
           const bAssigned = assignedVideoIds.has(b.id);
@@ -374,12 +378,11 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
           
           // Priority: Assigned (0), Unassigned (1), Completed (2), Hidden (3)
           const getPriority = (assigned: boolean, completed: boolean, hidden: boolean) => {
-            if (assigned && !completed) return 0; // Assigned incomplete
-            if (assigned && completed) return 1;  // Assigned complete
-            if (!assigned && !completed && !hidden) return 2; // Unassigned
-            if (completed && !assigned) return 3; // Completed only
-            if (hidden) return 4; // Hidden
-            return 5;
+            if (assigned) return 0; // Assigned (both complete and incomplete)
+            if (!assigned && !completed && !hidden) return 1; // Unassigned
+            if (completed && !assigned) return 2; // Completed only
+            if (hidden) return 3; // Hidden
+            return 4;
           };
           
           const aPriority = getPriority(aAssigned, aCompleted, aHidden);
