@@ -280,7 +280,7 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
                 </Badge>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6">
+            <AccordionContent className="pb-6">
               <Card className="shadow-md">
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
