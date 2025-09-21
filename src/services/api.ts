@@ -255,11 +255,53 @@ export const videoOperations = {
     }
   },
 
+  async checkUsage(id: string): Promise<ApiResult<{ canDelete: boolean; assignedCount: number; completedCount: number; quizCompletedCount: number }>> {
+    const operation = 'video.checkUsage';
+    performanceTracker.start(operation);
+    
+    try {
+      const { data, error } = await supabase
+        .rpc('check_video_usage', { video_id: id });
+
+      if (error) {
+        logger.error('Failed to check video usage', undefined, { videoId: id, supabaseError: error.message });
+        return { data: null, error: error.message, success: false };
+      }
+
+      const result = data[0] || { assigned_count: 0, completed_count: 0, quiz_completed_count: 0 };
+      const canDelete = result.assigned_count === 0 && result.completed_count === 0 && result.quiz_completed_count === 0;
+
+      return { 
+        data: { 
+          canDelete, 
+          assignedCount: result.assigned_count, 
+          completedCount: result.completed_count, 
+          quizCompletedCount: result.quiz_completed_count 
+        }, 
+        error: null, 
+        success: true 
+      };
+    } catch (error) {
+      logger.error('Unexpected error checking video usage', error as Error, { videoId: id });
+      return { data: null, error: 'Failed to check video usage', success: false };
+    } finally {
+      performanceTracker.end(operation);
+    }
+  },
+
   async delete(id: string): Promise<ApiResult<boolean>> {
     const operation = 'video.delete';
     performanceTracker.start(operation);
     
     try {
+      // Check usage before allowing deletion
+      const usageResult = await this.checkUsage(id);
+      if (!usageResult.success || !usageResult.data?.canDelete) {
+        const message = 'Cannot delete video: it has been assigned or completed by users';
+        logger.warn('Video deletion blocked due to usage', { videoId: id, usage: usageResult.data });
+        return { data: null, error: message, success: false };
+      }
+
       const { error } = await supabase
         .from('videos')
         .delete()

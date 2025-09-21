@@ -37,6 +37,12 @@ export const getTooltipText = (action: string, context?: TooltipContext): string
     case 'show-video':
       return 'Show Video in List';
     
+    case 'delete-video-blocked':
+      return context?.status ? `Cannot delete: ${context.status}. Hide video instead to remove from list.` : 'Cannot delete: Video has been assigned or completed by users';
+    
+    case 'delete-quiz-blocked':
+      return context?.status ? `Cannot delete: ${context.status}` : 'Cannot delete: Quiz has been completed by users';
+    
     default:
       return action;
   }
