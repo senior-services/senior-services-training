@@ -273,7 +273,7 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
               <div className="flex items-center gap-3">
                 <Archive className="w-5 h-5 text-muted-foreground" />
                 <span className="text-lg font-semibold">Archived Videos</span>
-                <Badge variant="secondary" className="ml-2">
+                <Badge variant="soft-destructive" className="ml-2">
                   {archivedVideos.length}
                 </Badge>
               </div>
