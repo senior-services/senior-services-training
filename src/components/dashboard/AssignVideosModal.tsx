@@ -92,7 +92,8 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
-  const [filterMode, setFilterMode] = useState<'all' | 'unassigned'>('all');
+  const [hiddenVideoIds, setHiddenVideoIds] = useState<Set<string>>(new Set());
+  const [filterMode, setFilterMode] = useState<'unassigned' | 'assigned' | 'all'>('unassigned');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -108,13 +109,21 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
     try {
       // Load videos, assignments, and progress data in parallel
       const [videosResult, assignmentsResult, progressResult] = await Promise.all([
-        videoOperations.getAll(),
+        videoOperations.getAll(true), // Include hidden videos
         employee ? assignmentOperations.getByEmployee(employee.id) : Promise.resolve({ success: true, data: [] as VideoAssignment[], error: null }),
         employee ? progressOperations.getByEmployee(employee.id) : Promise.resolve({ success: true, data: [], error: null })
       ]);
 
       if (videosResult.success && videosResult.data) {
         setVideos(videosResult.data);
+        
+        // Track hidden videos (videos with archived_at)
+        const hidden = new Set<string>(
+          videosResult.data
+            .filter(video => video.archived_at)
+            .map(video => video.id)
+        );
+        setHiddenVideoIds(hidden);
       } else {
         throw new Error(videosResult.error || 'Failed to load videos');
       }
@@ -325,7 +334,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
     setVideoDeadlines(new Map(initialVideoDeadlines));
     setCalendarOpen(new Map());
     setShowDiscardDialog(false);
-    setFilterMode('all');
+    setFilterMode('unassigned');
     onOpenChange(false);
   };
 
@@ -341,15 +350,54 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
     };
   };
 
+  // Helper function to get hidden badge
+  const getHiddenBadge = () => {
+    return {
+      variant: "ghost-warning" as const,
+      showIcon: true,
+      text: "Hidden"
+    };
+  };
+
   // Filter videos based on current filter mode
   const getFilteredVideos = () => {    
     switch (filterMode) {
       case 'unassigned':
         // Show videos that are not assigned and not completed
         return videos.filter(v => !assignedVideoIds.has(v.id) && !completedVideoIds.has(v.id));
+      case 'assigned':
+        // Show videos currently assigned to employee (regardless of completion)
+        return videos.filter(v => assignedVideoIds.has(v.id));
       default: // 'all'
-        // Show ALL videos including completed ones
-        return videos;
+        // Show all videos in order: Assigned, Unassigned, Completed, Hidden
+        return videos.sort((a, b) => {
+          const aAssigned = assignedVideoIds.has(a.id);
+          const bAssigned = assignedVideoIds.has(b.id);
+          const aCompleted = completedVideoIds.has(a.id);
+          const bCompleted = completedVideoIds.has(b.id);
+          const aHidden = hiddenVideoIds.has(a.id);
+          const bHidden = hiddenVideoIds.has(b.id);
+          
+          // Priority: Assigned (0), Unassigned (1), Completed (2), Hidden (3)
+          const getPriority = (assigned: boolean, completed: boolean, hidden: boolean) => {
+            if (assigned && !completed) return 0; // Assigned incomplete
+            if (assigned && completed) return 1;  // Assigned complete
+            if (!assigned && !completed && !hidden) return 2; // Unassigned
+            if (completed && !assigned) return 3; // Completed only
+            if (hidden) return 4; // Hidden
+            return 5;
+          };
+          
+          const aPriority = getPriority(aAssigned, aCompleted, aHidden);
+          const bPriority = getPriority(bAssigned, bCompleted, bHidden);
+          
+          if (aPriority !== bPriority) {
+            return aPriority - bPriority;
+          }
+          
+          // Secondary sort: alphabetically within each group
+          return a.title.localeCompare(b.title);
+        });
     }
   };
 
@@ -387,15 +435,18 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                 <ToggleGroup 
                   type="single" 
                   value={filterMode} 
-                  onValueChange={(value) => setFilterMode(value as typeof filterMode || 'all')}
+                  onValueChange={(value) => setFilterMode(value as typeof filterMode || 'unassigned')}
                   variant="pill"
                   className="justify-start"
                 >
-                  <ToggleGroupItem value="all" className="text-xs px-3 py-1">
-                    Show All
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="unassigned" className="text-xs px-3 py-1">
+                  <ToggleGroupItem value="unassigned" className="text-xs px-3 py-1" aria-label="Filter by unassigned videos">
                     Unassigned
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="assigned" className="text-xs px-3 py-1" aria-label="Filter by assigned videos">
+                    Assigned
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="all" className="text-xs px-3 py-1" aria-label="Show all videos">
+                    Show all
                   </ToggleGroupItem>
                 </ToggleGroup>
 
@@ -430,30 +481,13 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                   <Video className="w-12 h-12 mx-auto mb-3 opacity-50" />
                    <p>
                      {filterMode === 'unassigned' && 'No unassigned videos available'}
+                     {filterMode === 'assigned' && 'No assigned videos found'}
                      {filterMode === 'all' && 'No training videos available'}
                    </p>
                 </div>
               ) : (
-                <div className="space-y-0">
-                  {filteredVideos
-                    .sort((a, b) => {
-                      const aAssigned = assignedVideoIds.has(a.id);
-                      const bAssigned = assignedVideoIds.has(b.id);
-                      const aCompleted = completedVideoIds.has(a.id);
-                      const bCompleted = completedVideoIds.has(b.id);
-                      
-                      // Create priority scores: 0 = assigned not completed, 1 = unassigned, 2 = completed
-                      const aPriority = aCompleted ? 2 : (aAssigned ? 0 : 1);
-                      const bPriority = bCompleted ? 2 : (bAssigned ? 0 : 1);
-                      
-                      // Primary sort: by group priority
-                      if (aPriority !== bPriority) {
-                        return aPriority - bPriority;
-                      }
-                      
-                      // Secondary sort: alphabetically within each group
-                      return a.title.localeCompare(b.title);
-                    })
+                 <div className="space-y-0">
+                   {filteredVideos
                      .map((video, index) => {
                     const isSelected = selectedVideoIds.has(video.id);
                     const wasOriginallyAssigned = assignedVideoIds.has(video.id);
@@ -503,61 +537,67 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                           </Label>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                          {isCompleted && progressData ? (
-                            <Badge variant="ghost-success" showIcon>
-                              {getCompletionBadge(progressData).text}
-                            </Badge>
-                          ) : isSelected && (
-                            <Popover 
-                              open={calendarOpen.get(video.id) || false}
-                              onOpenChange={(open) => {
-                                setCalendarOpen(prev => {
-                                  const newOpen = new Map(prev);
-                                  newOpen.set(video.id, open);
-                                  return newOpen;
-                                });
-                              }}
-                            >
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className={cn(
-                                    "w-[160px] justify-start text-left font-normal",
-                                    !videoDeadlines.get(video.id) && "text-muted-foreground"
-                                  )}
-                                >
-                                  <CalendarIcon className="mr-2 h-3 w-3" />
-                                  {videoDeadlines.get(video.id) ? (
-                                    format(videoDeadlines.get(video.id)!, "MMM dd, yyyy")
-                                  ) : (
-                                    <span className="text-xs">Pick due date</span>
-                                  )}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent 
-                                className="w-auto p-0 z-[9999]" 
-                                align="end"
-                                side="bottom"
-                                sideOffset={5}
-                                avoidCollisions={true}
-                                collisionPadding={20}
-                              >
-                                <Calendar
-                                  mode="single"
-                                  selected={videoDeadlines.get(video.id)}
-                                  onSelect={(date) => handleDeadlineChange(video.id, date)}
-                                  disabled={(date) =>
-                                    date < new Date(new Date().setHours(0, 0, 0, 0))
-                                  }
-                                  initialFocus
-                                  className="p-3 pointer-events-auto"
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          )}
-                        </div>
+                         <div className="flex items-center gap-4">
+                           {isCompleted && progressData ? (
+                             <Badge variant="ghost-success" showIcon>
+                               {getCompletionBadge(progressData).text}
+                             </Badge>
+                           ) : isSelected && (
+                             <Popover 
+                               open={calendarOpen.get(video.id) || false}
+                               onOpenChange={(open) => {
+                                 setCalendarOpen(prev => {
+                                   const newOpen = new Map(prev);
+                                   newOpen.set(video.id, open);
+                                   return newOpen;
+                                 });
+                               }}
+                             >
+                               <PopoverTrigger asChild>
+                                 <Button
+                                   variant="outline"
+                                   size="sm"
+                                   className={cn(
+                                     "w-[160px] justify-start text-left font-normal",
+                                     !videoDeadlines.get(video.id) && "text-muted-foreground"
+                                   )}
+                                 >
+                                   <CalendarIcon className="mr-2 h-3 w-3" />
+                                   {videoDeadlines.get(video.id) ? (
+                                     format(videoDeadlines.get(video.id)!, "MMM dd, yyyy")
+                                   ) : (
+                                     <span className="text-xs">Pick due date</span>
+                                   )}
+                                 </Button>
+                               </PopoverTrigger>
+                               <PopoverContent 
+                                 className="w-auto p-0 z-[9999]" 
+                                 align="end"
+                                 side="bottom"
+                                 sideOffset={5}
+                                 avoidCollisions={true}
+                                 collisionPadding={20}
+                               >
+                                 <Calendar
+                                   mode="single"
+                                   selected={videoDeadlines.get(video.id)}
+                                   onSelect={(date) => handleDeadlineChange(video.id, date)}
+                                   disabled={(date) =>
+                                     date < new Date(new Date().setHours(0, 0, 0, 0))
+                                   }
+                                   initialFocus
+                                   className="p-3 pointer-events-auto"
+                                 />
+                               </PopoverContent>
+                             </Popover>
+                           )}
+                           
+                           {hiddenVideoIds.has(video.id) && (
+                             <Badge variant="ghost-warning" showIcon aria-describedby={`video-${video.id}-hidden`}>
+                               {getHiddenBadge().text}
+                             </Badge>
+                           )}
+                         </div>
                       </div>
                     );
                   })}
