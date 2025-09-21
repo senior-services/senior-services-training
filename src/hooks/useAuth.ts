@@ -17,10 +17,21 @@ function isCompanyEmailError(error: any): boolean {
   if (!error || !error.message) return false;
   
   const message = error.message.toLowerCase();
+  
+  // Check for direct database constraint violations (Postgres error codes 23xxx series)
+  if (error.code && error.code.toString().startsWith('23')) {
+    return true;
+  }
+  
+  // Check for specific error messages from the database trigger
   return message.includes('company email') || 
          message.includes('domain') || 
          message.includes('southsoundseniors.org') ||
-         message.includes('organization email');
+         message.includes('organization email') ||
+         message.includes('only company email addresses are allowed') ||
+         message.includes('email domain not allowed') ||
+         message.includes('violates row-level security') ||
+         message.includes('new row violates');
 }
 
 // Helper function to get user-friendly error message
@@ -97,6 +108,23 @@ export function useAuth() {
           loading: false,
         });
 
+        // Handle auth errors that occur during OAuth flow
+        if (event === 'SIGNED_OUT' && !session) {
+          // Check if this is due to an authentication error
+          // This is a non-blocking check to catch OAuth failures
+          setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorParam = urlParams.get('error');
+            const errorDescription = urlParams.get('error_description');
+            
+            if (errorParam || errorDescription) {
+              const errorMsg = errorDescription || errorParam || 'Authentication failed';
+              const userMessage = getAuthErrorMessage(new Error(errorMsg));
+              logger.error('OAuth error detected in URL params', new Error(errorMsg), { errorParam, errorDescription });
+              toast.error(userMessage);
+            }
+          }, 0);
+        }
       }
     );
 
