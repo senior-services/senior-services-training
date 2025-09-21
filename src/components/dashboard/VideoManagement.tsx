@@ -13,6 +13,7 @@ import { VideoPlayerModal } from '../VideoPlayerModal';
 import { IconButtonWithTooltip } from '../ui/icon-button-with-tooltip';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { Badge } from '../ui/badge';
+import { Card, CardContent } from '../ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { videoOperations } from '@/services/api';
 import { supabase } from '@/integrations/supabase/client';
@@ -268,7 +269,7 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
       {/* Archive Section */}
       {archivedVideos.length > 0 && (
         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="archived" className="border rounded-lg">
+          <AccordionItem value="archived">
             <AccordionTrigger className="px-6 py-4 hover:no-underline">
               <div className="flex items-center gap-3">
                 <Archive className="w-5 h-5 text-muted-foreground" />
@@ -280,61 +281,65 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
               <ChevronDown className="w-4 h-4 transition-transform duration-200" />
             </AccordionTrigger>
             <AccordionContent className="px-6 pb-6">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-20">Thumbnail</TableHead>
-                      <TableHead>Title & Description</TableHead>
-                      <TableHead className="w-32 text-center">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {archivedVideos.map((video) => (
-                      <TableRow key={video.id}>
-                        <TableCell>
-                          <div className="flex items-center justify-center">
-                            {video.thumbnail_url ? (
-                              <img
-                                src={video.thumbnail_url}
-                                alt={`${video.title} thumbnail`}
-                                className="w-12 h-8 object-cover rounded border"
-                              />
-                            ) : (
-                              <div className={`w-12 h-8 rounded border flex items-center justify-center text-white text-xs font-bold ${generateThumbnailColor(video.title)}`}>
-                                {video.title.charAt(0).toUpperCase()}
+              <Card className="shadow-md">
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-20">Thumbnail</TableHead>
+                          <TableHead>Title & Description</TableHead>
+                          <TableHead className="w-32 text-center">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {archivedVideos.map((video) => (
+                          <TableRow key={video.id}>
+                            <TableCell>
+                              <div className="flex items-center justify-center">
+                                {video.thumbnail_url ? (
+                                  <img
+                                    src={video.thumbnail_url}
+                                    alt={`${video.title} thumbnail`}
+                                    className="w-12 h-8 object-cover rounded border"
+                                  />
+                                ) : (
+                                  <div className={`w-12 h-8 rounded border flex items-center justify-center text-white text-xs font-bold ${generateThumbnailColor(video.title)}`}>
+                                    {video.title.charAt(0).toUpperCase()}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium text-sm">{video.title}</div>
-                            {video.description && (
-                              <div className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                                {video.description}
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <div className="font-medium text-sm">{video.title}</div>
+                                {video.description && (
+                                  <div className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                                    {video.description}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex justify-center">
-                            <IconButtonWithTooltip
-                              icon={RotateCcw}
-                              tooltip="Unarchive video"
-                              onClick={() => handleUnarchiveVideo(video)}
-                              variant="ghost"
-                              size="sm"
-                              className="text-muted-foreground hover:text-foreground"
-                              ariaLabel={`Unarchive ${video.title}`}
-                            />
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex justify-center">
+                                <IconButtonWithTooltip
+                                  icon={RotateCcw}
+                                  tooltip="Unarchive video"
+                                  onClick={() => handleUnarchiveVideo(video)}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-muted-foreground hover:text-foreground"
+                                  ariaLabel={`Unarchive ${video.title}`}
+                                />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
