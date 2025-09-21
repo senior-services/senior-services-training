@@ -273,11 +273,11 @@ export const EmployeeManagement: React.FC<{
     });
 
     if (overdueRequired.length > 0) {
-      return <Badge variant="soft-destructive">{overdueRequired.length} Overdue</Badge>;
+      return <Badge variant="destructive">{overdueRequired.length} Overdue</Badge>;
     }
 
     if (completedRequired.length === requiredVideos.length) {
-      return <Badge variant="soft-success">All Training Complete</Badge>;
+      return <Badge variant="success">All Training Complete</Badge>;
     }
 
     return <Badge variant="secondary">{completedRequired.length}/{requiredVideos.length} Complete</Badge>;
