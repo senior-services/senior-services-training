@@ -288,32 +288,16 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
                     <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-20">Thumbnail</TableHead>
-                          <TableHead>Title & Description</TableHead>
-                          <TableHead className="w-32 text-center">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
+                       <TableHeader>
+                         <TableRow>
+                           <TableHead>Title & Description</TableHead>
+                           <TableHead className="w-32 text-center">Actions</TableHead>
+                         </TableRow>
+                       </TableHeader>
                       <TableBody>
                         {archivedVideos.map((video) => (
-                          <TableRow key={video.id}>
-                            <TableCell>
-                              <div className="flex items-center justify-center">
-                                {video.thumbnail_url ? (
-                                  <img
-                                    src={video.thumbnail_url}
-                                    alt={`${video.title} thumbnail`}
-                                    className="w-12 h-8 object-cover rounded border"
-                                  />
-                                ) : (
-                                  <div className={`w-12 h-8 rounded border flex items-center justify-center text-white text-xs font-bold ${generateThumbnailColor(video.title)}`}>
-                                    {video.title.charAt(0).toUpperCase()}
-                                  </div>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
+                           <TableRow key={video.id}>
+                             <TableCell>
                               <div>
                                 <div className="font-medium text-sm">{video.title}</div>
                                 {video.description && (
