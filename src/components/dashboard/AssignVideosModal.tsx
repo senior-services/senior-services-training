@@ -362,13 +362,13 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
           .filter(v => !assignedVideoIds.has(v.id) && !completedVideoIds.has(v.id))
           .sort((a, b) => a.title.localeCompare(b.title));
       case 'assigned':
-        // Show videos currently assigned to employee (regardless of completion), sorted alphabetically
+        // Show videos currently assigned to employee (excluding completed), sorted alphabetically
         return videos
-          .filter(v => assignedVideoIds.has(v.id))
+          .filter(v => assignedVideoIds.has(v.id) && !completedVideoIds.has(v.id))
           .sort((a, b) => a.title.localeCompare(b.title));
       default: // 'all'
-        // Show all videos in order: Assigned, Unassigned, Completed, Hidden (alphabetically within each category)
-        return videos.sort((a, b) => {
+        // Show all videos in order: Assigned, Unassigned, Hidden (alphabetically within each category), excluding completed
+        return videos.filter(v => !completedVideoIds.has(v.id)).sort((a, b) => {
           const aAssigned = assignedVideoIds.has(a.id);
           const bAssigned = assignedVideoIds.has(b.id);
           const aCompleted = completedVideoIds.has(a.id);
@@ -376,11 +376,10 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
           const aHidden = hiddenVideoIds.has(a.id);
           const bHidden = hiddenVideoIds.has(b.id);
           
-          // Priority: Assigned (0), Unassigned (1), Completed (2), Hidden (3)
+          // Priority: Assigned (0), Unassigned (1), Hidden (2)
           const getPriority = (assigned: boolean, completed: boolean, hidden: boolean) => {
-            if (completed) return 2; // Completed videos (regardless of assignment)
             if (assigned) return 0; // Assigned incomplete videos
-            if (hidden) return 3; // Hidden videos
+            if (hidden) return 2; // Hidden videos
             return 1; // Unassigned videos (not assigned, not completed, not hidden)
           };
           
