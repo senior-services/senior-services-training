@@ -397,7 +397,7 @@ export const EmployeeManagement: React.FC<{
     const daysUntilDue = differenceInDays(due, today);
 
     if (isPast(due) && daysUntilDue < 0) {
-      return <Badge variant="soft-destructive">Overdue ({Math.abs(daysUntilDue)} days)</Badge>;
+      return <Badge variant="soft-destructive">Overdue</Badge>;
     }
 
     if (daysUntilDue === 0) {
@@ -405,10 +405,10 @@ export const EmployeeManagement: React.FC<{
     }
 
     if (daysUntilDue <= 7) {
-      return <Badge variant="soft-warning">Due in {daysUntilDue} days</Badge>;
+      return <Badge variant="soft-warning">Due</Badge>;
     }
 
-    return <Badge variant="soft-tertiary">Due in {daysUntilDue} days</Badge>;
+    return <Badge variant="soft-tertiary">Due</Badge>;
   };
 
   const getQuizResults = (assignment: any, employeeId: string) => {
@@ -428,22 +428,28 @@ export const EmployeeManagement: React.FC<{
   };
 
   const getCompletionDate = (assignment: any, employeeId: string) => {
-    // First check if there's a quiz completion date (most accurate)
     const employeeQuizData = employeeQuizzes.get(employeeId);
     const quizAttempt = employeeQuizData?.get(assignment.video_id);
     
-    if (quizAttempt && quizAttempt.completed_at) {
-      const completedDate = new Date(quizAttempt.completed_at);
-      return <span>{format(completedDate, 'MMM dd, yyyy')}</span>;
+    // Check if assignment is completed
+    const isCompleted = assignment.completed_at || (quizAttempt && quizAttempt.completed_at);
+    
+    if (isCompleted) {
+      // Show completion date for completed items
+      if (quizAttempt && quizAttempt.completed_at) {
+        const completedDate = new Date(quizAttempt.completed_at);
+        return <span>{format(completedDate, 'MMM dd, yyyy')}</span>;
+      } else if (assignment.completed_at) {
+        const completedDate = new Date(assignment.completed_at);
+        return <span>{format(completedDate, 'MMM dd, yyyy')}</span>;
+      }
+    } else if (assignment.due_date) {
+      // Show due date for non-completed items
+      const dueDate = new Date(assignment.due_date);
+      return <span>{format(dueDate, 'MMM dd, yyyy')}</span>;
     }
     
-    // Fallback to video progress completion date if available
-    if (assignment.completed_at) {
-      const completedDate = new Date(assignment.completed_at);
-      return <span>{format(completedDate, 'MMM dd, yyyy')}</span>;
-    }
-    
-    // No completion date available
+    // No relevant date available
     return <span className="text-muted-foreground">--</span>;
   };
 
@@ -704,7 +710,7 @@ export const EmployeeManagement: React.FC<{
                                  <div className="grid grid-cols-4 gap-6 px-4 py-2 border-b">
                                    <div className="text-xs font-medium uppercase text-muted-foreground">VIDEO TITLE</div>
                                    <div className="text-xs font-medium uppercase text-muted-foreground">STATUS</div>
-                                    <div className="text-xs font-medium uppercase text-muted-foreground">DATE COMPLETED</div>
+                                    <div className="text-xs font-medium uppercase text-muted-foreground">DATE</div>
                                     <div className="text-xs font-medium uppercase text-muted-foreground">QUIZ RESULTS</div>
                                  </div>
                                 
