@@ -93,7 +93,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [hiddenVideoIds, setHiddenVideoIds] = useState<Set<string>>(new Set());
-  const [filterMode, setFilterMode] = useState<'unassigned' | 'assigned' | 'all'>('unassigned');
+  const [filterMode, setFilterMode] = useState<'unassigned' | 'assigned'>('unassigned');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -364,33 +364,8 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
         return videos
           .filter(v => assignedVideoIds.has(v.id) && !completedVideoIds.has(v.id))
           .sort((a, b) => a.title.localeCompare(b.title));
-      default: // 'all'
-        // Show all videos in order: Assigned, Unassigned, Hidden (alphabetically within each category), excluding completed
-        return videos.filter(v => !completedVideoIds.has(v.id)).sort((a, b) => {
-          const aAssigned = assignedVideoIds.has(a.id);
-          const bAssigned = assignedVideoIds.has(b.id);
-          const aCompleted = completedVideoIds.has(a.id);
-          const bCompleted = completedVideoIds.has(b.id);
-          const aHidden = hiddenVideoIds.has(a.id);
-          const bHidden = hiddenVideoIds.has(b.id);
-          
-          // Priority: Assigned (0), Unassigned (1), Hidden (2)
-          const getPriority = (assigned: boolean, completed: boolean, hidden: boolean) => {
-            if (assigned) return 0; // Assigned incomplete videos
-            if (hidden) return 2; // Hidden videos
-            return 1; // Unassigned videos (not assigned, not completed, not hidden)
-          };
-          
-          const aPriority = getPriority(aAssigned, aCompleted, aHidden);
-          const bPriority = getPriority(bAssigned, bCompleted, bHidden);
-          
-          if (aPriority !== bPriority) {
-            return aPriority - bPriority;
-          }
-          
-          // Secondary sort: alphabetically within each group
-          return a.title.localeCompare(b.title);
-        });
+      default:
+        return videos;
     }
   };
 
@@ -438,9 +413,6 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                   <ToggleGroupItem value="assigned" className="text-xs px-3 py-1" aria-label="Filter by assigned videos">
                     Assigned
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="all" className="text-xs px-3 py-1" aria-label="Show all videos">
-                    Show all
-                  </ToggleGroupItem>
                 </ToggleGroup>
 
                 <div className="flex items-center gap-3">
@@ -470,14 +442,13 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
               </div>
 
               {filteredVideosCount === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Video className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                   <p>
-                     {filterMode === 'unassigned' && 'No unassigned videos available'}
-                     {filterMode === 'assigned' && 'No assigned videos found'}
-                     {filterMode === 'all' && 'No training videos available'}
-                   </p>
-                </div>
+                 <div className="text-center py-8 text-muted-foreground">
+                   <Video className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>
+                      {filterMode === 'unassigned' && 'No unassigned videos available'}
+                      {filterMode === 'assigned' && 'No assigned videos found'}
+                    </p>
+                 </div>
               ) : (
                  <div className="space-y-0">
                    {filteredVideos
