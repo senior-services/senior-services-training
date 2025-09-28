@@ -207,7 +207,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                     </Button>
                   </TableHead>
                   <TableHead className="text-center text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">Quiz</TableHead>
-                  <TableHead className="text-center text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">
+                  <TableHead className="text-left text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('created_at')}
@@ -377,7 +377,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       </TableCell>
 
                       {/* Date Added */}
-                      <TableCell className="text-center py-2">
+                      <TableCell className="text-left py-2">
                         <span className="text-sm text-muted-foreground">
                           {format(new Date(video.created_at), 'MMM dd, yyyy')}
                         </span>
