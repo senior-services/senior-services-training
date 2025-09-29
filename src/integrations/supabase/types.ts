@@ -415,6 +415,7 @@ export type Database = {
         Row: {
           archived_at: string | null
           completion_rate: number
+          content_type: Database["public"]["Enums"]["content_type"]
           created_at: string
           description: string | null
           duration_seconds: number | null
@@ -429,6 +430,7 @@ export type Database = {
         Insert: {
           archived_at?: string | null
           completion_rate?: number
+          content_type?: Database["public"]["Enums"]["content_type"]
           created_at?: string
           description?: string | null
           duration_seconds?: number | null
@@ -443,6 +445,7 @@ export type Database = {
         Update: {
           archived_at?: string | null
           completion_rate?: number
+          content_type?: Database["public"]["Enums"]["content_type"]
           created_at?: string
           description?: string | null
           duration_seconds?: number | null
@@ -549,6 +552,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "employee"
+      content_type: "video" | "presentation"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -677,6 +681,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "employee"],
+      content_type: ["video", "presentation"],
     },
   },
 } as const

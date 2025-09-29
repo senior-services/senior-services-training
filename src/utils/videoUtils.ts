@@ -120,3 +120,70 @@ export const getYouTubeWatchUrl = (url: string): string | null => {
   const videoId = getYouTubeVideoId(url);
   return videoId ? `https://www.youtube.com/watch?v=${videoId}` : null;
 };
+
+/**
+ * Checks if URL is a Google Presentation
+ */
+export const isGooglePresentationUrl = (url: string): boolean => {
+  return /docs\.google\.com\/presentation/.test(url);
+};
+
+/**
+ * Extracts Google Presentation ID from URL
+ */
+export const getGooglePresentationId = (url: string): string | null => {
+  const match = url.match(/\/presentation\/d\/([a-zA-Z0-9_-]+)/);
+  return match ? match[1] : null;
+};
+
+/**
+ * Converts Google Presentation URL to embed format
+ */
+export const getGooglePresentationEmbedUrl = (url: string): string | null => {
+  const presentationId = getGooglePresentationId(url);
+  if (!presentationId) return null;
+  
+  return `https://docs.google.com/presentation/d/${presentationId}/embed`;
+};
+
+/**
+ * Gets Google Presentation thumbnail URL
+ */
+export const getGooglePresentationThumbnail = (url: string): string | null => {
+  const presentationId = getGooglePresentationId(url);
+  if (!presentationId) return null;
+  
+  return `https://docs.google.com/presentation/d/${presentationId}/preview`;
+};
+
+/**
+ * Detects content type from URL
+ */
+export const detectContentTypeFromUrl = (url: string): 'video' | 'presentation' | null => {
+  if (isYouTubeUrl(url) || isGoogleDriveUrl(url)) {
+    return 'video';
+  }
+  if (isGooglePresentationUrl(url)) {
+    return 'presentation';
+  }
+  return null;
+};
+
+/**
+ * Detects content type from file
+ */
+export const detectContentTypeFromFile = (file: File): 'video' | 'presentation' | null => {
+  const videoMimes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
+  const presentationMimes = [
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.openxmlformats-officedocument.presentationml.slideshow'
+  ];
+  
+  if (videoMimes.includes(file.type)) {
+    return 'video';
+  }
+  if (presentationMimes.includes(file.type)) {
+    return 'presentation';
+  }
+  return null;
+};

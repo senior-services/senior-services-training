@@ -27,10 +27,20 @@ export const PERMISSIONS = {
   SETTINGS_MANAGE: 'settings:manage',
 } as const;
 
-// Video configuration
-export const VIDEO_CONFIG = {
-  SUPPORTED_FORMATS: ['mp4', 'webm', 'mov', 'avi'] as const,
-  MAX_FILE_SIZE: 100 * 1024 * 1024, // 100MB in bytes
+// Content configuration (videos and presentations)
+export const CONTENT_CONFIG = {
+  VIDEO: {
+    SUPPORTED_FORMATS: ['mp4', 'webm', 'mov', 'avi'] as const,
+    MIME_TYPES: ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'] as const,
+  },
+  PRESENTATION: {
+    SUPPORTED_FORMATS: ['pptx', 'ppsx'] as const,
+    MIME_TYPES: [
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/vnd.openxmlformats-officedocument.presentationml.slideshow'
+    ] as const,
+  },
+  MAX_FILE_SIZE: 100 * 1024 * 1024, // 100MB
   THUMBNAIL_COLORS: [
     'bg-blue-500',
     'bg-green-500',
@@ -44,8 +54,12 @@ export const VIDEO_CONFIG = {
   SUPPORTED_URLS: {
     YOUTUBE: /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/,
     GOOGLE_DRIVE: /^https:\/\/drive\.google\.com\/file\/d\/[a-zA-Z0-9_-]+/,
+    GOOGLE_PRESENTATION: /^https:\/\/docs\.google\.com\/presentation\/d\/[a-zA-Z0-9_-]+/,
   } as const,
 } as const;
+
+// Legacy alias for backward compatibility
+export const VIDEO_CONFIG = CONTENT_CONFIG;
 
 // UI configuration
 export const UI_CONFIG = {
@@ -99,7 +113,7 @@ export const ERROR_MESSAGES = {
     MIN_LENGTH: (min: number) => `Must be at least ${min} characters long.`,
     MAX_LENGTH: (max: number) => `Must be no more than ${max} characters long.`,
     FILE_SIZE: `File size must be less than ${VIDEO_CONFIG.MAX_FILE_SIZE / 1024 / 1024}MB.`,
-    FILE_FORMAT: `Supported formats: ${VIDEO_CONFIG.SUPPORTED_FORMATS.join(', ')}.`,
+    FILE_FORMAT: `Supported formats: ${CONTENT_CONFIG.VIDEO.SUPPORTED_FORMATS.join(', ')}.`,
   },
   VIDEO: {
     LOAD_FAILED: 'Failed to load videos. Please refresh the page.',

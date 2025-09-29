@@ -121,7 +121,7 @@ export const validateVideoFile = (file: File): ValidationResult => {
   
   // Check file format
   const fileExtension = file.name.split('.').pop()?.toLowerCase();
-  if (!fileExtension || !VIDEO_CONFIG.SUPPORTED_FORMATS.includes(fileExtension as any)) {
+  if (!fileExtension || !VIDEO_CONFIG.VIDEO.SUPPORTED_FORMATS.includes(fileExtension as any)) {
     errors.push(ERROR_MESSAGES.VALIDATION.FILE_FORMAT);
   }
   

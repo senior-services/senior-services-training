@@ -42,9 +42,16 @@ export interface Video {
   archived_at?: string | null;
   created_at: string;
   updated_at: string;
+  content_type?: ContentType; // Optional for backward compatibility
+}
+
+// Wrapper interface for enhanced functionality with required content_type
+export interface TrainingContent extends Video {
+  content_type: ContentType; // Required in wrapper
 }
 
 export type VideoType = 'Required' | 'Optional';
+export type ContentType = 'video' | 'presentation';
 
 export interface VideoFormData {
   title: string;

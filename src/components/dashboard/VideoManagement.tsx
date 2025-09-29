@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { EyeOff, ChevronDown, Eye } from 'lucide-react';
 import { VideoTable } from './VideoTable';
-import { AddVideoModal, VideoFormData } from '../AddVideoModal';
+import { AddContentModal, ContentFormData } from '../content/AddContentModal';
 import { EditVideoModal } from '../EditVideoModal';
 import { VideoPlayerModal } from '../VideoPlayerModal';
 import { IconButtonWithTooltip } from '../ui/icon-button-with-tooltip';
@@ -108,18 +108,19 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
   /**
    * Handles adding a new video
    */
-  const handleAddVideo = async (videoData: VideoFormData) => {
+  const handleAddVideo = async (contentData: ContentFormData) => {
     const operation = 'addVideo';
     performanceTracker.start(operation);
 
     // Sanitize input data
     const sanitizedData = {
-      title: sanitizeText(videoData.title || 'Untitled Video'),
-      description: videoData.description ? sanitizeText(videoData.description) : null,
-      video_url: videoData.url?.trim() || null,
+      title: sanitizeText(contentData.title || 'Untitled Content'),
+      description: contentData.description ? sanitizeText(contentData.description) : null,
+      video_url: contentData.url?.trim() || null,
       video_file_name: null,
       type: 'Required' as const,
-      file: videoData.file
+      content_type: contentData.content_type,
+      file: contentData.file
     };
 
     const result = await videoOperations.create(sanitizedData);
@@ -337,8 +338,8 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
         </Accordion>
       )}
 
-      {/* Add Video Modal */}
-      <AddVideoModal
+      {/* Add Content Modal */}
+      <AddContentModal
         open={isAddVideoModalOpen}
         onOpenChange={setIsAddVideoModalOpen}
         onSave={handleAddVideo}
