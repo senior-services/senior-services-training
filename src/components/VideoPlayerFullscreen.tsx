@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Play } from "lucide-react";
@@ -7,10 +7,10 @@ import { quizOperations } from '@/services/quizService';
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import type { QuizSubmissionData, QuizResponse } from "@/types/quiz";
-import type { Video } from "@/types";
+import type { Video, TrainingContent } from "@/types";
 import { logger } from "@/utils/logger";
 import { QuizModal } from "@/components/quiz/QuizModal";
-import { VideoPlayer } from "@/components/video/VideoPlayer";
+import { ContentPlayer } from "@/components/content/ContentPlayer";
 import { CompletionOverlay } from "@/components/video/CompletionOverlay";
 import { useVideoData } from "@/hooks/useVideoData";
 import { useVideoProgress } from "@/hooks/useVideoProgress";
@@ -367,6 +367,38 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     onOpenChange(open);
   }, [onOpenChange]);
 
+  // Convert Video to TrainingContent with validation and safe defaults
+  const trainingContent = useMemo<TrainingContent | null>(() => {
+    if (!video) return null;
+
+    // Validate required fields
+    if (!video.id || !video.title) {
+      logger.warn('Video missing required fields', { videoId: video?.id, hasTitle: !!video?.title });
+      return null;
+    }
+
+    if (!video.video_url && !video.video_file_name) {
+      logger.warn('Video missing both video_url and video_file_name', { videoId: video.id });
+      return null;
+    }
+
+    // Create TrainingContent with safe defaults
+    return {
+      id: video.id,
+      title: video.title,
+      description: video.description || null,
+      video_url: video.video_url || null,
+      video_file_name: video.video_file_name || null,
+      type: video.type || 'Optional',
+      content_type: video.content_type || 'video',
+      duration_seconds: video.duration_seconds || 0,
+      completion_rate: video.completion_rate || 0,
+      created_at: video.created_at || new Date().toISOString(),
+      updated_at: video.updated_at || new Date().toISOString(),
+      archived_at: video.archived_at || null,
+    };
+  }, [video]);
+
 
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>
@@ -421,14 +453,15 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             aria-label="Video player. Press spacebar to play or pause."
             role="application"
           >
-            <VideoPlayer
-              video={video}
-              loading={videoLoading}
-              progress={progress}
-              onProgressUpdate={updateProgress}
-              onVideoEnded={handleVideoEnded}
-              updateProgressToDatabase={async () => {}} // This is handled by the progress hook now
-            />
+            {trainingContent && (
+              <ContentPlayer
+                content={trainingContent}
+                loading={videoLoading}
+                progress={progress}
+                onProgressUpdate={updateProgress}
+                onComplete={handleVideoEnded}
+              />
+            )}
             
             {/* Completion Overlay - Only show if training was never completed */}
             {shouldShowOverlay && showCompletionOverlay && !wasEverCompleted && (

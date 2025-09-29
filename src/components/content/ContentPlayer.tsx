@@ -7,12 +7,16 @@ interface ContentPlayerProps {
   content: TrainingContent;
   onProgressUpdate?: (progress: number) => void;
   onComplete?: () => void;
+  loading?: boolean;
+  progress?: number;
 }
 
 export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   content,
   onProgressUpdate,
   onComplete,
+  loading = false,
+  progress = 0,
 }) => {
   // Default to video if content_type is not specified (backward compatibility)
   const contentType = content.content_type || 'video';
@@ -41,8 +45,8 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   return (
     <VideoPlayer
       video={videoForPlayer}
-      loading={false}
-      progress={0}
+      loading={loading}
+      progress={progress}
       onProgressUpdate={onProgressUpdate || (() => {})}
       onVideoEnded={onComplete || (() => {})}
       updateProgressToDatabase={async () => {}}
