@@ -2,7 +2,8 @@ import { Dialog, DialogContent, DialogHeader, DialogScrollArea, DialogTitle } fr
 import { Badge } from "@/components/ui/badge";
 import { Play, Clock, Users } from "lucide-react";
 import { logger } from "@/utils/logger";
-import { isYouTubeUrl, isGoogleDriveUrl, getYouTubeVideoId, getGoogleDriveEmbedUrl } from "@/utils/videoUtils";
+import { ContentPlayer } from "@/components/content/ContentPlayer";
+import { TrainingContent, VideoType } from "@/types";
 interface VideoPlayerModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -14,6 +15,7 @@ interface VideoPlayerModalProps {
     video_url?: string | null;
     video_file_name?: string | null;
     thumbnail_url?: string | null;
+    content_type?: 'video' | 'presentation';
   } | null;
 }
 export const VideoPlayerModal = ({
@@ -41,19 +43,22 @@ export const VideoPlayerModal = ({
         </DialogContent>
       </Dialog>;
   }
-  const hasVideoSource = video.video_url || video.video_file_name;
-  logger.info('Video source determined', {
-    videoId: video.id,
-    hasUrl: !!video.video_url,
-    hasFile: !!video.video_file_name,
-    hasVideoSource
-  });
-
-  // Check video URL type
-  const isYouTube = video.video_url && isYouTubeUrl(video.video_url);
-  const isGoogleDrive = video.video_url && isGoogleDriveUrl(video.video_url);
-  const youtubeVideoId = isYouTube && video.video_url ? getYouTubeVideoId(video.video_url) : null;
-  const googleDriveEmbedUrl = isGoogleDrive && video.video_url ? getGoogleDriveEmbedUrl(video.video_url) : null;
+  // Convert to TrainingContent format for ContentPlayer
+  const trainingContent: TrainingContent = {
+    id: video.id,
+    title: video.title,
+    description: video.description || null,
+    type: (video.type as VideoType) || 'Optional',
+    video_url: video.video_url || null,
+    video_file_name: video.video_file_name || null,
+    thumbnail_url: video.thumbnail_url || null,
+    content_type: video.content_type || 'video', // Default to video for backward compatibility
+    completion_rate: 0,
+    duration_seconds: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    archived_at: null
+  };
   return <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
@@ -61,34 +66,13 @@ export const VideoPlayerModal = ({
         </DialogHeader>
         
         <DialogScrollArea className="space-y-4">
-          {/* Video Player Area */}
+          {/* Content Player Area */}
           <div className="aspect-video bg-black rounded-lg overflow-hidden">
-            {isYouTube && youtubeVideoId ? <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${youtubeVideoId}`} title={video.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen className="w-full h-full" /> : isGoogleDrive && googleDriveEmbedUrl ? <iframe width="100%" height="100%" src={googleDriveEmbedUrl} title={video.title} frameBorder="0" allowFullScreen className="w-full h-full" /> : video.video_url ? <video className="w-full h-full" controls preload="metadata" poster={video.thumbnail_url || undefined} onLoadStart={() => logger.info('Video loading started', {
-            videoId: video.id
-          })} onError={e => logger.error('Video playback error', new Error(`Video error: ${e.type}`), {
-            videoId: video.id
-          })}>
-                <source src={video.video_url} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video> : video.video_file_name ? <video className="w-full h-full" controls preload="metadata" poster={video.thumbnail_url || undefined} onLoadStart={() => logger.info('Video file loading started', {
-            videoId: video.id
-          })} onError={e => logger.error('Video file playback error', new Error(`Video file error: ${e.type}`), {
-            videoId: video.id
-          })}>
-                <source src={`https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}`} type="video/mp4" />
-                <source src={`https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}`} type="video/quicktime" />
-                Your browser does not support the video tag.
-              </video> : <div className="w-full h-full bg-muted flex items-center justify-center">
-                <div className="text-center space-y-3">
-                  <Play className="w-16 h-16 text-muted-foreground mx-auto" />
-                  <div>
-                    <p className="font-medium text-foreground">No video source available</p>
-                    <p className="text-sm text-muted-foreground">
-                      Add a video URL or upload a file to enable playback
-                    </p>
-                  </div>
-                </div>
-              </div>}
+            <ContentPlayer
+              content={trainingContent}
+              onProgressUpdate={() => {}}
+              onComplete={() => {}}
+            />
           </div>
 
         </DialogScrollArea>

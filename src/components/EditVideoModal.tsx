@@ -21,6 +21,8 @@ import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/utils/logger";
 import { sanitizeText } from "@/utils/security";
 import { isYouTubeUrl, isGoogleDriveUrl, getYouTubeVideoId, getGoogleDriveEmbedUrl, getGoogleDriveViewUrl, getYouTubeWatchUrl } from "@/utils/videoUtils";
+import { ContentPlayer } from "@/components/content/ContentPlayer";
+import { TrainingContent, VideoType, ContentType } from "@/types";
 import { QuizWithQuestions } from "@/types/quiz";
 import { QuestionFormData, OptionFormData } from "@/components/quiz/CreateQuizModal";
 
@@ -44,6 +46,9 @@ interface VideoData {
   completion_rate: number;
   created_at: string;
   updated_at: string;
+  content_type?: ContentType;
+  archived_at?: string | null;
+  duration_seconds?: number;
 }
 interface EditVideoModalProps {
   open: boolean;
@@ -876,20 +881,34 @@ export const EditVideoModal = ({
   );
   if (!video) return null;
 
-  // Check video URL type using utility functions
+  // Convert to TrainingContent format for ContentPlayer
+  const trainingContent: TrainingContent = {
+    id: video.id,
+    title: video.title,
+    description: video.description || null,
+    type: (video.type as VideoType) || 'Optional',
+    video_url: video.video_url || null,
+    video_file_name: video.video_file_name || null,
+    thumbnail_url: video.thumbnail_url || null,
+    content_type: video.content_type || 'video', // Default to video for backward compatibility
+    completion_rate: video.completion_rate || 0,
+    duration_seconds: video.duration_seconds || 0,
+    created_at: video.created_at,
+    updated_at: video.updated_at,
+    archived_at: video.archived_at || null
+  };
+
+  // Check video URL type for source display only
   const isYouTube = video.video_url && isYouTubeUrl(video.video_url);
   const isGoogleDrive = video.video_url && isGoogleDriveUrl(video.video_url);
   const isFileUpload = video.video_file_name;
-  const youtubeVideoId = isYouTube && video.video_url ? getYouTubeVideoId(video.video_url) : null;
-  const googleDriveEmbedUrl = isGoogleDrive && video.video_url ? getGoogleDriveEmbedUrl(video.video_url) : null;
-  const storageUrl = isFileUpload && video.video_file_name 
-    ? `https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}` 
-    : null;
   const sourceUrl = video.video_url
     ? (isYouTube ? getYouTubeWatchUrl(video.video_url as string)
       : isGoogleDrive ? getGoogleDriveViewUrl(video.video_url as string)
       : video.video_url)
-    : storageUrl;
+    : (isFileUpload && video.video_file_name 
+        ? `https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}` 
+        : null);
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -918,32 +937,19 @@ export const EditVideoModal = ({
                   
                   <div className="border border-border-primary rounded-lg overflow-hidden bg-muted/30">
                     <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                      {isYouTube && youtubeVideoId ? <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${youtubeVideoId}`} title={video.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen className="w-full h-full" /> : isGoogleDrive && googleDriveEmbedUrl ? <iframe width="100%" height="100%" src={googleDriveEmbedUrl} title={video.title} frameBorder="0" allowFullScreen className="w-full h-full" /> : video.video_url ? <video className="w-full h-full" controls preload="metadata" poster={video.thumbnail_url || undefined}>
-                          <source src={video.video_url} type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video> : isFileUpload ? <video className="w-full h-full" controls preload="metadata" poster={video.thumbnail_url || undefined}>
-                          <source src={`https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}`} type="video/mp4" />
-                          <source src={`https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}`} type="video/quicktime" />
-                          Your browser does not support the video tag.
-                        </video> : <div className="w-full h-full bg-muted flex items-center justify-center">
-                          <div className="text-center space-y-3">
-                            <Play className="w-16 h-16 text-muted-foreground mx-auto" />
-                            <div>
-                              <p className="font-medium text-foreground">No video source available</p>
-                              <p className="text-sm text-muted-foreground">
-                                Add a video URL or upload a file to enable playback
-                              </p>
-                            </div>
-                          </div>
-                        </div>}
+                      <ContentPlayer
+                        content={trainingContent}
+                        onProgressUpdate={() => {}}
+                        onComplete={() => {}}
+                      />
                      </div>
                    </div>
                    
-                    {/* Video Source */}
+                    {/* Content Source */}
                     <div className="text-left">
                       <span className="text-xs text-muted-foreground">
-                        Video Source: {isYouTube ? 'YouTube' : 
-                         isGoogleDrive ? 'Google Drive' : 
+                        Content Source: {isYouTube ? 'YouTube' : 
+                         isGoogleDrive ? (trainingContent.content_type === 'presentation' ? 'Google Slides' : 'Google Drive') : 
                          isFileUpload ? 'Uploaded File' : 
                          'External'}
                       </span>

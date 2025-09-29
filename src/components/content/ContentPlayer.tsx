@@ -27,10 +27,20 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
     );
   }
 
-  // Cast back to Video interface for VideoPlayer (it expects Video, not TrainingContent)
+  // Create video-compatible object for VideoPlayer
+  const videoForPlayer = {
+    ...content,
+    // Ensure all required video fields are present
+    completion_rate: content.completion_rate || 0,
+    created_at: content.created_at || new Date().toISOString(),
+    updated_at: content.updated_at || new Date().toISOString(),
+    archived_at: content.archived_at || null,
+    duration_seconds: content.duration_seconds || 0
+  };
+
   return (
     <VideoPlayer
-      video={content}
+      video={videoForPlayer}
       loading={false}
       progress={0}
       onProgressUpdate={onProgressUpdate || (() => {})}
