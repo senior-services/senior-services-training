@@ -203,6 +203,7 @@ export const videoOperations = {
           video_file_name,
           thumbnail_url: thumbnailUrl,
           type: videoData.type,
+          content_type: videoData.content_type || 'video',
           completion_rate: 0,
         })
         .select()
