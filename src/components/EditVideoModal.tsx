@@ -31,7 +31,6 @@ interface EditableQuestionFormData extends QuestionFormData {
   id?: string;
   options: EditableOptionFormData[];
 }
-
 interface EditableOptionFormData extends OptionFormData {
   id?: string;
 }
@@ -80,9 +79,11 @@ export const EditVideoModal = ({
   const [quizTitle, setQuizTitle] = useState('');
   const [quizDescription, setQuizDescription] = useState('');
   const [questions, setQuestions] = useState<EditableQuestionFormData[]>([]);
-  const [questionValidationErrors, setQuestionValidationErrors] = useState<{[key: number]: string}>({});
+  const [questionValidationErrors, setQuestionValidationErrors] = useState<{
+    [key: number]: string;
+  }>({});
   const [showQuizValidation, setShowQuizValidation] = useState(false);
-  
+
   // Track original quiz state for unsaved changes detection
   const [originalQuizTitle, setOriginalQuizTitle] = useState('');
   const [originalQuizDescription, setOriginalQuizDescription] = useState('');
@@ -90,18 +91,26 @@ export const EditVideoModal = ({
   const [unsavedChangesDialogOpen, setUnsavedChangesDialogOpen] = useState(false);
   const [deleteQuizDialogOpen, setDeleteQuizDialogOpen] = useState(false);
   const [isDeletingQuiz, setIsDeletingQuiz] = useState(false);
-  
+
   // New state for usage checking
-  const [videoUsage, setVideoUsage] = useState<{ canDelete: boolean; assignedCount: number; completedCount: number; quizCompletedCount: number } | null>(null);
-  const [quizUsage, setQuizUsage] = useState<{ canDelete: boolean; attemptCount: number } | null>(null);
+  const [videoUsage, setVideoUsage] = useState<{
+    canDelete: boolean;
+    assignedCount: number;
+    completedCount: number;
+    quizCompletedCount: number;
+  } | null>(null);
+  const [quizUsage, setQuizUsage] = useState<{
+    canDelete: boolean;
+    attemptCount: number;
+  } | null>(null);
   const [usageLoading, setUsageLoading] = useState(false);
-  
-  const { toast } = useToast();
-  
+  const {
+    toast
+  } = useToast();
+
   // Load usage information for both video and quiz
   const loadUsageInfo = useCallback(async () => {
     if (!video) return;
-    
     setUsageLoading(true);
     try {
       // Load video usage
@@ -121,37 +130,31 @@ export const EditVideoModal = ({
       setUsageLoading(false);
     }
   }, [video, quiz]);
-
   useEffect(() => {
     const abortController = new AbortController();
-    
     if (video) {
       setTitle(video.title || '');
       setDescription(video.description || '');
       loadQuiz(abortController.signal);
       loadUsageInfo();
     }
-    
     return () => {
       abortController.abort();
     };
   }, [video?.id, video?.updated_at]);
-
   const loadQuiz = useCallback(async (abortSignal?: AbortSignal) => {
     if (!video) return;
-    
     setQuizLoading(true);
     try {
       const quizData = await quizOperations.getByVideoId(video.id);
-      
+
       // Check if the operation was aborted
       if (abortSignal?.aborted) return;
-      
       setQuiz(quizData);
       if (quizData) {
         setQuizTitle(quizData.title);
         setQuizDescription(quizData.description || '');
-        
+
         // Load existing questions into the editing form
         const loadedQuestions: EditableQuestionFormData[] = quizData.questions.map(q => ({
           id: q.id,
@@ -166,7 +169,7 @@ export const EditVideoModal = ({
           }))
         }));
         setQuestions(loadedQuestions);
-        
+
         // Store original values for unsaved changes detection
         setOriginalQuizTitle(quizData.title);
         setOriginalQuizDescription(quizData.description || '');
@@ -177,7 +180,7 @@ export const EditVideoModal = ({
         setQuizTitle('');
         setQuizDescription('');
         setQuestions([]);
-        
+
         // Clear original values too
         setOriginalQuizTitle('');
         setOriginalQuizDescription('');
@@ -193,7 +196,7 @@ export const EditVideoModal = ({
   const ensureMinOptions = (options: EditableOptionFormData[], minCount: number = 2): EditableOptionFormData[] => {
     // Keep all existing options (both empty and non-empty)
     const existingOptions = [...options];
-    
+
     // If we have fewer than the minimum, pad with empty options
     while (existingOptions.length < minCount) {
       existingOptions.push({
@@ -202,9 +205,12 @@ export const EditVideoModal = ({
         order_index: existingOptions.length
       });
     }
-    
+
     // Reindex all options
-    return existingOptions.map((opt, i) => ({ ...opt, order_index: i }));
+    return existingOptions.map((opt, i) => ({
+      ...opt,
+      order_index: i
+    }));
   };
 
   // Helper function to check if a question is valid
@@ -213,103 +219,101 @@ export const EditVideoModal = ({
     if (!question.question_text.trim()) {
       return false;
     }
-    
     if (question.question_type === 'true_false') {
       // True/false questions only need non-empty question text
       return true;
     }
-    
     if (question.question_type === 'multiple_choice' || question.question_type === 'single_answer') {
       // Need at least 2 non-empty options
       const nonEmptyOptions = question.options.filter(opt => opt.option_text.trim());
       if (nonEmptyOptions.length < 2) {
         return false;
       }
-      
+
       // Need at least one correct answer
       const hasCorrectAnswer = nonEmptyOptions.some(opt => opt.is_correct);
       return hasCorrectAnswer;
     }
-    
     return false;
   };
-
   const cleanupAndValidateQuestions = () => {
-    const errors: {[key: number]: string} = {};
-    
+    const errors: {
+      [key: number]: string;
+    } = {};
     const cleanedQuestions = questions.map((question, index) => {
       // Check if question text is empty for all question types
       if (!question.question_text.trim()) {
         errors[index] = 'Question text is required.';
         return question;
       }
-      
       if (question.question_type === 'multiple_choice') {
         // For multiple choice, filter out empty options for validation but keep them in UI
         const nonEmptyOptions = question.options.filter(opt => opt.option_text.trim());
-        
+
         // Validate minimum 2 options
         if (nonEmptyOptions.length < 2) {
           errors[index] = 'Multiple choice questions require a minimum of 2 answers.';
         }
-        
+
         // Ensure at least one correct answer
         const hasCorrectAnswer = nonEmptyOptions.some(opt => opt.is_correct);
         if (nonEmptyOptions.length >= 2 && !hasCorrectAnswer) {
           errors[index] = 'Please select at least one correct answer for this multiple choice question.';
         }
-        
+
         // Ensure minimum 2 visible options in UI
         const optionsWithMinimum = ensureMinOptions(question.options, 2);
-        return { ...question, options: optionsWithMinimum };
+        return {
+          ...question,
+          options: optionsWithMinimum
+        };
       } else if (question.question_type === 'single_answer') {
         // For single answer, filter out empty options for validation but keep them in UI
         const nonEmptyOptions = question.options.filter(opt => opt.option_text.trim());
-        
+
         // Validate minimum 2 options
         if (nonEmptyOptions.length < 2) {
           errors[index] = 'Single answer questions require a minimum of 2 answers.';
         }
-        
+
         // Ensure at least one correct answer
         const hasCorrectAnswer = nonEmptyOptions.some(opt => opt.is_correct);
         if (nonEmptyOptions.length >= 2 && !hasCorrectAnswer) {
           errors[index] = 'Please select one correct answer for this single answer question.';
         }
-        
+
         // Ensure minimum 2 visible options in UI
         const optionsWithMinimum = ensureMinOptions(question.options, 2);
-        return { ...question, options: optionsWithMinimum };
+        return {
+          ...question,
+          options: optionsWithMinimum
+        };
       } else if (question.question_type === 'true_false') {
         // For true/false questions, ensure exactly one correct answer
         const hasCorrectAnswer = question.options.some(opt => opt.is_correct);
         if (!hasCorrectAnswer) {
           errors[index] = 'Please select the correct answer (True or False).';
         }
-        
         return question;
       }
       return question;
     });
-    
     setQuestionValidationErrors(errors);
     setQuestions(cleanedQuestions);
     return Object.keys(errors).length === 0;
   };
-
   const validateQuestions = () => {
-    const errors: {[key: number]: string} = {};
-    
+    const errors: {
+      [key: number]: string;
+    } = {};
     questions.forEach((question, index) => {
       // Check if question text is empty for all question types
       if (!question.question_text.trim()) {
         errors[index] = 'Question text is required.';
         return;
       }
-      
       if (question.question_type === 'multiple_choice') {
         const nonEmptyOptions = question.options.filter(opt => opt.option_text.trim());
-        
         if (nonEmptyOptions.length < 2) {
           errors[index] = 'Multiple choice questions require a minimum of 2 answers.';
         } else {
@@ -320,7 +324,6 @@ export const EditVideoModal = ({
         }
       } else if (question.question_type === 'single_answer') {
         const nonEmptyOptions = question.options.filter(opt => opt.option_text.trim());
-        
         if (nonEmptyOptions.length < 2) {
           errors[index] = 'Single answer questions require a minimum of 2 answers.';
         } else {
@@ -337,17 +340,15 @@ export const EditVideoModal = ({
         }
       }
     });
-    
     setQuestionValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
-
   const handleSave = async () => {
     if (!video) return;
-    
+
     // Enable validation display and cleanup/validate questions before saving
     setShowQuizValidation(true);
-    
+
     // Check quiz creation requirements for new quizzes
     const isCreatingNewQuiz = !quiz && (quizTitle.trim() || questions.length > 0);
     if (isCreatingNewQuiz) {
@@ -356,35 +357,33 @@ export const EditVideoModal = ({
         toast({
           title: "Quiz title is required",
           description: "Please enter a title for the quiz.",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
-      
+
       // Check if no questions added
       if (questions.length === 0) {
         toast({
           title: "Please add at least one question",
           description: "Please add at least one question to create the quiz.",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
     }
-    
     if ((quizTitle.trim() || questions.length > 0) && !cleanupAndValidateQuestions()) {
       toast({
         title: "Validation Error",
         description: "Please fix the question errors before saving.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-    
     setLoading(true);
     try {
       const isCreatingNewQuiz = !quiz && (quizTitle.trim() || questions.length > 0);
-      
+
       // Handle quiz changes first
       if (quizTitle.trim() || questions.length > 0) {
         if (quiz) {
@@ -395,7 +394,7 @@ export const EditVideoModal = ({
           await handleCreateQuiz();
         }
       }
-      
+
       // Save video changes (only if not creating a new quiz to avoid duplicate toasts)
       if (!isCreatingNewQuiz) {
         await onSave(video.id, {
@@ -403,7 +402,6 @@ export const EditVideoModal = ({
           description
         });
       }
-      
       handleClose();
     } catch (error) {
       logger.error('Error updating video', error as Error);
@@ -446,9 +444,8 @@ export const EditVideoModal = ({
       setUnsavedChangesDialogOpen(true);
       return;
     }
-    
     onOpenChange(open);
-    
+
     // When opening, ensure quiz is loaded for the current video if not already
     if (open && video && !quiz && !quizLoading) {
       loadQuiz();
@@ -460,15 +457,9 @@ export const EditVideoModal = ({
     if (!quiz && (quizTitle.trim() || questions.length > 0)) {
       return true; // New quiz being created
     }
-    
     if (quiz) {
-      return (
-        quizTitle !== originalQuizTitle ||
-        quizDescription !== originalQuizDescription ||
-        JSON.stringify(questions) !== JSON.stringify(originalQuestions)
-      );
+      return quizTitle !== originalQuizTitle || quizDescription !== originalQuizDescription || JSON.stringify(questions) !== JSON.stringify(originalQuestions);
     }
-    
     return false;
   };
 
@@ -482,19 +473,16 @@ export const EditVideoModal = ({
       onOpenChange(false);
     }
   };
-
   const handleQuizDelete = async () => {
     if (!quiz) return;
-    
     setIsDeletingQuiz(true);
     try {
       await quizOperations.delete(quiz.id);
-      
       toast({
         title: 'Quiz Deleted Successfully',
         description: 'The quiz has been removed from this video.'
       });
-      
+
       // Reset quiz-related state to empty
       setQuiz(null);
       setQuizTitle('');
@@ -505,10 +493,9 @@ export const EditVideoModal = ({
       setOriginalQuestions([]);
       setQuestionValidationErrors({});
       setShowQuizValidation(false);
-      
+
       // Notify parent component
       onQuizSaved?.(video!.id);
-      
       setDeleteQuizDialogOpen(false);
     } catch (error) {
       toast({
@@ -531,70 +518,70 @@ export const EditVideoModal = ({
       setQuizDescription('');
       setQuestions([]);
     }
-    
     setUnsavedChangesDialogOpen(false);
     onOpenChange(false);
   };
-
   const addQuestion = () => {
     const newQuestion: EditableQuestionFormData = {
       question_text: "",
       question_type: "multiple_choice",
       order_index: questions.length,
-      options: [
-        {
-          option_text: "",
-          is_correct: false,
-          order_index: 0
-        },
-        {
-          option_text: "",
-          is_correct: false,
-          order_index: 1
-        }
-      ]
+      options: [{
+        option_text: "",
+        is_correct: false,
+        order_index: 0
+      }, {
+        option_text: "",
+        is_correct: false,
+        order_index: 1
+      }]
     };
     setQuestions(prev => [...prev, newQuestion]);
     // Clear validation errors and reset validation display when adding questions
     setQuestionValidationErrors({});
     setShowQuizValidation(false);
   };
-
   const updateQuestion = (index: number, updates: Partial<EditableQuestionFormData>) => {
-    setQuestions(prev => prev.map((q, i) => 
-      i === index ? { ...q, ...updates } : q
-    ));
-    
+    setQuestions(prev => prev.map((q, i) => i === index ? {
+      ...q,
+      ...updates
+    } : q));
+
     // Clear validation error for this question when it's updated
     if (questionValidationErrors[index]) {
       setQuestionValidationErrors(prev => {
-        const newErrors = { ...prev };
+        const newErrors = {
+          ...prev
+        };
         delete newErrors[index];
         return newErrors;
       });
     }
-    
+
     // Reset validation display when question type changes
     if (updates.question_type) {
       setShowQuizValidation(false);
-      
+
       // Initialize true/false options when switching to true_false type
       if (updates.question_type === 'true_false') {
-        updates.options = [
-          { option_text: 'True', is_correct: false, order_index: 0 },
-          { option_text: 'False', is_correct: false, order_index: 1 }
-        ];
+        updates.options = [{
+          option_text: 'True',
+          is_correct: false,
+          order_index: 0
+        }, {
+          option_text: 'False',
+          is_correct: false,
+          order_index: 1
+        }];
       }
     }
   };
-
   const removeQuestion = (index: number) => {
     setQuestions(prev => prev.filter((_, i) => i !== index));
     // Clear all validation errors and reset validation display when removing questions
     setQuestionValidationErrors({});
     setShowQuizValidation(false);
   };
-
   const addOption = (questionIndex: number) => {
     const question = questions[questionIndex];
     const newOption: EditableOptionFormData = {
@@ -602,43 +589,37 @@ export const EditVideoModal = ({
       is_correct: false,
       order_index: question.options.length
     };
-    
     updateQuestion(questionIndex, {
       options: [...question.options, newOption]
     });
   };
-
   const updateOption = (questionIndex: number, optionIndex: number, updates: Partial<EditableOptionFormData>) => {
     const question = questions[questionIndex];
-    const updatedOptions = question.options.map((option, i) => 
-      i === optionIndex ? { ...option, ...updates } : option
-    );
-    
-    updateQuestion(questionIndex, { options: updatedOptions });
+    const updatedOptions = question.options.map((option, i) => i === optionIndex ? {
+      ...option,
+      ...updates
+    } : option);
+    updateQuestion(questionIndex, {
+      options: updatedOptions
+    });
   };
-
   const removeOption = (questionIndex: number, optionIndex: number) => {
     const question = questions[questionIndex];
-    
+
     // Safety guard: prevent deletion if only 2 or fewer options remain for single_answer and multiple_choice
-    if ((question.question_type === 'single_answer' || question.question_type === 'multiple_choice') && 
-        question.options.length <= 2) {
+    if ((question.question_type === 'single_answer' || question.question_type === 'multiple_choice') && question.options.length <= 2) {
       return;
     }
-    
     const updatedOptions = question.options.filter((_, i) => i !== optionIndex);
-    
-    // Ensure minimum options remain visible for single_answer and multiple_choice
-    const finalOptions = (question.question_type === 'single_answer' || question.question_type === 'multiple_choice') 
-      ? ensureMinOptions(updatedOptions, 2)
-      : updatedOptions;
-    
-    updateQuestion(questionIndex, { options: finalOptions });
-  };
 
+    // Ensure minimum options remain visible for single_answer and multiple_choice
+    const finalOptions = question.question_type === 'single_answer' || question.question_type === 'multiple_choice' ? ensureMinOptions(updatedOptions, 2) : updatedOptions;
+    updateQuestion(questionIndex, {
+      options: finalOptions
+    });
+  };
   const handleUpdateQuiz = async () => {
     if (!quiz || !video) return;
-    
     setIsCreatingQuiz(true);
     try {
       // Update quiz basic info
@@ -650,7 +631,7 @@ export const EditVideoModal = ({
       // Handle questions - delete removed ones, update existing ones, create new ones
       const existingQuestionIds = quiz.questions.map(q => q.id);
       const currentQuestionIds = questions.filter(q => q.id).map(q => q.id);
-      
+
       // Delete removed questions
       const questionsToDelete = existingQuestionIds.filter(id => !currentQuestionIds.includes(id));
       for (const questionId of questionsToDelete) {
@@ -660,7 +641,6 @@ export const EditVideoModal = ({
       // Update or create questions
       for (const [index, questionData] of questions.entries()) {
         let question;
-        
         if (questionData.id) {
           // Update existing question
           question = await questionOperations.update(questionData.id, {
@@ -683,7 +663,7 @@ export const EditVideoModal = ({
           const existingOptions = quiz.questions.find(q => q.id === question.id)?.options || [];
           const existingOptionIds = existingOptions.map(opt => opt.id);
           const currentOptionIds = questionData.options.filter(opt => opt.id).map(opt => opt.id);
-          
+
           // Delete removed options
           const optionsToDelete = existingOptionIds.filter(id => !currentOptionIds.includes(id));
           for (const optionId of optionsToDelete) {
@@ -715,7 +695,6 @@ export const EditVideoModal = ({
             // Create True/False options for new questions based on user selection
             const trueOption = questionData.options.find(opt => opt.option_text === 'True');
             const falseOption = questionData.options.find(opt => opt.option_text === 'False');
-            
             await optionOperations.create({
               question_id: question.id,
               option_text: 'True',
@@ -732,7 +711,6 @@ export const EditVideoModal = ({
             // Update existing True/False options
             const trueOption = questionData.options.find(opt => opt.option_text === 'True');
             const falseOption = questionData.options.find(opt => opt.option_text === 'False');
-            
             if (trueOption?.id) {
               await optionOperations.update(trueOption.id, {
                 option_text: 'True',
@@ -740,7 +718,6 @@ export const EditVideoModal = ({
                 order_index: 0
               });
             }
-            
             if (falseOption?.id) {
               await optionOperations.update(falseOption.id, {
                 option_text: 'False',
@@ -754,7 +731,7 @@ export const EditVideoModal = ({
 
       // Reload quiz data and update original state
       await loadQuiz();
-      
+
       // Notify parent that quiz was saved
       if (video) onQuizSaved?.(video.id);
     } catch (error) {
@@ -762,7 +739,7 @@ export const EditVideoModal = ({
       toast({
         title: "Error",
         description: "Failed to update quiz",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsCreatingQuiz(false);
@@ -770,26 +747,24 @@ export const EditVideoModal = ({
   };
   const handleCreateQuiz = async () => {
     if (!video) return;
-    
+
     // Defensive validation checks
     if (quizTitle.trim() === '') {
       toast({
         title: "Quiz title is required",
         description: "Please enter a title for the quiz.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-    
     if (questions.length === 0) {
       toast({
         title: "Please add at least one question",
         description: "Please add at least one question to create the quiz.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-    
     setIsCreatingQuiz(true);
     try {
       // Create the quiz
@@ -824,7 +799,6 @@ export const EditVideoModal = ({
           // Create True/False options based on user selection
           const trueOption = questionData.options.find(opt => opt.option_text === 'True');
           const falseOption = questionData.options.find(opt => opt.option_text === 'False');
-          
           await optionOperations.create({
             question_id: question.id,
             option_text: 'True',
@@ -842,7 +816,7 @@ export const EditVideoModal = ({
 
       // Reload quiz data and update original state
       await loadQuiz();
-      
+
       // Notify parent that quiz was saved
       if (video) onQuizSaved?.(video.id);
     } catch (error) {
@@ -850,35 +824,19 @@ export const EditVideoModal = ({
       toast({
         title: "Error",
         description: "Failed to create quiz",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsCreatingQuiz(false);
     }
   };
-  const hasChanges = video && (
-    title !== (video.title || '') || 
-    description !== (video.description || '') ||
-    (!quiz && (quizTitle.trim() || questions.length > 0)) ||
-    (quiz && (
-      quizTitle !== quiz.title || 
-      quizDescription !== (quiz.description || '') ||
-      questions.length !== quiz.questions.length ||
-      questions.some((q, i) => {
-        const originalQ = quiz.questions[i];
-        return !originalQ || 
-               q.question_text !== originalQ.question_text ||
-               q.question_type !== originalQ.question_type ||
-               q.options.length !== originalQ.options.length ||
-               q.options.some((opt, j) => {
-                 const originalOpt = originalQ.options[j];
-                 return !originalOpt ||
-                        opt.option_text !== originalOpt.option_text ||
-                        opt.is_correct !== ('is_correct' in originalOpt ? originalOpt.is_correct : false);
-               });
-      })
-    ))
-  );
+  const hasChanges = video && (title !== (video.title || '') || description !== (video.description || '') || !quiz && (quizTitle.trim() || questions.length > 0) || quiz && (quizTitle !== quiz.title || quizDescription !== (quiz.description || '') || questions.length !== quiz.questions.length || questions.some((q, i) => {
+    const originalQ = quiz.questions[i];
+    return !originalQ || q.question_text !== originalQ.question_text || q.question_type !== originalQ.question_type || q.options.length !== originalQ.options.length || q.options.some((opt, j) => {
+      const originalOpt = originalQ.options[j];
+      return !originalOpt || opt.option_text !== originalOpt.option_text || opt.is_correct !== ('is_correct' in originalOpt ? originalOpt.is_correct : false);
+    });
+  })));
   if (!video) return null;
 
   // Convert to TrainingContent format for ContentPlayer
@@ -886,11 +844,12 @@ export const EditVideoModal = ({
     id: video.id,
     title: video.title,
     description: video.description || null,
-    type: (video.type as VideoType) || 'Optional',
+    type: video.type as VideoType || 'Optional',
     video_url: video.video_url || null,
     video_file_name: video.video_file_name || null,
     thumbnail_url: video.thumbnail_url || null,
-    content_type: video.content_type || 'video', // Default to video for backward compatibility
+    content_type: video.content_type || 'video',
+    // Default to video for backward compatibility
     completion_rate: video.completion_rate || 0,
     duration_seconds: video.duration_seconds || 0,
     created_at: video.created_at,
@@ -902,32 +861,23 @@ export const EditVideoModal = ({
   const isYouTube = video.video_url && isYouTubeUrl(video.video_url);
   const isGoogleDrive = video.video_url && isGoogleDriveUrl(video.video_url);
   const isFileUpload = video.video_file_name;
-  const sourceUrl = video.video_url
-    ? (isYouTube ? getYouTubeWatchUrl(video.video_url as string)
-      : isGoogleDrive ? getGoogleDriveViewUrl(video.video_url as string)
-      : video.video_url)
-    : (isFileUpload && video.video_file_name 
-        ? `https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}` 
-        : null);
-  return (
-    <>
+  const sourceUrl = video.video_url ? isYouTube ? getYouTubeWatchUrl(video.video_url as string) : isGoogleDrive ? getGoogleDriveViewUrl(video.video_url as string) : video.video_url : isFileUpload && video.video_file_name ? `https://wicbqqoudkaulltsjsvp.supabase.co/storage/v1/object/public/videos/${video.video_file_name}` : null;
+  return <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
-            <DialogTitle>Edit Training Video</DialogTitle>
+            <DialogTitle>Edit Training</DialogTitle>
           </DialogHeader>
 
           <DialogScrollArea>
             <Tabs defaultValue="info" className="w-full">
               <TabsList>
-                <TabsTrigger value="info">Video Info</TabsTrigger>
+                <TabsTrigger value="info">Details</TabsTrigger>
                 <TabsTrigger value="quiz" className="flex items-center gap-2">
                    Quiz
-                   {questions.length > 0 && (
-                     <Badge variant="tertiary" className="text-xs px-1.5 py-0.5 min-w-[20px] h-5">
+                   {questions.length > 0 && <Badge variant="tertiary" className="text-xs px-1.5 py-0.5 min-w-[20px] h-5">
                        {questions.length}
-                     </Badge>
-                   )}
+                     </Badge>}
                 </TabsTrigger>
               </TabsList>
 
@@ -937,21 +887,14 @@ export const EditVideoModal = ({
                   
                   <div className="border border-border-primary rounded-lg overflow-hidden bg-muted/30">
                     <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                      <ContentPlayer
-                        content={trainingContent}
-                        onProgressUpdate={() => {}}
-                        onComplete={() => {}}
-                      />
+                      <ContentPlayer content={trainingContent} onProgressUpdate={() => {}} onComplete={() => {}} />
                      </div>
                    </div>
                    
                     {/* Content Source */}
                     <div className="text-left">
                       <span className="text-xs text-muted-foreground">
-                        Content Source: {isYouTube ? 'YouTube' : 
-                         isGoogleDrive ? (trainingContent.content_type === 'presentation' ? 'Google Slides' : 'Google Drive') : 
-                         isFileUpload ? 'Uploaded File' : 
-                         'External'}
+                        Content Source: {isYouTube ? 'YouTube' : isGoogleDrive ? trainingContent.content_type === 'presentation' ? 'Google Slides' : 'Google Drive' : isFileUpload ? 'Uploaded File' : 'External'}
                       </span>
                     </div>
                  </div>
@@ -979,78 +922,45 @@ export const EditVideoModal = ({
                         <h3 className="text-lg font-semibold">
                           {quiz ? 'Edit Quiz' : 'Create Quiz'}
                         </h3>
-                        {quiz && (
-                          <div className="flex items-center space-x-2">
-                            {quizUsage && !quizUsage.canDelete && (
-                              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        {quiz && <div className="flex items-center space-x-2">
+                            {quizUsage && !quizUsage.canDelete && <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                                 <span>Cannot delete: {quizUsage.attemptCount} completion(s)</span>
-                              </div>
-                            )}
+                              </div>}
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className={cn(
-                                      "text-destructive hover:text-destructive hover:bg-destructive/10",
-                                      quizUsage && !quizUsage.canDelete && "opacity-50 cursor-not-allowed"
-                                    )}
-                                    onClick={() => quizUsage?.canDelete && setDeleteQuizDialogOpen(true)}
-                                    disabled={!quizUsage?.canDelete || usageLoading}
-                                    aria-label={quizUsage?.canDelete ? "Delete Quiz" : `Cannot delete quiz: ${quizUsage?.attemptCount || 0} completions`}
-                                  >
+                                  <Button variant="ghost" size="sm" className={cn("text-destructive hover:text-destructive hover:bg-destructive/10", quizUsage && !quizUsage.canDelete && "opacity-50 cursor-not-allowed")} onClick={() => quizUsage?.canDelete && setDeleteQuizDialogOpen(true)} disabled={!quizUsage?.canDelete || usageLoading} aria-label={quizUsage?.canDelete ? "Delete Quiz" : `Cannot delete quiz: ${quizUsage?.attemptCount || 0} completions`}>
                                     <Trash2 className="w-4 h-4 mr-1" />
                                     Delete Quiz
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  {quizUsage?.canDelete 
-                                    ? "Delete Quiz" 
-                                    : `Cannot delete: Quiz has ${quizUsage?.attemptCount || 0} completion(s) by users`
-                                  }
+                                  {quizUsage?.canDelete ? "Delete Quiz" : `Cannot delete: Quiz has ${quizUsage?.attemptCount || 0} completion(s) by users`}
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
-                          </div>
-                        )}
+                          </div>}
                      </div>
                     
                     <div>
                       <Label htmlFor="quiz-title">Quiz Title</Label>
-                      <Input
-                        id="quiz-title"
-                        value={quizTitle}
-                        onChange={(e) => setQuizTitle(e.target.value)}
-                        placeholder="Enter quiz title"
-                      />
+                      <Input id="quiz-title" value={quizTitle} onChange={e => setQuizTitle(e.target.value)} placeholder="Enter quiz title" />
                     </div>
                     
                     <div>
                       <Label htmlFor="quiz-description">Description (Optional)</Label>
-                      <Textarea
-                        id="quiz-description"
-                        value={quizDescription}
-                        onChange={(e) => setQuizDescription(e.target.value)}
-                        placeholder="Enter quiz description"
-                      />
+                      <Textarea id="quiz-description" value={quizDescription} onChange={e => setQuizDescription(e.target.value)} placeholder="Enter quiz description" />
                     </div>
                   </div>
 
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold">Questions</h3>
 
-                      {questions.map((question, questionIndex) => (
-                        <Card key={questionIndex} className="border-border">
+                      {questions.map((question, questionIndex) => <Card key={questionIndex} className="border-border">
                           <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
                               <CardTitle className="text-base">Question {questionIndex + 1}</CardTitle>
-                              <Button
-                                onClick={() => removeQuestion(questionIndex)}
-                                variant="ghost"
-                                size="sm"
-                                className="text-destructive hover:text-destructive"
-                              >
+                              <Button onClick={() => removeQuestion(questionIndex)} variant="ghost" size="sm" className="text-destructive hover:text-destructive">
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
@@ -1058,38 +968,38 @@ export const EditVideoModal = ({
                           <CardContent className="space-y-4">
                             <div>
                               <Label>Question Type</Label>
-                              <Select
-                                value={question.question_type}
-                                onValueChange={(value: any) => {
-                                  let newOptions = question.options;
-                                  
-                                  if (value === 'true_false') {
-                                    newOptions = [
-                                      { option_text: 'True', is_correct: false, order_index: 0 },
-                                      { option_text: 'False', is_correct: false, order_index: 1 }
-                                    ];
-                                  } else if (value === 'single_answer') {
-                                    // Ensure at least 2 options and only one correct
-                                    newOptions = ensureMinOptions(question.options, 2);
-                                    const correctCount = newOptions.filter(opt => opt.is_correct).length;
-                                    if (correctCount !== 1) {
-                                      // Set first option as correct if none or multiple are correct
-                                      newOptions = newOptions.map((opt, i) => ({
-                                        ...opt,
-                                        is_correct: i === 0
-                                      }));
-                                    }
-                                  } else if (value === 'multiple_choice') {
-                                    // Ensure at least 2 options
-                                    newOptions = ensureMinOptions(question.options, 2);
-                                  }
-                                  
-                                  updateQuestion(questionIndex, { 
-                                    question_type: value,
-                                    options: newOptions
-                                  });
-                                }}
-                              >
+                              <Select value={question.question_type} onValueChange={(value: any) => {
+                          let newOptions = question.options;
+                          if (value === 'true_false') {
+                            newOptions = [{
+                              option_text: 'True',
+                              is_correct: false,
+                              order_index: 0
+                            }, {
+                              option_text: 'False',
+                              is_correct: false,
+                              order_index: 1
+                            }];
+                          } else if (value === 'single_answer') {
+                            // Ensure at least 2 options and only one correct
+                            newOptions = ensureMinOptions(question.options, 2);
+                            const correctCount = newOptions.filter(opt => opt.is_correct).length;
+                            if (correctCount !== 1) {
+                              // Set first option as correct if none or multiple are correct
+                              newOptions = newOptions.map((opt, i) => ({
+                                ...opt,
+                                is_correct: i === 0
+                              }));
+                            }
+                          } else if (value === 'multiple_choice') {
+                            // Ensure at least 2 options
+                            newOptions = ensureMinOptions(question.options, 2);
+                          }
+                          updateQuestion(questionIndex, {
+                            question_type: value,
+                            options: newOptions
+                          });
+                        }}>
                                 <SelectTrigger>
                                   <SelectValue />
                                 </SelectTrigger>
@@ -1103,162 +1013,99 @@ export const EditVideoModal = ({
 
                             <div>
                               <Label>Question Text</Label>
-                              <Textarea
-                                value={question.question_text}
-                                onChange={(e) => updateQuestion(questionIndex, { question_text: e.target.value })}
-                                placeholder="Enter your question"
-                                className={cn(
-                                  questionValidationErrors[questionIndex]?.includes('Question text is required') 
-                                    ? "border-destructive focus-visible:ring-destructive" 
-                                    : ""
-                                )}
-                              />
-                              {questionValidationErrors[questionIndex]?.includes('Question text is required') && (
-                                <div className="text-sm text-destructive mt-1">
+                              <Textarea value={question.question_text} onChange={e => updateQuestion(questionIndex, {
+                          question_text: e.target.value
+                        })} placeholder="Enter your question" className={cn(questionValidationErrors[questionIndex]?.includes('Question text is required') ? "border-destructive focus-visible:ring-destructive" : "")} />
+                              {questionValidationErrors[questionIndex]?.includes('Question text is required') && <div className="text-sm text-destructive mt-1">
                                   Question text is required.
-                                </div>
-                              )}
+                                </div>}
                             </div>
 
-                            {(question.question_type === 'multiple_choice' || question.question_type === 'single_answer') && (
-                              <div className="space-y-3">
+                            {(question.question_type === 'multiple_choice' || question.question_type === 'single_answer') && <div className="space-y-3">
                                 <Label>Answer Options</Label>
                                 
-                                 {question.question_type === 'single_answer' ? (
-                                  <div className="space-y-3">
-                                    <RadioGroup
-                                      value={question.options.find(opt => opt.is_correct)?.order_index?.toString() || ""}
-                                      onValueChange={(value) => {
-                                        const selectedIndex = parseInt(value);
-                                        const updatedOptions = question.options.map((opt, i) => ({
-                                          ...opt,
-                                          is_correct: i === selectedIndex
-                                        }));
-                                        updateQuestion(questionIndex, { options: updatedOptions });
-                                      }}
-                                      className="space-y-3"
-                                    >
-                                     {question.options.map((option, optionIndex) => (
-                                       <div key={optionIndex} className="flex items-center gap-3">
-                                         <Input
-                                           value={option.option_text}
-                                           onChange={(e) => updateOption(questionIndex, optionIndex, { option_text: e.target.value })}
-                                           placeholder={`Option ${optionIndex + 1}`}
-                                           className="flex-1"
-                                         />
+                                 {question.question_type === 'single_answer' ? <div className="space-y-3">
+                                    <RadioGroup value={question.options.find(opt => opt.is_correct)?.order_index?.toString() || ""} onValueChange={value => {
+                            const selectedIndex = parseInt(value);
+                            const updatedOptions = question.options.map((opt, i) => ({
+                              ...opt,
+                              is_correct: i === selectedIndex
+                            }));
+                            updateQuestion(questionIndex, {
+                              options: updatedOptions
+                            });
+                          }} className="space-y-3">
+                                     {question.options.map((option, optionIndex) => <div key={optionIndex} className="flex items-center gap-3">
+                                         <Input value={option.option_text} onChange={e => updateOption(questionIndex, optionIndex, {
+                                option_text: e.target.value
+                              })} placeholder={`Option ${optionIndex + 1}`} className="flex-1" />
                                          
                                          <div className="flex items-center space-x-2">
-                                           <RadioGroupItem 
-                                             value={optionIndex.toString()}
-                                             id={`edit_question_${questionIndex}_option_${optionIndex}`} 
-                                           />
-                                           <Label 
-                                             htmlFor={`edit_question_${questionIndex}_option_${optionIndex}`} 
-                                             className="whitespace-nowrap cursor-pointer"
-                                           >
+                                           <RadioGroupItem value={optionIndex.toString()} id={`edit_question_${questionIndex}_option_${optionIndex}`} />
+                                           <Label htmlFor={`edit_question_${questionIndex}_option_${optionIndex}`} className="whitespace-nowrap cursor-pointer">
                                              Correct
                                            </Label>
                                          </div>
                                          
-                          {question.options.length > 2 && (
-                            <Button
-                              onClick={() => removeOption(questionIndex, optionIndex)}
-                              variant="ghost"
-                              size="sm"
-                              className="text-destructive hover:text-destructive"
-                            >
+                          {question.options.length > 2 && <Button onClick={() => removeOption(questionIndex, optionIndex)} variant="ghost" size="sm" className="text-destructive hover:text-destructive">
                               <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                                       </div>
-                                     ))}
+                            </Button>}
+                                       </div>)}
                                      </RadioGroup>
                                      
-                                      {showQuizValidation && questionValidationErrors[questionIndex] && (
-                                        <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                                      {showQuizValidation && questionValidationErrors[questionIndex] && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
                                           {questionValidationErrors[questionIndex]}
-                                        </div>
-                                      )}
+                                        </div>}
                                       
-                                  </div>
-                                  ) : (
-                                   <div className="space-y-3">
-                                     {question.options.map((option, optionIndex) => (
-                                       <div key={optionIndex} className="flex items-center gap-3">
-                                         <Input
-                                           value={option.option_text}
-                                           onChange={(e) => updateOption(questionIndex, optionIndex, { option_text: e.target.value })}
-                                           placeholder={`Option ${optionIndex + 1}`}
-                                           className="flex-1"
-                                         />
+                                  </div> : <div className="space-y-3">
+                                     {question.options.map((option, optionIndex) => <div key={optionIndex} className="flex items-center gap-3">
+                                         <Input value={option.option_text} onChange={e => updateOption(questionIndex, optionIndex, {
+                              option_text: e.target.value
+                            })} placeholder={`Option ${optionIndex + 1}`} className="flex-1" />
                                          
                                          <div className="flex items-center space-x-2">
-                                           <Checkbox
-                                             id={`edit_question_${questionIndex}_option_${optionIndex}`}
-                                             checked={option.is_correct}
-                                             onCheckedChange={(checked) => {
-                                               updateOption(questionIndex, optionIndex, { is_correct: checked as boolean });
-                                             }}
-                                           />
-                                           <Label 
-                                             htmlFor={`edit_question_${questionIndex}_option_${optionIndex}`} 
-                                             className="whitespace-nowrap cursor-pointer"
-                                           >
+                                           <Checkbox id={`edit_question_${questionIndex}_option_${optionIndex}`} checked={option.is_correct} onCheckedChange={checked => {
+                                updateOption(questionIndex, optionIndex, {
+                                  is_correct: checked as boolean
+                                });
+                              }} />
+                                           <Label htmlFor={`edit_question_${questionIndex}_option_${optionIndex}`} className="whitespace-nowrap cursor-pointer">
                                              Correct
                                            </Label>
                                          </div>
                                          
-                          {question.options.length > 2 && (
-                            <Button
-                              onClick={() => removeOption(questionIndex, optionIndex)}
-                              variant="ghost"
-                              size="sm"
-                              className="text-destructive hover:text-destructive"
-                            >
+                          {question.options.length > 2 && <Button onClick={() => removeOption(questionIndex, optionIndex)} variant="ghost" size="sm" className="text-destructive hover:text-destructive">
                               <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                                       </div>
-                                     ))}
+                            </Button>}
+                                       </div>)}
                                      
-                                      {showQuizValidation && questionValidationErrors[questionIndex] && (
-                                        <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                                      {showQuizValidation && questionValidationErrors[questionIndex] && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
                                           {questionValidationErrors[questionIndex]}
-                                        </div>
-                                      )}
+                                        </div>}
                                       
-                                   </div>
-                                 )}
+                                   </div>}
                                 
-                                <Button
-                                  onClick={() => addOption(questionIndex)}
-                                  variant="outline"
-                                  size="sm"
-                                  className="justify-start"
-                                >
+                                <Button onClick={() => addOption(questionIndex)} variant="outline" size="sm" className="justify-start">
                                   <Plus className="w-4 h-4 mr-2" />
                                   Add Option
                                 </Button>
-                              </div>
-                            )}
+                              </div>}
 
-                            {question.question_type === 'true_false' && (
-                              <div className="space-y-3">
+                            {question.question_type === 'true_false' && <div className="space-y-3">
                                 <Label>Select Correct Answer</Label>
                                 <div className="space-y-3">
                                   <div className="text-sm text-muted-foreground mb-2">
                                     Choose which option is correct:
                                   </div>
-                                  <RadioGroup
-                                    value={question.options.find(opt => opt.is_correct)?.option_text || ""}
-                                    onValueChange={(value) => {
-                                      const updatedOptions = question.options.map(opt => ({
-                                        ...opt,
-                                        is_correct: opt.option_text === value
-                                      }));
-                                      updateQuestion(questionIndex, { options: updatedOptions });
-                                    }}
-                                  >
+                                  <RadioGroup value={question.options.find(opt => opt.is_correct)?.option_text || ""} onValueChange={value => {
+                            const updatedOptions = question.options.map(opt => ({
+                              ...opt,
+                              is_correct: opt.option_text === value
+                            }));
+                            updateQuestion(questionIndex, {
+                              options: updatedOptions
+                            });
+                          }}>
                                     <div className="flex items-center space-x-2">
                                       <RadioGroupItem value="True" id={`edit_question_${questionIndex}_true`} />
                                       <Label htmlFor={`edit_question_${questionIndex}_true`} className="cursor-pointer">
@@ -1273,25 +1120,20 @@ export const EditVideoModal = ({
                                     </div>
                                   </RadioGroup>
                                   
-                                  {showQuizValidation && questionValidationErrors[questionIndex] && (
-                                    <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                                  {showQuizValidation && questionValidationErrors[questionIndex] && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
                                       {questionValidationErrors[questionIndex]}
-                                    </div>
-                                  )}
+                                    </div>}
                                 </div>
-                              </div>
-                            )}
+                              </div>}
                           </CardContent>
-                        </Card>
-                      ))}
+                        </Card>)}
 
                       <Button onClick={addQuestion} variant="outline" size="sm" className="justify-start">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Question
                       </Button>
 
-                      {questions.length === 0 && (
-                        <div className="text-center py-12 space-y-4">
+                      {questions.length === 0 && <div className="text-center py-12 space-y-4">
                           <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
                             <FileQuestion className="w-8 h-8 text-muted-foreground" />
                           </div>
@@ -1301,8 +1143,7 @@ export const EditVideoModal = ({
                               Create questions to test understanding of this training video
                             </p>
                           </div>
-                        </div>
-                      )}
+                        </div>}
                     </div>
                 </div>
               </TabsContent>
@@ -1311,34 +1152,20 @@ export const EditVideoModal = ({
 
           <DialogFooter className="!flex !flex-row !justify-between !items-center">
             <div className="flex items-center space-x-4">
-              {videoUsage && !videoUsage.canDelete && (
-                <div className="text-sm text-muted-foreground">
+              {videoUsage && !videoUsage.canDelete && <div className="text-sm text-muted-foreground">
                   Cannot delete: {videoUsage.assignedCount} assigned, {videoUsage.completedCount} completed
                   {videoUsage.quizCompletedCount > 0 && `, ${videoUsage.quizCompletedCount} quiz completions`}
-                </div>
-              )}
+                </div>}
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button 
-                      variant="link" 
-                      onClick={() => videoUsage?.canDelete && setDeleteDialogOpen(true)} 
-                      className={cn(
-                        "text-destructive hover:text-destructive p-0 h-auto font-normal",
-                        videoUsage && !videoUsage.canDelete && "opacity-50 cursor-not-allowed"
-                      )}
-                      disabled={!videoUsage?.canDelete || usageLoading}
-                      aria-label={videoUsage?.canDelete ? "Delete Video" : "Cannot delete video: has user assignments or completions"}
-                    >
+                    <Button variant="link" onClick={() => videoUsage?.canDelete && setDeleteDialogOpen(true)} className={cn("text-destructive hover:text-destructive p-0 h-auto font-normal", videoUsage && !videoUsage.canDelete && "opacity-50 cursor-not-allowed")} disabled={!videoUsage?.canDelete || usageLoading} aria-label={videoUsage?.canDelete ? "Delete Video" : "Cannot delete video: has user assignments or completions"}>
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete Video
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {videoUsage?.canDelete 
-                      ? "Delete Video" 
-                      : "Cannot delete: Video has been assigned or completed by users. Hide video instead to remove from list."
-                    }
+                    {videoUsage?.canDelete ? "Delete Video" : "Cannot delete: Video has been assigned or completed by users. Hide video instead to remove from list."}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -1385,11 +1212,7 @@ export const EditVideoModal = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleQuizDelete} 
-              disabled={isDeletingQuiz} 
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+            <AlertDialogAction onClick={handleQuizDelete} disabled={isDeletingQuiz} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {isDeletingQuiz ? 'Deleting...' : 'Delete Quiz'}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -1413,6 +1236,5 @@ export const EditVideoModal = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
-  );
+    </>;
 };
