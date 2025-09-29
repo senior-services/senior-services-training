@@ -161,19 +161,13 @@ export const AddVideoModal = ({
                     </div>
                     <div className="flex items-center space-x-2">
                       <CheckCircle className="w-4 h-4 text-success" />
-                      <IconButtonWithTooltip
-                        icon={X}
-                        tooltip={getTooltipText('remove-file')}
-                        onClick={() => setSelectedFile(null)}
-                        variant="ghost"
-                        className="text-muted-foreground hover:text-foreground"
-                      />
+                      <IconButtonWithTooltip icon={X} tooltip={getTooltipText('remove-file')} onClick={() => setSelectedFile(null)} variant="ghost" className="text-muted-foreground hover:text-foreground" />
                     </div>
                   </div>}
               </TabsContent>
 
               <TabsContent value="url" className="space-y-2 mt-4">
-                <Label htmlFor="videoUrl">Video URL</Label>
+                <Label htmlFor="videoUrl">Video URL (Recommended)</Label>
                 <Input id="videoUrl" value={formData.url || ''} onChange={e => setFormData(prev => ({
                 ...prev,
                 url: e.target.value
