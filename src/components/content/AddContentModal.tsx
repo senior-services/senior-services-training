@@ -178,7 +178,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="url">URL</Label>
+              <Label htmlFor="url">URL (Recommended)</Label>
               <Input
                 id="url"
                 value={url}
