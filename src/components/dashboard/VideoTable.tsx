@@ -130,9 +130,9 @@ export const VideoTable: React.FC<VideoTableProps> = ({
           </p>
         </div>
         
-        <Button onClick={onAddVideo} {...createButtonAriaProps('Add new training video')}>
+        <Button onClick={onAddVideo} {...createButtonAriaProps('Add new training')}>
           <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
-          Add Video
+          Add Training
         </Button>
       </div>
 
@@ -180,9 +180,9 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                             Add your first video to get started with training content.
                           </p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={onAddVideo} aria-label="Add your first training video">
+                        <Button variant="outline" size="sm" onClick={onAddVideo} aria-label="Add your first training">
                           <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
-                          Add First Video
+                          Add First Training
                         </Button>
                       </div>
                     </TableCell>
