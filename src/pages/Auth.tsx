@@ -95,6 +95,22 @@ export const Auth = () => {
     }
     setIsLoading(false);
   };
+
+  const handleTestAdminLogin = async () => {
+    setEmail('admin@southsoundseniors.org');
+    setPassword('test123');
+    setIsLoading(true);
+
+    // Try to sign in, if fails, create the account first
+    const result = await signIn('admin@southsoundseniors.org', 'test123');
+    if (!result || result.error) {
+      // Account doesn't exist, create it
+      await signUp('admin@southsoundseniors.org', 'test123', 'Test Admin');
+      // Then sign in
+      await signIn('admin@southsoundseniors.org', 'test123');
+    }
+    setIsLoading(false);
+  };
   return <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
@@ -134,7 +150,7 @@ export const Auth = () => {
                 <p className="text-xs text-yellow-700">Quick login for testing (@southsoundseniors.org only)</p>
               </div>
               <div className="space-y-2">
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <Button onClick={handleTestEmployeeLogin} disabled={isLoading} variant="outline" size="sm" className="border-blue-200 text-blue-700 hover:bg-blue-50">
                     <User className="w-4 h-4 mr-1" />
                     Employee 1
@@ -143,10 +159,14 @@ export const Auth = () => {
                     <User className="w-4 h-4 mr-1" />
                     Employee 2
                   </Button>
+                  <Button onClick={handleTestAdminLogin} disabled={isLoading} variant="outline" size="sm" className="border-red-200 text-red-700 hover:bg-red-50">
+                    <User className="w-4 h-4 mr-1" />
+                    Test Admin
+                  </Button>
                 </div>
               </div>
               <div className="mt-2 text-xs text-yellow-600 text-center">
-                Employee 1: jane.doe@southsoundseniors.org | Employee 2: john.doe@southsoundseniors.org
+                Employee 1: jane.doe | Employee 2: john.doe | Admin: admin@southsoundseniors.org
               </div>
             </div>
 
