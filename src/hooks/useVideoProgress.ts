@@ -14,8 +14,8 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
   const [progress, setProgress] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [wasEverCompleted, setWasEverCompleted] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
   const progressUpdateTimeoutRef = useRef<NodeJS.Timeout>();
-  const completionGuardRef = useRef<boolean>(false);
 
   const updateProgressToDatabase = useCallback(async (progressPercent: number, forceComplete?: boolean) => {
     if (!userEmail || !videoId) {
@@ -26,41 +26,59 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
       return { success: false };
     }
 
-    // Prevent progress regression if video was already completed
-    if ((wasEverCompleted || completionGuardRef.current) && progressPercent < 100 && !forceComplete) {
-      logger.info('Preventing progress regression on completed video', {
+    // Prevent regression if locked (completed)
+    if (isLocked && progressPercent < 100 && !forceComplete) {
+      logger.info('Progress locked - video already completed', {
         videoId,
         currentProgress: progress,
-        attemptedProgress: progressPercent,
-        completionGuardActive: completionGuardRef.current
+        attemptedProgress: progressPercent
       });
       return { success: true };
     }
 
     const updateResult = await withErrorHandler(
       async () => {
-        // Only set completedAt if progress is 100% AND (no quiz exists OR forceComplete is true)
+        // Only complete if 100% AND (no quiz OR forceComplete)
         const shouldComplete = progressPercent >= 100 && (!hasQuiz || forceComplete);
         const completedAt = shouldComplete ? new Date() : undefined;
         
-        await progressOperations.updateByEmail(
+        logger.info('Updating progress to database', {
+          videoId,
+          userEmail,
+          progressPercent,
+          shouldComplete,
+          hasQuiz,
+          forceComplete
+        });
+
+        const result = await progressOperations.updateByEmail(
           userEmail,
           videoId,
           progressPercent,
           completedAt
         );
 
+        if (!result.success) {
+          logger.error('Failed to update progress', undefined, {
+            videoId,
+            userEmail,
+            error: result.error
+          });
+          return;
+        }
+
         logger.dbOperation('update', 'video_progress', true, {
           videoId,
           userEmail,
           progress: progressPercent,
-          completed: progressPercent >= 100
+          completed: shouldComplete
         });
 
-        // Handle completion state change - only mark as completed if should complete
+        // Mark as completed if should complete
         if (shouldComplete && !wasEverCompleted) {
           setIsCompleted(true);
           setWasEverCompleted(true);
+          setIsLocked(true);
           
           logger.videoEvent('video_completed', videoId, {
             userEmail,
@@ -73,22 +91,22 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
     );
 
     return updateResult;
-  }, [userEmail, videoId, wasEverCompleted, hasQuiz]);
+  }, [userEmail, videoId, wasEverCompleted, hasQuiz, isLocked, progress]);
 
   const updateProgress = useCallback((progressPercent: number) => {
-    // Block any progress updates if completion guard is active
-    if (completionGuardRef.current && progressPercent < 100) {
-      logger.info('Blocking progress update due to completion guard', {
+    // Block updates if locked
+    if (isLocked && progressPercent < 100) {
+      logger.info('Progress locked - ignoring update', {
         videoId,
         attemptedProgress: progressPercent
       });
       return;
     }
     
-    // Cap progress at 99% if quiz exists and hasn't been completed
+    // Cap at 99% if quiz exists and not completed yet
     const cappedProgress = hasQuiz && progressPercent >= 100 && !wasEverCompleted ? 99 : progressPercent;
     
-    // Prevent progress regression - only update if new progress is higher
+    // Only update if higher than current
     setProgress(currentProgress => Math.max(currentProgress, cappedProgress));
     onProgressUpdate?.(cappedProgress);
 
@@ -99,29 +117,30 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
     progressUpdateTimeoutRef.current = setTimeout(() => {
       updateProgressToDatabase(cappedProgress);
     }, 1000);
-  }, [updateProgressToDatabase, onProgressUpdate, hasQuiz, wasEverCompleted, videoId]);
+  }, [updateProgressToDatabase, onProgressUpdate, hasQuiz, wasEverCompleted, videoId, isLocked]);
 
   const markComplete = useCallback(async () => {
-    // Clear any pending debounced progress updates to prevent regression
+    // Clear pending updates
     if (progressUpdateTimeoutRef.current) {
       clearTimeout(progressUpdateTimeoutRef.current);
       progressUpdateTimeoutRef.current = undefined;
     }
 
-    // Activate completion guard to prevent any future sub-100% updates
-    completionGuardRef.current = true;
-    
+    // Lock and mark complete
+    setIsLocked(true);
     setProgress(100);
     setIsCompleted(true);
     setWasEverCompleted(true);
     onProgressUpdate?.(100);
     
-    // Force completion even if quiz exists (this is called after quiz submission)
+    logger.info('Marking video as complete', { videoId, userEmail });
+    
+    // Force completion even with quiz
     return await updateProgressToDatabase(100, true);
-  }, [updateProgressToDatabase, onProgressUpdate]);
+  }, [updateProgressToDatabase, onProgressUpdate, videoId, userEmail]);
 
   const resetProgress = useCallback(() => {
-    completionGuardRef.current = false;
+    setIsLocked(false);
     setProgress(0);
     setIsCompleted(false);
     setWasEverCompleted(false);
@@ -131,30 +150,46 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
   }, []);
 
   const loadExistingProgress = useCallback(async () => {
-    if (!userEmail || !videoId) return;
+    if (!userEmail || !videoId) {
+      logger.warn('Cannot load progress - missing credentials', { 
+        hasUserEmail: !!userEmail, 
+        hasVideoId: !!videoId 
+      });
+      return;
+    }
 
     try {
+      logger.info('Loading existing progress', { userEmail, videoId });
+      
       const progressResult = await progressOperations.getByEmailAndVideo(userEmail, videoId);
       
-      if (progressResult.success && progressResult.data) {
+      if (!progressResult.success) {
+        logger.error('Failed to load progress', undefined, { 
+          error: progressResult.error,
+          userEmail,
+          videoId
+        });
+        resetProgress();
+        return;
+      }
+      
+      if (progressResult.data) {
         const progressData = progressResult.data;
         const progressPercent = progressData.progress_percent;
+        const isVideoCompleted = progressPercent >= 100 || !!progressData.completed_at;
         
         setProgress(progressPercent);
-        const isVideoCompleted = progressPercent >= 100 || !!progressData.completed_at;
         setIsCompleted(isVideoCompleted);
         setWasEverCompleted(isVideoCompleted);
-        
-        // Set completion guard if video is completed
-        if (isVideoCompleted) {
-          completionGuardRef.current = true;
-        }
+        setIsLocked(isVideoCompleted);
         
         logger.videoEvent('progress_restored', videoId, {
           progress: progressPercent,
-          completed: isVideoCompleted
+          completed: isVideoCompleted,
+          locked: isVideoCompleted
         });
       } else {
+        logger.info('No existing progress found', { userEmail, videoId });
         resetProgress();
       }
     } catch (error) {

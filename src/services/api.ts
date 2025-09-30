@@ -785,18 +785,25 @@ export const progressOperations = {
     const operation = 'progress.updateByEmail';
     performanceTracker.start(operation);
     try {
-      // Lookup employee by email
-      const { data: employee, error: empError } = await supabase
+      // Lookup employee by email with better error handling
+      const { data: employees, error: empError } = await supabase
         .from('employees')
         .select('id')
         .eq('email', email.toLowerCase())
-        .single();
+        .limit(1);
 
-      if (empError || !employee) {
-        logger.error('Employee not found for email', undefined, { email, supabaseError: empError?.message });
+      if (empError) {
+        logger.error('Database error looking up employee', undefined, { email, supabaseError: empError.message });
+        return { data: null, error: 'Database error', success: false };
+      }
+
+      if (!employees || employees.length === 0) {
+        logger.error('Employee not found for email', undefined, { email, normalizedEmail: email.toLowerCase() });
         return { data: null, error: 'Employee not found', success: false };
       }
 
+      const employee = employees[0];
+      logger.info('Employee found for progress update', { email, employeeId: employee.id });
       return await this.update(employee.id, videoId, progressPercent, completedAt);
     } catch (error) {
       logger.error('Unexpected error updating progress by email', error as Error, { email, videoId });
@@ -813,17 +820,25 @@ export const progressOperations = {
     const operation = 'progress.getByEmailAndVideo';
     performanceTracker.start(operation);
     try {
-      // Lookup employee by email
-      const { data: employee, error: empError } = await supabase
+      // Lookup employee by email with better error handling
+      const { data: employees, error: empError } = await supabase
         .from('employees')
         .select('id')
         .eq('email', email.toLowerCase())
-        .single();
+        .limit(1);
 
-      if (empError || !employee) {
-        logger.warn('Employee not found when fetching progress', { email });
+      if (empError) {
+        logger.error('Database error looking up employee for progress', undefined, { email, supabaseError: empError.message });
+        return { data: null, error: 'Database error', success: false };
+      }
+
+      if (!employees || employees.length === 0) {
+        logger.warn('Employee not found when fetching progress', { email, normalizedEmail: email.toLowerCase() });
         return { data: null, error: null, success: true };
       }
+
+      const employee = employees[0];
+      logger.info('Employee found for progress fetch', { email, employeeId: employee.id });
 
       const { data, error } = await supabase
         .from('video_progress')
@@ -837,6 +852,7 @@ export const progressOperations = {
         return { data: null, error: error.message, success: false };
       }
 
+      logger.info('Progress fetched successfully', { email, videoId, hasData: !!data });
       return { data: (data as any) || null, error: null, success: true };
     } catch (error) {
       logger.error('Unexpected error fetching progress by email', error as Error, { email, videoId });
