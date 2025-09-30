@@ -24,36 +24,33 @@ interface AdminDashboardProps {
  * Refactored for better separation of concerns and maintainability.
  * Each major feature area is handled by dedicated components.
  */
-export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboardProps) => {
+export const AdminDashboard = ({
+  userName,
+  userEmail,
+  onLogout
+}: AdminDashboardProps) => {
   // Log admin dashboard access
   useEffect(() => {
-    logger.info('Admin dashboard accessed', { adminUser: userEmail });
+    logger.info('Admin dashboard accessed', {
+      adminUser: userEmail
+    });
   }, [userEmail]);
-
-  return (
-    <div className="min-h-screen bg-background">
-      <Header
-        userName={userName}
-        userEmail={userEmail}
-        userRole="admin"
-        onLogout={onLogout}
-      />
+  return <div className="min-h-screen bg-background">
+      <Header userName={userName} userEmail={userEmail} userRole="admin" onLogout={onLogout} />
       
       <main className="container mx-auto px-4 pb-8">
         <div className="space-y-8">
           {/* Dashboard Tabs */}
           <Tabs defaultValue="videos" className="space-y-6">
             <TabsList className="flex w-full justify-start">
-              <TabsTrigger value="videos">Videos</TabsTrigger>
+              <TabsTrigger value="videos">Trainings</TabsTrigger>
               <TabsTrigger value="employees">Employees</TabsTrigger>
               <TabsTrigger value="admins">Admins</TabsTrigger>
             </TabsList>
 
             {/* Video Management */}
             <TabsContent value="videos" className="space-y-6">
-              <VideoManagement
-                userEmail={userEmail}
-              />
+              <VideoManagement userEmail={userEmail} />
             </TabsContent>
 
             {/* Employee Management */}
@@ -68,6 +65,5 @@ export const AdminDashboard = ({ userName, userEmail, onLogout }: AdminDashboard
           </Tabs>
         </div>
       </main>
-    </div>
-  );
+    </div>;
 };
