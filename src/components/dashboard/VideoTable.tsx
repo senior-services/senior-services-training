@@ -7,38 +7,18 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
-import { 
-  Edit, 
-  Video as VideoIcon, 
-  Plus, 
-  Play,
-  ArrowUp,
-  ArrowDown,
-  ArrowUpDown,
-  EyeOff
-} from 'lucide-react';
+import { Edit, Video as VideoIcon, Plus, Play, ArrowUp, ArrowDown, ArrowUpDown, EyeOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { isYouTubeUrl, getYouTubeVideoId, isGoogleDriveUrl, getGoogleDriveFileId } from '@/utils/videoUtils';
 import { Video } from '@/types';
 import { VIDEO_CONFIG } from '@/constants';
-import { 
-  createButtonAriaProps, 
-  announceToScreenReader 
-} from '@/utils/accessibility';
+import { createButtonAriaProps, announceToScreenReader } from '@/utils/accessibility';
 import { cn } from '@/lib/utils';
 import { quizOperations } from '@/services/quizService';
 import { logger } from '@/utils/logger';
 import { IconButtonWithTooltip } from '../ui/icon-button-with-tooltip';
-
 interface VideoTableProps {
   videos: Video[];
   loading?: boolean;
@@ -70,7 +50,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
   onPlay,
   onAddVideo,
   onHide,
-  className,
+  className
 }) => {
   const [sortColumn, setSortColumn] = useState<'title' | 'created_at'>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -80,30 +60,24 @@ export const VideoTable: React.FC<VideoTableProps> = ({
   useEffect(() => {
     const loadVideoQuizzes = async () => {
       if (!videos.length) return;
-
       const quizVideoIds = new Set<string>();
-      
       try {
-        await Promise.all(
-          videos.map(async (video) => {
-            try {
-              const hasQuiz = await quizOperations.hasQuiz(video.id);
-              if (hasQuiz) {
-                quizVideoIds.add(video.id);
-              }
-            } catch (error) {
-              // Silently handle errors - video just won't show quiz badge
-              logger.debug(`Error checking quiz for video ${video.id}`, error);
+        await Promise.all(videos.map(async video => {
+          try {
+            const hasQuiz = await quizOperations.hasQuiz(video.id);
+            if (hasQuiz) {
+              quizVideoIds.add(video.id);
             }
-          })
-        );
-        
+          } catch (error) {
+            // Silently handle errors - video just won't show quiz badge
+            logger.debug(`Error checking quiz for video ${video.id}`, error);
+          }
+        }));
         setVideoQuizzes(quizVideoIds);
       } catch (error) {
         logger.error('Error loading video quiz presence', error);
       }
     };
-
     loadVideoQuizzes();
   }, [videos]);
 
@@ -112,10 +86,8 @@ export const VideoTable: React.FC<VideoTableProps> = ({
    */
   const sortedVideos = React.useMemo(() => {
     if (!videos.length) return videos;
-
     return [...videos].sort((a, b) => {
       let comparison = 0;
-
       switch (sortColumn) {
         case 'title':
           comparison = a.title.localeCompare(b.title);
@@ -124,7 +96,6 @@ export const VideoTable: React.FC<VideoTableProps> = ({
           comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
           break;
       }
-
       return sortDirection === 'asc' ? comparison : -comparison;
     });
   }, [videos, sortColumn, sortDirection]);
@@ -139,39 +110,27 @@ export const VideoTable: React.FC<VideoTableProps> = ({
       setSortColumn(column);
       setSortDirection('asc');
     }
-
-    announceToScreenReader(
-      `Videos sorted by ${column} in ${sortDirection === 'asc' ? 'descending' : 'ascending'} order`
-    );
+    announceToScreenReader(`Videos sorted by ${column} in ${sortDirection === 'asc' ? 'descending' : 'ascending'} order`);
   }, [sortColumn, sortDirection]);
 
   /**
    * Handles video actions with accessibility announcements
    */
-  const handleVideoAction = useCallback((
-    action: string, 
-    video: any, 
-    callback: () => void
-  ) => {
+  const handleVideoAction = useCallback((action: string, video: any, callback: () => void) => {
     announceToScreenReader(`${action}: ${video.title}`);
     callback();
   }, []);
-
-  return (
-    <div className={cn('space-y-6', className)}>
+  return <div className={cn('space-y-6', className)}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-semibold">Training Videos</h3>
+          <h3 className="text-xl font-semibold">Training Videos &amp; Presentations</h3>
           <p className="text-muted-foreground">
             Manage your training content and track engagement
           </p>
         </div>
         
-        <Button 
-          onClick={onAddVideo}
-          {...createButtonAriaProps('Add new training video')}
-        >
+        <Button onClick={onAddVideo} {...createButtonAriaProps('Add new training video')}>
           <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
           Add Video
         </Button>
@@ -185,56 +144,23 @@ export const VideoTable: React.FC<VideoTableProps> = ({
               <TableHeader>
                 <TableRow>
                   <TableHead className="whitespace-nowrap">
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort('title')}
-                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${
-                        sortColumn === 'title' 
-                          ? 'font-bold' 
-                          : 'font-medium'
-                      }`}
-                    >
+                    <Button variant="ghost" onClick={() => handleSort('title')} className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${sortColumn === 'title' ? 'font-bold' : 'font-medium'}`}>
                       Video Title and Description
-                      {sortColumn === 'title' ? (
-                        sortDirection === 'asc' ? (
-                          <ArrowUp className="ml-2 h-4 w-4" />
-                        ) : (
-                          <ArrowDown className="ml-2 h-4 w-4" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />
-                      )}
+                      {sortColumn === 'title' ? sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" /> : <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
                     </Button>
                   </TableHead>
                   <TableHead className="text-center text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">Quiz</TableHead>
                   <TableHead className="text-left text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort('created_at')}
-                      className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${
-                        sortColumn === 'created_at' 
-                          ? 'font-bold' 
-                          : 'font-medium'
-                      }`}
-                    >
+                    <Button variant="ghost" onClick={() => handleSort('created_at')} className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${sortColumn === 'created_at' ? 'font-bold' : 'font-medium'}`}>
                       Date Added
-                      {sortColumn === 'created_at' ? (
-                        sortDirection === 'asc' ? (
-                          <ArrowUp className="ml-2 h-4 w-4" />
-                        ) : (
-                          <ArrowDown className="ml-2 h-4 w-4" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />
-                      )}
+                      {sortColumn === 'created_at' ? sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" /> : <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
                     </Button>
                   </TableHead>
                   <TableHead className="text-right text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {loading ? (
-                  <TableRow>
+                {loading ? <TableRow>
                     <TableCell colSpan={4} className="py-12">
                       <div className="space-y-4">
                         <LoadingSkeleton lines={1} className="h-16" />
@@ -242,15 +168,10 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                         <LoadingSkeleton lines={1} className="h-16" />
                       </div>
                     </TableCell>
-                  </TableRow>
-                ) : videos.length === 0 ? (
-                  <TableRow>
+                  </TableRow> : videos.length === 0 ? <TableRow>
                     <TableCell colSpan={4} className="text-center py-12">
                       <div className="space-y-3">
-                    <VideoIcon 
-                      className="w-12 h-12 text-muted-foreground mx-auto" 
-                      aria-hidden="true"
-                    />
+                    <VideoIcon className="w-12 h-12 text-muted-foreground mx-auto" aria-hidden="true" />
                         <div>
                           <h4 className="font-medium text-foreground">
                             No videos found
@@ -259,81 +180,50 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                             Add your first video to get started with training content.
                           </p>
                         </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={onAddVideo}
-                          aria-label="Add your first training video"
-                        >
+                        <Button variant="outline" size="sm" onClick={onAddVideo} aria-label="Add your first training video">
                           <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
                           Add First Video
                         </Button>
                       </div>
                     </TableCell>
-                  </TableRow>
-                ) : (
-                  sortedVideos.map((video, index) => (
-                    <TableRow 
-                      key={video.id}
-                      className="group"
-                    >
+                  </TableRow> : sortedVideos.map((video, index) => <TableRow key={video.id} className="group">
                        {/* Video title and preview */}
                       <TableCell className="py-2 w-auto max-w-0">
                         <div className="flex items-center gap-3">
                           {/* Video preview */}
                           <div className="relative w-20 h-12 rounded-md overflow-hidden bg-muted shrink-0">
                             {(() => {
-                              // Determine best thumbnail source
-                              let thumbSrc: string | null = null;
-                              if (video.thumbnail_url) {
-                                thumbSrc = video.thumbnail_url;
-                              } else if (video.video_url) {
-                                if (isYouTubeUrl(video.video_url)) {
-                                  const id = getYouTubeVideoId(video.video_url);
-                                  if (id) thumbSrc = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-                                } else if (isGoogleDriveUrl(video.video_url)) {
-                                  const id = getGoogleDriveFileId(video.video_url);
-                                  if (id) thumbSrc = `https://drive.google.com/thumbnail?id=${id}&sz=w400-h300`;
-                                }
-                              }
-
-                              if (thumbSrc) {
-                                return (
-                                  <img
-                                    src={thumbSrc}
-                                    alt={`${video.title} thumbnail`}
-                                    className="w-full h-full object-cover"
-                                    loading="lazy"
-                                    onError={(e) => {
-                                      // Fallback to colored placeholder if image fails to load
-                                      const target = e.target as HTMLImageElement;
-                                      target.style.display = 'none';
-                                      const fallback = target.nextElementSibling as HTMLElement;
-                                      if (fallback) fallback.classList.remove('hidden');
-                                    }}
-                                  />
-                                );
-                              }
-                              return null;
-                            })()}
-                            <div 
-                              className={cn(
-                                'absolute inset-0 flex items-center justify-center',
-                                generateThumbnailColor(video.title),
-                                (video.video_url || video.thumbnail_url) ? 'hidden' : ''
-                              )}
-                            >
+                        // Determine best thumbnail source
+                        let thumbSrc: string | null = null;
+                        if (video.thumbnail_url) {
+                          thumbSrc = video.thumbnail_url;
+                        } else if (video.video_url) {
+                          if (isYouTubeUrl(video.video_url)) {
+                            const id = getYouTubeVideoId(video.video_url);
+                            if (id) thumbSrc = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+                          } else if (isGoogleDriveUrl(video.video_url)) {
+                            const id = getGoogleDriveFileId(video.video_url);
+                            if (id) thumbSrc = `https://drive.google.com/thumbnail?id=${id}&sz=w400-h300`;
+                          }
+                        }
+                        if (thumbSrc) {
+                          return <img src={thumbSrc} alt={`${video.title} thumbnail`} className="w-full h-full object-cover" loading="lazy" onError={e => {
+                            // Fallback to colored placeholder if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const fallback = target.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.classList.remove('hidden');
+                          }} />;
+                        }
+                        return null;
+                      })()}
+                            <div className={cn('absolute inset-0 flex items-center justify-center', generateThumbnailColor(video.title), video.video_url || video.thumbnail_url ? 'hidden' : '')}>
                               <Play className="w-4 h-4 text-white" aria-hidden="true" />
                             </div>
-                            <a
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleVideoAction('Play video', video, () => onPlay(video));
-                              }}
-                              aria-label={`Play video: ${video.title}`}
-                              className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center group"
-                            >
+                            <a href="#" onClick={e => {
+                        e.preventDefault();
+                        handleVideoAction('Play video', video, () => onPlay(video));
+                      }} aria-label={`Play video: ${video.title}`} className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center group">
                               <Play className="w-3 h-3 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                             </a>
                           </div>
@@ -345,35 +235,20 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                                 {video.title}
                               </p>
                             </div>
-                            {video.description && (
-                              <p className="text-sm text-muted-foreground line-clamp-2 mt-1" title={video.description}>
+                            {video.description && <p className="text-sm text-muted-foreground line-clamp-2 mt-1" title={video.description}>
                                 {video.description.length > 150 ? `${video.description.substring(0, 150)}...` : video.description}
-                              </p>
-                            )}
+                              </p>}
                           </div>
                         </div>
                       </TableCell>
 
                       {/* Quiz status */}
                       <TableCell className="text-center py-2">
-                        {videoQuizzes.has(video.id) && (
-                          <div className="flex justify-center">
-                            <svg 
-                              className="w-6 h-6 text-foreground" 
-                              fill="none" 
-                              stroke="currentColor" 
-                              viewBox="0 0 24 24"
-                              aria-label="Quiz available"
-                            >
-                              <path 
-                                strokeLinecap="round" 
-                                strokeLinejoin="round" 
-                                strokeWidth={2} 
-                                d="M5 13l4 4L19 7" 
-                              />
+                        {videoQuizzes.has(video.id) && <div className="flex justify-center">
+                            <svg className="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label="Quiz available">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
-                          </div>
-                        )}
+                          </div>}
                       </TableCell>
 
                       {/* Date Added */}
@@ -385,36 +260,15 @@ export const VideoTable: React.FC<VideoTableProps> = ({
 
                       {/* Action buttons */}
                       <TableCell className="text-right py-2 w-auto shrink-0">
-                        <div 
-                          className="flex gap-2 justify-end"
-                          role="group"
-                          aria-label={`Actions for video: ${video.title}`}
-                        >
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleVideoAction('Edit video', video, () => onEdit(video))}
-                            aria-label={`Edit ${video.title}`}
-                          >
+                        <div className="flex gap-2 justify-end" role="group" aria-label={`Actions for video: ${video.title}`}>
+                          <Button variant="outline" size="sm" onClick={() => handleVideoAction('Edit video', video, () => onEdit(video))} aria-label={`Edit ${video.title}`}>
                             <Edit className="w-4 h-4 mr-2" aria-hidden="true" />
                             Edit
                           </Button>
-                          {onHide && (
-                            <IconButtonWithTooltip
-                              icon={EyeOff}
-                              tooltip="Hide video from list"
-                              onClick={() => handleVideoAction('Hide video', video, () => onHide(video))}
-                              variant="ghost"
-                              size="sm"
-                              className="text-muted-foreground hover:text-foreground"
-                              ariaLabel={`Hide ${video.title} from video list`}
-                            />
-                          )}
+                          {onHide && <IconButtonWithTooltip icon={EyeOff} tooltip="Hide video from list" onClick={() => handleVideoAction('Hide video', video, () => onHide(video))} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" ariaLabel={`Hide ${video.title} from video list`} />}
                         </div>
                       </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                    </TableRow>)}
               </TableBody>
             </Table>
           </div>
@@ -423,11 +277,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
 
       {/* Video count summary for screen readers */}
       <div className="sr-only" aria-live="polite">
-        {videos.length === 0 
-          ? 'No training videos available'
-          : `${videos.length} training video${videos.length === 1 ? '' : 's'} available`
-        }
+        {videos.length === 0 ? 'No training videos available' : `${videos.length} training video${videos.length === 1 ? '' : 's'} available`}
       </div>
-    </div>
-  );
+    </div>;
 };
