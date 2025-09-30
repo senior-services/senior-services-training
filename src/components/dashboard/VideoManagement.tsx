@@ -120,8 +120,7 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
       video_url: contentData.url?.trim() || null,
       video_file_name: null,
       type: 'Required' as const,
-      content_type: contentData.content_type,
-      file: contentData.file
+      content_type: contentData.content_type
     };
 
     const result = await videoOperations.create(sanitizedData);

@@ -4,11 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Upload, FileVideo, Presentation } from 'lucide-react';
-import { CONTENT_CONFIG } from '@/constants';
-import { detectContentTypeFromFile, detectContentTypeFromUrl } from '@/utils/videoUtils';
+import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { detectContentTypeFromUrl } from '@/utils/videoUtils';
+import { validateUrl, validateAndSanitize } from '@/utils/validation';
 import { ContentType } from '@/types';
 
 interface AddContentModalProps {
@@ -20,10 +19,8 @@ interface AddContentModalProps {
 export interface ContentFormData {
   title: string;
   description: string;
-  type: 'file' | 'url';
   content_type: ContentType;
-  file?: File;
-  url?: string;
+  url: string;
 }
 
 export const AddContentModal: React.FC<AddContentModalProps> = ({
@@ -33,95 +30,118 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [url, setUrl] = useState('');
   const [contentType, setContentType] = useState<ContentType>('video');
-  const [dragActive, setDragActive] = useState(false);
   const [showManualSelector, setShowManualSelector] = useState(false);
+  const [isValidatingUrl, setIsValidatingUrl] = useState(false);
+  const [urlError, setUrlError] = useState<string>('');
+  const [titleError, setTitleError] = useState<string>('');
 
-  const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
+  const handleUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const newUrl = e.target.value.trim();
+    setUrl(newUrl);
+    setUrlError('');
+    
+    if (!newUrl) {
+      setShowManualSelector(false);
+      return;
     }
+
+    setIsValidatingUrl(true);
+
+    // Validate URL format and security
+    const validation = validateUrl(newUrl);
+    if (!validation.isValid) {
+      setUrlError(validation.errors[0] || 'Invalid URL format');
+      setShowManualSelector(false);
+      setIsValidatingUrl(false);
+      return;
+    }
+
+    // Additional HTTPS check
+    try {
+      const urlObj = new URL(newUrl);
+      if (urlObj.protocol !== 'https:') {
+        setUrlError('Only HTTPS URLs are allowed for security');
+        setShowManualSelector(false);
+        setIsValidatingUrl(false);
+        return;
+      }
+    } catch {
+      setUrlError('Invalid URL format');
+      setShowManualSelector(false);
+      setIsValidatingUrl(false);
+      return;
+    }
+
+    // Auto-detect content type
+    const detectedType = detectContentTypeFromUrl(newUrl);
+    if (detectedType) {
+      setContentType(detectedType);
+      setShowManualSelector(false);
+    } else {
+      // Ambiguous URL - show manual selector
+      setShowManualSelector(true);
+    }
+    
+    setIsValidatingUrl(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    setTitleError('');
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      const detectedType = detectContentTypeFromFile(file);
-      if (detectedType) {
-        setSelectedFile(file);
-        setContentType(detectedType);
-        if (!title) {
-          setTitle(file.name.replace(/\.[^/.]+$/, ''));
-        }
-      }
-    }
-  }, [title]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const detectedType = detectContentTypeFromFile(file);
-      if (detectedType) {
-        setSelectedFile(file);
-        setContentType(detectedType);
-        if (!title) {
-          setTitle(file.name.replace(/\.[^/.]+$/, ''));
-        }
+    // Real-time validation
+    if (newTitle.trim()) {
+      const validation = validateAndSanitize(newTitle, {
+        required: true,
+        maxLength: 200,
+        allowHtml: false
+      });
+      if (!validation.isValid) {
+        setTitleError(validation.errors[0] || 'Invalid title');
       }
     }
   };
 
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newUrl = e.target.value.trim();
-    setUrl(newUrl);
-    
-    if (newUrl) {
-      // Validate URL format
-      try {
-        new URL(newUrl);
-      } catch {
-        setShowManualSelector(false);
-        return;
-      }
-      
-      const detectedType = detectContentTypeFromUrl(newUrl);
-      if (detectedType) {
-        setContentType(detectedType);
-        setShowManualSelector(false);
-      } else {
-        // Ambiguous URL - show manual selector
-        setShowManualSelector(true);
-      }
-    } else {
-      setShowManualSelector(false);
-    }
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newDescription = e.target.value;
+    setDescription(newDescription);
   };
 
   const handleSave = () => {
-    const formData: ContentFormData = {
-      title,
-      description,
-      type: url.trim() ? 'url' : 'file',
-      content_type: contentType,
-    };
+    // Final validation before save
+    const titleValidation = validateAndSanitize(title, {
+      required: true,
+      maxLength: 200,
+      allowHtml: false
+    });
 
-    if (selectedFile) {
-      formData.file = selectedFile;
+    const urlValidation = validateUrl(url);
+
+    const descValidation = validateAndSanitize(description, {
+      required: false,
+      maxLength: 1000,
+      allowHtml: false
+    });
+
+    if (!titleValidation.isValid) {
+      setTitleError(titleValidation.errors[0] || 'Invalid title');
+      return;
     }
-    
-    if (url.trim()) {
-      formData.url = url;
+
+    if (!urlValidation.isValid) {
+      setUrlError(urlValidation.errors[0] || 'Invalid URL');
+      return;
     }
+
+    const formData: ContentFormData = {
+      title: titleValidation.sanitized,
+      description: descValidation.sanitized,
+      content_type: contentType,
+      url: url.trim(),
+    };
 
     onSave(formData);
     handleClose();
@@ -130,21 +150,33 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
   const handleClose = () => {
     setTitle('');
     setDescription('');
-    setSelectedFile(null);
     setUrl('');
     setContentType('video');
-    setDragActive(false);
     setShowManualSelector(false);
+    setIsValidatingUrl(false);
+    setUrlError('');
+    setTitleError('');
     onOpenChange(false);
   };
 
-  const isValid = title.trim() && (url.trim() || selectedFile);
+  const isValid = 
+    title.trim() && 
+    url.trim() && 
+    !urlError && 
+    !titleError && 
+    !isValidatingUrl;
 
-  const getSupportedFormats = () => {
-    if (contentType === 'presentation') {
-      return CONTENT_CONFIG.PRESENTATION.SUPPORTED_FORMATS.join(', ');
+  const getUrlStatusIcon = () => {
+    if (isValidatingUrl) {
+      return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
     }
-    return CONTENT_CONFIG.VIDEO.SUPPORTED_FORMATS.join(', ');
+    if (urlError) {
+      return <AlertCircle className="h-4 w-4 text-destructive" />;
+    }
+    if (url && !showManualSelector) {
+      return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+    }
+    return null;
   };
 
   return (
@@ -160,9 +192,21 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
             <Input
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={handleTitleChange}
               placeholder="Enter content title"
+              aria-invalid={!!titleError}
+              aria-describedby={titleError ? 'title-error' : undefined}
             />
+            {titleError && (
+              <p 
+                id="title-error" 
+                className="text-sm text-destructive mt-1"
+                role="alert"
+                aria-live="polite"
+              >
+                {titleError}
+              </p>
+            )}
           </div>
 
           <div>
@@ -170,29 +214,62 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
             <Textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter content description"
+              onChange={handleDescriptionChange}
+              placeholder="Enter content description (optional)"
               rows={3}
+              maxLength={1000}
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              {description.length}/1000 characters
+            </p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="url">URL (Recommended)</Label>
-              <Input
-                id="url"
-                value={url}
-                onChange={handleUrlChange}
-                placeholder="Enter YouTube, Google Drive, or Google Slides URL"
-              />
-              {url && !showManualSelector && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  ✓ Auto-detected: {contentType === 'presentation' ? 'Presentation' : 'Video'}
+              <Label htmlFor="url">Content URL</Label>
+              <div className="relative">
+                <Input
+                  id="url"
+                  value={url}
+                  onChange={handleUrlChange}
+                  placeholder="Enter YouTube, Google Drive, or Google Slides URL"
+                  aria-invalid={!!urlError}
+                  aria-describedby={urlError ? 'url-error' : url && !showManualSelector ? 'url-success' : undefined}
+                  className={urlError ? 'pr-10 border-destructive' : url ? 'pr-10' : ''}
+                />
+                {getUrlStatusIcon() && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {getUrlStatusIcon()}
+                  </div>
+                )}
+              </div>
+              {urlError && (
+                <p 
+                  id="url-error" 
+                  className="text-sm text-destructive mt-1 flex items-start gap-1"
+                  role="alert"
+                  aria-live="polite"
+                >
+                  <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <span>{urlError}</span>
                 </p>
               )}
+              {url && !urlError && !showManualSelector && !isValidatingUrl && (
+                <p 
+                  id="url-success"
+                  className="text-sm text-green-600 mt-1 flex items-center gap-1"
+                  aria-live="polite"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  Auto-detected: {contentType === 'presentation' ? 'Presentation' : 'Video'}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Only HTTPS URLs are supported for security
+              </p>
             </div>
 
-            {showManualSelector && (
+            {showManualSelector && !urlError && (
               <div className="space-y-2 pt-2 border-t">
                 <Label htmlFor="manual-content-type">
                   Content Type
@@ -221,100 +298,6 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                 </RadioGroup>
               </div>
             )}
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">or</span>
-              </div>
-            </div>
-
-            <div
-              className={`border-2 border-dashed rounded-lg p-6 cursor-pointer transition-all duration-300 ${
-                dragActive ? 'border-primary bg-primary/10' : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50'
-              }`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-              onClick={() => !selectedFile && document.getElementById('file-upload')?.click()}
-              onKeyDown={(e) => {
-                if ((e.key === 'Enter' || e.key === ' ') && !selectedFile) {
-                  e.preventDefault();
-                  document.getElementById('file-upload')?.click();
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label="Upload file area. Drag and drop a file or click to browse"
-            >
-              {selectedFile ? (
-                <div className="flex items-center space-x-4">
-                  {contentType === 'presentation' ? (
-                    <Presentation className="h-8 w-8 text-primary flex-shrink-0" />
-                  ) : (
-                    <FileVideo className="h-8 w-8 text-primary flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{selectedFile.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {contentType === 'presentation' ? 'Presentation' : 'Video'} • {(selectedFile.size / 1024 / 1024).toFixed(1)} MB
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedFile(null);
-                    }}
-                    className="flex-shrink-0"
-                    aria-label="Remove selected file"
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-4">
-                  {contentType === 'presentation' ? (
-                    <Presentation className={`h-8 w-8 flex-shrink-0 transition-colors ${dragActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                  ) : (
-                    <FileVideo className={`h-8 w-8 flex-shrink-0 transition-colors ${dragActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                  )}
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">
-                      {dragActive ? 'Drop file here' : 'Drag & drop file here'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      or click to browse files
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    className="hidden"
-                    id="file-upload"
-                    accept={[...CONTENT_CONFIG.VIDEO.MIME_TYPES, ...CONTENT_CONFIG.PRESENTATION.MIME_TYPES].join(',')}
-                    onChange={handleFileChange}
-                    aria-label="File upload input"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      document.getElementById('file-upload')?.click();
-                    }}
-                    className="flex-shrink-0"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Browse Files
-                  </Button>
-                </div>
-              )}
-            </div>
           </div>
         </DialogScrollArea>
 

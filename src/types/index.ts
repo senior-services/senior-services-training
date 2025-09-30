@@ -53,13 +53,6 @@ export interface TrainingContent extends Video {
 export type VideoType = 'Required' | 'Optional';
 export type ContentType = 'video' | 'presentation';
 
-export interface VideoFormData {
-  title: string;
-  description: string;
-  type: 'file' | 'url';
-  file?: File;
-  url?: string;
-}
 
 // Employee and progress types
 export interface Employee {
@@ -107,9 +100,6 @@ export interface EditVideoModalProps extends ModalProps {
   onDelete: (videoId: string) => Promise<void>;
 }
 
-export interface AddVideoModalProps extends ModalProps {
-  onSave: (videoData: VideoFormData) => Promise<void>;
-}
 
 // Update and creation types
 export interface VideoUpdateData {
