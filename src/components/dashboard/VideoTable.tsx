@@ -145,7 +145,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                 <TableRow>
                   <TableHead className="whitespace-nowrap">
                     <Button variant="ghost" onClick={() => handleSort('title')} className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${sortColumn === 'title' ? 'font-bold' : 'font-medium'}`}>
-                      Video Title and Description
+                      Training Title and Description
                       {sortColumn === 'title' ? sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" /> : <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
                     </Button>
                   </TableHead>
