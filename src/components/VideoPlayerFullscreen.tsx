@@ -79,25 +79,36 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const [completedQuizResults, setCompletedQuizResults] = useState<QuizResponse[]>([]);
   const [correctOptions, setCorrectOptions] = useState<Record<string, string[]>>({});
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  
+
   // Presentation compliance states
   const [viewingSeconds, setViewingSeconds] = useState(0);
   const [checkboxEnabled, setCheckboxEnabled] = useState(false);
   const [presentationAcknowledged, setPresentationAcknowledged] = useState(false);
   const [a11yAnnouncement, setA11yAnnouncement] = useState('');
-  
+
   // Hooks for authentication and user feedback
-  const { user } = useAuth();
-  const { toast } = useToast();
-  
+  const {
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
+
   // Custom hooks for data management
-  const { video, quiz, videoLoading: vLoading, quizLoading, loadVideoData, resetVideoData } = useVideoData();
-  const { 
-    progress, 
-    isCompleted, 
-    wasEverCompleted, 
-    updateProgress, 
-    resetProgress, 
+  const {
+    video,
+    quiz,
+    videoLoading: vLoading,
+    quizLoading,
+    loadVideoData,
+    resetVideoData
+  } = useVideoData();
+  const {
+    progress,
+    isCompleted,
+    wasEverCompleted,
+    updateProgress,
+    resetProgress,
     loadExistingProgress,
     markComplete
   } = useVideoProgress({
@@ -115,7 +126,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     }
     return 30;
   }, [video]);
-  
   const minimumViewingSeconds = getMinimumViewingSeconds();
 
   // Effect to load video data and existing progress when modal opens
@@ -134,14 +144,12 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         setCompletedQuizResults([]);
         return;
       }
-
       const loadResult = await loadVideoData(videoId, initialVideo);
-      
       if (!loadResult.success) {
         toast({
           title: "Video Loading Error",
           description: "Unable to load video details. Please try again.",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
@@ -151,7 +159,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         await loadExistingProgress();
       }
     };
-
     initializeVideo();
   }, [open, videoId, user?.email, loadVideoData, resetVideoData, resetProgress, loadExistingProgress, toast, initialVideo]);
 
@@ -160,30 +167,24 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     if (!open || !video || video.content_type !== 'presentation' || checkboxEnabled) {
       return;
     }
-
     const minSeconds = getMinimumViewingSeconds();
-    
     const timer = setInterval(() => {
       setViewingSeconds(prev => {
         const newSeconds = prev + 1;
-        
+
         // Enable checkbox when minimum time reached
         if (newSeconds >= minSeconds && !checkboxEnabled) {
           setCheckboxEnabled(true);
-          setA11yAnnouncement(
-            `You may now acknowledge that you have reviewed this training material after viewing for ${minSeconds} seconds.`
-          );
+          setA11yAnnouncement(`You may now acknowledge that you have reviewed this training material after viewing for ${minSeconds} seconds.`);
           logger.info('Presentation acknowledgment unlocked', {
             videoId,
             viewingSeconds: newSeconds,
             minimumRequired: minSeconds
           });
         }
-        
         return newSeconds;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, [open, video, checkboxEnabled, videoId, getMinimumViewingSeconds]);
 
@@ -201,24 +202,25 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   useEffect(() => {
     const loadCompletedQuizResults = async () => {
       if (!wasEverCompleted || !quiz || !user?.email || !videoId) return;
-
       try {
         const attempts = await quizOperations.getUserAttempts(user.email);
         const videoQuizAttempts = attempts.filter(attempt => attempt.quiz.video_id === videoId);
         const latestAttempt = videoQuizAttempts[0]; // Most recent attempt
-        
+
         if (latestAttempt?.responses) {
           setCompletedQuizResults(latestAttempt.responses);
-          
+
           // Fetch correct options for completed quiz
           const correctOpts = await quizOperations.getCorrectOptionsForQuiz(quiz.id);
           setCorrectOptions(correctOpts);
         }
       } catch (error) {
-        logger.warn('Failed to load completed quiz results', { videoId, error });
+        logger.warn('Failed to load completed quiz results', {
+          videoId,
+          error
+        });
       }
     };
-
     loadCompletedQuizResults();
   }, [wasEverCompleted, quiz, user?.email, videoId]);
 
@@ -229,7 +231,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       setShouldShowOverlay(false);
       return;
     }
-    
+
     // Show overlay if progress is 99% or higher and video has a quiz
     if (progress >= 99) {
       setShowCompletionOverlay(true);
@@ -241,7 +243,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const handleVideoCompletion = useCallback(() => {
     if (progress >= 100 && !wasEverCompleted) {
       setShowCompletionOverlay(true);
-      
       logger.videoEvent('video_completed', videoId || '', {
         userEmail: user?.email,
         completionTime: new Date().toISOString(),
@@ -278,33 +279,21 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       });
       return;
     }
-
     const completeResult = await markComplete();
-    
     if (completeResult?.success && video?.content_type === 'presentation' && user?.email && videoId) {
       // Save acknowledgment data for presentations
-      await progressOperations.updateByEmail(
-        user.email,
-        videoId,
-        100,
-        new Date(),
-        new Date(),
-        viewingSeconds
-      );
+      await progressOperations.updateByEmail(user.email, videoId, 100, new Date(), new Date(), viewingSeconds);
     }
-
     setShowCompletionOverlay(false);
     toast({
       title: "Training Completed! 🎉",
       description: "You've successfully completed this training video."
     });
-    
+
     // Notify parent dashboard to refresh
     onProgressUpdate?.(100);
-    
     onOpenChange(false);
   }, [toast, onOpenChange, onProgressUpdate, video, presentationAcknowledged, markComplete, user, videoId, viewingSeconds]);
-
 
   // Handle quiz submission
   const handleQuizSubmit = useCallback(async () => {
@@ -316,38 +305,32 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       });
       return;
     }
-
     try {
       const attemptId = await quizOperations.submitQuiz(user.email, quiz.id, quizResponses);
-      
+
       // Get quiz results to show correct/incorrect answers
       const attempts = await quizOperations.getUserAttempts(user.email);
       const currentAttempt = attempts.find(attempt => attempt.id === attemptId);
-      
       if (currentAttempt?.responses) {
         setQuizResults(currentAttempt.responses);
       }
-      
+
       // Fetch correct options after submission to show in results
       const correctOpts = await quizOperations.getCorrectOptionsForQuiz(quiz.id);
       setCorrectOptions(correctOpts);
-      
-      logger.info('Quiz submitted successfully', { 
-        quizId: quiz.id, 
+      logger.info('Quiz submitted successfully', {
+        quizId: quiz.id,
         videoId: video?.id,
-        userEmail: user.email 
+        userEmail: user.email
       });
-
       setQuizSubmitted(true);
-      
+
       // Mark training as complete now that quiz is submitted
       await markComplete();
-
       toast({
         title: "Quiz Submitted! 📝",
         description: "Review your answers."
       });
-
     } catch (error) {
       logger.error('Failed to submit quiz', error);
       toast({
@@ -362,7 +345,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const handleMarkTrainingComplete = useCallback(() => {
     setQuizStarted(false);
     setShowCompletionOverlay(false);
-    
     toast({
       title: "Training Completed! 🎉",
       description: "You've successfully completed the training and quiz."
@@ -379,7 +361,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const handleStartQuiz = useCallback(() => {
     // Prevent starting quiz if training was already completed previously
     if (wasEverCompleted) return;
-
     setQuizStarted(true);
     setShowCompletionOverlay(false);
     setOverlayDismissed(true);
@@ -389,12 +370,14 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     setQuizSubmitted(false);
     setQuizResults([]);
     setCompletedQuizResults([]);
-    
+
     // Scroll to quiz section
     setTimeout(() => {
       const quizSection = document.getElementById('quiz-section');
       if (quizSection) {
-        quizSection.scrollIntoView({ behavior: 'smooth' });
+        quizSection.scrollIntoView({
+          behavior: 'smooth'
+        });
       }
     }, 100);
   }, [wasEverCompleted]);
@@ -410,11 +393,9 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const handleQuizResponsesChange = useCallback((responses: QuizSubmissionData[], allAnswered: boolean) => {
     setQuizResponses(responses);
     setAllQuestionsAnswered(allAnswered);
-    
+
     // Check if any responses have been made (user has started answering)
-    const hasAnyResponses = responses.some(response => 
-      response.selected_option_id || response.text_answer?.trim()
-    );
+    const hasAnyResponses = responses.some(response => response.selected_option_id || response.text_answer?.trim());
     setHasQuizChanges(hasAnyResponses);
   }, []);
 
@@ -426,7 +407,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       setShowCompletionOverlay(true);
       return;
     }
-    
     if (hasQuizChanges) {
       setShowCancelConfirmation(true);
     } else {
@@ -460,12 +440,16 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
     // Validate required fields
     if (!video.id || !video.title) {
-      logger.warn('Video missing required fields', { videoId: video?.id, hasTitle: !!video?.title });
+      logger.warn('Video missing required fields', {
+        videoId: video?.id,
+        hasTitle: !!video?.title
+      });
       return null;
     }
-
     if (!video.video_url && !video.video_file_name) {
-      logger.warn('Video missing both video_url and video_file_name', { videoId: video.id });
+      logger.warn('Video missing both video_url and video_file_name', {
+        videoId: video.id
+      });
       return null;
     }
 
@@ -482,27 +466,20 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       completion_rate: video.completion_rate || 0,
       created_at: video.created_at || new Date().toISOString(),
       updated_at: video.updated_at || new Date().toISOString(),
-      archived_at: video.archived_at || null,
+      archived_at: video.archived_at || null
     };
   }, [video]);
-
-
-  return (
-    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-      <DialogContent 
-        className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto"
-        onOpenAutoFocus={(e) => {
-          // Let the video container receive focus instead
-          e.preventDefault();
-          setTimeout(() => {
-            const videoContainer = document.querySelector('[data-video-container]') as HTMLElement;
-            if (videoContainer) {
-              videoContainer.focus();
-            }
-          }, 100);
-        }}
-        aria-describedby="video-description"
-      >
+  return <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+      <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto" onOpenAutoFocus={e => {
+      // Let the video container receive focus instead
+      e.preventDefault();
+      setTimeout(() => {
+        const videoContainer = document.querySelector('[data-video-container]') as HTMLElement;
+        if (videoContainer) {
+          videoContainer.focus();
+        }
+      }, 100);
+    }} aria-describedby="video-description">
         
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
@@ -512,82 +489,38 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         </DialogHeader>
         
         <div>
-          {video?.description && video.description.trim() && (
-            <div className="pb-4" id="video-description">
+          {video?.description && video.description.trim() && <div className="pb-4" id="video-description">
               <p className="text-sm text-muted-foreground font-normal leading-relaxed">
                 {video.description}
               </p>
-            </div>
-          )}
+            </div>}
 
           {/* Persistent Quiz CTA Button */}
-          {quiz && !wasEverCompleted && overlayDismissed && !quizStarted && progress >= 99 && (
-            <div className="pb-4">
-              <Button 
-                onClick={handleStartQuiz}
-                className="w-full"
-                size="lg"
-                disabled={video?.content_type === 'presentation' && !presentationAcknowledged}
-                title={
-                  video?.content_type === 'presentation' && !presentationAcknowledged
-                    ? 'Please confirm you have reviewed the training material first'
-                    : undefined
-                }
-              >
-                {video?.content_type === 'presentation' && !presentationAcknowledged && (
-                  <span className="mr-2" aria-hidden="true">🔒</span>
-                )}
+          {quiz && !wasEverCompleted && overlayDismissed && !quizStarted && progress >= 99 && <div className="pb-4">
+              <Button onClick={handleStartQuiz} className="w-full" size="lg" disabled={video?.content_type === 'presentation' && !presentationAcknowledged} title={video?.content_type === 'presentation' && !presentationAcknowledged ? 'Please confirm you have reviewed the training material first' : undefined}>
+                {video?.content_type === 'presentation' && !presentationAcknowledged && <span className="mr-2" aria-hidden="true">🔒</span>}
                 Start Quiz to Complete Training
               </Button>
-            </div>
-          )}
+            </div>}
 
-          <div 
-            className="w-full aspect-video bg-black rounded-lg overflow-hidden shadow-inner flex-shrink-0 relative"
-            data-video-container
-            tabIndex={0}
-            aria-label="Video player. Press spacebar to play or pause."
-            role="application"
-          >
-            {trainingContent && (
-              <ContentPlayer
-                content={trainingContent}
-                loading={vLoading}
-                progress={progress}
-                onProgressUpdate={updateProgress}
-                onComplete={handleVideoEnded}
-              />
-            )}
+          <div className="w-full aspect-video bg-black rounded-lg overflow-hidden shadow-inner flex-shrink-0 relative" data-video-container tabIndex={0} aria-label="Video player. Press spacebar to play or pause." role="application">
+            {trainingContent && <ContentPlayer content={trainingContent} loading={vLoading} progress={progress} onProgressUpdate={updateProgress} onComplete={handleVideoEnded} />}
             
             {/* Completion Overlay - Only show if training was never completed */}
-            {shouldShowOverlay && showCompletionOverlay && !wasEverCompleted && (
-              <CompletionOverlay
-                video={video}
-                quiz={quiz}
-                onStartQuiz={handleStartQuiz}
-                onCompleteTraining={handleCompleteTraining}
-                onClose={quiz ? handleCloseOverlay : undefined}
-              />
-            )}
+            {shouldShowOverlay && showCompletionOverlay && !wasEverCompleted && <CompletionOverlay video={video} quiz={quiz} onStartQuiz={handleStartQuiz} onCompleteTraining={handleCompleteTraining} onClose={quiz ? handleCloseOverlay : undefined} />}
           </div>
 
           {/* Compliance Checkbox - Only for Presentations */}
-          {video && video.content_type === 'presentation' && !wasEverCompleted && (
-            <div className="mt-4 p-4 border rounded-lg bg-muted/30">
+          {video && video.content_type === 'presentation' && !wasEverCompleted && <div className="mt-4 p-4 border rounded-lg bg-muted/30">
               {/* Screen reader live region */}
-              <div 
-                role="status" 
-                aria-live="polite" 
-                aria-atomic="true"
-                className="sr-only"
-              >
+              <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
                 {a11yAnnouncement}
               </div>
               
               <div className="space-y-3">
                 {/* Compliance disclaimer text */}
                 <div className="text-sm text-muted-foreground">
-                  <p className="font-medium mb-2">Training Acknowledgment Required</p>
+                  <p className="font-medium mb-2">Training Acknowledgment</p>
                   <p>
                     This presentation contains important training material. Please review all content carefully before proceeding. 
                     Your acknowledgment confirms you have read and understood this training material, and this will be recorded for compliance purposes.
@@ -595,90 +528,54 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 </div>
 
                 {/* Timer indicator */}
-                {!checkboxEnabled && (
-                  <div className="text-sm text-muted-foreground flex items-center gap-2">
+                {!checkboxEnabled && <div className="text-sm text-muted-foreground flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
                     <span>
                       Please review the presentation for at least {minimumViewingSeconds} seconds before confirming 
                       ({Math.max(0, minimumViewingSeconds - viewingSeconds)} seconds remaining)
                     </span>
-                  </div>
-                )}
+                  </div>}
 
                 {/* Checkbox */}
                 <div className="flex items-start gap-3 pt-2">
-                  <Checkbox
-                    id="presentation-acknowledgment"
-                    checked={presentationAcknowledged}
-                    disabled={!checkboxEnabled}
-                    onCheckedChange={(checked) => {
-                      const isChecked = checked === true;
-                      setPresentationAcknowledged(isChecked);
-                      
-                      if (isChecked) {
-                        setA11yAnnouncement('Training material acknowledgment confirmed. You may now proceed with the quiz or mark training as complete.');
-                        logger.info('Presentation acknowledged by user', {
-                          videoId,
-                          viewingSeconds,
-                          acknowledgedAt: new Date().toISOString()
-                        });
-                      } else {
-                        setA11yAnnouncement('Training material acknowledgment removed.');
-                      }
-                    }}
-                    aria-describedby="acknowledgment-label"
-                    className="mt-1"
-                  />
-                  <label
-                    htmlFor="presentation-acknowledgment"
-                    id="acknowledgment-label"
-                    className={cn(
-                      "text-sm font-medium leading-relaxed cursor-pointer select-none",
-                      !checkboxEnabled && "text-muted-foreground cursor-not-allowed"
-                    )}
-                  >
+                  <Checkbox id="presentation-acknowledgment" checked={presentationAcknowledged} disabled={!checkboxEnabled} onCheckedChange={checked => {
+                const isChecked = checked === true;
+                setPresentationAcknowledged(isChecked);
+                if (isChecked) {
+                  setA11yAnnouncement('Training material acknowledgment confirmed. You may now proceed with the quiz or mark training as complete.');
+                  logger.info('Presentation acknowledged by user', {
+                    videoId,
+                    viewingSeconds,
+                    acknowledgedAt: new Date().toISOString()
+                  });
+                } else {
+                  setA11yAnnouncement('Training material acknowledgment removed.');
+                }
+              }} aria-describedby="acknowledgment-label" className="mt-1" />
+                  <label htmlFor="presentation-acknowledgment" id="acknowledgment-label" className={cn("text-sm font-medium leading-relaxed cursor-pointer select-none", !checkboxEnabled && "text-muted-foreground cursor-not-allowed")}>
                     I confirm that I have read and understood this training material.
                   </label>
                 </div>
 
                 {/* Enabled indicator */}
-                {checkboxEnabled && !presentationAcknowledged && (
-                  <p className="text-xs text-muted-foreground">
+                {checkboxEnabled && !presentationAcknowledged && <p className="text-xs text-muted-foreground">
                     ✓ Checkbox is now available. Please confirm to continue.
-                  </p>
-                )}
+                  </p>}
               </div>
-            </div>
-          )}
+            </div>}
 
           {/* Quiz Section */}
-          {((quizStarted && quiz) || (wasEverCompleted && quiz && completedQuizResults.length > 0)) && (
-            <div id="quiz-section" className="mt-8 border-t pt-8">
-              <QuizModal
-                quiz={quiz}
-                onSubmit={handleQuizSubmit}
-                onCancel={() => {}}
-                onResponsesChange={handleQuizResponsesChange}
-                quizResults={wasEverCompleted ? completedQuizResults : quizResults}
-                isSubmitted={wasEverCompleted || quizSubmitted}
-                correctOptions={correctOptions}
-              />
-            </div>
-          )}
+          {(quizStarted && quiz || wasEverCompleted && quiz && completedQuizResults.length > 0) && <div id="quiz-section" className="mt-8 border-t pt-8">
+              <QuizModal quiz={quiz} onSubmit={handleQuizSubmit} onCancel={() => {}} onResponsesChange={handleQuizResponsesChange} quizResults={wasEverCompleted ? completedQuizResults : quizResults} isSubmitted={wasEverCompleted || quizSubmitted} correctOptions={correctOptions} />
+            </div>}
         </div>
 
         {/* Dialog Footer - Show for quiz interactions */}
-        {quiz && (quizStarted || quizSubmitted || wasEverCompleted) && (
-          <DialogFooter>
-            {!quizSubmitted && !wasEverCompleted ? (
-              <>
+        {quiz && (quizStarted || quizSubmitted || wasEverCompleted) && <DialogFooter>
+            {!quizSubmitted && !wasEverCompleted ? <>
                 <AlertDialog open={showCancelConfirmation} onOpenChange={setShowCancelConfirmation}>
                   <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      onClick={handleCancelClick}
-                      className="shadow-md hover:shadow-lg transition-shadow"
-                    >
+                    <Button variant="outline" onClick={handleCancelClick} className="shadow-md hover:shadow-lg transition-shadow">
                       Cancel
                     </Button>
                   </AlertDialogTrigger>
@@ -700,26 +597,15 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                   </AlertDialogContent>
                 </AlertDialog>
                 
-                <Button
-                  onClick={handleQuizSubmit}
-                  disabled={!allQuestionsAnswered}
-                  className="shadow-md hover:shadow-lg transition-shadow"
-                >
+                <Button onClick={handleQuizSubmit} disabled={!allQuestionsAnswered} className="shadow-md hover:shadow-lg transition-shadow">
                   Submit Quiz
                 </Button>
-              </>
-            ) : (
-              <DialogClose asChild>
-                <Button
-                  className="shadow-md hover:shadow-lg transition-shadow"
-                >
+              </> : <DialogClose asChild>
+                <Button className="shadow-md hover:shadow-lg transition-shadow">
                   Close
                 </Button>
-              </DialogClose>
-            )}
-          </DialogFooter>
-        )}
+              </DialogClose>}
+          </DialogFooter>}
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
