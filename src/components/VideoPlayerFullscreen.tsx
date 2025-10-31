@@ -4,6 +4,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { quizOperations } from '@/services/quizService';
 import { progressOperations } from '@/services/api';
 import { useAuth } from "@/hooks/useAuth";
@@ -528,12 +529,22 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                   </div>
                   
                   {/* Visual Timer - Always visible */}
-                  <div className="flex items-center gap-2 text-sm shrink-0">
-                    <span className="text-muted-foreground font-medium">Time Left:</span>
-                    <span className="inline-flex items-center justify-center min-w-[3rem] px-3 py-1.5 rounded-md bg-primary/10 text-primary font-semibold text-base tabular-nums">
-                      {Math.max(0, minimumViewingSeconds - viewingSeconds)}
-                    </span>
-                  </div>
+                  {(() => {
+                    const timeRemaining = Math.max(0, minimumViewingSeconds - viewingSeconds);
+                    const hasTimeLeft = timeRemaining > 0;
+                    return (
+                      <Badge 
+                        variant={hasTimeLeft ? "soft-warning" : "soft-success"}
+                        showIcon={true}
+                        className="gap-2 px-3 py-1.5 text-sm shrink-0"
+                      >
+                        <span className="font-medium">Time Left:</span>
+                        <span className="font-semibold text-base tabular-nums">
+                          {timeRemaining}
+                        </span>
+                      </Badge>
+                    );
+                  })()}
                 </div>
 
                 {/* Checkbox */}
