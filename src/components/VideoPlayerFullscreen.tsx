@@ -559,86 +559,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
               />
             )}
             
-            {/* Compliance Checkbox - Only for Presentations */}
-            {video && video.content_type === 'presentation' && !wasEverCompleted && (
-              <div className="mt-4 p-4 border rounded-lg bg-muted/30">
-                {/* Screen reader live region */}
-                <div 
-                  role="status" 
-                  aria-live="polite" 
-                  aria-atomic="true"
-                  className="sr-only"
-                >
-                  {a11yAnnouncement}
-                </div>
-                
-                <div className="space-y-3">
-                  {/* Compliance disclaimer text */}
-                  <div className="text-sm text-muted-foreground">
-                    <p className="font-medium mb-2">Training Acknowledgment Required</p>
-                    <p>
-                      This presentation contains important training material. Please review all content carefully before proceeding. 
-                      Your acknowledgment confirms you have read and understood this training material, and this will be recorded for compliance purposes.
-                    </p>
-                  </div>
-
-                  {/* Timer indicator */}
-                  {!checkboxEnabled && (
-                    <div className="text-sm text-muted-foreground flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
-                      <span>
-                        Please review the presentation for at least {minimumViewingSeconds} seconds before confirming 
-                        ({Math.max(0, minimumViewingSeconds - viewingSeconds)} seconds remaining)
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Checkbox */}
-                  <div className="flex items-start gap-3 pt-2">
-                    <Checkbox
-                      id="presentation-acknowledgment"
-                      checked={presentationAcknowledged}
-                      disabled={!checkboxEnabled}
-                      onCheckedChange={(checked) => {
-                        const isChecked = checked === true;
-                        setPresentationAcknowledged(isChecked);
-                        
-                        if (isChecked) {
-                          setA11yAnnouncement('Training material acknowledgment confirmed. You may now proceed with the quiz or mark training as complete.');
-                          logger.info('Presentation acknowledged by user', {
-                            videoId,
-                            viewingSeconds,
-                            acknowledgedAt: new Date().toISOString()
-                          });
-                        } else {
-                          setA11yAnnouncement('Training material acknowledgment removed.');
-                        }
-                      }}
-                      aria-describedby="acknowledgment-label"
-                      className="mt-1"
-                    />
-                    <label
-                      htmlFor="presentation-acknowledgment"
-                      id="acknowledgment-label"
-                      className={cn(
-                        "text-sm font-medium leading-relaxed cursor-pointer select-none",
-                        !checkboxEnabled && "text-muted-foreground cursor-not-allowed"
-                      )}
-                    >
-                      I confirm that I have read and understood this training material.
-                    </label>
-                  </div>
-
-                  {/* Enabled indicator */}
-                  {checkboxEnabled && !presentationAcknowledged && (
-                    <p className="text-xs text-muted-foreground">
-                      ✓ Checkbox is now available. Please confirm to continue.
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-            
             {/* Completion Overlay - Only show if training was never completed */}
             {shouldShowOverlay && showCompletionOverlay && !wasEverCompleted && (
               <CompletionOverlay
@@ -650,6 +570,86 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
               />
             )}
           </div>
+
+          {/* Compliance Checkbox - Only for Presentations */}
+          {video && video.content_type === 'presentation' && !wasEverCompleted && (
+            <div className="mt-4 p-4 border rounded-lg bg-muted/30">
+              {/* Screen reader live region */}
+              <div 
+                role="status" 
+                aria-live="polite" 
+                aria-atomic="true"
+                className="sr-only"
+              >
+                {a11yAnnouncement}
+              </div>
+              
+              <div className="space-y-3">
+                {/* Compliance disclaimer text */}
+                <div className="text-sm text-muted-foreground">
+                  <p className="font-medium mb-2">Training Acknowledgment Required</p>
+                  <p>
+                    This presentation contains important training material. Please review all content carefully before proceeding. 
+                    Your acknowledgment confirms you have read and understood this training material, and this will be recorded for compliance purposes.
+                  </p>
+                </div>
+
+                {/* Timer indicator */}
+                {!checkboxEnabled && (
+                  <div className="text-sm text-muted-foreground flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
+                    <span>
+                      Please review the presentation for at least {minimumViewingSeconds} seconds before confirming 
+                      ({Math.max(0, minimumViewingSeconds - viewingSeconds)} seconds remaining)
+                    </span>
+                  </div>
+                )}
+
+                {/* Checkbox */}
+                <div className="flex items-start gap-3 pt-2">
+                  <Checkbox
+                    id="presentation-acknowledgment"
+                    checked={presentationAcknowledged}
+                    disabled={!checkboxEnabled}
+                    onCheckedChange={(checked) => {
+                      const isChecked = checked === true;
+                      setPresentationAcknowledged(isChecked);
+                      
+                      if (isChecked) {
+                        setA11yAnnouncement('Training material acknowledgment confirmed. You may now proceed with the quiz or mark training as complete.');
+                        logger.info('Presentation acknowledged by user', {
+                          videoId,
+                          viewingSeconds,
+                          acknowledgedAt: new Date().toISOString()
+                        });
+                      } else {
+                        setA11yAnnouncement('Training material acknowledgment removed.');
+                      }
+                    }}
+                    aria-describedby="acknowledgment-label"
+                    className="mt-1"
+                  />
+                  <label
+                    htmlFor="presentation-acknowledgment"
+                    id="acknowledgment-label"
+                    className={cn(
+                      "text-sm font-medium leading-relaxed cursor-pointer select-none",
+                      !checkboxEnabled && "text-muted-foreground cursor-not-allowed"
+                    )}
+                  >
+                    I confirm that I have read and understood this training material.
+                  </label>
+                </div>
+
+                {/* Enabled indicator */}
+                {checkboxEnabled && !presentationAcknowledged && (
+                  <p className="text-xs text-muted-foreground">
+                    ✓ Checkbox is now available. Please confirm to continue.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Quiz Section */}
           {((quizStarted && quiz) || (wasEverCompleted && quiz && completedQuizResults.length > 0)) && (
