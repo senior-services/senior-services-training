@@ -780,31 +780,39 @@ export const progressOperations = {
     email: string,
     videoId: string,
     progressPercent: number,
-    completedAt?: Date
+    completedAt?: Date,
+    presentationAcknowledgedAt?: Date,
+    acknowledgmentViewingSeconds?: number
   ): Promise<ApiResult<boolean>> {
     const operation = 'progress.updateByEmail';
     performanceTracker.start(operation);
+    
     try {
-      // Lookup employee by email with better error handling
-      const { data: employees, error: empError } = await supabase
-        .from('employees')
-        .select('id')
-        .eq('email', email.toLowerCase())
-        .limit(1);
+      const { error } = await supabase.rpc('update_video_progress_by_email', {
+        p_email: email.toLowerCase(),
+        p_video_id: videoId,
+        p_progress_percent: Math.max(0, Math.min(100, progressPercent)),
+        p_completed_at: completedAt?.toISOString() || null,
+        p_presentation_acknowledged_at: presentationAcknowledgedAt?.toISOString() || null,
+        p_acknowledgment_viewing_seconds: acknowledgmentViewingSeconds || null
+      });
 
-      if (empError) {
-        logger.error('Database error looking up employee', undefined, { email, supabaseError: empError.message });
-        return { data: null, error: 'Database error', success: false };
+      if (error) {
+        logger.error('Failed to update progress by email', undefined, {
+          email,
+          videoId,
+          supabaseError: error.message
+        });
+        return { data: null, error: error.message, success: false };
       }
 
-      if (!employees || employees.length === 0) {
-        logger.error('Employee not found for email', undefined, { email, normalizedEmail: email.toLowerCase() });
-        return { data: null, error: 'Employee not found', success: false };
-      }
-
-      const employee = employees[0];
-      logger.info('Employee found for progress update', { email, employeeId: employee.id });
-      return await this.update(employee.id, videoId, progressPercent, completedAt);
+      logger.info('Progress updated by email successfully', {
+        email,
+        videoId,
+        progressPercent,
+        presentationAcknowledged: !!presentationAcknowledgedAt
+      });
+      return { data: true, error: null, success: true };
     } catch (error) {
       logger.error('Unexpected error updating progress by email', error as Error, { email, videoId });
       return { data: null, error: 'Failed to update progress', success: false };

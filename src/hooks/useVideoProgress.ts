@@ -17,7 +17,14 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
   const [isLocked, setIsLocked] = useState(false);
   const progressUpdateTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const updateProgressToDatabase = useCallback(async (progressPercent: number, forceComplete?: boolean) => {
+  const updateProgressToDatabase = useCallback(async (
+    progressPercent: number, 
+    forceComplete?: boolean,
+    acknowledgmentData?: {
+      acknowledgedAt: Date;
+      viewingSeconds: number;
+    }
+  ) => {
     if (!userEmail || !videoId) {
       logger.warn('Cannot update progress: missing user email or video ID', {
         hasUser: !!userEmail,
@@ -48,14 +55,17 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
           progressPercent,
           shouldComplete,
           hasQuiz,
-          forceComplete
+          forceComplete,
+          hasAcknowledgment: !!acknowledgmentData
         });
 
         const result = await progressOperations.updateByEmail(
           userEmail,
           videoId,
           progressPercent,
-          completedAt
+          completedAt,
+          acknowledgmentData?.acknowledgedAt,
+          acknowledgmentData?.viewingSeconds
         );
 
         if (!result.success) {

@@ -368,28 +368,34 @@ export type Database = {
       }
       video_progress: {
         Row: {
+          acknowledgment_viewing_seconds: number | null
           completed_at: string | null
           created_at: string
           employee_id: string
           id: string
+          presentation_acknowledged_at: string | null
           progress_percent: number
           updated_at: string
           video_id: string
         }
         Insert: {
+          acknowledgment_viewing_seconds?: number | null
           completed_at?: string | null
           created_at?: string
           employee_id: string
           id?: string
+          presentation_acknowledged_at?: string | null
           progress_percent?: number
           updated_at?: string
           video_id: string
         }
         Update: {
+          acknowledgment_viewing_seconds?: number | null
           completed_at?: string | null
           created_at?: string
           employee_id?: string
           id?: string
+          presentation_acknowledged_at?: string | null
           progress_percent?: number
           updated_at?: string
           video_id?: string
@@ -479,7 +485,7 @@ export type Database = {
         }[]
       }
       get_all_employee_assignments: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           assignments: Json
           employee_email: string
@@ -540,15 +546,27 @@ export type Database = {
         }
         Returns: undefined
       }
-      update_video_progress_by_email: {
-        Args: {
-          p_completed_at?: string
-          p_email: string
-          p_progress_percent: number
-          p_video_id: string
-        }
-        Returns: undefined
-      }
+      update_video_progress_by_email:
+        | {
+            Args: {
+              p_completed_at?: string
+              p_email: string
+              p_progress_percent: number
+              p_video_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_acknowledgment_viewing_seconds?: number
+              p_completed_at?: string
+              p_email: string
+              p_presentation_acknowledged_at?: string
+              p_progress_percent: number
+              p_video_id: string
+            }
+            Returns: undefined
+          }
     }
     Enums: {
       app_role: "admin" | "employee"

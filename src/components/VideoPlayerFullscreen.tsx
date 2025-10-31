@@ -3,9 +3,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { quizOperations } from '@/services/quizService';
+import { progressOperations } from '@/services/api';
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import type { QuizSubmissionData, QuizResponse } from "@/types/quiz";
 import type { Video, TrainingContent } from "@/types";
 import { logger } from "@/utils/logger";
@@ -75,13 +78,20 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
   const [completedQuizResults, setCompletedQuizResults] = useState<QuizResponse[]>([]);
   const [correctOptions, setCorrectOptions] = useState<Record<string, string[]>>({});
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  
+  // Presentation compliance states
+  const [viewingSeconds, setViewingSeconds] = useState(0);
+  const [checkboxEnabled, setCheckboxEnabled] = useState(false);
+  const [presentationAcknowledged, setPresentationAcknowledged] = useState(false);
+  const [a11yAnnouncement, setA11yAnnouncement] = useState('');
   
   // Hooks for authentication and user feedback
   const { user } = useAuth();
   const { toast } = useToast();
   
   // Custom hooks for data management
-  const { video, quiz, videoLoading, quizLoading, loadVideoData, resetVideoData } = useVideoData();
+  const { video, quiz, videoLoading: vLoading, quizLoading, loadVideoData, resetVideoData } = useVideoData();
   const { 
     progress, 
     isCompleted, 
@@ -96,6 +106,16 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     onProgressUpdate,
     hasQuiz: quizLoading || !!quiz
   });
+
+  // Calculate minimum viewing time for presentations (after video is defined)
+  const minimumViewingSeconds = useMemo(() => {
+    if (!video || video.content_type !== 'presentation') return 0;
+    // If duration is known, require viewing 80% of it, otherwise 30 seconds minimum
+    if (video.duration_seconds && video.duration_seconds > 0) {
+      return Math.max(30, Math.floor(video.duration_seconds * 0.8));
+    }
+    return 30; // Default 30 seconds
+  }, [video]);
 
   // Effect to load video data and existing progress when modal opens
   useEffect(() => {
@@ -133,6 +153,46 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
     initializeVideo();
   }, [open, videoId, user?.email, loadVideoData, resetVideoData, resetProgress, loadExistingProgress, toast, initialVideo]);
+
+  // Timer effect for presentations - track viewing duration
+  useEffect(() => {
+    if (!open || !video || video.content_type !== 'presentation' || checkboxEnabled) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setViewingSeconds(prev => {
+        const newSeconds = prev + 1;
+        
+        // Enable checkbox when minimum time reached
+        if (newSeconds >= minimumViewingSeconds && !checkboxEnabled) {
+          setCheckboxEnabled(true);
+          setA11yAnnouncement(
+            `You may now acknowledge that you have reviewed this training material after viewing for ${minimumViewingSeconds} seconds.`
+          );
+          logger.info('Presentation acknowledgment unlocked', {
+            videoId,
+            viewingSeconds: newSeconds,
+            minimumRequired: minimumViewingSeconds
+          });
+        }
+        
+        return newSeconds;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [open, video, minimumViewingSeconds, checkboxEnabled, videoId]);
+
+  // Reset presentation states when dialog opens/closes
+  useEffect(() => {
+    if (!open) {
+      setViewingSeconds(0);
+      setCheckboxEnabled(false);
+      setPresentationAcknowledged(false);
+      setA11yAnnouncement('');
+    }
+  }, [open]);
 
   // Separate effect to load completed quiz results when completion status is determined
   useEffect(() => {
@@ -205,7 +265,31 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   }, [updateProgress, wasEverCompleted, quiz]);
 
   // Handle complete training (no quiz)
-  const handleCompleteTraining = useCallback(() => {
+  const handleCompleteTraining = useCallback(async () => {
+    // For presentations, ensure acknowledgment before completion
+    if (video?.content_type === 'presentation' && !presentationAcknowledged) {
+      toast({
+        variant: 'destructive',
+        title: 'Acknowledgment Required',
+        description: 'Please confirm that you have reviewed the training material before completing.'
+      });
+      return;
+    }
+
+    const completeResult = await markComplete();
+    
+    if (completeResult?.success && video?.content_type === 'presentation' && user?.email && videoId) {
+      // Save acknowledgment data for presentations
+      await progressOperations.updateByEmail(
+        user.email,
+        videoId,
+        100,
+        new Date(),
+        new Date(),
+        viewingSeconds
+      );
+    }
+
     setShowCompletionOverlay(false);
     toast({
       title: "Training Completed! 🎉",
@@ -216,7 +300,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     onProgressUpdate?.(100);
     
     onOpenChange(false);
-  }, [toast, onOpenChange, onProgressUpdate]);
+  }, [toast, onOpenChange, onProgressUpdate, video, presentationAcknowledged, markComplete, user, videoId, viewingSeconds]);
 
 
   // Handle quiz submission
@@ -440,7 +524,16 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 onClick={handleStartQuiz}
                 className="w-full"
                 size="lg"
+                disabled={video?.content_type === 'presentation' && !presentationAcknowledged}
+                title={
+                  video?.content_type === 'presentation' && !presentationAcknowledged
+                    ? 'Please confirm you have reviewed the training material first'
+                    : undefined
+                }
               >
+                {video?.content_type === 'presentation' && !presentationAcknowledged && (
+                  <span className="mr-2" aria-hidden="true">🔒</span>
+                )}
                 Start Quiz to Complete Training
               </Button>
             </div>
@@ -456,11 +549,91 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             {trainingContent && (
               <ContentPlayer
                 content={trainingContent}
-                loading={videoLoading}
+                loading={vLoading}
                 progress={progress}
                 onProgressUpdate={updateProgress}
                 onComplete={handleVideoEnded}
               />
+            )}
+            
+            {/* Compliance Checkbox - Only for Presentations */}
+            {video && video.content_type === 'presentation' && !wasEverCompleted && (
+              <div className="mt-4 p-4 border rounded-lg bg-muted/30">
+                {/* Screen reader live region */}
+                <div 
+                  role="status" 
+                  aria-live="polite" 
+                  aria-atomic="true"
+                  className="sr-only"
+                >
+                  {a11yAnnouncement}
+                </div>
+                
+                <div className="space-y-3">
+                  {/* Compliance disclaimer text */}
+                  <div className="text-sm text-muted-foreground">
+                    <p className="font-medium mb-2">Training Acknowledgment Required</p>
+                    <p>
+                      This presentation contains important training material. Please review all content carefully before proceeding. 
+                      Your acknowledgment confirms you have read and understood this training material, and this will be recorded for compliance purposes.
+                    </p>
+                  </div>
+
+                  {/* Timer indicator */}
+                  {!checkboxEnabled && (
+                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
+                      <span>
+                        Please review the presentation for at least {minimumViewingSeconds} seconds before confirming 
+                        ({Math.max(0, minimumViewingSeconds - viewingSeconds)} seconds remaining)
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Checkbox */}
+                  <div className="flex items-start gap-3 pt-2">
+                    <Checkbox
+                      id="presentation-acknowledgment"
+                      checked={presentationAcknowledged}
+                      disabled={!checkboxEnabled}
+                      onCheckedChange={(checked) => {
+                        const isChecked = checked === true;
+                        setPresentationAcknowledged(isChecked);
+                        
+                        if (isChecked) {
+                          setA11yAnnouncement('Training material acknowledgment confirmed. You may now proceed with the quiz or mark training as complete.');
+                          logger.info('Presentation acknowledged by user', {
+                            videoId,
+                            viewingSeconds,
+                            acknowledgedAt: new Date().toISOString()
+                          });
+                        } else {
+                          setA11yAnnouncement('Training material acknowledgment removed.');
+                        }
+                      }}
+                      aria-describedby="acknowledgment-label"
+                      className="mt-1"
+                    />
+                    <label
+                      htmlFor="presentation-acknowledgment"
+                      id="acknowledgment-label"
+                      className={cn(
+                        "text-sm font-medium leading-relaxed cursor-pointer select-none",
+                        !checkboxEnabled && "text-muted-foreground cursor-not-allowed"
+                      )}
+                    >
+                      I confirm that I have read and understood this training material.
+                    </label>
+                  </div>
+
+                  {/* Enabled indicator */}
+                  {checkboxEnabled && !presentationAcknowledged && (
+                    <p className="text-xs text-muted-foreground">
+                      ✓ Checkbox is now available. Please confirm to continue.
+                    </p>
+                  )}
+                </div>
+              </div>
             )}
             
             {/* Completion Overlay - Only show if training was never completed */}
