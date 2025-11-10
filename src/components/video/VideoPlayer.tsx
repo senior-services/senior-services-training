@@ -11,7 +11,6 @@ interface VideoPlayerProps {
   progress: number;
   onProgressUpdate: (progress: number) => void;
   onVideoEnded: () => void;
-  updateProgressToDatabase: (progress: number) => Promise<any>;
 }
 
 export function VideoPlayer({ 
@@ -19,8 +18,7 @@ export function VideoPlayer({
   loading, 
   progress, 
   onProgressUpdate, 
-  onVideoEnded,
-  updateProgressToDatabase 
+  onVideoEnded
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout>();
@@ -117,13 +115,6 @@ export function VideoPlayer({
                         if (duration > 0) {
                           const progressPercent = Math.min(100, Math.floor((current / duration) * 100));
                           onProgressUpdate(progressPercent);
-                          if (progressPercent >= 100) {
-                            clearInterval(ytProgressIntervalRef.current!);
-                            onVideoEnded();
-                            updateProgressToDatabase(100);
-                          } else if (Math.floor(current) % 15 === 0) {
-                            updateProgressToDatabase(progressPercent);
-                          }
                         }
                       }, 1000);
                     },
@@ -132,10 +123,7 @@ export function VideoPlayer({
                       if (e.data === state.ENDED) {
                         onProgressUpdate(100);
                         onVideoEnded();
-                        updateProgressToDatabase(100);
                         if (ytProgressIntervalRef.current) clearInterval(ytProgressIntervalRef.current);
-                      } else if (e.data === state.PAUSED) {
-                        updateProgressToDatabase(progress);
                       }
                     }
                   }
@@ -190,10 +178,6 @@ export function VideoPlayer({
                   }
                 } else {
                   onProgressUpdate(progressPercent);
-                  
-                  if (watchTime % 15 === 0) {
-                    updateProgressToDatabase(progressPercent);
-                  }
                 }
               }, 1000);
             }}
@@ -219,7 +203,7 @@ export function VideoPlayer({
         Your browser does not support the video tag.
       </video>
     );
-  }, [video, onProgressUpdate, updateProgressToDatabase, progress, handleVideoProgress, handleVideoEnded, onVideoEnded, ensureYouTubeAPI]);
+  }, [video, onProgressUpdate, progress, handleVideoProgress, handleVideoEnded, onVideoEnded, ensureYouTubeAPI]);
 
   if (loading) {
     return (

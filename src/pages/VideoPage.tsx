@@ -228,14 +228,13 @@ export const VideoPage = () => {
                   progress={progress}
                   onProgressUpdate={updateProgress}
                   onVideoEnded={() => {
-                    // Always show completion overlay first
+                    updateProgress(100);
                     setShowCompletionOverlay(true);
                   }}
-                  updateProgressToDatabase={async () => {}}
                 />
                 
                 {/* Completion Overlay */}
-                {showCompletionOverlay && !isCompleted && (
+                {showCompletionOverlay && (
                   <CompletionOverlay
                     video={validatedVideo}
                     quiz={quiz}

@@ -49,7 +49,6 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
       progress={progress}
       onProgressUpdate={onProgressUpdate || (() => {})}
       onVideoEnded={onComplete || (() => {})}
-      updateProgressToDatabase={async () => {}}
     />
   );
 };
