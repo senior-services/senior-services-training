@@ -18,21 +18,35 @@ import { QuizModal } from "@/components/quiz/QuizModal";
 import { QuizWithQuestions, QuizSubmissionData } from "@/types/quiz";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { sanitizeVideoUrl } from "@/utils/security";
+import { useVideoProgress } from "@/hooks/useVideoProgress";
+import { CompletionOverlay } from "@/components/video/CompletionOverlay";
 
 export const VideoPage = () => {
   const { videoId } = useParams<{ videoId: string }>();
   const [video, setVideo] = useState<Video | null>(null);
   const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [progressLoading, setProgressLoading] = useState(true);
   const [quiz, setQuiz] = useState<QuizWithQuestions | null>(null);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
   const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
   const { role } = useUserRole(user);
   const location = useLocation();
+
+  // Use video progress hook
+  const {
+    progress,
+    isCompleted,
+    updateProgress,
+    markComplete,
+    loadExistingProgress
+  } = useVideoProgress({
+    videoId: videoId || null,
+    userEmail: user?.email || null,
+    hasQuiz: !!quiz
+  });
 
   useEffect(() => {
     if (videoId) {
@@ -47,6 +61,8 @@ export const VideoPage = () => {
   const loadVideo = async (id: string) => {
     try {
       setLoading(true);
+      setProgressLoading(true);
+      
       const res = await videoOperations.getById(id);
       if (res.success && res.data) {
         setVideo(res.data);
@@ -57,6 +73,20 @@ export const VideoPage = () => {
           setQuiz(quizData);
         } catch (error) {
           console.log('No quiz found for this video or error loading quiz:', error);
+        }
+
+        // Load existing progress after video is loaded
+        if (user?.email) {
+          try {
+            await loadExistingProgress();
+          } catch (error) {
+            logger.error('Failed to load existing progress', error as Error);
+            toast({
+              title: "Warning",
+              description: "Could not load your previous progress",
+              variant: "default",
+            });
+          }
         }
       } else {
         throw new Error(res.error || 'Failed to load video');
@@ -70,48 +100,23 @@ export const VideoPage = () => {
       });
     } finally {
       setLoading(false);
+      setProgressLoading(false);
     }
   };
 
-  const progressUpdateTimeoutRef = useRef<NodeJS.Timeout>();
-  const [isCompleted, setIsCompleted] = useState(false);
-
-  // Debounced progress update to database
-  const updateProgressToDatabase = async (progressPercent: number, forceComplete = false) => {
-    if (!user?.email || !videoId) return;
-
-    try {
-      // Only set completedAt if progress is 100% AND (no quiz exists OR forceComplete is true)
-      const shouldComplete = progressPercent >= 100 && (!quiz || forceComplete);
-      const completedAt = shouldComplete ? new Date() : undefined;
-      
-      await progressOperations.updateByEmail(
-        user.email,
-        videoId,
-        progressPercent,
-        completedAt
-      );
-
-      if (shouldComplete && !isCompleted) {
-        setIsCompleted(true);
-        toast({
-          title: "Video Completed! 🎉",
-          description: "You've successfully completed this training video.",
-        });
-      }
-    } catch (error) {
-      logger.error('Failed to update video progress', error as Error);
-    }
+  const handleStartQuiz = () => {
+    setShowCompletionOverlay(false);
+    setShowQuiz(true);
   };
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (progressUpdateTimeoutRef.current) {
-        clearTimeout(progressUpdateTimeoutRef.current);
-      }
-    };
-  }, []);
+  const handleCompleteTraining = async () => {
+    await markComplete();
+    setShowCompletionOverlay(false);
+    toast({
+      title: "Training Completed! 🎉",
+      description: "You've successfully completed this training.",
+    });
+  };
 
   const handleQuizSubmit = async (responses: QuizSubmissionData[]) => {
     if (!quiz || !user?.email) return;
@@ -120,11 +125,7 @@ export const VideoPage = () => {
     try {
       await quizOperations.submitQuiz(user.email, quiz.id, responses);
       setShowQuiz(false);
-      setProgress(100);
-      setIsCompleted(true);
-      
-      // Force completion in database now that quiz is submitted
-      await updateProgressToDatabase(100, true);
+      await markComplete();
       
       toast({
         title: "Quiz completed!",
@@ -164,7 +165,7 @@ export const VideoPage = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (loading || authLoading) {
+  if (loading || authLoading || progressLoading) {
     return (
       <div className="min-h-screen bg-muted/30">
         <div className="container mx-auto px-4 py-8">
@@ -214,7 +215,7 @@ export const VideoPage = () => {
 
         {/* Video Player */}
         <Card className="mb-6">
-          <CardContent className="p-6">
+          <CardContent className="p-6 relative">
             {!validatedVideo ? (
               <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                 <p className="text-muted-foreground">Video URL validation failed</p>
@@ -225,37 +226,24 @@ export const VideoPage = () => {
                   video={validatedVideo}
                   loading={false}
                   progress={progress}
-                  onProgressUpdate={(newProgress) => {
-                    // Cap progress at 99% if quiz exists and hasn't been completed
-                    const cappedProgress = quiz && newProgress >= 100 && !isCompleted ? 99 : newProgress;
-                    setProgress(cappedProgress);
-                    
-                    // Show quiz when video completes
-                    if (newProgress >= 99 && !isCompleted && quiz && !showQuiz) {
-                      setShowQuiz(true);
-                    }
-                    
-                    // Debounce database updates
-                    if (progressUpdateTimeoutRef.current) {
-                      clearTimeout(progressUpdateTimeoutRef.current);
-                    }
-                    progressUpdateTimeoutRef.current = setTimeout(() => {
-                      updateProgressToDatabase(cappedProgress);
-                    }, 1000);
-                  }}
+                  onProgressUpdate={updateProgress}
                   onVideoEnded={() => {
-                    // Handle video completion
-                    if (!isCompleted && quiz && !showQuiz) {
-                      setShowQuiz(true);
-                    } else if (!quiz) {
-                      // No quiz, mark as complete immediately
-                      setProgress(100);
-                      setIsCompleted(true);
-                      updateProgressToDatabase(100, true);
-                    }
+                    // Always show completion overlay first
+                    setShowCompletionOverlay(true);
                   }}
-                  updateProgressToDatabase={updateProgressToDatabase}
+                  updateProgressToDatabase={async () => {}}
                 />
+                
+                {/* Completion Overlay */}
+                {showCompletionOverlay && !isCompleted && (
+                  <CompletionOverlay
+                    video={validatedVideo}
+                    quiz={quiz}
+                    onStartQuiz={handleStartQuiz}
+                    onCompleteTraining={handleCompleteTraining}
+                    onClose={quiz ? () => setShowCompletionOverlay(false) : undefined}
+                  />
+                )}
               </div>
             )}
           </CardContent>
