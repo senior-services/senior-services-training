@@ -24,6 +24,7 @@ export function VideoPlayer({
   const progressIntervalRef = useRef<NodeJS.Timeout>();
   const ytPlayerRef = useRef<any>(null);
   const ytProgressIntervalRef = useRef<NodeJS.Timeout>();
+  const completionTriggeredRef = useRef<boolean>(false);
 
   // Ensure YouTube IFrame API is loaded
   const ensureYouTubeAPI = useCallback((): Promise<void> => {
@@ -115,6 +116,13 @@ export function VideoPlayer({
                         if (duration > 0) {
                           const progressPercent = Math.min(100, Math.floor((current / duration) * 100));
                           onProgressUpdate(progressPercent);
+                          
+                          // Trigger completion once when reaching 100%
+                          if (progressPercent >= 100 && !completionTriggeredRef.current) {
+                            completionTriggeredRef.current = true;
+                            clearInterval(ytProgressIntervalRef.current!);
+                            onVideoEnded();
+                          }
                         }
                       }, 1000);
                     },
@@ -122,8 +130,8 @@ export function VideoPlayer({
                       const state = YTGlobal.PlayerState;
                       if (e.data === state.ENDED) {
                         onProgressUpdate(100);
-                        onVideoEnded();
                         if (ytProgressIntervalRef.current) clearInterval(ytProgressIntervalRef.current);
+                        // onVideoEnded already called by progress tracker at 100%
                       }
                     }
                   }
