@@ -132,7 +132,11 @@ export function VideoPlayer({
                       if (e.data === state.ENDED) {
                         onProgressUpdate(100);
                         if (ytProgressIntervalRef.current) clearInterval(ytProgressIntervalRef.current);
-                        // onVideoEnded already called by progress tracker at 100%
+                        // Backup trigger for completion in case progress tracker failed (e.g., duration = 0)
+                        if (!completionTriggeredRef.current) {
+                          completionTriggeredRef.current = true;
+                          onVideoEnded();
+                        }
                       }
                     }
                   }
