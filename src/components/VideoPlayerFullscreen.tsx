@@ -69,7 +69,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   // State management
   const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
   const [overlayDismissed, setOverlayDismissed] = useState(false);
-  const [shouldShowOverlay, setShouldShowOverlay] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizResults, setQuizResults] = useState<QuizResponse[]>([]);
@@ -138,7 +137,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         resetProgress();
         setShowCompletionOverlay(false);
         setOverlayDismissed(false);
-        setShouldShowOverlay(false);
         setQuizStarted(false);
         setQuizSubmitted(false);
         setQuizResults([]);
@@ -225,76 +223,69 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     loadCompletedQuizResults();
   }, [wasEverCompleted, quiz, user?.email, videoId]);
 
-  // Effect to show completion overlay when progress reaches completion threshold
+  // Simple effect: Show overlay when video ends and training incomplete
   useEffect(() => {
-    // Never show completion overlay if training was ever completed
-    if (!quiz || wasEverCompleted || overlayDismissed || quizStarted) {
-      setShouldShowOverlay(false);
+    // Don't show if user dismissed it or started quiz or training was ever completed
+    if (overlayDismissed || quizStarted || wasEverCompleted) {
+      setShowCompletionOverlay(false);
       return;
     }
-
-    // Show overlay if progress is 99% or higher and video has a quiz
+    
+    // Show overlay when progress hits 99%+ (video ended)
     if (progress >= 99) {
       setShowCompletionOverlay(true);
-      setShouldShowOverlay(true);
     }
-  }, [progress, quiz, wasEverCompleted, overlayDismissed, quizStarted]);
-
-  // Handle video completion
-  const handleVideoCompletion = useCallback(() => {
-    if (progress >= 100 && !wasEverCompleted) {
-      setShowCompletionOverlay(true);
-      logger.videoEvent('video_completed', videoId || '', {
-        userEmail: user?.email,
-        completionTime: new Date().toISOString(),
-        hasQuiz: !!quiz
-      });
-    }
-  }, [progress, wasEverCompleted, videoId, user?.email, quiz]);
+  }, [progress, overlayDismissed, quizStarted, wasEverCompleted]);
 
   // Handle video ended
   const handleVideoEnded = useCallback(() => {
-    // If quiz exists, cap at 99% and show completion overlay
-    // If no quiz, allow 100% completion
-    if (quiz) {
-      updateProgress(99);
-      if (!wasEverCompleted) {
-        setShowCompletionOverlay(true);
-      }
-    } else {
-      updateProgress(100);
-      if (!wasEverCompleted) {
-        setShowCompletionOverlay(true);
-      }
+    // Update progress based on quiz existence
+    const finalProgress = quiz ? 99 : 100;
+    updateProgress(finalProgress);
+    
+    // Show overlay if training not yet completed
+    if (!wasEverCompleted) {
+      setShowCompletionOverlay(true);
     }
   }, [updateProgress, wasEverCompleted, quiz]);
 
   // Handle complete training (no quiz)
   const handleCompleteTraining = useCallback(async () => {
-    // For presentations, ensure acknowledgment before completion
+    // Check presentation acknowledgment if needed
     if (video?.content_type === 'presentation' && !presentationAcknowledged) {
       toast({
         variant: 'destructive',
         title: 'Acknowledgment Required',
-        description: 'Please confirm that you have reviewed the training material before completing.'
+        description: 'Please confirm that you have reviewed the training material.'
       });
       return;
     }
-    const completeResult = await markComplete();
-    if (completeResult?.success && video?.content_type === 'presentation' && user?.email && videoId) {
-      // Save acknowledgment data for presentations
-      await progressOperations.updateByEmail(user.email, videoId, 100, new Date(), new Date(), viewingSeconds);
+    
+    // Mark complete
+    await markComplete();
+    
+    // Save presentation acknowledgment if needed
+    if (video?.content_type === 'presentation' && user?.email && videoId) {
+      await progressOperations.updateByEmail(
+        user.email, 
+        videoId, 
+        100, 
+        new Date(), 
+        new Date(), 
+        viewingSeconds
+      );
     }
+    
+    // Close everything
     setShowCompletionOverlay(false);
     toast({
       title: "Training Completed! 🎉",
-      description: "You've successfully completed this training video."
+      description: "You've successfully completed this training."
     });
-
-    // Notify parent dashboard to refresh
+    
     onProgressUpdate?.(100);
     onOpenChange(false);
-  }, [toast, onOpenChange, onProgressUpdate, video, presentationAcknowledged, markComplete, user, videoId, viewingSeconds]);
+  }, [video, presentationAcknowledged, markComplete, user, videoId, viewingSeconds, toast, onProgressUpdate, onOpenChange]);
 
   // Handle quiz submission
   const handleQuizSubmit = useCallback(async () => {
@@ -340,53 +331,33 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         variant: "destructive"
       });
     }
-  }, [quiz, user?.email, video?.id, onProgressUpdate, toast, quizResponses]);
-
-  // Handle marking training complete
-  const handleMarkTrainingComplete = useCallback(() => {
-    setQuizStarted(false);
-    setShowCompletionOverlay(false);
-    toast({
-      title: "Training Completed! 🎉",
-      description: "You've successfully completed the training and quiz."
-    });
-
-    // Notify parent dashboard to refresh
-    onProgressUpdate?.(100);
-
-    // Close the dialog
-    onOpenChange(false);
-  }, [toast, onOpenChange, onProgressUpdate]);
+  }, [quiz, user?.email, video?.id, toast, quizResponses, markComplete]);
 
   // Handle starting the quiz
   const handleStartQuiz = useCallback(() => {
-    // Prevent starting quiz if training was already completed previously
     if (wasEverCompleted) return;
+    
     setQuizStarted(true);
     setShowCompletionOverlay(false);
     setOverlayDismissed(true);
+    
+    // Reset quiz state
     setQuizResponses([]);
     setAllQuestionsAnswered(false);
     setHasQuizChanges(false);
     setQuizSubmitted(false);
     setQuizResults([]);
     setCompletedQuizResults([]);
-
-    // Scroll to quiz section
+    
+    // Scroll to quiz
     setTimeout(() => {
-      const quizSection = document.getElementById('quiz-section');
-      if (quizSection) {
-        quizSection.scrollIntoView({
-          behavior: 'smooth'
-        });
-      }
+      document.getElementById('quiz-section')?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
   }, [wasEverCompleted]);
 
   // Handle closing the completion overlay
   const handleCloseOverlay = useCallback(() => {
     setShowCompletionOverlay(false);
-    setShouldShowOverlay(false);
     setOverlayDismissed(true);
   }, []);
 
@@ -508,7 +479,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             {trainingContent && <ContentPlayer content={trainingContent} loading={vLoading} progress={progress} onProgressUpdate={updateProgress} onComplete={handleVideoEnded} />}
             
             {/* Completion Overlay - Only show if training was never completed */}
-            {shouldShowOverlay && showCompletionOverlay && !wasEverCompleted && <CompletionOverlay video={video} quiz={quiz} onStartQuiz={handleStartQuiz} onCompleteTraining={handleCompleteTraining} onClose={quiz ? handleCloseOverlay : undefined} />}
+            {showCompletionOverlay && !wasEverCompleted && <CompletionOverlay video={video} quiz={quiz} onStartQuiz={handleStartQuiz} onCompleteTraining={handleCompleteTraining} onClose={quiz ? handleCloseOverlay : undefined} />}
           </div>
 
           {/* Compliance Checkbox - Only for Presentations */}
