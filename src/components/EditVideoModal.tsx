@@ -97,40 +97,30 @@ export const EditVideoModal = ({
     completedCount: number;
     quizCompletedCount: number;
   } | null>(null);
-  const [quizUsage, setQuizUsage] = useState<{
-    canDelete: boolean;
-    attemptCount: number;
-  } | null>(null);
   const [usageLoading, setUsageLoading] = useState(false);
   const {
     toast
   } = useToast();
 
-  // Load usage information for both video and quiz
+  // Load usage information for video only (quiz usage removed to prevent double-load flicker)
   const loadUsageInfo = useCallback(async () => {
     if (!video) return;
     setUsageLoading(true);
     try {
-      // Load video usage
       const videoUsageResult = await videoOperations.checkUsage(video.id);
       if (videoUsageResult.success && videoUsageResult.data) {
         setVideoUsage(videoUsageResult.data);
-      }
-
-      // Load quiz usage if quiz exists
-      if (quiz?.id) {
-        const quizUsageResult = await quizOperations.checkUsage(quiz.id);
-        setQuizUsage(quizUsageResult);
       }
     } catch (error) {
       console.error('Error loading usage info:', error);
     } finally {
       setUsageLoading(false);
     }
-  }, [video, quiz]);
+  }, [video]);
   useEffect(() => {
     const abortController = new AbortController();
     if (video) {
+      setVideoUsage(null); // Reset to prevent showing previous video's state
       setTitle(video.title || '');
       setDescription(video.description || '');
       loadQuiz(abortController.signal);
