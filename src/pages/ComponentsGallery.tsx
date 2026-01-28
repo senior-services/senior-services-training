@@ -519,31 +519,31 @@ export const ComponentsGallery = ({
                 </div>
                 <div className="flex items-baseline gap-2">
                   <p className="text-sm text-muted-foreground">Small text - Secondary information</p>
-                  <span className="text-xs text-muted-foreground">(14px)</span>
+                  <span className="text-xs text-muted-foreground">(15px)</span>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <p className="text-sm text-muted-foreground font-bold">Small text bold - Secondary information</p>
-                  <span className="text-xs text-muted-foreground">(14px)</span>
+                  <span className="text-xs text-muted-foreground">(15px)</span>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <p className="text-sm text-muted-foreground font-medium">Small text medium - Secondary information</p>
-                  <span className="text-xs text-muted-foreground">(14px)</span>
+                  <span className="text-xs text-muted-foreground">(15px)</span>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <p className="text-xs text-muted-foreground">Extra small text - Captions and labels</p>
-                  <span className="text-xs text-muted-foreground">(12px)</span>
+                  <span className="text-xs text-muted-foreground">(14px)</span>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <p className="text-xs text-muted-foreground font-bold">Extra small text bold - Captions and labels</p>
-                  <span className="text-xs text-muted-foreground">(12px)</span>
+                  <span className="text-xs text-muted-foreground">(14px)</span>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <p className="text-xs text-muted-foreground font-medium">Extra small text medium - Captions and labels</p>
-                  <span className="text-xs text-muted-foreground">(12px)</span>
+                  <span className="text-xs text-muted-foreground">(14px)</span>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <code className="bg-muted px-2 py-1 rounded text-sm font-mono shadow-sm border border-border-primary/30">Code snippet</code>
-                  <span className="text-xs text-muted-foreground">(14px)</span>
+                  <span className="text-xs text-muted-foreground">(15px)</span>
                 </div>
               </div>
             </CardContent>
