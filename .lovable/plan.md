@@ -1,38 +1,51 @@
 
 
-## Move Muted Background to Page Level with White Header
+## Reorder Toggle Filters in Assign Videos Dialog
 
 ### Overview
-Change the page background to muted color while keeping the header white by:
-1. Moving `bg-muted/50` from the `<main>` element to the outer `<div>` wrapper
-2. Ensuring the Header component keeps its white background (it already has `bg-background`)
+Change the order of the filter toggles in the Assign Videos dialog from "Unassigned, Assigned, Completed, All" to "Assigned, Unassigned, Completed, All".
 
 ---
 
-### Changes Required
+### Change Required
 
-**File: `src/pages/AdminDashboard.tsx`**
+**File: `src/components/dashboard/AssignVideosModal.tsx`**  
+**Lines 585-596**
 
-**Change 1 - Line 38** (add muted background to page wrapper):
+**Current order:**
 ```tsx
-// Current:
-return <div className="min-h-screen bg-background">
-
-// Updated:
-return <div className="min-h-screen bg-muted/50">
+<ToggleGroupItem value="unassigned" className="text-xs px-3 py-1" aria-label="Filter by unassigned videos">
+  Unassigned
+</ToggleGroupItem>
+<ToggleGroupItem value="assigned" className="text-xs px-3 py-1" aria-label="Filter by assigned videos">
+  Assigned
+</ToggleGroupItem>
+<ToggleGroupItem value="completed" className="text-xs px-3 py-1" aria-label="Filter by completed videos">
+  Completed
+</ToggleGroupItem>
+<ToggleGroupItem value="all" className="text-xs px-3 py-1" aria-label="Show all videos">
+  All
+</ToggleGroupItem>
 ```
 
-**Change 2 - Line 41** (remove muted background from main):
+**Updated order:**
 ```tsx
-// Current:
-<main className="container mx-auto px-4 pb-8 bg-muted/50">
-
-// Updated:
-<main className="container mx-auto px-4 pb-8">
+<ToggleGroupItem value="assigned" className="text-xs px-3 py-1" aria-label="Filter by assigned videos">
+  Assigned
+</ToggleGroupItem>
+<ToggleGroupItem value="unassigned" className="text-xs px-3 py-1" aria-label="Filter by unassigned videos">
+  Unassigned
+</ToggleGroupItem>
+<ToggleGroupItem value="completed" className="text-xs px-3 py-1" aria-label="Filter by completed videos">
+  Completed
+</ToggleGroupItem>
+<ToggleGroupItem value="all" className="text-xs px-3 py-1" aria-label="Show all videos">
+  All
+</ToggleGroupItem>
 ```
 
 ---
 
-### Why This Works
-The Header component already has `bg-background` class (line 21 of Header.tsx), which will render it white and overlay on top of the muted page background. The main content area will show through to the muted background.
+### Result
+The filter toggles will display in the order: **Assigned, Unassigned, Completed, All**
 
