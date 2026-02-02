@@ -1416,11 +1416,6 @@ export const ComponentsGallery = ({
               <CardDescription>Dialogs, dropdowns, and overlays</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Component Update Tracking */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Component Update Tracking</h3>
-                <ComponentUpdateIndicator className="max-w-md" />
-              </div>
               
               <div className="flex flex-wrap gap-4">
                 <Dialog>
@@ -1602,6 +1597,17 @@ export const ComponentsGallery = ({
                   <p>Content for tab 3</p>
                 </TabsContent>
               </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Component Updates */}
+          <Card id="component-updates">
+            <CardHeader>
+              <CardTitle>Component Updates</CardTitle>
+              <CardDescription>Track and validate component changes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ComponentUpdateIndicator className="max-w-md" />
             </CardContent>
           </Card>
           
