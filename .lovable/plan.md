@@ -1,9 +1,9 @@
 
 
-## Implement Fullscreen Dialog for Edit Assignments Modal
+## Update Filter Toggle to 4 Options
 
 ### Overview
-Converting the "Edit Assignments" dialog in Admin → Employees to use the new `FullscreenDialogContent` component. This provides more screen space for viewing and managing video assignments.
+Adding "Completed" and "All" filter options to the video assignment toggle, plus mobile-friendly wrapping.
 
 ---
 
@@ -13,79 +13,156 @@ Converting the "Edit Assignments" dialog in Admin → Employees to use the new `
 
 ---
 
-### Change 1: Update Import (Lines 2-9)
+### Change 1: Update Filter Mode Type (Line 96)
 
 **Current:**
 ```tsx
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogScrollArea,
-  DialogFooter,
-} from '@/components/ui/dialog';
+const [filterMode, setFilterMode] = useState<'unassigned' | 'assigned'>('unassigned');
 ```
 
 **New:**
 ```tsx
-import {
-  Dialog,
-  FullscreenDialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogScrollArea,
-  DialogFooter,
-} from '@/components/ui/dialog';
+const [filterMode, setFilterMode] = useState<'unassigned' | 'assigned' | 'completed' | 'all'>('unassigned');
 ```
 
 ---
 
-### Change 2: Replace Opening Tag (Line 385)
+### Change 2: Update Filter Logic (Lines 354-370)
 
 **Current:**
 ```tsx
-<DialogContent className="sm:max-w-2xl">
+// Filter videos based on current filter mode
+const getFilteredVideos = () => {    
+  switch (filterMode) {
+    case 'unassigned':
+      // Show videos that are not assigned and not completed, sorted alphabetically
+      return videos
+        .filter(v => !assignedVideoIds.has(v.id) && !completedVideoIds.has(v.id))
+        .sort((a, b) => a.title.localeCompare(b.title));
+    case 'assigned':
+      // Show videos currently assigned to employee (excluding completed), sorted alphabetically
+      return videos
+        .filter(v => assignedVideoIds.has(v.id) && !completedVideoIds.has(v.id))
+        .sort((a, b) => a.title.localeCompare(b.title));
+    default:
+      return videos;
+  }
+};
 ```
 
 **New:**
 ```tsx
-<FullscreenDialogContent>
+// Filter videos based on current filter mode
+const getFilteredVideos = () => {    
+  switch (filterMode) {
+    case 'unassigned':
+      // Show videos that are not assigned and not completed
+      return videos
+        .filter(v => !assignedVideoIds.has(v.id) && !completedVideoIds.has(v.id))
+        .sort((a, b) => a.title.localeCompare(b.title));
+    case 'assigned':
+      // Show videos currently assigned to employee (excluding completed)
+      return videos
+        .filter(v => assignedVideoIds.has(v.id) && !completedVideoIds.has(v.id))
+        .sort((a, b) => a.title.localeCompare(b.title));
+    case 'completed':
+      // Show only completed videos
+      return videos
+        .filter(v => completedVideoIds.has(v.id))
+        .sort((a, b) => a.title.localeCompare(b.title));
+    case 'all':
+      // Show all videos
+      return videos
+        .sort((a, b) => a.title.localeCompare(b.title));
+    default:
+      return videos;
+  }
+};
 ```
 
 ---
 
-### Change 3: Replace Closing Tag (Line 590)
+### Change 3: Add Toggle Options + Flex-Wrap (Lines 403-416)
 
 **Current:**
 ```tsx
-</DialogContent>
+<ToggleGroup 
+  type="single" 
+  value={filterMode} 
+  onValueChange={(value) => setFilterMode(value as typeof filterMode || 'unassigned')}
+  variant="pill"
+  className="justify-start"
+>
+  <ToggleGroupItem value="unassigned" className="text-xs px-3 py-1" aria-label="Filter by unassigned videos">
+    Unassigned
+  </ToggleGroupItem>
+  <ToggleGroupItem value="assigned" className="text-xs px-3 py-1" aria-label="Filter by assigned videos">
+    Assigned
+  </ToggleGroupItem>
+</ToggleGroup>
 ```
 
 **New:**
 ```tsx
-</FullscreenDialogContent>
+<ToggleGroup 
+  type="single" 
+  value={filterMode} 
+  onValueChange={(value) => setFilterMode(value as typeof filterMode || 'unassigned')}
+  variant="pill"
+  className="justify-start flex-wrap"
+>
+  <ToggleGroupItem value="unassigned" className="text-xs px-3 py-1" aria-label="Filter by unassigned videos">
+    Unassigned
+  </ToggleGroupItem>
+  <ToggleGroupItem value="assigned" className="text-xs px-3 py-1" aria-label="Filter by assigned videos">
+    Assigned
+  </ToggleGroupItem>
+  <ToggleGroupItem value="completed" className="text-xs px-3 py-1" aria-label="Filter by completed videos">
+    Completed
+  </ToggleGroupItem>
+  <ToggleGroupItem value="all" className="text-xs px-3 py-1" aria-label="Show all videos">
+    All
+  </ToggleGroupItem>
+</ToggleGroup>
 ```
 
 ---
 
-### What Changes for Users
+### Change 4: Update Empty State Messages (Lines 447-450)
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| Dialog size | Fixed max-width of 672px | Fills screen with 8-10px margins |
-| Video list | Compact, may require scrolling | More room to see all assignments |
-| Date pickers | Can feel cramped | More breathing room |
-| Mobile experience | Standard centered modal | Near-fullscreen for easier touch |
+**Current:**
+```tsx
+<p>
+  {filterMode === 'unassigned' && 'No unassigned videos available'}
+  {filterMode === 'assigned' && 'No assigned videos found'}
+</p>
+```
+
+**New:**
+```tsx
+<p>
+  {filterMode === 'unassigned' && 'No unassigned videos available'}
+  {filterMode === 'assigned' && 'No assigned videos found'}
+  {filterMode === 'completed' && 'No completed videos found'}
+  {filterMode === 'all' && 'No videos available'}
+</p>
+```
 
 ---
 
-### What Stays the Same
+### Filter Behavior Summary
 
-- All video assignment functionality
-- Checkbox selection behavior
-- Date picker calendars
-- Filter toggles (Unassigned/Assigned)
-- "Discard changes?" confirmation dialog (remains standard AlertDialog)
-- Save and Cancel buttons
+| Filter | Shows |
+|--------|-------|
+| Unassigned | Videos not assigned and not completed |
+| Assigned | Videos assigned but not yet completed |
+| Completed | Only completed videos |
+| All | All videos regardless of status |
+
+---
+
+### Items NOT Included (Per Request)
+
+- Status badges on video items
+- Shorter toggle labels
 
