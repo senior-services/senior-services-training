@@ -93,7 +93,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [hiddenVideoIds, setHiddenVideoIds] = useState<Set<string>>(new Set());
-  const [filterMode, setFilterMode] = useState<'unassigned' | 'assigned'>('unassigned');
+  const [filterMode, setFilterMode] = useState<'unassigned' | 'assigned' | 'completed' | 'all'>('unassigned');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -355,14 +355,23 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const getFilteredVideos = () => {    
     switch (filterMode) {
       case 'unassigned':
-        // Show videos that are not assigned and not completed, sorted alphabetically
+        // Show videos that are not assigned and not completed
         return videos
           .filter(v => !assignedVideoIds.has(v.id) && !completedVideoIds.has(v.id))
           .sort((a, b) => a.title.localeCompare(b.title));
       case 'assigned':
-        // Show videos currently assigned to employee (excluding completed), sorted alphabetically
+        // Show videos currently assigned to employee (excluding completed)
         return videos
           .filter(v => assignedVideoIds.has(v.id) && !completedVideoIds.has(v.id))
+          .sort((a, b) => a.title.localeCompare(b.title));
+      case 'completed':
+        // Show only completed videos
+        return videos
+          .filter(v => completedVideoIds.has(v.id))
+          .sort((a, b) => a.title.localeCompare(b.title));
+      case 'all':
+        // Show all videos
+        return videos
           .sort((a, b) => a.title.localeCompare(b.title));
       default:
         return videos;
@@ -405,13 +414,19 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                   value={filterMode} 
                   onValueChange={(value) => setFilterMode(value as typeof filterMode || 'unassigned')}
                   variant="pill"
-                  className="justify-start"
+                  className="justify-start flex-wrap"
                 >
                   <ToggleGroupItem value="unassigned" className="text-xs px-3 py-1" aria-label="Filter by unassigned videos">
                     Unassigned
                   </ToggleGroupItem>
                   <ToggleGroupItem value="assigned" className="text-xs px-3 py-1" aria-label="Filter by assigned videos">
                     Assigned
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="completed" className="text-xs px-3 py-1" aria-label="Filter by completed videos">
+                    Completed
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="all" className="text-xs px-3 py-1" aria-label="Show all videos">
+                    All
                   </ToggleGroupItem>
                 </ToggleGroup>
 
@@ -447,6 +462,8 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                     <p>
                       {filterMode === 'unassigned' && 'No unassigned videos available'}
                       {filterMode === 'assigned' && 'No assigned videos found'}
+                      {filterMode === 'completed' && 'No completed videos found'}
+                      {filterMode === 'all' && 'No videos available'}
                     </p>
                  </div>
               ) : (
