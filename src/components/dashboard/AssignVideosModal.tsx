@@ -334,7 +334,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
       });
 
       onAssignmentComplete();
-      onOpenChange(false);
+      await loadVideosAndAssignments();
     } catch (error) {
       logger.error('Error assigning videos', error as Error);
       toast({
@@ -373,7 +373,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
       });
 
       onAssignmentComplete();
-      onOpenChange(false);
+      await loadVideosAndAssignments();
     } catch (error) {
       logger.error('Error unassigning videos', error as Error);
       toast({
