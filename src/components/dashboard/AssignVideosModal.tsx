@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
-  DialogContent,
+  FullscreenDialogContent,
   DialogHeader,
   DialogTitle,
   DialogScrollArea,
@@ -382,7 +382,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl">
+      <FullscreenDialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Video className="w-5 h-5" />
@@ -587,7 +587,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
             {isSubmitting ? 'Assigning...' : 'Assign Videos'}
           </Button>
         </DialogFooter>
-      </DialogContent>
+      </FullscreenDialogContent>
 
       <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
         <AlertDialogContent>
