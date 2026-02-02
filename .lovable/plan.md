@@ -1,81 +1,43 @@
 
 
-## Implement Employee Table: Email Under Name with Truncation
+## Move "Component Updates" Section to Bottom of Gallery
 
-### Summary
-Remove the separate "Email" column and display the employee's email directly below their name, using extra small text (14px) with truncation to prevent layout issues on long email addresses.
-
----
-
-### Changes Overview
-
-**File:** `src/components/dashboard/EmployeeManagement.tsx`
-
-| Change | Description |
-|--------|-------------|
-| Remove EMAIL column header | Delete line 503 to remove the separate column |
-| Update Name cell | Add email below name with truncation styling |
-| Remove Email cell | Delete lines 526-528 (now redundant) |
-| Fix expanded row colspan | Change from 4 to 3 columns |
+### What We're Doing
+Moving the "Component Updates" section from inside the Interactive Components area to become its own standalone card at the very bottom of the Component Gallery page (just before the footer).
 
 ---
 
-### Detailed Changes
+### Changes to Make
 
-**1. Remove EMAIL column header (line 503)**
-- Delete: `<TableHead className="...">EMAIL</TableHead>`
-- Result: Table goes from 4 columns to 3 columns
+**File:** `src/pages/ComponentsGallery.tsx`
 
-**2. Update Name cell to include email (lines 518-525)**
+| Step | Action |
+|------|--------|
+| 1 | Remove the Component Update Tracking section from inside Interactive Components (lines 1419-1423) |
+| 2 | Add a new standalone Card section for "Component Updates" before the Footer card (after line 1606) |
 
-New structure:
-```
-┌─────────────────────────────────┐
-│ ▼ John Smith                    │
-│   johnsmith@longcompany...      │  ← Extra small text (14px), truncated
-└─────────────────────────────────┘
+---
+
+### New Section Structure
+
+```tsx
+<Card id="component-updates">
+  <CardHeader>
+    <CardTitle>Component Updates</CardTitle>
+    <CardDescription>Track and validate component changes</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <ComponentUpdateIndicator />
+  </CardContent>
+</Card>
 ```
 
-- Wrap name and email in a vertical layout
-- Email styled with `text-xs text-muted-foreground font-normal`
-- Add `truncate max-w-[200px]` for long emails
-- Add `title` attribute to show full email on hover
-
-**3. Remove separate Email cell (lines 526-528)**
-- Delete the standalone email TableCell
-- Information now lives under the name
-
-**4. Update expanded row colspan (line 549)**
-- Change `colSpan={4}` to `colSpan={3}`
-- Ensures expanded content spans all remaining columns
-
 ---
 
-### Visual Before/After
+### Result
 
-**Before (4 columns):**
-| NAME | EMAIL | STATUS | ACTIONS |
-|------|-------|--------|---------|
-| John Smith | john.smith@company.com | Active | [Buttons] |
+**Before:** Component Updates nested incorrectly inside Interactive Components  
+**After:** Component Updates as its own section at the bottom, before Footer
 
-**After (3 columns):**
-| NAME | STATUS | ACTIONS |
-|------|--------|---------|
-| John Smith | Active | [Buttons] |
-| john.smith@company.com | | |
-
----
-
-### Accessibility Considerations
-- Email remains visible to screen readers within the same cell
-- Existing `aria-label` on row already announces employee name/email
-- `title` attribute provides full email for mouse users on truncated text
-
----
-
-### Technical Notes
-- Uses `text-xs` class (14px per tailwind.config.ts)
-- `truncate` class adds `overflow-hidden text-overflow-ellipsis whitespace-nowrap`
-- `max-w-[200px]` prevents email from pushing layout on very long addresses
-- Conditional rendering: email only shown if `employee.email` exists
+This improves the logical organization of the gallery since Component Updates is a development tool, not an interactive UI component.
 
