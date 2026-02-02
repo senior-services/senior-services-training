@@ -1,110 +1,100 @@
 
 
-## Implement Competing Selection Logic with Recommended Fixes
+## Keep Dialog Open After Assign/Unassign Actions
 
 ### Overview
-Add logic to disable both Assign and Unassign buttons when conflicting selections exist, with accessible tooltips and improved styling.
+After a user assigns or unassigns trainings, the dialog will remain open with refreshed data so they can continue making changes without reopening the modal.
 
 ---
 
-### File to Modify
-
-**`src/components/dashboard/AssignVideosModal.tsx`**
-
----
-
-### Change 1: Import ButtonWithTooltip (Line 27)
-
-Replace Button-only import with ButtonWithTooltip:
-
+### Confirmed Finding
+Line 161 in `loadVideosAndAssignments()` already clears selections:
 ```tsx
-import { ButtonWithTooltip } from '@/components/ui/button-with-tooltip';
+setSelectedVideoIds(new Set());
 ```
+So we don't need to manually clear selections - the refresh handles it automatically.
 
 ---
 
-### Change 2: Add Competing Selection Logic (After Line 489)
+### Files to Modify
 
-Add conflict detection variables:
+**1. `src/components/dashboard/AssignVideosModal.tsx`**
 
+**2. `src/components/dashboard/EmployeeManagement.tsx`**
+
+---
+
+### Change 1: Update handleAssign (Line 337)
+
+Replace modal close with data refresh:
+
+**Before:**
 ```tsx
-const hasCompetingSelections = canAssign && canUnassign;
-const competingTooltip = "Clear conflicting selections first";
+onAssignmentComplete();
+onOpenChange(false);
 ```
 
----
-
-### Change 3: Update Action Buttons (Lines 533-554)
-
-Replace current buttons with conflict-aware ButtonWithTooltip components:
-
+**After:**
 ```tsx
-{/* Action buttons moved to header */}
-<div className="flex items-center gap-2">
-  {selectedUnassignedCount > 0 && (
-    <ButtonWithTooltip
-      onClick={() => setShowDueDateDialog(true)} 
-      disabled={isSubmitting || hasCompetingSelections}
-      size="sm"
-      tooltip={hasCompetingSelections ? competingTooltip : `Assign ${selectedUnassignedCount} training${selectedUnassignedCount !== 1 ? 's' : ''}`}
-    >
-      Assign ({selectedUnassignedCount})
-    </ButtonWithTooltip>
-  )}
-  {selectedAssignedCount > 0 && (
-    <ButtonWithTooltip
-      variant="outline"
-      onClick={() => setShowUnassignDialog(true)}
-      disabled={isSubmitting || hasCompetingSelections}
-      size="sm"
-      tooltip={hasCompetingSelections ? competingTooltip : `Unassign ${selectedAssignedCount} training${selectedAssignedCount !== 1 ? 's' : ''}`}
-      className="border-destructive text-destructive hover:bg-destructive/10"
-    >
-      Unassign ({selectedAssignedCount})
-    </ButtonWithTooltip>
-  )}
-</div>
+onAssignmentComplete();
+await loadVideosAndAssignments();
 ```
 
 ---
 
-### Behavior Summary
+### Change 2: Update handleUnassign (Lines 375-376)
 
-| Selection State | Assign Button | Unassign Button |
-|-----------------|---------------|-----------------|
-| No selections | Hidden | Hidden |
-| Only unassigned selected | Enabled with count tooltip | Hidden |
-| Only assigned selected | Hidden | Enabled with count tooltip (destructive outline) |
-| Both types selected | Disabled - "Clear conflicting selections first" | Disabled - "Clear conflicting selections first" |
-| During submission | Disabled | Disabled |
+Replace modal close with data refresh:
 
----
-
-### Visual Result
-
-**Normal state (only unassigned selected):**
-```
-[Assign (3)]  ← Blue primary button
+**Before:**
+```tsx
+onAssignmentComplete();
+onOpenChange(false);
 ```
 
-**Normal state (only assigned selected):**
-```
-[Unassign (2)]  ← Red outline destructive button
-```
-
-**Competing selections:**
-```
-[Assign (2)] [Unassign (1)]  ← Both grayed out, disabled
-     ↑
-Tooltip: "Clear conflicting selections first"
+**After:**
+```tsx
+onAssignmentComplete();
+await loadVideosAndAssignments();
 ```
 
 ---
 
-### Accessibility Notes
+### Change 3: Simplify Parent Callback (EmployeeManagement.tsx, Lines 589-592)
 
-- ButtonWithTooltip ensures tooltips work on disabled buttons via focusable wrapper span
-- Short, action-oriented tooltip text is easier to understand
-- Destructive outline style provides clear visual warning without being too aggressive
+Remove the modal close from callback - user can close when ready:
 
+**Before:**
+```tsx
+<AssignVideosModal 
+  open={showAssignModal} 
+  onOpenChange={setShowAssignModal} 
+  employee={selectedEmployee} 
+  onAssignmentComplete={() => {
+    setShowAssignModal(false);
+    loadEmployees();
+  }} 
+/>
+```
+
+**After:**
+```tsx
+<AssignVideosModal 
+  open={showAssignModal} 
+  onOpenChange={setShowAssignModal} 
+  employee={selectedEmployee} 
+  onAssignmentComplete={loadEmployees} 
+/>
+```
+
+---
+
+### User Experience After Changes
+
+1. User opens "Edit Assignments" for an employee
+2. Selects videos and clicks "Assign" or "Unassign"
+3. Action completes, success toast appears
+4. Dialog stays open with fresh data
+5. Selections are automatically cleared (via refresh)
+6. User can continue or close when done
 
