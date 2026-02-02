@@ -1,29 +1,38 @@
 
 
-## Add Muted Background at 50% Opacity to Main Container
+## Move Muted Background to Page Level with White Header
 
 ### Overview
-Add a semi-transparent muted background color to the `<main>` container in the AdminDashboard, excluding the header.
+Change the page background to muted color while keeping the header white by:
+1. Moving `bg-muted/50` from the `<main>` element to the outer `<div>` wrapper
+2. Ensuring the Header component keeps its white background (it already has `bg-background`)
 
 ---
 
-### Change Required
+### Changes Required
 
-**File: `src/pages/AdminDashboard.tsx`**  
-**Line 41**
+**File: `src/pages/AdminDashboard.tsx`**
 
-**Current:**
+**Change 1 - Line 38** (add muted background to page wrapper):
 ```tsx
+// Current:
+return <div className="min-h-screen bg-background">
+
+// Updated:
+return <div className="min-h-screen bg-muted/50">
+```
+
+**Change 2 - Line 41** (remove muted background from main):
+```tsx
+// Current:
+<main className="container mx-auto px-4 pb-8 bg-muted/50">
+
+// Updated:
 <main className="container mx-auto px-4 pb-8">
 ```
 
-**Updated:**
-```tsx
-<main className="container mx-auto px-4 pb-8 bg-muted/50">
-```
-
 ---
 
-### Result
-The main content area (below the header) will have a muted background color at 50% opacity, creating a subtle visual distinction from the header and page background.
+### Why This Works
+The Header component already has `bg-background` class (line 21 of Header.tsx), which will render it white and overlay on top of the muted page background. The main content area will show through to the muted background.
 
