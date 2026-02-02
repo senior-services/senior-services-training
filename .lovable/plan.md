@@ -1,95 +1,110 @@
 
 
-## Root Cause: Parent Component Unmounts the Dialog
+## Update Date Selection Dialog to Radio Button Style
 
-The flicker persists because the fix was applied in the wrong place. Here's what's actually happening:
-
-1. After you assign/unassign, the modal calls `onAssignmentComplete()`
-2. That function (`loadEmployees` in the parent) sets `loading = true`
-3. When loading is true, the **parent component completely disappears** and shows skeleton loaders
-4. This removes the entire dialog from the screen
-5. When loading finishes, everything reappears
-
-Think of it like this: we put curtains on the window to prevent light flickering, but someone is turning the whole room on and off instead.
+### Overview
+Replace the current toggle button + checkbox layout with a clean vertical radio button list, matching the reference design. All four options (1 week, 2 weeks, 1 month, No due date required) will be unified into a single radio group.
 
 ---
 
-## The Fix
+### File to Modify
 
-We need to update the parent component (`EmployeeManagement.tsx`) to support a "silent refresh" that keeps everything visible.
+**`src/components/dashboard/AssignVideosModal.tsx`**
 
 ---
 
-### File 1: `src/components/dashboard/EmployeeManagement.tsx`
+### Change 1: Update Imports
 
-**Change 1: Update loadEmployees to accept optional silent mode (Lines 90-92)**
+Replace the ToggleGroup import with RadioGroup:
 
 ```tsx
-// Before
-const loadEmployees = useCallback(async () => {
-  try {
-    setLoading(true);
+// Remove
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
-// After
-const loadEmployees = useCallback(async (silentRefresh = false) => {
-  try {
-    if (!silentRefresh) {
-      setLoading(true);
-    }
+// Add
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 ```
 
-**Change 2: Only reset loading if it was set (Line 163-164)**
+Also remove the Checkbox import if no longer used elsewhere in the file.
+
+---
+
+### Change 2: Simplify Handler Functions
+
+Combine the two separate handlers (`handleDueDateOptionChange` and `handleNoDueDateChange`) into one:
 
 ```tsx
-// Before
-} finally {
-  setLoading(false);
-}
-
-// After
-} finally {
-  if (!silentRefresh) {
-    setLoading(false);
+const handleDueDateSelection = (value: string) => {
+  if (value === 'none') {
+    setDueDateOption(null);
+    setNoDueDateRequired(true);
+  } else {
+    setDueDateOption(value as '1week' | '2weeks' | '1month');
+    setNoDueDateRequired(false);
   }
-}
+};
 ```
-
-This requires making `silentRefresh` accessible in the finally block by defining it outside the try.
 
 ---
 
-### File 2: `src/components/dashboard/AssignVideosModal.tsx`
+### Change 3: Replace Dialog Content UI
 
-**Change: Update the callback type and pass true when calling (Lines 54 and 342, 382)**
+Replace the toggle group and checkbox layout with a vertical radio group:
 
 ```tsx
-// Line 54 - Update prop type
-onAssignmentComplete: (silentRefresh?: boolean) => void;
-
-// Line 342 - After assign
-onAssignmentComplete(true);
-
-// Line 382 - After unassign  
-onAssignmentComplete(true);
+<div className={cn("space-y-4 py-4", isSubmitting && "opacity-50 pointer-events-none")}>
+  <Label className="text-sm font-medium">Select due date</Label>
+  <RadioGroup 
+    value={noDueDateRequired ? 'none' : (dueDateOption || '')}
+    onValueChange={handleDueDateSelection}
+    disabled={isSubmitting}
+    className="space-y-3"
+  >
+    <div className="flex items-center space-x-3">
+      <RadioGroupItem value="1week" id="due-1week" />
+      <Label htmlFor="due-1week" className="text-base font-normal cursor-pointer">
+        1 week
+      </Label>
+    </div>
+    <div className="flex items-center space-x-3">
+      <RadioGroupItem value="2weeks" id="due-2weeks" />
+      <Label htmlFor="due-2weeks" className="text-base font-normal cursor-pointer">
+        2 weeks
+      </Label>
+    </div>
+    <div className="flex items-center space-x-3">
+      <RadioGroupItem value="1month" id="due-1month" />
+      <Label htmlFor="due-1month" className="text-base font-normal cursor-pointer">
+        1 month
+      </Label>
+    </div>
+    <div className="flex items-center space-x-3">
+      <RadioGroupItem value="none" id="due-none" />
+      <Label htmlFor="due-none" className="text-base font-normal cursor-pointer">
+        No due date required
+      </Label>
+    </div>
+  </RadioGroup>
+</div>
 ```
 
 ---
 
-## Summary
+### Summary of Changes
 
-| Component | What Changes |
-|-----------|--------------|
-| EmployeeManagement | `loadEmployees` accepts optional `silentRefresh` parameter; skips setting/clearing `loading` state when true |
-| AssignVideosModal | Calls `onAssignmentComplete(true)` to request silent refresh |
+| Area | Before | After |
+|------|--------|-------|
+| Layout | Horizontal toggles + separate checkbox | Vertical radio button list |
+| Options | Split across two UI patterns | Unified in one RadioGroup |
+| Handlers | Two separate functions | One combined handler |
+| Accessibility | Multiple focus groups | Single focus group with arrow key navigation |
 
 ---
 
-## Expected Behavior
+### Benefits
 
-| When | What Happens |
-|------|--------------|
-| Page first loads | Full skeleton loaders (normal) |
-| Assign/unassign from dialog | Dialog stays visible, parent refreshes data silently, dialog shows its own spinner overlay |
-
-The dialog will now stay on screen throughout the entire process.
+- Matches the reference design exactly
+- Better accessibility with native keyboard navigation (arrow keys)
+- Simpler code with one handler instead of two
+- Consistent interaction pattern for all options
 
