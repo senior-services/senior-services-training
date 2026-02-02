@@ -38,7 +38,7 @@ export const AdminDashboard = ({
   return <div className="min-h-screen bg-background">
       <Header userName={userName} userEmail={userEmail} userRole="admin" onLogout={onLogout} />
       
-      <main className="container mx-auto px-4 pb-8">
+      <main className="container mx-auto px-4 pb-8 bg-muted/50">
         <div className="space-y-8">
           {/* Dashboard Tabs */}
           <Tabs defaultValue="videos" className="space-y-6">
