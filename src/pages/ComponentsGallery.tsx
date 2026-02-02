@@ -571,6 +571,7 @@ export const ComponentsGallery = ({
                       <Button variant="secondary" className="shadow-md hover:shadow-lg transition-shadow">Secondary</Button>
                       <Button variant="destructive" className="shadow-md hover:shadow-lg transition-shadow">Destructive</Button>
                       <Button variant="outline" className="shadow-md hover:shadow-lg transition-shadow">Outline</Button>
+                      <Button variant="outline" className="border-destructive text-destructive hover:bg-destructive/10 shadow-md hover:shadow-lg transition-shadow">Unassign</Button>
                       <Button variant="ghost" className="hover:shadow-md transition-shadow">Ghost</Button>
                       <Button variant="link">Link</Button>
                     </div>
