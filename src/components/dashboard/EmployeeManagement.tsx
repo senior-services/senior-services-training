@@ -291,9 +291,10 @@ export const EmployeeManagement: React.FC<{
         exportData.push({
           Name: employeeName,
           Email: employeeEmail,
-          'Video Title': 'No assignments',
-          Status: 'No Required Training',
-          'Date': '--',
+          'Course': 'No assignments',
+          'Status': 'Unassigned',
+          'Due Date': '--',
+          'Completion Date': '--',
           'Quiz Results': '--'
         });
       } else {
@@ -323,18 +324,13 @@ export const EmployeeManagement: React.FC<{
             today.setHours(0, 0, 0, 0);
             const due = new Date(assignment.due_date);
             due.setHours(0, 0, 0, 0);
-            const daysUntilDue = differenceInDays(due, today);
-            if (isPast(due) && daysUntilDue < 0) {
+            if (isPast(due)) {
               status = 'Overdue';
-            } else if (daysUntilDue === 0) {
-              status = 'Due Today';
-            } else if (daysUntilDue <= 7) {
-              status = 'Due';
             } else {
-              status = 'Due';
+              status = 'Pending';
             }
           } else {
-            status = 'No Deadline';
+            status = 'Pending';
           }
 
           // Get quiz results
@@ -348,28 +344,31 @@ export const EmployeeManagement: React.FC<{
             quizResults = `${percentage}% (${quizAttempt.score}/${quizAttempt.total_questions} Correct)`;
           }
 
-          // Get completion date - show due date for non-completed, completion date for completed
+          // Due Date - always show the original due date if exists
+          let dueDate = '--';
+          if (assignment.due_date) {
+            dueDate = format(new Date(assignment.due_date), 'MMM dd, yyyy');
+          }
+
+          // Completion Date - only show if completed
           let completionDate = '--';
-          const hasCompletionDate = assignment.completed_at || quizAttempt && quizAttempt.completed_at;
-          if (hasCompletionDate) {
-            // Show completion date for completed items
+          if (isCompleted) {
             if (quizAttempt && quizAttempt.completed_at) {
               completionDate = format(new Date(quizAttempt.completed_at), 'MMM dd, yyyy');
             } else if (assignment.completed_at) {
               completionDate = format(new Date(assignment.completed_at), 'MMM dd, yyyy');
             }
-          } else if (assignment.due_date) {
-            // Show due date for non-completed items
-            completionDate = format(new Date(assignment.due_date), 'MMM dd, yyyy');
           }
-        exportData.push({
-          Name: employeeName,
-          Email: employeeEmail,
-          'Training': assignment.video_title || '',
-          'Completion Status': status,
-          'Due Date': completionDate,
-          'Quiz Results': quizResults
-        });
+
+          exportData.push({
+            Name: employeeName,
+            Email: employeeEmail,
+            'Course': assignment.video_title || '',
+            'Status': status,
+            'Due Date': dueDate,
+            'Completion Date': completionDate,
+            'Quiz Results': quizResults
+          });
         });
       }
     });
