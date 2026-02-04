@@ -1,132 +1,124 @@
 
 
-## Create Reusable SortableTableHead Component
+## Add Sorting to Assign Videos Dialog Table
 
 ### Summary
 
-This plan extracts the duplicated sortable table header button pattern into a single reusable component. Currently, the same code block is repeated across four files (VideoTable, EmployeeManagement, AdminManagement, and ComponentsGallery). By creating one shared component, we eliminate repetition and ensure consistent behavior everywhere.
+Add sorting functionality to the "Course" and "Status" columns in the Assign Videos dialog using the new `SortableTableHead` component. Users will be able to click column headers to sort the table ascending or descending.
 
 ---
 
-### What Will Be Created
+### Current State
 
-**New file: `src/components/ui/sortable-table-head.tsx`**
-
-A reusable component that handles:
-- Displaying the column label
-- Showing the correct sort arrow (up, down, or neutral)
-- Toggling sort direction when clicked
-- Screen reader accessibility
+The table in the Assign Videos dialog currently:
+- Displays courses with static column headers (Course, Status, Date, Quiz Results)
+- Uses alphabetical sorting by title within each filter mode (assigned, unassigned, completed, all)
+- Has no interactive sorting controls
 
 ---
 
-### Files That Will Be Updated
+### What Will Change
 
-| File | What Changes |
-|------|--------------|
-| `EmployeeManagement.tsx` | Update `handleSort` to accept a column parameter (currently hardcoded to 'name' only), then replace inline button with new component |
-| `VideoTable.tsx` | Replace 2 inline button patterns with new component |
-| `AdminManagement.tsx` | Replace 2 inline button patterns with new component |
-| `ComponentsGallery.tsx` | Replace 3 inline button patterns in the example table |
+**File: `src/components/dashboard/AssignVideosModal.tsx`**
+
+| Change | Description |
+|--------|-------------|
+| Add state variables | Track which column is sorted and in which direction |
+| Add sort handler | Function to toggle sort column and direction |
+| Update table headers | Replace static headers with sortable headers for Course and Status |
+| Update filtering logic | Apply sorting based on user selection instead of always alphabetical |
 
 ---
 
-### Key Fix: EmployeeManagement Callback
+### Sorting Behavior
 
-The `handleSort` function in EmployeeManagement currently doesn't accept any parameters—it only toggles the "name" column. This will be updated to accept a column parameter for compatibility with the new component (even though only the Name column is sortable in that table per design requirements).
+**Course Column:**
+- Sorts alphabetically by video title (A-Z or Z-A)
 
-**Current (line 224-231):**
+**Status Column:**
+- Sorts by status priority order:
+  - Overdue (most urgent first)
+  - Pending
+  - Unassigned  
+  - Completed (least urgent)
+- Descending reverses this order
+
+---
+
+### Implementation Details
+
+**1. New State Variables (add near line 86):**
 ```tsx
-const handleSort = useCallback(() => {
-  if (sortColumn === 'name') {
-    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-  } else {
-    setSortColumn('name');
-    setSortDirection('asc');
-  }
-}, [sortColumn, sortDirection]);
+const [sortColumn, setSortColumn] = useState<'course' | 'status' | null>('course');
+const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 ```
 
-**Updated:**
+**2. Sort Handler Function (add near line 460):**
 ```tsx
-const handleSort = useCallback((column: 'name') => {
+const handleSort = (column: 'course' | 'status') => {
   if (sortColumn === column) {
     setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
   } else {
     setSortColumn(column);
     setSortDirection('asc');
   }
-}, [sortColumn, sortDirection]);
+};
 ```
 
----
+**3. Update getFilteredVideos Function (lines 502-523):**
 
-### Component Usage Example
+Replace the current alphabetical `.sort()` with dynamic sorting based on `sortColumn` and `sortDirection`:
+- For "course": compare titles alphabetically
+- For "status": compare using priority values (overdue=0, pending=1, unassigned=2, completed=3)
 
-**Before (repeated in every table):**
+**4. Update Table Headers (lines 678-683):**
+
+Replace static `<TableHead>` elements with `<SortableTableHead>` for Course and Status columns.
+
+**Before:**
 ```tsx
-<TableHead>
-  <Button variant="ghost" onClick={() => handleSort('name')} 
-    className={`text-xs uppercase ... ${sortColumn === 'name' ? 'font-bold' : 'font-medium'}`}>
-    Name
-    {sortColumn === 'name' ? sortDirection === 'asc' 
-      ? <ArrowUp /> : <ArrowDown /> 
-      : <ArrowUpDown className="opacity-50" />}
-  </Button>
-</TableHead>
+<TableHead>Course</TableHead>
+<TableHead>Status</TableHead>
 ```
 
-**After (single line):**
+**After:**
 ```tsx
 <SortableTableHead
-  column="name"
+  column="course"
   sortColumn={sortColumn}
   sortDirection={sortDirection}
   onSort={handleSort}
 >
-  Name
+  Course
+</SortableTableHead>
+<SortableTableHead
+  column="status"
+  sortColumn={sortColumn}
+  sortDirection={sortDirection}
+  onSort={handleSort}
+>
+  Status
 </SortableTableHead>
 ```
 
 ---
 
-### Accessibility Features
+### User Experience
 
-The component includes built-in accessibility that will now be consistent across all tables:
-- `aria-sort` attribute on the table header (announces "ascending" or "descending")
-- Descriptive `aria-label` explaining what clicking will do
-- Full keyboard navigation support (inherited from Button component)
-
----
-
-### Technical Details
-
-**Component Props:**
-
-| Prop | Type | Description |
-|------|------|-------------|
-| `column` | `string` | Identifier for this column |
-| `sortColumn` | `string \| null` | Which column is currently sorted (from parent state) |
-| `sortDirection` | `"asc" \| "desc"` | Current sort direction (from parent state) |
-| `onSort` | `(column: string) => void` | Function called when header is clicked |
-| `children` | `ReactNode` | The label text to display |
-
-**Styling Details:**
-- Uses ghost button variant (no background)
-- Uppercase, smaller text (`text-xs`)
-- Muted color by default, primary color on hover
-- Bold font when column is actively sorted
-- Icons: ArrowUp (ascending), ArrowDown (descending), ArrowUpDown (neutral with reduced opacity)
+- Clicking a column header sorts by that column in ascending order
+- Clicking the same header again reverses the direction
+- Sort arrows indicate current sort state:
+  - ↑ = ascending (A-Z for Course, Overdue first for Status)
+  - ↓ = descending (Z-A for Course, Completed first for Status)
+  - ↕ = not currently sorted by this column
+- Sorting persists while the dialog is open
+- Default: Course ascending (matches current behavior)
 
 ---
 
-### Summary of Changes
+### Files Modified
 
-| Step | File | Change Type |
-|------|------|-------------|
-| 1 | `src/components/ui/sortable-table-head.tsx` | Create new component |
-| 2 | `src/components/dashboard/EmployeeManagement.tsx` | Update handleSort + replace 1 pattern |
-| 3 | `src/components/dashboard/VideoTable.tsx` | Replace 2 patterns |
-| 4 | `src/components/dashboard/AdminManagement.tsx` | Replace 2 patterns |
-| 5 | `src/pages/ComponentsGallery.tsx` | Replace 3 patterns in example |
+| File | Changes |
+|------|---------|
+| `src/components/dashboard/AssignVideosModal.tsx` | Add sort state, handler, update filtering logic, replace 2 table headers with SortableTableHead |
 
