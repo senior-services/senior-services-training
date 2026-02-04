@@ -577,7 +577,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                          <TableHead className="w-[40px]"></TableHead>
                          <TableHead>Course</TableHead>
                           <TableHead>STATUS</TableHead>
-                          <TableHead>Due Date</TableHead>
+                          <TableHead>Date</TableHead>
                           <TableHead>Quiz Results</TableHead>
                         </TableRow>
                      </TableHeader>
