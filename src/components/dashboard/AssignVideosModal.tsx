@@ -644,7 +644,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                   )}
                   {selectedAssignedCount > 0 && (
                     <ButtonWithTooltip
-                      variant="outline"
+                      variant="destructive"
                       onClick={() => setShowUnassignDialog(true)}
                       disabled={isSubmitting || hasCompetingSelections}
                       size="sm"
@@ -653,7 +653,6 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                           ? competingTooltip
                           : `Unassign ${selectedAssignedCount} training${selectedAssignedCount !== 1 ? "s" : ""}`
                       }
-                      className="border-destructive text-destructive hover:bg-destructive/10"
                     >
                       Unassign ({selectedAssignedCount})
                     </ButtonWithTooltip>
