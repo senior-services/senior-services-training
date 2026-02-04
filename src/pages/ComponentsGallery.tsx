@@ -28,6 +28,7 @@ import { ComponentUpdateIndicator } from "@/components/ui/ComponentUpdateIndicat
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { IconButtonWithTooltip } from "@/components/ui/icon-button-with-tooltip";
+import { SortableTableHead } from "@/components/ui/sortable-table-head";
 import { getTooltipText } from "@/utils/tooltipText";
 import { useToast } from "@/hooks/use-toast";
 import { Home, Settings, User, Bell, Search, Plus, Edit, Trash2, Download, Upload, Eye, EyeOff, AlertCircle, CheckCircle, Info, X, ArrowUp, ArrowDown, ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react";
@@ -1051,24 +1052,30 @@ export const ComponentsGallery = ({
                       <TableCaption>Sortable table with interactive headers</TableCaption>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>
-                              <Button variant="ghost" className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:shadow-none hover:text-primary group ${sortColumn === "name" ? "font-bold" : "font-medium"}`} onClick={() => handleSort("name")}>
-                               Name 
-                               {sortColumn === "name" ? sortDirection === "asc" ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" /> : <ArrowUpDown className="w-4 h-4 ml-1 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
-                             </Button>
-                          </TableHead>
-                          <TableHead>
-                              <Button variant="ghost" className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:shadow-none hover:text-primary group ${sortColumn === "email" ? "font-bold" : "font-medium"}`} onClick={() => handleSort("email")}>
-                               Email
-                               {sortColumn === "email" ? sortDirection === "asc" ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" /> : <ArrowUpDown className="w-4 h-4 ml-1 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
-                             </Button>
-                          </TableHead>
-                          <TableHead>
-                              <Button variant="ghost" className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:shadow-none hover:text-primary group ${sortColumn === "department" ? "font-bold" : "font-medium"}`} onClick={() => handleSort("department")}>
-                               Department
-                               {sortColumn === "department" ? sortDirection === "asc" ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" /> : <ArrowUpDown className="w-4 h-4 ml-1 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
-                             </Button>
-                          </TableHead>
+                          <SortableTableHead
+                            column="name"
+                            sortColumn={sortColumn}
+                            sortDirection={sortDirection}
+                            onSort={handleSort}
+                          >
+                            Name
+                          </SortableTableHead>
+                          <SortableTableHead
+                            column="email"
+                            sortColumn={sortColumn}
+                            sortDirection={sortDirection}
+                            onSort={handleSort}
+                          >
+                            Email
+                          </SortableTableHead>
+                          <SortableTableHead
+                            column="department"
+                            sortColumn={sortColumn}
+                            sortDirection={sortDirection}
+                            onSort={handleSort}
+                          >
+                            Department
+                          </SortableTableHead>
                            <TableHead className="text-right text-xs font-medium uppercase text-muted-foreground">Actions</TableHead>
                         </TableRow>
                       </TableHeader>

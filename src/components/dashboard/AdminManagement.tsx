@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogScrollArea, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { UserPlus, Trash2, Shield, Mail, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { UserPlus, Trash2, Shield, Mail } from 'lucide-react';
+import { SortableTableHead } from '@/components/ui/sortable-table-head';
 import { IconButtonWithTooltip } from '@/components/ui/icon-button-with-tooltip';
 import { getTooltipText } from '@/utils/tooltipText';
 import { AdminService, AdminUser } from '@/services/adminService';
@@ -226,19 +227,23 @@ export const AdminManagement: React.FC = () => {
             </div> : <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>
-                    <Button variant="ghost" onClick={() => handleSort('name')} className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${sortColumn === 'name' ? 'font-bold' : 'font-medium'}`}>
-                      Name
-                      {sortColumn === 'name' ? sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" /> : <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
-                    </Button>
-                  </TableHead>
+                  <SortableTableHead
+                    column="name"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                  >
+                    Name
+                  </SortableTableHead>
                   <TableHead className="text-xs font-medium uppercase text-muted-foreground">Email</TableHead>
-                  <TableHead>
-                    <Button variant="ghost" onClick={() => handleSort('dateAdded')} className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${sortColumn === 'dateAdded' ? 'font-bold' : 'font-medium'}`}>
-                      Date Added
-                      {sortColumn === 'dateAdded' ? sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" /> : <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
-                    </Button>
-                  </TableHead>
+                  <SortableTableHead
+                    column="dateAdded"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                  >
+                    Date Added
+                  </SortableTableHead>
                   <TableHead className="text-right text-xs font-medium uppercase text-muted-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
