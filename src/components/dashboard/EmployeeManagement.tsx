@@ -278,7 +278,7 @@ export const EmployeeManagement: React.FC<{
       return <Badge variant="soft-success">All Training Complete</Badge>;
     }
     const pendingCount = requiredVideos.length - completedRequired.length;
-    return <Badge variant="soft-secondary">{pendingCount} Pending</Badge>;
+    return <Badge variant="soft-secondary">{pendingCount} To-do</Badge>;
   };
   const exportToExcel = useCallback(() => {
     const exportData: any[] = [];
@@ -304,7 +304,7 @@ export const EmployeeManagement: React.FC<{
           const quizAttempt = employeeQuizData?.get(assignment.video_id);
 
           // Get status - using same logic as getEmployeeStatus for consistency
-          let status = 'Pending';
+          let status = 'To-do';
           const videoCompleted = assignment.progress_percent === 100 || assignment.completed_at;
 
           // Check completion using same logic as display
@@ -326,10 +326,10 @@ export const EmployeeManagement: React.FC<{
             if (isPast(due)) {
               status = 'Overdue';
             } else {
-              status = 'Pending';
+                    status = 'To-do';
             }
           } else {
-            status = 'Pending';
+            status = 'To-do';
           }
 
           // Get quiz results
