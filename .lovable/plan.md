@@ -1,35 +1,30 @@
 
 
-## Fix: Change "Pending" Badge to Soft Variant
+## Apply No-Wrap Styling to Date and Quiz Results Columns
 
-### What's Being Fixed
+### Changes to Make
 
-In the Edit Assignments dialog, the "Pending" status badge uses a solid secondary style while all other status badges use soft variants. This creates visual inconsistency.
+**File: `src/components/dashboard/AssignVideosModal.tsx`**
 
----
-
-### The Fix
-
-**File: `src/components/dashboard/AssignVideosModal.tsx`**  
-**Line 492**
-
-Change the pending case from solid to soft variant:
+**Lines 718-723** - Add `whitespace-nowrap` to both columns:
 
 ```tsx
-case "pending":
-  return "soft-secondary";  // Was: "secondary"
+<TableCell>
+  <span className="text-sm whitespace-nowrap">{formatDueDate(video.id)}</span>
+</TableCell>
+<TableCell>
+  <span className="text-sm whitespace-nowrap">{getQuizResults(video.id)}</span>
+</TableCell>
 ```
 
----
+### Result
 
-### Current vs. After Fix
+| Column | Wrapping |
+|--------|----------|
+| Course | Allowed |
+| Status | No wrap (badge) |
+| Date | No wrap ✓ |
+| Quiz Results | No wrap ✓ |
 
-| Status | Current Variant | After Fix |
-|--------|----------------|-----------|
-| Completed | soft-success ✓ | soft-success |
-| Overdue | soft-destructive ✓ | soft-destructive |
-| **Pending** | **secondary** (solid) | **soft-secondary** |
-| Unassigned | soft-tertiary ✓ | soft-tertiary |
-
-All status badges will now consistently use soft variants for a unified look.
+Click **Approve** to implement these changes.
 
