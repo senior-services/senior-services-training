@@ -4,7 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { UserPlus, Trash2, Download, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { UserPlus, Trash2, Download } from 'lucide-react';
+import { SortableTableHead } from '@/components/ui/sortable-table-head';
 import { employeeOperations } from '@/services/api';
 import { IconButtonWithTooltip } from '@/components/ui/icon-button-with-tooltip';
 import { getTooltipText } from '@/utils/tooltipText';
@@ -221,11 +222,11 @@ export const EmployeeManagement: React.FC<{
       setIsDeleting(false);
     }
   };
-  const handleSort = useCallback(() => {
-    if (sortColumn === 'name') {
+  const handleSort = useCallback((column: 'name') => {
+    if (sortColumn === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      setSortColumn('name');
+      setSortColumn(column);
       setSortDirection('asc');
     }
   }, [sortColumn, sortDirection]);
@@ -423,12 +424,14 @@ export const EmployeeManagement: React.FC<{
             <Table className="table-fixed w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead aria-sort={sortColumn === 'name' ? sortDirection === 'asc' ? 'ascending' : 'descending' : undefined}>
-                    <Button variant="ghost" onClick={handleSort} className="text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group" aria-label={`Sort by name ${sortColumn === 'name' ? sortDirection === 'asc' ? 'descending' : 'ascending' : 'ascending'}`}>
-                      Name
-                      {sortColumn === 'name' ? sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" /> : <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
-                    </Button>
-                  </TableHead>
+                  <SortableTableHead
+                    column="name"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                  >
+                    Name
+                  </SortableTableHead>
                   
                   <TableHead className="px-4 py-3 text-xs font-medium uppercase text-muted-foreground">STATUS</TableHead>
                   <TableHead className="px-4 py-3 text-right text-xs font-medium uppercase text-muted-foreground">ACTIONS</TableHead>

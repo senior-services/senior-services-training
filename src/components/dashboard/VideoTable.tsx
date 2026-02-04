@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
-import { Edit, Video as VideoIcon, Plus, Play, ArrowUp, ArrowDown, ArrowUpDown, EyeOff } from 'lucide-react';
+import { Edit, Video as VideoIcon, Plus, Play, EyeOff } from 'lucide-react';
+import { SortableTableHead } from '@/components/ui/sortable-table-head';
 import { format } from 'date-fns';
 import { isYouTubeUrl, getYouTubeVideoId, isGoogleDriveUrl, getGoogleDriveFileId } from '@/utils/videoUtils';
 import { Video } from '@/types';
@@ -143,19 +144,25 @@ export const VideoTable: React.FC<VideoTableProps> = ({
             <Table aria-label="Training videos management table">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="whitespace-nowrap">
-                    <Button variant="ghost" onClick={() => handleSort('title')} className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${sortColumn === 'title' ? 'font-bold' : 'font-medium'}`}>
-                      Training Title and Description
-                      {sortColumn === 'title' ? sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" /> : <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
-                    </Button>
-                  </TableHead>
+                  <SortableTableHead
+                    column="title"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                    className="whitespace-nowrap"
+                  >
+                    Training Title and Description
+                  </SortableTableHead>
                   <TableHead className="text-center text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">Quiz</TableHead>
-                  <TableHead className="text-left text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">
-                    <Button variant="ghost" onClick={() => handleSort('created_at')} className={`text-xs uppercase text-muted-foreground p-0 h-auto hover:bg-transparent hover:text-primary hover:shadow-none group ${sortColumn === 'created_at' ? 'font-bold' : 'font-medium'}`}>
-                      Date Added
-                      {sortColumn === 'created_at' ? sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" /> : <ArrowUpDown className="ml-2 h-4 w-4 opacity-50 group-hover:text-primary group-hover:opacity-100" />}
-                    </Button>
-                  </TableHead>
+                  <SortableTableHead
+                    column="created_at"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                    className="text-left whitespace-nowrap"
+                  >
+                    Date Added
+                  </SortableTableHead>
                   <TableHead className="text-right text-xs font-medium uppercase text-muted-foreground whitespace-nowrap">Actions</TableHead>
                 </TableRow>
               </TableHeader>
