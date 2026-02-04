@@ -336,8 +336,8 @@ export const EmployeeManagement: React.FC<{
           // Get quiz results
           let quizResults = '--';
           if (!assignment.hasQuiz) {
-            // Show "N/A" for completed courses without quiz, "--" otherwise
-            quizResults = isCompleted ? 'N/A' : '--';
+            // All exported items are assigned, so show "N/A" when no quiz
+            quizResults = 'N/A';
           } else if (!quizAttempt) {
             quizResults = 'Not Completed';
           } else {
