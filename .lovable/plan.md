@@ -1,124 +1,192 @@
 
 
-## Add Sorting to Assign Videos Dialog Table
+## Add Secondary Sort & Reset Sort State on Dialog Close
 
 ### Summary
 
-Add sorting functionality to the "Course" and "Status" columns in the Assign Videos dialog using the new `SortableTableHead` component. Users will be able to click column headers to sort the table ascending or descending.
+This plan adds two improvements to the sorting implementation:
+
+1. **Secondary sort by title** - When sorting by Status, videos with the same status will be alphabetically sorted by title for consistent ordering
+2. **Reset sort state on close** - When the Assign Videos dialog is closed, sorting resets to the default (Course ascending)
+
+Both changes will also be applied to the Component Gallery's sortable table example to maintain consistency.
 
 ---
 
-### Current State
+### Files That Will Be Updated
 
-The table in the Assign Videos dialog currently:
-- Displays courses with static column headers (Course, Status, Date, Quiz Results)
-- Uses alphabetical sorting by title within each filter mode (assigned, unassigned, completed, all)
-- Has no interactive sorting controls
-
----
-
-### What Will Change
-
-**File: `src/components/dashboard/AssignVideosModal.tsx`**
-
-| Change | Description |
-|--------|-------------|
-| Add state variables | Track which column is sorted and in which direction |
-| Add sort handler | Function to toggle sort column and direction |
-| Update table headers | Replace static headers with sortable headers for Course and Status |
-| Update filtering logic | Apply sorting based on user selection instead of always alphabetical |
+| File | What Changes |
+|------|--------------|
+| `AssignVideosModal.tsx` | Add secondary sort logic; reset sort state in closeModal function |
+| `ComponentsGallery.tsx` | Add secondary sort logic to the sortable table example |
 
 ---
 
-### Sorting Behavior
+### Change 1: Secondary Sort by Title (Assign Videos Dialog)
 
-**Course Column:**
-- Sorts alphabetically by video title (A-Z or Z-A)
+**Current behavior:** When sorting by Status, videos with the same status (e.g., two "Pending" items) may appear in unpredictable order.
 
-**Status Column:**
-- Sorts by status priority order:
-  - Overdue (most urgent first)
-  - Pending
-  - Unassigned  
-  - Completed (least urgent)
-- Descending reverses this order
+**Updated behavior:** Videos with the same status will be alphabetically sorted by title.
 
----
+**Location:** `src/components/dashboard/AssignVideosModal.tsx` - sortVideos function (around line 518)
 
-### Implementation Details
-
-**1. New State Variables (add near line 86):**
+**Current code:**
 ```tsx
-const [sortColumn, setSortColumn] = useState<'course' | 'status' | null>('course');
-const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-```
-
-**2. Sort Handler Function (add near line 460):**
-```tsx
-const handleSort = (column: 'course' | 'status') => {
-  if (sortColumn === column) {
-    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-  } else {
-    setSortColumn(column);
-    setSortDirection('asc');
-  }
+const sortVideos = (videosToSort: VideoType[]): VideoType[] => {
+  return [...videosToSort].sort((a, b) => {
+    let comparison = 0;
+    if (sortColumn === 'course') {
+      comparison = a.title.localeCompare(b.title);
+    } else if (sortColumn === 'status') {
+      comparison = getStatusPriority(a.id) - getStatusPriority(b.id);
+    }
+    return sortDirection === 'asc' ? comparison : -comparison;
+  });
 };
 ```
 
-**3. Update getFilteredVideos Function (lines 502-523):**
-
-Replace the current alphabetical `.sort()` with dynamic sorting based on `sortColumn` and `sortDirection`:
-- For "course": compare titles alphabetically
-- For "status": compare using priority values (overdue=0, pending=1, unassigned=2, completed=3)
-
-**4. Update Table Headers (lines 678-683):**
-
-Replace static `<TableHead>` elements with `<SortableTableHead>` for Course and Status columns.
-
-**Before:**
+**Updated code:**
 ```tsx
-<TableHead>Course</TableHead>
-<TableHead>Status</TableHead>
-```
-
-**After:**
-```tsx
-<SortableTableHead
-  column="course"
-  sortColumn={sortColumn}
-  sortDirection={sortDirection}
-  onSort={handleSort}
->
-  Course
-</SortableTableHead>
-<SortableTableHead
-  column="status"
-  sortColumn={sortColumn}
-  sortDirection={sortDirection}
-  onSort={handleSort}
->
-  Status
-</SortableTableHead>
+const sortVideos = (videosToSort: VideoType[]): VideoType[] => {
+  return [...videosToSort].sort((a, b) => {
+    let comparison = 0;
+    if (sortColumn === 'course') {
+      comparison = a.title.localeCompare(b.title);
+    } else if (sortColumn === 'status') {
+      comparison = getStatusPriority(a.id) - getStatusPriority(b.id);
+      // Secondary sort: alphabetical by title when status is the same
+      if (comparison === 0) {
+        comparison = a.title.localeCompare(b.title);
+      }
+    }
+    return sortDirection === 'asc' ? comparison : -comparison;
+  });
+};
 ```
 
 ---
 
-### User Experience
+### Change 2: Reset Sort State on Dialog Close
 
-- Clicking a column header sorts by that column in ascending order
-- Clicking the same header again reverses the direction
-- Sort arrows indicate current sort state:
-  - ↑ = ascending (A-Z for Course, Overdue first for Status)
-  - ↓ = descending (Z-A for Course, Completed first for Status)
-  - ↕ = not currently sorted by this column
-- Sorting persists while the dialog is open
-- Default: Course ascending (matches current behavior)
+**Current behavior:** Sort state persists when dialog closes and reopens, which may confuse users who expect consistent initial state.
+
+**Updated behavior:** Sort resets to Course ascending (the default) when dialog is closed.
+
+**Location:** `src/components/dashboard/AssignVideosModal.tsx` - closeModal function (line 439-450)
+
+**Current code:**
+```tsx
+const closeModal = () => {
+  setSelectedVideoIds(new Set());
+  setVideoDeadlines(new Map(initialVideoDeadlines));
+  setShowDiscardDialog(false);
+  setShowUnassignDialog(false);
+  setFilterMode("assigned");
+  resetDueDateDialog();
+  // Reset quiz state
+  setVideoIdsWithQuizzes(new Set());
+  setEmployeeQuizResults(new Map());
+  onOpenChange(false);
+};
+```
+
+**Updated code:**
+```tsx
+const closeModal = () => {
+  setSelectedVideoIds(new Set());
+  setVideoDeadlines(new Map(initialVideoDeadlines));
+  setShowDiscardDialog(false);
+  setShowUnassignDialog(false);
+  setFilterMode("assigned");
+  resetDueDateDialog();
+  // Reset quiz state
+  setVideoIdsWithQuizzes(new Set());
+  setEmployeeQuizResults(new Map());
+  // Reset sort state to default
+  setSortColumn('course');
+  setSortDirection('asc');
+  onOpenChange(false);
+};
+```
 
 ---
 
-### Files Modified
+### Change 3: Secondary Sort in Component Gallery
 
-| File | Changes |
-|------|---------|
-| `src/components/dashboard/AssignVideosModal.tsx` | Add sort state, handler, update filtering logic, replace 2 table headers with SortableTableHead |
+**Purpose:** Keep the example table in the Component Gallery consistent with the pattern used in the main application.
+
+**Location:** `src/pages/ComponentsGallery.tsx` - sortedData logic (lines 121-138)
+
+**Current code:**
+```tsx
+const sortedData = [...tableData].sort((a, b) => {
+  const aValue = a[sortColumn as keyof typeof a];
+  const bValue = b[sortColumn as keyof typeof b];
+
+  // Handle numerical sorting for department column
+  if (sortColumn === "department") {
+    const aNum = parseInt(aValue);
+    const bNum = parseInt(bValue);
+    return sortDirection === "asc" ? aNum - bNum : bNum - aNum;
+  }
+
+  // String sorting for other columns
+  if (sortDirection === "asc") {
+    return aValue.localeCompare(bValue);
+  } else {
+    return bValue.localeCompare(aValue);
+  }
+});
+```
+
+**Updated code:**
+```tsx
+const sortedData = [...tableData].sort((a, b) => {
+  const aValue = a[sortColumn as keyof typeof a];
+  const bValue = b[sortColumn as keyof typeof b];
+
+  // Handle numerical sorting for department column
+  if (sortColumn === "department") {
+    const aNum = parseInt(aValue);
+    const bNum = parseInt(bValue);
+    let comparison = aNum - bNum;
+    // Secondary sort: alphabetical by name when department is the same
+    if (comparison === 0) {
+      comparison = a.name.localeCompare(b.name);
+    }
+    return sortDirection === "asc" ? comparison : -comparison;
+  }
+
+  // String sorting for other columns
+  let comparison = aValue.localeCompare(bValue);
+  // Secondary sort: alphabetical by name when primary column values are the same
+  if (comparison === 0 && sortColumn !== "name") {
+    comparison = a.name.localeCompare(b.name);
+  }
+  return sortDirection === "asc" ? comparison : -comparison;
+});
+```
+
+---
+
+### Summary of Changes
+
+| File | Change |
+|------|--------|
+| `AssignVideosModal.tsx` | Add secondary alphabetical sort when sorting by Status |
+| `AssignVideosModal.tsx` | Reset sortColumn and sortDirection in closeModal function |
+| `ComponentsGallery.tsx` | Add secondary alphabetical sort by name for consistent example |
+
+---
+
+### Expected Behavior After Changes
+
+**Assign Videos Dialog:**
+- Clicking Status header sorts by priority (Overdue → Pending → Unassigned → Completed)
+- Videos with the same status are alphabetically sorted by title
+- Closing the dialog resets sort to Course ascending
+
+**Component Gallery:**
+- Sorting by any column uses a secondary sort by Name for consistent ordering
+- Demonstrates best practice for stable sorting
 
