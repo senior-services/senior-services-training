@@ -1,60 +1,84 @@
 
 
-## Implement STATUS_LABELS Centralization
+## Update Employee Status Column Display
 
 ### Summary
 
-Add a centralized `STATUS_LABELS` constant to the constants file and update both components to use it, ensuring consistent status terminology throughout the application.
+Change the Status column in the Employee Management table to show To-do count as plain text and only use a badge for Overdue items.
+
+---
+
+### Current Behavior
+
+The status column currently shows one of these badges:
+- `soft-secondary` badge: "# To-do" 
+- `soft-destructive` badge: "# Overdue"
+- `soft-success` badge: "All Training Complete"
+- `soft-secondary` badge: "No Required Training"
+
+---
+
+### New Behavior
+
+| Scenario | Display |
+|----------|---------|
+| All complete | "All Training Complete" as plain text |
+| Some to-do, none overdue | "3 To-do" as plain text |
+| Some to-do + some overdue | "3 To-do" as plain text + `soft-destructive` badge "2 Overdue" |
+| No required training | "No Required Training" as plain text |
 
 ---
 
 ### Changes
 
-**1. Add STATUS_LABELS to constants file**
-
-**File:** `src/constants/index.ts`
-
-Add after `USER_ROLES` (around line 19):
-
-```typescript
-// Assignment status display labels
-export const STATUS_LABELS = {
-  pending: 'To-do',
-  overdue: 'Overdue',
-  completed: 'Completed',
-  unassigned: 'Unassigned',
-} as const;
-```
-
----
-
-**2. Update EmployeeManagement.tsx**
-
 **File:** `src/components/dashboard/EmployeeManagement.tsx`
 
-| Change | Location | From | To |
-|--------|----------|------|-----|
-| Add import | Line 22 | (after XLSX import) | Add `STATUS_LABELS` import |
-| Badge text | Line 281 | `{pendingCount} To-do` | `{pendingCount} {STATUS_LABELS.pending}` |
-| Export - unassigned | Line 295 | `'Unassigned'` | `STATUS_LABELS.unassigned` |
-| Export - default | Line 307 | `'To-do'` | `STATUS_LABELS.pending` |
-| Export - completed | Line 320 | `'Completed'` | `STATUS_LABELS.completed` |
-| Export - overdue | Line 327 | `'Overdue'` | `STATUS_LABELS.overdue` |
-| Export - pending (due date) | Line 329 | `'To-do'` | `STATUS_LABELS.pending` |
-| Export - pending (no due) | Line 332 | `'To-do'` | `STATUS_LABELS.pending` |
+**Location:** `getEmployeeStatus` function (lines 243-283)
 
-Also fixes the indentation issue on line 329.
+Update the return statements to:
 
----
+1. **No Required Training**: Return plain text `<span>` instead of badge
 
-**3. Update AssignVideosModal.tsx**
+2. **All Complete**: Return plain text `<span>` instead of badge
 
-**File:** `src/components/dashboard/AssignVideosModal.tsx`
+3. **Has Overdue**: Return a `<div>` with:
+   - Plain text showing "# To-do"
+   - Space separator
+   - Destructive badge showing "# Overdue"
 
-| Change | Location | From | To |
-|--------|----------|------|-----|
-| Add import | Line 30 | (after Employee import) | Add `STATUS_LABELS` import |
-| Badge text | Line 793 | `{status.charAt(0).toUpperCase() + status.slice(1)}` | `{STATUS_LABELS[status]}` |
+4. **Only To-do (no overdue)**: Return plain text `<span>` instead of badge
+
+**Updated function logic:**
+
+```tsx
+const getEmployeeStatus = (employeeId: string) => {
+  const videos = employeeVideos.get(employeeId) || [];
+  const requiredVideos = videos.filter(assignment => assignment.video_type === 'Required');
+  
+  if (requiredVideos.length === 0) {
+    return <span className="text-muted-foreground">No Required Training</span>;
+  }
+
+  // ... existing helper function and filtering logic stays the same ...
+
+  const pendingCount = requiredVideos.length - completedRequired.length;
+
+  if (completedRequired.length === requiredVideos.length) {
+    return <span className="text-muted-foreground">All Training Complete</span>;
+  }
+
+  if (overdueRequired.length > 0) {
+    return (
+      <div className="flex items-center gap-2">
+        <span>{pendingCount} {STATUS_LABELS.pending}</span>
+        <Badge variant="soft-destructive">{overdueRequired.length} Overdue</Badge>
+      </div>
+    );
+  }
+
+  return <span>{pendingCount} {STATUS_LABELS.pending}</span>;
+};
+```
 
 ---
 
@@ -62,7 +86,5 @@ Also fixes the indentation issue on line 329.
 
 | File | Changes |
 |------|---------|
-| `src/constants/index.ts` | Add `STATUS_LABELS` constant (5 lines) |
-| `src/components/dashboard/EmployeeManagement.tsx` | Update import + 7 status references |
-| `src/components/dashboard/AssignVideosModal.tsx` | Update import + 1 status reference |
+| `src/components/dashboard/EmployeeManagement.tsx` | Update 4 return statements in `getEmployeeStatus` function |
 
