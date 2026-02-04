@@ -1,10 +1,9 @@
 
+## Update Date Column to Show "Due" Prefix for Pending/Overdue Videos
 
-## Fix: Show "--" for Quiz Results When Video is Unassigned
+### What's Being Changed
 
-### What's Being Fixed
-
-In the Edit Assignments dialog, when a video has a quiz but is **unassigned**, the Quiz Results column currently shows "Not Completed". It should instead show "--" since quiz results are not applicable for unassigned videos.
+In the Edit Assignments dialog, the "Date" column currently shows just the date (e.g., "Jan 15, 2026"). For videos with "Pending" or "Overdue" status, it should display "Due Jan 15, 2026" to make it clearer that this is a deadline.
 
 ---
 
@@ -12,46 +11,57 @@ In the Edit Assignments dialog, when a video has a quiz but is **unassigned**, t
 
 **File: `src/components/dashboard/AssignVideosModal.tsx`**
 
-**Lines 523-541** - Update `getQuizResults` to check assignment status:
+**Lines 462-482** - Update `formatDueDate` to include "Due" prefix for pending/overdue statuses:
 
 ```tsx
-// Current logic (simplified):
-const getQuizResults = (videoId: string): React.ReactNode => {
-  const hasQuiz = videoIdsWithQuizzes.has(videoId);
-  const quizAttempt = employeeQuizResults.get(videoId);
+// Current logic:
+const formatDueDate = (videoId: string): string => {
+  if (!assignedVideoIds.has(videoId) && !selectedVideoIds.has(videoId)) return "--";
 
-  if (!hasQuiz) {
-    return <span aria-label="No quiz available">--</span>;
+  if (completedVideoIds.has(videoId)) {
+    const progressData = videoProgressData.get(videoId);
+    if (progressData?.completed_at) {
+      return format(new Date(progressData.completed_at), "MMM dd, yyyy");
+    }
   }
 
-  if (!quizAttempt) {
-    return <span>Not Completed</span>;  // ← Shows this for unassigned too
+  const deadline = videoDeadlines.get(videoId);
+  const existingDueDate = assignmentData.get(videoId)?.due_date;
+
+  if (deadline) {
+    return format(deadline, "MMM dd, yyyy");
+  } else if (existingDueDate) {
+    return format(new Date(existingDueDate), "MMM dd, yyyy");
   }
-  // ... score display
+  return "N/A";
 };
 ```
 
 **Updated logic:**
 
 ```tsx
-const getQuizResults = (videoId: string): React.ReactNode => {
-  const hasQuiz = videoIdsWithQuizzes.has(videoId);
-  const quizAttempt = employeeQuizResults.get(videoId);
-  const isAssigned = assignedVideoIds.has(videoId);
+const formatDueDate = (videoId: string): string => {
+  if (!assignedVideoIds.has(videoId) && !selectedVideoIds.has(videoId)) return "--";
 
-  if (!hasQuiz) {
-    return <span aria-label="No quiz available">--</span>;
+  if (completedVideoIds.has(videoId)) {
+    const progressData = videoProgressData.get(videoId);
+    if (progressData?.completed_at) {
+      return format(new Date(progressData.completed_at), "MMM dd, yyyy");
+    }
   }
 
-  // Unassigned videos show "--" instead of "Not Completed"
-  if (!isAssigned) {
-    return <span aria-label="Not assigned">--</span>;
-  }
+  const deadline = videoDeadlines.get(videoId);
+  const existingDueDate = assignmentData.get(videoId)?.due_date;
+  const status = getCompletionStatus(videoId);
 
-  if (!quizAttempt) {
-    return <span>Not Completed</span>;
+  if (deadline) {
+    const formattedDate = format(deadline, "MMM dd, yyyy");
+    return status === "pending" || status === "overdue" ? `Due ${formattedDate}` : formattedDate;
+  } else if (existingDueDate) {
+    const formattedDate = format(new Date(existingDueDate), "MMM dd, yyyy");
+    return status === "pending" || status === "overdue" ? `Due ${formattedDate}` : formattedDate;
   }
-  // ... score display remains unchanged
+  return "N/A";
 };
 ```
 
@@ -59,12 +69,9 @@ const getQuizResults = (videoId: string): React.ReactNode => {
 
 ### Result
 
-| Status | Quiz Available | Quiz Results Display |
-|--------|---------------|---------------------|
-| Unassigned | Yes | "--" ✓ |
-| Unassigned | No | "--" |
-| Assigned (not taken) | Yes | "Not Completed" |
-| Assigned (completed) | Yes | "85% (17/20 Correct)" |
-
-This ensures quiz results are only shown as "Not Completed" when the video is actually assigned and the employee hasn't taken the quiz yet.
-
+| Status | Date Column Display |
+|--------|---------------------|
+| Unassigned | "--" |
+| Pending | "Due Jan 15, 2026" ✓ |
+| Overdue | "Due Jan 10, 2026" ✓ |
+| Completed | "Jan 12, 2026" (completion date, no prefix) |
