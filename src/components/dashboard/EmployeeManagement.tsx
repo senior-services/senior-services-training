@@ -243,7 +243,7 @@ export const EmployeeManagement: React.FC<{
     const videos = employeeVideos.get(employeeId) || [];
     const requiredVideos = videos.filter(assignment => assignment.video_type === 'Required');
     if (requiredVideos.length === 0) {
-      return <Badge variant="secondary">No Required Training</Badge>;
+      return <Badge variant="soft-secondary">No Required Training</Badge>;
     }
 
     // Helper function to check if assignment is completed (same logic as getVideoStatus)
@@ -272,13 +272,13 @@ export const EmployeeManagement: React.FC<{
       return isPast(due) && daysUntilDue < 0;
     });
     if (overdueRequired.length > 0) {
-      return <Badge variant="destructive">{overdueRequired.length} Overdue</Badge>;
+      return <Badge variant="soft-destructive">{overdueRequired.length} Overdue</Badge>;
     }
     if (completedRequired.length === requiredVideos.length) {
-      return <Badge variant="success">All Training Complete</Badge>;
+      return <Badge variant="soft-success">All Training Complete</Badge>;
     }
     const pendingCount = requiredVideos.length - completedRequired.length;
-    return <Badge variant="secondary">{pendingCount} Pending</Badge>;
+    return <Badge variant="soft-secondary">{pendingCount} Pending</Badge>;
   };
   const exportToExcel = useCallback(() => {
     const exportData: any[] = [];
