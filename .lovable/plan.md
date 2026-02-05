@@ -1,26 +1,60 @@
 
+# Plan: Update Badge Text and Variants
 
-# Plan: Fix Completed Training Badge Variant
+## Changes
 
-## Issue
-The "Completed Training" badge in EmployeeDashboard.tsx uses hardcoded Tailwind classes instead of the Badge component's built-in `soft-success` variant.
+### 1. Required Training Badge (line 460-462)
+- **Text**: Change `{count} pending` → `{count} To-do`
+- **Variant**: Change `hollow-primary` → `default` (primary solid)
 
-## Change
+### 2. Completed Training Badge (line 497-499)
+- **Text**: Change `{count} completed` → `{count} Completed`
+- **Variant**: Change `soft-success` → `success` (success solid)
 
-**File:** `src/pages/EmployeeDashboard.tsx` (lines 497-499)
+---
 
+## File Changes
+
+**`src/pages/EmployeeDashboard.tsx`**
+
+| Lines | Before | After |
+|-------|--------|-------|
+| 460-462 | `<Badge variant="hollow-primary">{count} pending</Badge>` | `<Badge variant="default">{count} To-do</Badge>` |
+| 497-499 | `<Badge variant="soft-success">{count} completed</Badge>` | `<Badge variant="success">{count} Completed</Badge>` |
+
+### Code Changes
+
+**Lines 460-462:**
 ```jsx
 // Before
-<Badge className="bg-success/10 text-success border-success/20">
-  Completed Training
+<Badge variant="hollow-primary">
+  {trainingData.required.length} pending
 </Badge>
 
 // After
-<Badge variant="soft-success">
-  Completed Training
+<Badge variant="default">
+  {trainingData.required.length} To-do
 </Badge>
 ```
 
-## Result
-The Completed Training badge will use the standardized `soft-success` variant from the Badge component, ensuring consistency with the status UI variant guidelines and making future styling updates automatic across all badges.
+**Lines 497-499:**
+```jsx
+// Before
+<Badge variant="soft-success">
+  {trainingData.completed.length} completed
+</Badge>
 
+// After
+<Badge variant="success">
+  {trainingData.completed.length} Completed
+</Badge>
+```
+
+---
+
+## Result
+
+| Badge | Text | Variant |
+|-------|------|---------|
+| Required Training | "X To-do" | Primary solid (`default`) |
+| Completed Training | "X Completed" | Success solid (`success`) |
