@@ -1,30 +1,22 @@
 
 
-## Replace Header Logo with Cropped Version
+## Add Padding to Header Logo
 
 ### Summary
 
-Replace the current header logo with the newly uploaded cropped version of the Senior Services reversed logo.
+Add 5px top and bottom padding to the logo image in the header component.
 
 ---
 
 ### Changes Required
 
-#### 1. Copy Uploaded Image to Public Folder
+**File:** `src/components/Header.tsx` - Line 26
 
-Copy the uploaded cropped logo to the public folder:
-
-```
-user-uploads://SS_logo_reversed_cropped.png → public/lovable-uploads/SS_logo_reversed_cropped.png
-```
-
-#### 2. Update Header Component
-
-**File:** `src/components/Header.tsx` - Line 25
+Add `py-[5px]` class to the logo `<img>` element to apply 5px vertical padding.
 
 | Before | After |
 |--------|-------|
-| `/lovable-uploads/SS_logo_reversed.png` | `/lovable-uploads/SS_logo_reversed_cropped.png` |
+| `className="h-12 w-auto object-cover"` | `className="h-12 w-auto object-cover py-[5px]"` |
 
 ---
 
@@ -32,12 +24,11 @@ user-uploads://SS_logo_reversed_cropped.png → public/lovable-uploads/SS_logo_r
 
 | File | Change |
 |------|--------|
-| `public/lovable-uploads/SS_logo_reversed_cropped.png` | New file (copied from upload) |
-| `src/components/Header.tsx` | Update logo image source path |
+| `src/components/Header.tsx` | Add `py-[5px]` class to logo image |
 
 ---
 
 ### Visual Result
 
-The header will display the new cropped Senior Services reversed logo, which appears to have tighter cropping for a cleaner appearance.
+The logo will have 5px of padding on both the top and bottom, giving it slightly more breathing room within the header.
 
