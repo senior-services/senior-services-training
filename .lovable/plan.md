@@ -1,99 +1,70 @@
 
 
-## Add Download Data Dialog with Hidden Employees Option
+## Update Download Data Modal Layout
 
 ### Summary
 
-Update the "Download Data" button to open a dialog that lets users choose whether to include hidden employees in the Excel export. When including hidden employees, their quiz and video progress data will be loaded on-demand before generating the export.
+Simplify the dialog layout by removing the description text, repositioning the toggle to the left of the label, and showing the hidden employee count inline with the label.
 
 ---
 
-### What You'll See
+### Changes
 
-When you click "Download Data":
-1. **If no hidden employees exist**: Export downloads immediately (no dialog needed)
-2. **If hidden employees exist**: A dialog opens with:
-   - Title: "Download Employee Data"
-   - A toggle: "Include hidden employees" (off by default)  
-   - A note showing how many hidden employees would be included
-   - "Cancel" and "Download" buttons
+**File:** `src/components/dashboard/DownloadDataModal.tsx`
 
----
+1. **Remove description text** (line 50-52)
+   - Delete "Choose which employees to include in the export."
 
-### Changes Required
+2. **Remove helper text** (line 60-62)
+   - Delete "{hiddenCount} hidden employee(s) will be added"
 
-#### 1. Create New Component
-
-**New File:** `src/components/dashboard/DownloadDataModal.tsx`
-
-A dialog component following the existing `AddEmployeeModal` pattern with:
-- A Switch toggle for "Include hidden employees"
-- Count of hidden employees displayed
-- Loading state during data export
-- Proper accessibility (DialogTitle, description, labeled switch)
-
-#### 2. Update EmployeeManagement Component
-
-**File:** `src/components/dashboard/EmployeeManagement.tsx`
-
-Changes:
-- Add state for `showDownloadModal`
-- Update "Download Data" button:
-  - If no hidden employees → call `exportToExcel` directly (skip dialog)
-  - If hidden employees exist → open the modal
-- Modify `exportToExcel` to accept `includeHidden: boolean` parameter
-- When `includeHidden` is true:
-  1. Load quiz data for hidden employees on-demand (same logic as `loadEmployees` uses for visible employees)
-  2. Merge visible + hidden employee data
-  3. Deduplicate by employee ID (safety check)
-  4. Process combined list for export
-- Add loading indicator during hidden employee data fetch
+3. **Rearrange the toggle row** (lines 55-71)
+   - Move Switch to the left
+   - Label "Include hidden employees" in the middle
+   - Add count badge `<{hiddenCount}>` to the right
 
 ---
 
-### Technical Details
+### New Layout
 
-**Export Logic Flow:**
-
-```text
-User clicks "Download Data"
-    ↓
-Hidden employees exist?
-    → No: Export immediately with visible employees only
-    → Yes: Show dialog
-              ↓
-        User chooses toggle + clicks "Download"
-              ↓
-        Include hidden = true?
-            → Load hidden employees' quiz/video data
-            → Merge with visible employees
-            → Deduplicate by ID
-              ↓
-        Generate and download Excel file
+```
+┌────────────────────────────────────────────┐
+│  Download Employee Data                  ✕ │
+├────────────────────────────────────────────┤
+│                                            │
+│  [○] Include hidden employees        <1>   │
+│                                            │
+├────────────────────────────────────────────┤
+│                    Cancel    [Download]    │
+└────────────────────────────────────────────┘
 ```
 
-**Data Loading for Hidden Employees:**
-
-The current `loadEmployees` function loads quiz data for visible employees. For hidden employees, we'll use the same pattern:
-1. Fetch quizzes with video associations
-2. For each hidden employee with email, call `quizOperations.getUserAttempts()`
-3. Build the `employeeQuizzes` map entries for hidden employees
-
 ---
 
-### Safety Measures
+### Code Changes
 
-1. **Deduplication**: Merge by employee ID to prevent duplicates
-2. **Loading State**: Show "Downloading..." text while processing
-3. **Error Handling**: Toast message if hidden data fails to load
-4. **Skip Dialog**: When no hidden employees exist, export immediately
+**Lines 48-53** (DialogHeader):
+```tsx
+<DialogHeader>
+  <DialogTitle>Download Employee Data</DialogTitle>
+</DialogHeader>
+```
 
----
-
-### Accessibility
-
-- Dialog has proper `DialogTitle`
-- Switch has associated label via `htmlFor`
-- Description text explains the toggle's purpose
-- Focus trapped in dialog while open
+**Lines 55-71** (Toggle row):
+```tsx
+<div className="flex items-center gap-3 py-4">
+  <Switch
+    id={switchId}
+    checked={includeHidden}
+    onCheckedChange={setIncludeHidden}
+    disabled={isLoading}
+  />
+  <Label htmlFor={switchId} className="text-base cursor-pointer flex-1">
+    Include hidden employees
+  </Label>
+  <span className="text-sm text-muted-foreground">
+    &lt;{hiddenCount}&gt;
+  </span>
+</div>
+```
 
