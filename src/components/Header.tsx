@@ -17,8 +17,7 @@ export const Header = ({
   onLogout
 }: HeaderProps) => {
   const subtitle = userRole === 'admin' ? 'Administrator Dashboard' : 'Employee Portal';
-  return (
-    <header className="bg-background-header border-b border-border-primary shadow-card">
+  return <header className="bg-background-header border-b border-border-primary shadow-card">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Left Side - Logo and Title */}
@@ -28,14 +27,8 @@ export const Header = ({
               objectPosition: 'left center'
             }} />
               <div>
-                <h1 className="text-xl font-bold text-primary-foreground">Learning Hub</h1>
-                <p className={`text-sm hidden sm:block ${
-                  userRole === 'admin' 
-                    ? 'font-bold text-[hsl(var(--admin-highlight))]' 
-                    : 'text-primary-foreground/70'
-                }`}>
-                  {userRole === 'admin' ? 'Admin Dashboard' : 'Employee Dashboard'}
-                </p>
+                <h1 className="text-xl font-bold text-primary-foreground">Learning Hub / Admin Dashboard</h1>
+                
               </div>
             </Link>
           </div>
@@ -71,6 +64,5 @@ export const Header = ({
         </div>
 
       </div>
-    </header>
-  );
+    </header>;
 };
