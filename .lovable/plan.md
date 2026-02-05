@@ -1,67 +1,47 @@
 
 
-## Fix Table Header Background Extending Beyond Border Radius
+## Replace Header Logo Image
 
-### Problem
+### Summary
 
-The `bg-muted` background on `TableHeader` extends beyond the rounded corners of the parent Card because there's no clipping applied to the table container.
-
-### Root Cause
-
-The structure flows like this:
-
-```text
-Card (rounded-lg border)
-  └── CardContent (p-0)
-        └── Table wrapper div (overflow-auto ← problem here)
-              └── table
-                    └── TableHeader (bg-muted ← extends to square corners)
-```
-
-The Table component's wrapper div has `overflow-auto` but lacks:
-1. `overflow-hidden` to clip content to boundaries
-2. Matching `rounded-lg` to inherit the corner rounding
-
-### Solution
-
-Update the Table component wrapper to include `overflow-hidden` and `rounded-lg` so the TableHeader background is properly clipped to the rounded corners.
+Replace the current logo image in the Header component with the newly uploaded Senior Services reversed logo.
 
 ---
 
 ### Changes Required
 
-**File:** `src/components/ui/table.tsx` - Line 9
+#### 1. Copy Uploaded Image to Public Folder
 
-| Before | After |
-|--------|-------|
-| `relative w-full overflow-auto` | `relative w-full overflow-hidden rounded-lg` |
+Copy the uploaded image to the public folder for direct URL reference:
 
-**Note:** Using `overflow-hidden` instead of `overflow-auto` will clip content properly. For tables that need horizontal scrolling, the parent container (like CardContent) can handle that with its own overflow settings.
+```
+user-uploads://SS_logo_reversed.png → public/lovable-uploads/SS_logo_reversed.png
+```
+
+Using the public folder since the current implementation already references images via direct URL paths.
 
 ---
 
-### Updated Code
+#### 2. Update Header Component
 
-```tsx
-const Table = React.forwardRef<
-  HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement>
->(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-hidden rounded-lg">
-    <table
-      ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
-      {...props}
-    />
-  </div>
-))
-```
+**File:** `src/components/Header.tsx` - Line 27
+
+| Before | After |
+|--------|-------|
+| `/lovable-uploads/f28cf692-0409-41a6-bb28-b62ca7589dcb.png` | `/lovable-uploads/SS_logo_reversed.png` |
+
+---
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `public/lovable-uploads/SS_logo_reversed.png` | New file (copied from upload) |
+| `src/components/Header.tsx` | Update logo image source |
 
 ---
 
 ### Visual Result
 
-- Table headers will respect the Card's rounded corners
-- The `bg-muted` background will be clipped at the corners
-- Consistent visual appearance across all tables in the application
+The header will display the new Senior Services reversed logo (white logo suitable for dark backgrounds) instead of the previous image.
 
