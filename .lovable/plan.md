@@ -1,9 +1,10 @@
 
-## Change To-do Badge Variant to Soft-Primary
+
+## Change Unassigned Badge to Ghost-Tertiary Variant
 
 ### Summary
 
-Update the "To-do" status badge in the Edit Assignments modal to use the `soft-primary` variant instead of `soft-secondary` for better visual distinction.
+Update the "Unassigned" status badge in the Edit Assignments modal to use the `ghost-tertiary` variant instead of `soft-tertiary` for a more subtle appearance.
 
 ---
 
@@ -11,28 +12,29 @@ Update the "To-do" status badge in the Edit Assignments modal to use the `soft-p
 
 **File:** `src/components/dashboard/AssignVideosModal.tsx`
 
-Update line 504:
+Update line 505:
 
 | Before | After |
 |--------|-------|
-| `return "soft-secondary";` | `return "soft-primary";` |
+| `return "soft-tertiary";` | `return "ghost-tertiary";` |
 
 ---
 
 ### Visual Change
 
-**Before:** To-do badge appears in muted gray/secondary color
+**Before:** Unassigned badge has a muted gray background (soft style)
 
-**After:** To-do badge appears in blue/primary color for better visibility
+**After:** Unassigned badge has no background, just gray text (ghost style)
 
 ---
 
 ### Context
 
-The `getStatusBadgeVariant` function (lines 497-510) maps each status to a badge variant:
-- Completed → `soft-success` (green)
-- Overdue → `soft-destructive` (red)
-- **Pending (To-do)** → `soft-secondary` → **`soft-primary`** (blue)
-- Unassigned → `soft-tertiary` (gray)
+The `getStatusBadgeVariant` function now maps statuses to:
+- Completed → `soft-success` (green with background)
+- Overdue → `soft-destructive` (red with background)
+- Pending (To-do) → `soft-primary` (blue with background)
+- **Unassigned** → `soft-tertiary` → **`ghost-tertiary`** (gray text, no background)
 
-This change makes the "To-do" status more visually prominent and distinguishable from "Unassigned" items.
+This makes "Unassigned" items appear more subtle/de-emphasized compared to actionable statuses.
+
