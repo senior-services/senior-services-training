@@ -82,9 +82,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
   }), [userName, userEmail]);
 
   // Load assigned videos with enhanced error handling
-  const loadAssignedVideos = useOptimizedCallback(async (opts?: {
-    silent?: boolean;
-  }) => {
+  const loadAssignedVideos = useOptimizedCallback(async (opts?: { silent?: boolean }) => {
     performanceTracker.start('loadAssignedVideos');
     const loadResult = await withErrorHandler(async () => {
       if (!opts?.silent) setLoading(true);
@@ -92,7 +90,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       const res = await assignmentOperations.getByEmployeeEmail(userEmail);
       const videoData = res.success && res.data ? res.data : [];
       setAssignedVideoData(videoData);
-
+      
       // Fetch quiz attempts for the user
       try {
         const attempts = await quizOperations.getUserAttempts(userEmail);
@@ -122,7 +120,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           for (const attempt of attempts) {
             const videoId = attempt.quiz.video_id;
             const correspondingAssignment = videoData.find(item => item.video.id === videoId);
-
+            
             // If quiz is completed but video progress is less than 100%, update it
             const assignmentProgress = (correspondingAssignment.assignment as any)?.progress_percent || 0;
             if (correspondingAssignment && assignmentProgress < 100) {
@@ -130,9 +128,9 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
                 await progressOperations.updateByEmail(userEmail, videoId, 100, new Date(attempt.completed_at));
               } catch (updateError) {
                 // Silent failure for reconciliation
-                logger.warn('Failed to reconcile video progress for quiz completion', {
-                  videoId,
-                  userEmail,
+                logger.warn('Failed to reconcile video progress for quiz completion', { 
+                  videoId, 
+                  userEmail, 
                   error: updateError instanceof Error ? updateError.message : String(updateError)
                 });
               }
@@ -141,10 +139,11 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
         }
       } catch (error) {
         // Silent failure for reconciliation
-        logger.warn('Failed to reconcile quiz completion with video progress', {
-          error: error instanceof Error ? error.message : String(error)
+        logger.warn('Failed to reconcile quiz completion with video progress', { 
+          error: error instanceof Error ? error.message : String(error) 
         });
       }
+      
       logger.info('Successfully loaded assigned videos', {
         videoCount: videoData.length,
         userEmail
@@ -205,7 +204,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
     const quizSummary = quizAttempt ? {
       correct: quizAttempt.score,
       total: quizAttempt.total_questions,
-      percent: Math.round(quizAttempt.score / quizAttempt.total_questions * 100),
+      percent: Math.round((quizAttempt.score / quizAttempt.total_questions) * 100),
       completedAt: quizAttempt.completed_at
     } : undefined;
 
@@ -218,12 +217,12 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       effectiveProgress = 100;
       effectiveCompletedAt = effectiveCompletedAt || quizAttempt.completed_at;
     }
+    
     return {
       id: video.id,
       title: sanitizeText(video.title || 'Untitled Video'),
       description: sanitizeText(video.description || ''),
-      thumbnail: video.thumbnail_url || '',
-      // Use actual thumbnail_url from database
+      thumbnail: video.thumbnail_url || '', // Use actual thumbnail_url from database
       duration: formatSeconds(video.duration_seconds || 0),
       progress: effectiveProgress,
       isRequired: video.type === 'Required',
@@ -298,6 +297,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       } as TrainingStats
     };
   }, [assignedVideoData, transformToTrainingVideo]);
+
   const handlePlayVideo = useOptimizedCallback((videoId: string) => {
     const video = trainingData.required.find(v => v.id === videoId) || trainingData.completed.find(v => v.id === videoId);
     logger.videoEvent('employee_video_selected', videoId, {
@@ -309,7 +309,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
     if (video) {
       const announcement = `Opening ${video.title}. ${getStatusAnnouncement(video.progress, video.isRequired || false, video.dueDate)}`;
       announceToScreenReader(announcement);
-
+      
       // Find the original Video object for faster loading  
       const originalVideo = assignedVideoData.find(item => item.video.id === videoId)?.video;
       onPlayVideo(videoId, originalVideo);
@@ -331,9 +331,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
     });
 
     // Optionally refresh the training data to show updated progress
-    loadAssignedVideos({
-      silent: true
-    });
+    loadAssignedVideos({ silent: true });
   };
 
   // Load videos on component mount and set up realtime subscriptions
@@ -361,9 +359,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           window.clearTimeout(reloadTimer.current);
         }
         reloadTimer.current = window.setTimeout(() => {
-          loadAssignedVideos({
-            silent: true
-          });
+          loadAssignedVideos({ silent: true });
           reloadTimer.current = null;
         }, 500);
       }).subscribe();
@@ -399,9 +395,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       });
 
       // Force reload assigned videos with cache bypass
-      loadAssignedVideos({
-        silent: true
-      });
+      loadAssignedVideos({ silent: true });
     }
   }, [refreshTrigger, loadAssignedVideos]);
 
@@ -459,9 +453,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           {/* Required Training Section with Enhanced Accessibility */}
           <section id="main-content" className="mb-12" aria-labelledby="required-training-heading" role="region">
             <div className="flex items-center gap-3 mb-6">
-              <h2 id="required-training-heading" className="text-xl sm:text-2xl font-semibold text-foreground flex items-center">Required Courses
-
-              <Clock className="w-6 h-6 text-primary mr-3" aria-hidden="true" />
+              <h2 id="required-training-heading" className="text-xl sm:text-2xl font-semibold text-foreground flex items-center">
+                <Clock className="w-6 h-6 text-primary mr-3" aria-hidden="true" />
                 Required Training
               </h2>
               {trainingData.required.length > 0 && <Badge variant="default">
@@ -479,8 +472,14 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
                   You don't have any required training videos assigned at this time.
                 </p>
               </div> : <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" role="grid" aria-label="Required training videos">
-                 {trainingData.required.map((video, index) => <TrainingCard key={video.id} video={video} onPlay={handlePlayVideo} priority={index < 3} // Prioritize first 3 cards for performance
-            />)}
+                 {trainingData.required.map((video, index) => (
+                   <TrainingCard 
+                     key={video.id} 
+                     video={video} 
+                     onPlay={handlePlayVideo} 
+                     priority={index < 3} // Prioritize first 3 cards for performance
+                   />
+                 ))}
               </div>}
           </section>
 
@@ -491,9 +490,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
                   <AccordionTrigger id="completed-training-heading" className="text-left py-4 hover:no-underline hover:bg-muted/30 data-[state=open]:pb-2 [&>svg]:hidden">
                     <div className="flex items-center gap-3 w-full">
                       <ChevronDown className="w-8 h-8 text-muted-foreground transition-transform duration-200 data-[state=open]:rotate-180" />
-                      <h2 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center">Completed Courses
-
-                    <CheckCircle className="w-6 h-6 text-success mr-3" aria-hidden="true" />
+                      <h2 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center">
+                        <CheckCircle className="w-6 h-6 text-success mr-3" aria-hidden="true" />
                         Completed Training
                       </h2>
                       <Badge variant="success">
@@ -503,7 +501,14 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
                   </AccordionTrigger>
                   <AccordionContent className="px-0 pb-0">
                     <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 pt-4" role="grid" aria-label="Completed training videos">
-                     {trainingData.completed.map((video, index) => <TrainingCard key={video.id} video={video} onPlay={handlePlayVideo} priority={false} />)}
+                     {trainingData.completed.map((video, index) => (
+                       <TrainingCard 
+                         key={video.id} 
+                         video={video} 
+                         onPlay={handlePlayVideo} 
+                         priority={false} 
+                       />
+                     ))}
                     </div>
                   </AccordionContent>
                 </AccordionItem>
