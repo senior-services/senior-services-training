@@ -1,60 +1,50 @@
 
-# Plan: Update Badge Text and Variants
+# Plan: Show Due Date Badges for All Required Courses (with Year Handling)
 
-## Changes
+## Problem
+Training cards with due dates more than 30 days away don't show any badge because the current logic returns `null` for those cases.
 
-### 1. Required Training Badge (line 460-462)
-- **Text**: Change `{count} pending` → `{count} To-do`
-- **Variant**: Change `hollow-primary` → `default` (primary solid)
+## Solution
+Add a fallback case that displays the formatted due date, including the year when the due date is in a different year than today.
 
-### 2. Completed Training Badge (line 497-499)
-- **Text**: Change `{count} completed` → `{count} Completed`
-- **Variant**: Change `soft-success` → `success` (success solid)
+## Change
 
----
+**File:** `src/components/TrainingCard.tsx` (lines 194-195)
 
-## File Changes
-
-**`src/pages/EmployeeDashboard.tsx`**
-
-| Lines | Before | After |
-|-------|--------|-------|
-| 460-462 | `<Badge variant="hollow-primary">{count} pending</Badge>` | `<Badge variant="default">{count} To-do</Badge>` |
-| 497-499 | `<Badge variant="soft-success">{count} completed</Badge>` | `<Badge variant="success">{count} Completed</Badge>` |
-
-### Code Changes
-
-**Lines 460-462:**
-```jsx
+```tsx
 // Before
-<Badge variant="hollow-primary">
-  {trainingData.required.length} pending
-</Badge>
+    return null;
+  }, [sanitizedVideo.dueDate, trainingStatus.isCompleted]);
 
-// After
-<Badge variant="default">
-  {trainingData.required.length} To-do
-</Badge>
+// After  
+    // Show formatted date for due dates beyond 30 days
+    const currentYear = new Date().getFullYear();
+    const dueYear = due.getFullYear();
+    const showYear = dueYear !== currentYear;
+    
+    return {
+      variant: 'secondary' as const,
+      className: '',
+      text: showYear ? `Due ${format(due, 'MMM d, yyyy')}` : `Due ${format(due, 'MMM d')}`,
+      ariaLabel: showYear 
+        ? `Training is due on ${format(due, 'MMMM d, yyyy')}` 
+        : `Training is due on ${format(due, 'MMMM d')}`,
+      priority: 'low' as const
+    };
+  }, [sanitizedVideo.dueDate, trainingStatus.isCompleted]);
 ```
 
-**Lines 497-499:**
-```jsx
-// Before
-<Badge variant="soft-success">
-  {trainingData.completed.length} completed
-</Badge>
+## Updated Badge Logic
 
-// After
-<Badge variant="success">
-  {trainingData.completed.length} Completed
-</Badge>
-```
-
----
+| Due Date Range | Variant | Badge Text | Example |
+|----------------|---------|------------|---------|
+| Completed | `success` (green) | "Completed" | Completed |
+| Overdue | `destructive` (red) | "Overdue" | Overdue |
+| Due today | `warning` (orange) | "Due Today" | Due Today |
+| 1-7 days | `secondary` | "Due in X days" | Due in 5 days |
+| 8-30 days | `secondary` | "Due in X days" | Due in 21 days |
+| 30+ days (same year) | `secondary` | "Due MMM d" | Due Feb 28 |
+| 30+ days (different year) | `secondary` | "Due MMM d, yyyy" | Due Feb 28, 2027 |
 
 ## Result
-
-| Badge | Text | Variant |
-|-------|------|---------|
-| Required Training | "X To-do" | Primary solid (`default`) |
-| Completed Training | "X Completed" | Success solid (`success`) |
+All required training courses with a due date will now display a badge. Dates in a different year will clearly show the year to avoid confusion.
