@@ -1,10 +1,24 @@
 
 
-## Update Download Data Modal Layout
+## Update Hidden Employee Count Position
 
 ### Summary
 
-Simplify the dialog layout by removing the description text, repositioning the toggle to the left of the label, and showing the hidden employee count inline with the label.
+Move the hidden employee count from a separate element on the right to inline with the label text in parentheses.
+
+---
+
+### Current vs New Layout
+
+**Before:**
+```
+[○] Include hidden employees                    <1>
+```
+
+**After:**
+```
+[○] Include hidden employees (1)
+```
 
 ---
 
@@ -12,45 +26,12 @@ Simplify the dialog layout by removing the description text, repositioning the t
 
 **File:** `src/components/dashboard/DownloadDataModal.tsx`
 
-1. **Remove description text** (line 50-52)
-   - Delete "Choose which employees to include in the export."
+Update the toggle row (lines 50-62):
 
-2. **Remove helper text** (line 60-62)
-   - Delete "{hiddenCount} hidden employee(s) will be added"
+1. Remove the separate `<span>` element for the count
+2. Add the count directly inside the Label with parentheses format
 
-3. **Rearrange the toggle row** (lines 55-71)
-   - Move Switch to the left
-   - Label "Include hidden employees" in the middle
-   - Add count badge `<{hiddenCount}>` to the right
-
----
-
-### New Layout
-
-```
-┌────────────────────────────────────────────┐
-│  Download Employee Data                  ✕ │
-├────────────────────────────────────────────┤
-│                                            │
-│  [○] Include hidden employees        <1>   │
-│                                            │
-├────────────────────────────────────────────┤
-│                    Cancel    [Download]    │
-└────────────────────────────────────────────┘
-```
-
----
-
-### Code Changes
-
-**Lines 48-53** (DialogHeader):
-```tsx
-<DialogHeader>
-  <DialogTitle>Download Employee Data</DialogTitle>
-</DialogHeader>
-```
-
-**Lines 55-71** (Toggle row):
+**Updated Code:**
 ```tsx
 <div className="flex items-center gap-3 py-4">
   <Switch
@@ -59,12 +40,9 @@ Simplify the dialog layout by removing the description text, repositioning the t
     onCheckedChange={setIncludeHidden}
     disabled={isLoading}
   />
-  <Label htmlFor={switchId} className="text-base cursor-pointer flex-1">
-    Include hidden employees
+  <Label htmlFor={switchId} className="text-base cursor-pointer">
+    Include hidden employees ({hiddenCount})
   </Label>
-  <span className="text-sm text-muted-foreground">
-    &lt;{hiddenCount}&gt;
-  </span>
 </div>
 ```
 
