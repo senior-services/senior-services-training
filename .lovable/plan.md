@@ -1,83 +1,92 @@
 
 
-## Conditionally Include Visibility Column in Export
+## Use ButtonWithTooltip Component for Delete Button
 
 ### Summary
 
-When the user does not select "Include hidden employees", omit the Visibility column entirely from the Excel export since all employees would be "Active" anyway. Only show the Visibility column when hidden employees are included.
+Refactor the delete button in the Edit Video dialog to use the existing `ButtonWithTooltip` component instead of manually implementing tooltip markup. This improves code reuse and ensures consistent behavior across the application.
 
 ---
 
-### Changes
+### Current State
 
-**File:** `src/components/dashboard/EmployeeManagement.tsx`
-
-1. **Update `processEmployeesForExport` function signature** (line 388)
-   - Change `hiddenEmployeeIds: Set<string>` to `includeVisibility: boolean` and `hiddenEmployeeIds: Set<string>`
-   - Or simpler: pass `includeHidden: boolean` to determine if Visibility column is needed
-
-2. **Conditionally add Visibility column** (lines 398-407 and 463-472)
-   - Only add the `'Visibility'` property when `includeHidden` is true
-   - Use spread operator to conditionally include the field
-
-3. **Update the function call in `exportToExcel`** (line 501)
-   - Pass `includeHidden` boolean to the function
+The delete button (lines 1087-1099) manually wraps a Button with Tooltip components. The tooltip content changes based on whether the video can be deleted:
+- If deletable: "Delete Video" or "Delete Video and Quiz"
+- If not deletable: "Cannot delete: Assigned to X user(s). Use Hide on Trainings tab instead."
 
 ---
 
-### Code Changes
+### Change
 
-**Update function signature (lines 384-389):**
+Replace the manual Tooltip wrapper with the `ButtonWithTooltip` component, which already handles the disabled button hover pattern correctly.
+
+**File:** `src/components/EditVideoModal.tsx`
+
+**Before (lines 1086-1100):**
 ```tsx
-const processEmployeesForExport = useCallback((
-  employeesToExport: EmployeeWithAssignments[],
-  videosMap: Map<string, any[]>,
-  quizzesMap: Map<string, Map<string, any>>,
-  hiddenEmployeeIds: Set<string>,
-  includeVisibility: boolean
-): any[] => {
+<div className="flex items-center space-x-4">
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="link" onClick={...} className={...} disabled={...}>
+          <Trash2 className="w-4 h-4 mr-2" />
+          Delete Video
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        {videoUsage?.canDelete ? ... : ...}
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+</div>
 ```
 
-**Conditionally add Visibility to "no assignments" case (lines 398-407):**
+**After:**
 ```tsx
-exportData.push({
-  Name: employeeName,
-  Email: employeeEmail,
-  'Course': 'No assignments',
-  'Status': STATUS_LABELS.unassigned,
-  'Due Date': '--',
-  'Completion Date': '--',
-  'Quiz Results': '--',
-  ...(includeVisibility && { 'Visibility': hiddenEmployeeIds.has(employee.id) ? 'Hidden' : 'Active' })
-});
+<div className="flex items-center space-x-4">
+  <ButtonWithTooltip
+    variant="link"
+    onClick={() => videoUsage?.canDelete && setDeleteDialogOpen(true)}
+    className={cn(
+      "text-destructive hover:text-destructive p-0 h-auto font-normal transition-none",
+      videoUsage && !videoUsage.canDelete && "opacity-50"
+    )}
+    disabled={!videoUsage?.canDelete || usageLoading}
+    tooltip={
+      videoUsage?.canDelete
+        ? quiz
+          ? "Delete Video and Quiz"
+          : "Delete Video"
+        : `Cannot delete: Assigned to ${videoUsage?.assignedCount} user${videoUsage?.assignedCount !== 1 ? 's' : ''}. Use Hide on Trainings tab instead.`
+    }
+    aria-label={
+      videoUsage?.canDelete
+        ? quiz
+          ? "Delete Video and Quiz"
+          : "Delete Video"
+        : `Cannot delete: Assigned to ${videoUsage?.assignedCount} user(s). Use Hide on Trainings tab instead.`
+    }
+  >
+    <Trash2 className="w-4 h-4 mr-2" />
+    Delete Video
+  </ButtonWithTooltip>
+</div>
 ```
 
-**Conditionally add Visibility to assignments case (lines 463-472):**
+**Also add import at the top of the file:**
 ```tsx
-exportData.push({
-  Name: employeeName,
-  Email: employeeEmail,
-  'Course': assignment.video_title || '',
-  'Status': status,
-  'Due Date': dueDate,
-  'Completion Date': completionDate,
-  'Quiz Results': quizResults,
-  ...(includeVisibility && { 'Visibility': hiddenEmployeeIds.has(employee.id) ? 'Hidden' : 'Active' })
-});
-```
-
-**Update call in `exportToExcel` (line 501):**
-```tsx
-const hiddenEmployeeIds = new Set(hiddenEmployees.map(e => e.id));
-const exportData = processEmployeesForExport(allEmployees, allVideos, allQuizzes, hiddenEmployeeIds, includeHidden);
+import { ButtonWithTooltip } from "@/components/ui/button-with-tooltip";
 ```
 
 ---
 
-### Result
+### Benefits
 
-| Scenario | Columns in Export |
-|----------|-------------------|
-| Hidden employees **not** included | Name, Email, Course, Status, Due Date, Completion Date, Quiz Results |
-| Hidden employees **included** | Name, Email, Course, Status, Due Date, Completion Date, Quiz Results, **Visibility** |
+| Aspect | Improvement |
+|--------|-------------|
+| Code Reuse | Uses existing component instead of duplicating pattern |
+| Consistency | Same hover behavior as other disabled buttons with tooltips |
+| Maintainability | Future improvements to ButtonWithTooltip apply everywhere |
+| Fewer Lines | Reduces ~14 lines of markup to ~18 lines (but cleaner, single component) |
+| Accessibility | Built-in keyboard and screen reader support from component |
 
