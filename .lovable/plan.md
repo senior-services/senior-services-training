@@ -1,53 +1,64 @@
 
+# Plan: Simplify Cancel Admin Invitation Dialog
 
-# Plan: Keep Add Course Dialog Open When Confirmation is Cancelled
+## Current State
 
-## The Problem
+When cancelling a pending admin invitation, the dialog shows:
+- A question asking if you want to cancel
+- A bulleted list with "Cancel their pending admin invitation"
+- A bold statement about the invitation being permanently cancelled
 
-When you fill out the "Add Course" form, check "Assign to all employees", and click "Add Course", the form dialog immediately closes and clears all your data. If you then cancel the confirmation dialog, you've lost everything you typed and have to start over.
-
-## The Solution
-
-Remove the automatic close behavior from the Add Course dialog's save action. Instead, let the parent component decide when to close based on whether the user confirms or cancels.
-
----
+This is overly verbose for a simple action.
 
 ## What Changes
 
-**File: `src/components/content/AddContentModal.tsx`**
+**File: `src/components/dashboard/AdminManagement.tsx`**
 
-Remove line 176 (`handleClose();`) from the `handleSave` function. This one-line change keeps the dialog open and preserves form data until the parent explicitly closes it.
+Simplify the dialog description for pending invitations to show only:
 
-**Before:**
+> "Are you sure you want to cancel the invitation for **email@example.com**? The invitation will be permanently cancelled."
+
+The dialog for removing existing admins (non-pending) will remain unchanged since that action has more consequences worth explaining.
+
+## How It Will Work
+
+| Admin Type | Dialog Message |
+|------------|----------------|
+| Pending invitation | "Are you sure you want to cancel the invitation for **{email}**? The invitation will be permanently cancelled." |
+| Active admin | (unchanged) Full list of consequences |
+
+## Changes
+
+**Lines 373-389** - Replace the complex conditional description with a simpler version:
+
+```jsx
+<AlertDialogDescription>
+  {deleteConfirmAdmin?.isPending ? (
+    <>
+      Are you sure you want to cancel the invitation for <strong>{deleteConfirmAdmin?.email}</strong>? The invitation will be permanently cancelled.
+    </>
+  ) : (
+    <>
+      Are you sure you want to remove admin privileges from "{deleteConfirmAdmin?.email}"?
+      <br />
+      <br />
+      This will:
+      <ul className="list-disc list-inside mt-2 space-y-1">
+        <li>Remove their admin access to the system</li>
+        <li>Restrict them to employee-level permissions</li>
+        <li>Prevent them from managing other users</li>
+      </ul>
+      <br />
+      <strong>
+        This action can be reversed by adding them as an admin again.
+      </strong>
+    </>
+  )}
+</AlertDialogDescription>
 ```
-onSave(formData);
-handleClose();  ← Remove this line
-```
 
-**After:**
-```
-onSave(formData);
-// Parent controls when to close the modal
-```
-
----
-
-## How It Works After the Fix
-
-| Action | Result |
-|--------|--------|
-| Fill form, check "Assign to all", click Add | Confirmation dialog appears, form stays behind it |
-| Cancel confirmation | Back to form with all data intact |
-| Confirm assignment | Course created, both dialogs close |
-| Add course without assignment | Course created, dialog closes |
-
----
-
-## Files Modified
+## Summary
 
 | File | Change |
 |------|--------|
-| `src/components/content/AddContentModal.tsx` | Remove `handleClose()` call after `onSave()` (1 line) |
-
-No changes needed to `VideoManagement.tsx` - it already handles closing correctly on success.
-
+| `src/components/dashboard/AdminManagement.tsx` | Simplify pending invitation cancellation message (lines 373-389) |
