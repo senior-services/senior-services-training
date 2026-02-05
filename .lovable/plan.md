@@ -1,42 +1,54 @@
 
 
-## Change Table Header Background to 50% Opacity
+## Fix Date Column Showing "N/A" When Selecting Checkbox
 
 ### Summary
 
-Update the table header background color from full muted (`bg-muted`) to 50% opacity (`bg-muted/50`) for a subtler, less visually heavy appearance.
+Update the date display logic so that newly selected (but not yet assigned) videos show "--" instead of "N/A" when their checkbox is checked.
 
 ---
 
-### Changes Required
+### The Issue
 
-#### 1. Update Table Component
+Currently when you check a course checkbox:
+- The date column changes from "--" to "N/A"
+- This is confusing because the video isn't actually assigned yet
 
-**File:** `src/components/ui/table.tsx` (line 30)
+### The Fix
 
-| Before | After |
-|--------|-------|
-| `bg-muted` | `bg-muted/50` |
+**File:** `src/components/dashboard/AssignVideosModal.tsx` (lines 471-494)
 
-This is the `TableHeader` component that sets the background for all table headers.
+Add a specific check for videos that are selected but not yet assigned:
+
+```tsx
+// Format due date for display
+const formatDueDate = (videoId: string): string => {
+  // Not selected and not assigned - show "--"
+  if (!assignedVideoIds.has(videoId) && !selectedVideoIds.has(videoId)) return "--";
+
+  // Newly selected but not yet assigned - show "--" until actually assigned
+  if (selectedVideoIds.has(videoId) && !assignedVideoIds.has(videoId)) {
+    const deadline = videoDeadlines.get(videoId);
+    // Only show date if user has set a pending deadline for this selection
+    if (deadline) {
+      return `Due ${format(deadline, "MMM dd, yyyy")}`;
+    }
+    return "--";
+  }
+
+  // ... rest of existing logic for assigned videos
+};
+```
 
 ---
 
-### Component Gallery
+### Behavior After Fix
 
-No additional changes needed in `src/pages/ComponentsGallery.tsx`. The gallery imports and uses the `Table` components directly, so it will automatically reflect the updated styling from the base component.
-
----
-
-### Visual Change
-
-**Before:** Table headers have a solid muted gray background
-
-**After:** Table headers have a softer, 50% transparent muted background
-
----
-
-### Consistency Note
-
-This aligns the `TableHeader` styling with `TableFooter`, which already uses `bg-muted/50` (line 53 in table.tsx).
+| Scenario | Display |
+|----------|---------|
+| Video not selected, not assigned | "--" |
+| Video selected (checkbox checked), no deadline set | "--" |
+| Video selected, deadline set via date picker | "Due [date]" |
+| Video assigned, has due date | "Due [date]" or date |
+| Video assigned, no due date | "N/A" |
 
