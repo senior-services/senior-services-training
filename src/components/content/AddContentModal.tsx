@@ -173,7 +173,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
     };
 
     onSave(formData);
-    handleClose();
+    // Parent controls when to close the modal (preserves form data during confirmation dialogs)
   };
 
   const handleClose = () => {
