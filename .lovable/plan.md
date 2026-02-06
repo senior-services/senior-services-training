@@ -1,91 +1,34 @@
 
 
-# Fix: Align Employee Dashboard Completion Logic (with Review Fixes)
-
-## What This Fixes
-
-When a video has a quiz attached, the employee dashboard was showing it as "Completed" after just watching the video. The admin dashboard correctly required both the video AND the quiz to be done. This fix makes them match.
+# Add TrainingCard to Component Gallery + Fix Border
 
 ## Changes
 
-### 1. TrainingVideo interface (TrainingCard.tsx)
+### 1. Fix double border — TrainingCard.tsx (line 261)
 
-Add an optional `quizPending` field to the `TrainingVideo` interface so the data model explicitly signals "this video's quiz hasn't been taken yet" instead of using a misleading 99% progress hack.
+Add `border-0` to the inner `Card` so only the outer `.training-card` wrapper provides the single 1px border. One class added, nothing else changes.
 
-```tsx
-// Add to TrainingVideo interface:
-quizPending?: boolean;
-```
+### 2. Add Training Cards section — ComponentsGallery.tsx
 
-No other changes to TrainingCard — when `progress < 100`, the card already shows the correct "in progress" or "not started" state.
+**Import** `TrainingCard` and `TrainingVideo` type from `@/components/TrainingCard` (line ~2). The `useToast` import is already present (line 33).
 
-### 2. EmployeeDashboard.tsx — Fetch quiz video IDs (reuse admin pattern)
+**Nav link**: Add a "Training Cards" entry to the anchor navigation list (after "Toast", around line 265).
 
-Inside `loadAssignedVideos`, after the existing quiz attempts fetch, add a lightweight query to find which videos have quizzes. This is the same pattern the admin dashboard already uses.
+**New section**: Insert before the "Component Updates" card (line 1665). Four example cards in a responsive grid showing all states:
 
-```tsx
-// After the quiz attempts fetch block (around line 129):
-let quizVideoIds = new Set<string>();
-try {
-  const { data: quizzesData } = await supabase.from("quizzes").select("video_id");
-  quizVideoIds = new Set(quizzesData?.map(q => q.video_id) || []);
-} catch (error) {
-  logger.warn("Failed to load quiz video IDs", { error });
-}
-```
+- **Not Started** — 0% progress, due date set, no quiz
+- **In Progress** — 45% progress, no quiz
+- **Quiz Pending** — video watched (progress shown as in-progress since quiz not done), `quizPending: true`
+- **Completed** — 100% progress with quiz summary (correct/total/passed)
 
-Store this in a new state variable:
-```tsx
-const [videoIdsWithQuizzes, setVideoIdsWithQuizzes] = useState<Set<string>>(new Set());
-```
+Each card's `onPlay` triggers a toast so the interaction is visible in the gallery. Sample data uses inline `TrainingVideo` objects with placeholder thumbnails.
 
-### 3. EmployeeDashboard.tsx — Update completion logic in transformToTrainingVideo
+### Files changed
 
-Replace lines 234-244 with quiz-aware logic using `null` (not `undefined`) for cleared dates:
+| File | Change |
+|------|--------|
+| `src/components/TrainingCard.tsx` | Add `border-0` to inner Card (line 261) |
+| `src/pages/ComponentsGallery.tsx` | Add import, nav link, and 4-card Training Cards section |
 
-```tsx
-const videoMarkedComplete = assignment?.completed_at || assignment?.progress_percent === 100;
-const hasQuiz = videoIdsWithQuizzes.has(video.id);
-const quizDone = quizAttemptsByVideo[video.id] != null;
-
-let effectiveProgress: number;
-let effectiveCompletedAt: string | null = assignment?.completed_at ?? null;
-let quizPending = false;
-
-if (hasQuiz) {
-  if (videoMarkedComplete && quizDone) {
-    effectiveProgress = 100;
-    effectiveCompletedAt = effectiveCompletedAt || quizAttemptsByVideo[video.id]?.completed_at || null;
-  } else {
-    effectiveProgress = Math.max(0, Math.min(100, assignment?.progress_percent || 0));
-    effectiveCompletedAt = null;
-    if (videoMarkedComplete && !quizDone) {
-      quizPending = true;
-    }
-  }
-} else {
-  effectiveProgress = videoMarkedComplete
-    ? 100
-    : Math.max(0, Math.min(100, assignment?.progress_percent || 0));
-}
-```
-
-Pass `quizPending` into the returned `TrainingVideo` object.
-
-Add `videoIdsWithQuizzes` to the `useOptimizedCallback` dependency array for `transformToTrainingVideo`.
-
-## What's Different from the Original Plan
-
-| Original Plan | This Version |
-|---|---|
-| Used 99% progress as a workaround | Uses explicit `quizPending` flag |
-| Used `undefined` for cleared dates | Uses `null` for consistency with DB conventions |
-| Added a new separate DB query | Same query, but minimal and mirrors admin pattern |
-
-## Summary
-
-- 2 files changed: `EmployeeDashboard.tsx`, `TrainingCard.tsx` (interface only)
-- 1 small query added (same pattern admin already uses)
-- No database migration needed
-- No new dependencies
+### No database changes required
 
