@@ -32,6 +32,8 @@ import { SortableTableHead } from "@/components/ui/sortable-table-head";
 import { getTooltipText } from "@/utils/tooltipText";
 import { useToast } from "@/hooks/use-toast";
 import { Home, Settings, User, Bell, Search, Plus, Edit, Trash2, Download, Upload, Eye, EyeOff, AlertCircle, CheckCircle, Info, X, ArrowUp, ArrowDown, ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react";
+import { TrainingCard } from "@/components/TrainingCard";
+import type { TrainingVideo } from "@/components/TrainingCard";
 interface ComponentsGalleryProps {
   userName: string;
   userEmail: string;
@@ -261,6 +263,11 @@ export const ComponentsGallery = ({
                 <li className="break-inside-avoid mb-1">
                   <a href="#toast" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
                     Toast
+                  </a>
+                </li>
+                <li className="break-inside-avoid mb-1">
+                  <a href="#training-cards" className="block text-xs text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium">
+                    Training Cards
                   </a>
                 </li>
                 <li className="break-inside-avoid mb-1">
@@ -1659,6 +1666,65 @@ export const ComponentsGallery = ({
                   <p>Content for tab 3</p>
                 </TabsContent>
               </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Training Cards */}
+          <Card id="training-cards">
+            <CardHeader>
+              <CardTitle>Training Cards</CardTitle>
+              <CardDescription>Cards used on the employee dashboard to display assigned training content with progress, due dates, and quiz status</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <TrainingCard
+                  video={{
+                    id: "demo-not-started",
+                    title: "Workplace Safety Basics",
+                    description: "Introduction to workplace safety protocols and procedures.",
+                    thumbnail: "/placeholder.svg",
+                    duration: "10:00",
+                    progress: 0,
+                    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                  }}
+                  onPlay={() => toast({ title: "Training Card", description: "Playing: Workplace Safety Basics" })}
+                />
+                <TrainingCard
+                  video={{
+                    id: "demo-in-progress",
+                    title: "Fire Evacuation Procedures",
+                    description: "Learn the correct evacuation routes and assembly points.",
+                    thumbnail: "/placeholder.svg",
+                    duration: "15:00",
+                    progress: 45,
+                  }}
+                  onPlay={() => toast({ title: "Training Card", description: "Playing: Fire Evacuation Procedures" })}
+                />
+                <TrainingCard
+                  video={{
+                    id: "demo-quiz-pending",
+                    title: "Hazard Communication",
+                    description: "Understanding chemical labels and safety data sheets.",
+                    thumbnail: "/placeholder.svg",
+                    duration: "8:00",
+                    progress: 100,
+                    quizPending: true,
+                  }}
+                  onPlay={() => toast({ title: "Training Card", description: "Playing: Hazard Communication" })}
+                />
+                <TrainingCard
+                  video={{
+                    id: "demo-completed",
+                    title: "PPE Requirements",
+                    description: "Proper selection and use of personal protective equipment.",
+                    thumbnail: "/placeholder.svg",
+                    duration: "12:00",
+                    progress: 100,
+                    quizSummary: { correct: 8, total: 10, percent: 80 },
+                  }}
+                  onPlay={() => toast({ title: "Training Card", description: "Playing: PPE Requirements" })}
+                />
+              </div>
             </CardContent>
           </Card>
 
