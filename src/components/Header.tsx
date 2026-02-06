@@ -1,7 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ChevronDown, LogOut, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { Link } from "react-router-dom";
 // Using uploaded logo image
 
@@ -41,33 +40,22 @@ export const Header = ({
             </Link>
           </div>
 
-          {/* Right Side - User Info and Menu */}
-          <div className="flex items-center space-x-2">
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-primary-foreground">{userName}</p>
-              
+          {/* Right Side - User Info and Logout */}
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-full bg-primary-foreground flex items-center justify-center">
+              <User className="w-4 h-4 text-primary" />
             </div>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center space-x-1 hover:shadow-md transition-shadow">
-                  <div className="w-8 h-8 rounded-full bg-primary-foreground flex items-center justify-center">
-                    <User className="w-4 h-4 text-primary" />
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-primary-foreground/70" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <div className="sm:hidden px-3 py-2 border-b border-border-primary">
-                  <p className="text-sm font-medium text-foreground">{userName}</p>
-                  <p className="text-xs text-muted-foreground">{userEmail}</p>
-                </div>
-                <DropdownMenuItem onClick={onLogout} className="flex items-center space-x-2">
-                  <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <span className="hidden sm:inline text-sm font-medium text-primary-foreground">{userName}</span>
+            <span className="text-primary-foreground/40" aria-hidden="true">|</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onLogout}
+              className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-transparent px-1"
+            >
+              <LogOut className="w-4 h-4 mr-1" />
+              Logout
+            </Button>
           </div>
         </div>
 
