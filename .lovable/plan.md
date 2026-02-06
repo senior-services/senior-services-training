@@ -1,85 +1,52 @@
 
-# Plan: Fix Hidden Videos Appearing in Employee Dashboard
+# Plan: Update Admin Header Background and Add Admin Badge
 
-## Problem Summary
-The "YT: Time Management and Productivity Best Practices" video is hidden (`archived_at` is set), but it's still being returned to the employee dashboard. Hidden videos should not appear in employee training lists.
+## Changes
 
-## Root Cause
-The database function `get_user_video_assignments` returns **all assigned videos**, including those that have been hidden. There's no filter for `archived_at IS NULL`.
+### File: `src/components/Header.tsx`
 
-## Solution
-Add a filter to the database function to exclude hidden videos from employee assignments.
+**1. Change admin header background color (line 20)**
 
----
+Replace the conditional background class so both admin and employee headers use the same `bg-background-header` color:
 
-## Database Change Required: Yes
-
-**File:** Database function `get_user_video_assignments`
-
-**Current query (line 154):**
-```sql
-WHERE e.email = user_email;
+Current:
+```tsx
+className={`${userRole === 'admin' ? 'bg-destructive' : 'bg-background-header'} border-b ...`}
 ```
 
-**Updated query:**
-```sql
-WHERE e.email = user_email
-  AND v.archived_at IS NULL;
+Updated:
+```tsx
+className="bg-background-header border-b border-border-primary shadow-card"
 ```
 
-This ensures that hidden videos are never returned to employees, keeping their training lists clean and focused on active content.
+**2. Add Admin badge next to "Admin Dashboard" text (lines 29-32)**
 
----
+Import the `Badge` component at the top of the file, then add the badge inline after the dashboard title text:
 
-## Technical Details
-
-### Migration SQL
-```sql
-CREATE OR REPLACE FUNCTION public.get_user_video_assignments(user_email text)
-RETURNS TABLE(video json, assignment json)
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-BEGIN
-  RETURN QUERY
-  SELECT 
-    row_to_json(v.*) as video,
-    json_build_object(
-      'due_date', va.due_date,
-      'assigned_at', va.created_at,
-      'assignment_id', va.id,
-      'progress_percent', COALESCE(vp.progress_percent, 0),
-      'completed_at', vp.completed_at
-    ) as assignment
-  FROM video_assignments va
-  JOIN videos v ON va.video_id = v.id
-  JOIN employees e ON va.employee_id = e.id
-  LEFT JOIN video_progress vp ON (e.id = vp.employee_id AND va.video_id = vp.video_id)
-  WHERE e.email = user_email
-    AND v.archived_at IS NULL;  -- Filter out hidden videos
-END;
-$$;
+```tsx
+import { Badge } from "@/components/ui/badge";
 ```
 
----
+Update the title area to include the badge when `userRole === 'admin'`:
 
-## What This Changes
+```tsx
+<h1 className="text-xl text-primary-foreground">
+  <span className="font-bold">Learning Hub</span>{' '}
+  <span className="font-normal">/ {userRole === 'admin' ? 'Admin' : 'Employee'} Dashboard</span>
+  {userRole === 'admin' && (
+    <Badge variant="soft-attention" showIcon className="ml-2 text-xs align-middle">
+      Admin
+    </Badge>
+  )}
+</h1>
+```
 
-| Scenario | Before | After |
-|----------|--------|-------|
-| Hidden video assigned to employee | Shown on dashboard | Not shown |
-| Active video assigned to employee | Shown on dashboard | Shown on dashboard |
-| Hidden video in reports/exports | Included (per architecture memory) | Still included |
+This uses the same `variant="soft-attention"` with `showIcon` (shield icon) as the Admin Management table badge.
 
----
+## Summary
 
-## No Client-Side Changes Needed
-The filtering happens at the database level, so no changes to React components or TypeScript code are required.
-
----
-
-## Verification Steps
-1. Run the migration to update the function
-2. Confirm the "YT: Time Management..." video no longer appears on Jane's dashboard
-3. Verify other active assigned videos still appear correctly
+| Change | Detail |
+|--------|--------|
+| Header background | Both roles now use `bg-background-header` (deep navy) |
+| Admin badge | `soft-attention` badge with shield icon added after "Admin Dashboard" |
+| Files modified | 1 (`src/components/Header.tsx`) |
