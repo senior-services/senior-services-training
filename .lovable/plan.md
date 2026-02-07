@@ -1,28 +1,21 @@
 
 
-# Fix Quiz Results Heading Font Size
+# Fix Employee Name Display — Implementation Plan
 
-## What changes
+## Problem
+Employee names show as email prefixes (e.g., "jbowers") instead of full names (e.g., "Jerilyn Bowers") because the `employees` table has NULL `full_name` values even though the correct names exist in the `profiles` table.
 
-Update the `<h3>` "Quiz Results" heading font size from `text-sm` (15px) to `text-2xl` (24px) to match the component gallery guidelines.
+## Two Database Migrations (No Code Changes)
 
-## How
+### Migration 1: Backfill existing data
+A one-time update that copies names from the `profiles` table into `employees` where the name is currently missing. Only fills blanks — never overwrites existing names.
 
-**File: `src/components/quiz/QuizScoreSummary.tsx`** (line 41)
+### Migration 2: Update the sign-up trigger
+Modifies the `handle_new_user` function so that if an employee row already exists but has no name, the name gets filled in automatically on the next sign-up event. Uses `ON CONFLICT ... DO UPDATE` with a guard to only update when the name is NULL or empty.
 
-Replace:
-```tsx
-<h3 className="font-bold text-sm">Quiz Results</h3>
-```
-
-With:
-```tsx
-<h3 className="font-bold text-2xl">Quiz Results</h3>
-```
-
-| Item | Detail |
-|---|---|
-| Files changed | 1 |
-| Lines changed | 1 |
-| Risk | Minimal |
+## Scope
+- 0 frontend files changed
+- 2 database migrations
+- No new functionality added
+- Low risk — only fills missing data, never overwrites
 
