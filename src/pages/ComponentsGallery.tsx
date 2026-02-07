@@ -1698,6 +1698,7 @@ export const ComponentsGallery = ({
                     thumbnail: "/placeholder.svg",
                     duration: "12:00",
                     progress: 100,
+                    completedAt: "2025-01-06T00:00:00Z",
                     quizSummary: { correct: 8, total: 10, percent: 80 },
                   }}
                   onPlay={() => toast({ title: "Training Card", description: "Playing: PPE Requirements" })}
@@ -1713,7 +1714,7 @@ export const ComponentsGallery = ({
                 {/* Status Badges */}
                 <div className="space-y-3">
                   <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Status Badges</h4>
-                  <p className="text-sm text-muted-foreground">Displayed in the top-right corner of the card, based on completion status and due date.</p>
+                  <p className="text-sm text-muted-foreground">Displayed above the title, based on completion status and due date.</p>
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -1723,23 +1724,23 @@ export const ComponentsGallery = ({
                     </TableHeader>
                     <TableBody>
                       <TableRow>
-                        <TableCell><Badge variant="success" className="gap-1"><CheckCircle className="w-3 h-3" />Completed</Badge></TableCell>
+                        <TableCell><Badge variant="soft-success" className="gap-1"><CheckCircle className="w-3 h-3" />Completed</Badge></TableCell>
                         <TableCell className="text-sm">Training is 100% complete</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell><Badge variant="destructive" className="gap-1"><AlertCircle className="w-3 h-3" />Overdue</Badge></TableCell>
+                        <TableCell><Badge variant="soft-destructive" className="gap-1"><AlertCircle className="w-3 h-3" />Overdue</Badge></TableCell>
                         <TableCell className="text-sm">Due date has passed and training is not 100% done</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell><Badge variant="warning">Due Today</Badge></TableCell>
+                        <TableCell><Badge variant="soft-warning">Due Today</Badge></TableCell>
                         <TableCell className="text-sm">Due date is today and training is not 100% done</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell><Badge variant="secondary">Due in X days</Badge></TableCell>
+                        <TableCell><Badge variant="soft-secondary">Due in X days</Badge></TableCell>
                         <TableCell className="text-sm">Due within 30 days, training not done</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell><Badge variant="secondary">Due MMM d</Badge></TableCell>
+                        <TableCell><Badge variant="soft-secondary">Due MMM d</Badge></TableCell>
                         <TableCell className="text-sm">Due date is 30+ days away, training not done</TableCell>
                       </TableRow>
                       <TableRow>
@@ -1753,7 +1754,7 @@ export const ComponentsGallery = ({
                 {/* Quiz Score Badges */}
                 <div className="space-y-3">
                   <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Quiz Score Badges</h4>
-                  <p className="text-sm text-muted-foreground">Displayed below the title when training is completed and quiz data is available.</p>
+                  <p className="text-sm text-muted-foreground">Displayed in the card footer when training is completed and quiz data is available.</p>
                   <Table>
                     <TableHeader>
                       <TableRow>
