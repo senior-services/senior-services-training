@@ -282,6 +282,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
         video_file_name: video.video_file_name,
         quizPending,
         quizSummary,
+        completedAt: effectiveCompletedAt || undefined,
       };
     },
     [userEmail, quizAttemptsByVideo, videoIdsWithQuizzes],

@@ -8,7 +8,7 @@ import React, { memo, useMemo, useCallback, useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Clock, Play, AlertCircle, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, Play, AlertCircle, CheckCircle, ClipboardList } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, differenceInDays, isPast } from 'date-fns';
 
@@ -35,6 +35,7 @@ export interface TrainingVideo {
   isRequired?: boolean;
   deadline?: string;
   dueDate?: string | null;
+  completedAt?: string;
   status?: 'overdue' | 'warning' | 'upcoming' | 'completed';
   video_url?: string | null;
   thumbnail_url?: string | null;
@@ -62,7 +63,8 @@ interface TrainingCardProps {
  * Status badge configuration with enhanced accessibility
  */
 interface BadgeConfig {
-  variant: 'success' | 'destructive' | 'warning' | 'secondary' | 'default' | 'tertiary';
+  variant: 'success' | 'destructive' | 'warning' | 'secondary' | 'default' | 'tertiary'
+    | 'soft-success' | 'soft-destructive' | 'soft-warning' | 'soft-secondary';
   className: string;
   text: string;
   ariaLabel: string;
@@ -150,7 +152,7 @@ export const TrainingCard = memo<TrainingCardProps>(({
     
     if (trainingStatus.isCompleted) {
       return {
-        variant: 'success' as const,
+        variant: 'soft-success' as const,
         className: '',
         text: 'Completed',
         ariaLabel: 'Training completed successfully',
@@ -159,7 +161,7 @@ export const TrainingCard = memo<TrainingCardProps>(({
     }
     if (isPast(due) && daysUntilDue < 0) {
       return {
-        variant: 'destructive' as const,
+        variant: 'soft-destructive' as const,
         className: '',
         text: 'Overdue',
         ariaLabel: `Training is overdue by ${Math.abs(daysUntilDue)} days`,
@@ -168,7 +170,7 @@ export const TrainingCard = memo<TrainingCardProps>(({
     }
     if (daysUntilDue === 0) {
       return {
-        variant: 'warning' as const,
+        variant: 'soft-warning' as const,
         className: '',
         text: 'Due Today',
         ariaLabel: 'Training is due today',
@@ -177,7 +179,7 @@ export const TrainingCard = memo<TrainingCardProps>(({
     }
     if (daysUntilDue <= 7) {
       return {
-        variant: 'secondary' as const,
+        variant: 'soft-secondary' as const,
         className: '',
         text: `Due in ${daysUntilDue} days`,
         ariaLabel: `Training is due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`,
@@ -186,7 +188,7 @@ export const TrainingCard = memo<TrainingCardProps>(({
     }
     if (daysUntilDue <= 30) {
       return {
-        variant: 'secondary' as const,
+        variant: 'soft-secondary' as const,
         className: '',
         text: `Due in ${daysUntilDue} days`,
         ariaLabel: `Training is due in ${daysUntilDue} days`,
@@ -200,7 +202,7 @@ export const TrainingCard = memo<TrainingCardProps>(({
     const showYear = dueYear !== currentYear;
     
     return {
-      variant: 'secondary' as const,
+      variant: 'soft-secondary' as const,
       className: '',
       text: showYear ? `Due ${format(due, 'MMM d, yyyy')}` : `Due ${format(due, 'MMM d')}`,
       ariaLabel: showYear 
@@ -281,20 +283,6 @@ export const TrainingCard = memo<TrainingCardProps>(({
             />
           </button>
 
-          {/* Due Date Badge and Completion Badge with Enhanced Accessibility */}
-          {dueDateInfo && (
-            <Badge variant={dueDateInfo.variant} className={cn('absolute top-2 right-2 text-xs font-medium z-10', dueDateInfo.className)} aria-label={dueDateInfo.ariaLabel} role="status" showIcon={dueDateInfo.priority === 'high'}>
-              {dueDateInfo.text}
-            </Badge>
-          )}
-          
-          {/* Completed Badge for videos without due dates */}
-          {trainingStatus.isCompleted && !dueDateInfo && (
-            <Badge variant="success" className="absolute top-2 right-2 text-xs font-medium z-10" aria-label="Training completed successfully" role="status" showIcon>
-              Completed
-            </Badge>
-          )}
-          
           {/* Play Button Overlay with Enhanced Accessibility */}
           <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <Button size="lg" className="rounded-full w-16 h-16 bg-white/90 hover:bg-white text-primary hover:text-primary shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" onClick={handlePlay} onKeyDown={handleCardKeyPress} aria-label={ariaLabels.playButton}>
@@ -306,6 +294,22 @@ export const TrainingCard = memo<TrainingCardProps>(({
 
         {/* Card Content with Semantic HTML */}
         <CardHeader className="pb-3 pt-3 flex-none">
+          {/* Status Badge - above title */}
+          {dueDateInfo && (
+            <div className="mb-1">
+              <Badge variant={dueDateInfo.variant} className={cn('text-xs font-medium', dueDateInfo.className)} aria-label={dueDateInfo.ariaLabel} role="status" showIcon={dueDateInfo.priority === 'high'}>
+                {dueDateInfo.text}
+              </Badge>
+            </div>
+          )}
+          {trainingStatus.isCompleted && !dueDateInfo && (
+            <div className="mb-1">
+              <Badge variant="soft-success" className="text-xs font-medium" aria-label="Training completed successfully" role="status" showIcon>
+                Completed
+              </Badge>
+            </div>
+          )}
+
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="text-lg leading-tight line-clamp-2">
               {sanitizedVideo.title}
@@ -315,33 +319,35 @@ export const TrainingCard = memo<TrainingCardProps>(({
           {sanitizedVideo.description && <CardDescription className="line-clamp-2">
               {sanitizedVideo.description}
             </CardDescription>}
-          
-          {/* Quiz Results for Completed Training */}
-          {trainingStatus.isCompleted && sanitizedVideo.quizSummary && (
-            <div className="mt-2 flex items-center gap-2" role="status" aria-label={`Quiz: ${sanitizedVideo.quizSummary.percent}% (${sanitizedVideo.quizSummary.correct}/${sanitizedVideo.quizSummary.total} correct)`}>
-              <Badge 
-                variant={
-                  sanitizedVideo.quizSummary.percent >= 80 ? 'soft-success' : 
-                  sanitizedVideo.quizSummary.percent >= 60 ? 'soft-warning' : 'soft-destructive'
-                }
-                className="text-xs"
-                aria-label={`Quiz: ${sanitizedVideo.quizSummary.percent}% (${sanitizedVideo.quizSummary.correct}/${sanitizedVideo.quizSummary.total} correct)`}
-              >
-                Quiz: {sanitizedVideo.quizSummary.percent}% ({sanitizedVideo.quizSummary.correct}/{sanitizedVideo.quizSummary.total} Correct)
-              </Badge>
-            </div>
-          )}
         </CardHeader>
 
-        {/* Enhanced Action Button */}
-        {!trainingStatus.isCompleted ? (
-          <CardFooter className="flex-none">
-            <Button className="w-full min-h-touch shadow-md hover:shadow-lg transition-all duration-300" variant="default" onClick={handlePlay} onKeyDown={handleCardKeyPress} aria-label={ariaLabels.actionButton}>
-              {trainingStatus.hasStarted ? "Continue Training" : "Start Training"}
+        {/* Footer */}
+        {trainingStatus.isCompleted ? (
+          <CardFooter className="flex-none flex-col items-start gap-3">
+            <div className="flex items-center justify-between w-full text-sm text-muted-foreground">
+              {sanitizedVideo.completedAt && (
+                <div className="flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4" aria-hidden="true" />
+                  <span>{format(new Date(sanitizedVideo.completedAt), 'MMM d, yyyy')}</span>
+                </div>
+              )}
+              {sanitizedVideo.quizSummary && (
+                <div className="flex items-center gap-1" role="status" aria-label={`Quiz: ${sanitizedVideo.quizSummary.percent}% (${sanitizedVideo.quizSummary.correct}/${sanitizedVideo.quizSummary.total} correct)`}>
+                  <ClipboardList className="w-4 h-4" aria-hidden="true" />
+                  <span>Quiz: {sanitizedVideo.quizSummary.percent}% ({sanitizedVideo.quizSummary.correct}/{sanitizedVideo.quizSummary.total})</span>
+                </div>
+              )}
+            </div>
+            <Button variant="outline" className="min-h-touch" onClick={handlePlay} onKeyDown={handleCardKeyPress} aria-label={ariaLabels.actionButton}>
+              Review Training
             </Button>
           </CardFooter>
         ) : (
-          <div className="pb-6" />
+          <CardFooter className="flex-none">
+            <Button variant="outline" className="min-h-touch" onClick={handlePlay} onKeyDown={handleCardKeyPress} aria-label={ariaLabels.actionButton}>
+              {trainingStatus.hasStarted ? "Continue Training" : "Start Training"}
+            </Button>
+          </CardFooter>
         )}
       </Card>
     </article>;
