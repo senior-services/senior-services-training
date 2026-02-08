@@ -990,7 +990,12 @@ export const EditVideoModal = ({
                 <TabsTrigger value="info">Details</TabsTrigger>
                 <TabsTrigger value="quiz" className="gap-2">
                    Quiz
-                   {quiz && questions.length > 0 && <Badge variant="soft-tertiary" showIcon className="py-0 leading-none -my-1">{questions.length}</Badge>}
+                   {quiz && questions.length > 0 && (
+                     <span className="relative">
+                       <Badge variant="soft-tertiary" showIcon className="absolute left-0 top-1/2 -translate-y-1/2">{questions.length}</Badge>
+                       <Badge variant="soft-tertiary" showIcon className="invisible">{questions.length}</Badge>
+                     </span>
+                   )}
                 </TabsTrigger>
               </TabsList>
 
