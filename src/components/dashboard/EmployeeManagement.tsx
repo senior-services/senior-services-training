@@ -739,7 +739,7 @@ export const EmployeeManagement: React.FC<{
                 setPendingHideEmployee(null);
               }
             }}>
-              Hide
+              Hide Employee
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
