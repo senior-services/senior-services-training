@@ -1,77 +1,66 @@
 
-## Fix: Quiz Scoring Bug for Multiple-Choice Questions
+
+## Fix: Respect Completion Timeline When Quiz Is Added Later
 
 ### What's Happening
 
-When Billy submitted his quiz, one of the 4 questions was a multiple-choice question where he selected 2 options (one correct, one incorrect). The system counted each individual option selection separately instead of grading the question as a whole. This results in a misleading score of "50% (2/4)" on the training card.
+When an admin assigns a course (no quiz) to Jane, she completes it. Later, the admin adds quiz questions to that course. Both the admin and employee dashboards now see that the video "has a quiz" and require a quiz attempt for completion -- retroactively marking Jane's training as incomplete/overdue.
 
-The scoring should work per-question, not per-option-selected.
+Jane completed the course under Version 1 rules (no quiz required). The newly added quiz should only apply to employees who haven't yet completed the course, or to future assignments.
 
 ### What Should Happen
 
-Each question should be worth exactly 1 point, regardless of how many options are selected. For multiple-choice questions, the question should be marked correct only if ALL selected options are correct AND no incorrect options are selected.
+If an employee's `completed_at` timestamp on `video_progress` is earlier than the quiz's `created_at` timestamp, the system should treat that training as completed -- the employee finished under the rules that existed at the time. The quiz requirement should only apply to employees who complete (or haven't yet completed) the video after the quiz was created.
 
 ### The Fix
 
-Update the database function (`submit_quiz_attempt`) that calculates the score. Instead of counting each correct response individually, group responses by question and determine if each question was answered correctly as a whole.
-
-No frontend code changes are needed -- the issue is entirely in the server-side scoring logic.
+Both dashboards need to fetch the quiz `created_at` timestamp (not just `video_id`) and compare it against each employee's `completed_at` date when deciding if a quiz is required.
 
 ### Risk Assessment
 
 **Top 5 Risks/Issues:**
-1. Existing quiz attempts already stored in the database will retain their old (incorrect) scores -- a data migration may be needed for historical accuracy
-2. The fix must handle edge cases: a multiple-choice question where the employee selects all correct options but also an incorrect one should count as wrong
-3. Single-answer and true/false questions (which send only one response per question) should continue to work identically
-4. The `quiz_responses` table still stores individual option selections, which is correct -- only the aggregate score calculation changes
-5. Must verify the correct options display in the results view still works (it uses `quiz_responses` rows, not the score)
+1. Must apply consistently across three locations: employee dashboard, admin employee list (active), and admin employee list (hidden/archived)
+2. Edge case: employee started but didn't finish the video before quiz was added -- they should still need the quiz since they weren't "completed"
+3. The `get_all_employee_assignments` and `get_hidden_employee_assignments` RPCs return `completed_at` per assignment, so the data is already available
+4. The quiz `created_at` query is a small addition to existing queries (just adding one more column to the SELECT)
+5. No risk of breaking existing quiz-required flows -- the check only exempts employees who were already done
 
 **Top 5 Fixes/Improvements:**
-1. Replace the per-response scoring loop in `submit_quiz_attempt` with per-question scoring: group responses by `question_id`, then check if all responses for that question are correct
-2. No frontend changes needed
-3. No new tables or columns needed
-4. Optionally fix Billy's existing attempt score with a one-time data correction query
-5. The `total_questions` count remains unchanged (it's already correct)
+1. Change quiz query from `select('video_id')` to `select('video_id, created_at')` in all three locations
+2. Store quiz creation dates in a Map alongside video IDs
+3. In the `hasQuiz` / completion check, compare employee's `completed_at` against the quiz `created_at` -- if completed before quiz existed, treat as no quiz required
+4. No database migration needed -- all required data already exists in the tables
+5. No new components or APIs needed
 
-**Database Change Required:** Yes -- update the `submit_quiz_attempt` RPC function to score per-question instead of per-response.
+**Database Change Required:** No
 
-**Go/No-Go Verdict:** Go -- the scoring logic has a clear bug that produces incorrect results for any multiple-choice question with multiple selections.
+**Go/No-Go Verdict:** Go -- adds a simple date comparison to existing completion logic in three places.
 
 ### Technical Detail
 
-**Database migration** -- replace the scoring section of `submit_quiz_attempt`:
+**Files to modify:**
 
-Current logic (simplified):
+1. **`src/pages/EmployeeDashboard.tsx`** (employee side)
+   - Line ~134: Change `select('video_id')` to `select('video_id, created_at')`
+   - Store as a `Map<string, string>` (video_id to created_at) instead of a `Set`
+   - Line ~245: In `transformToTrainingVideo`, compare `assignment.completed_at` against the quiz's `created_at`. If `completed_at < quiz.created_at`, treat `hasQuiz` as false for this employee
+
+2. **`src/components/dashboard/EmployeeManagement.tsx`** (admin side - active employees)
+   - Line ~119: Change `select('video_id')` to `select('video_id, created_at')`
+   - Store quiz creation dates alongside video IDs
+   - Line ~127: When setting `hasQuiz`, also consider the employee's `completed_at` for that assignment. If completed before quiz was created, set `hasQuiz: false`
+   - Line ~338: Same change for hidden employees section
+
+**Logic (pseudocode):**
 ```text
-FOR each response:
-  check if selected option is_correct
-  IF correct: v_correct_count += 1
-score = v_correct_count    (counts individual correct options)
+quizCreatedAt = quizCreationDates[video_id]
+employeeCompletedAt = assignment.completed_at
+
+if (quizCreatedAt AND employeeCompletedAt AND employeeCompletedAt < quizCreatedAt):
+    hasQuiz = false   // Employee finished before quiz existed
+else:
+    hasQuiz = true    // Quiz applies to this employee
 ```
 
-New logic:
-```text
-FOR each response:
-  insert response with is_correct flag (unchanged)
+This preserves the existing behavior for all employees who complete after a quiz is added, while correctly exempting those who finished before the quiz existed.
 
--- After all responses inserted, count correctly-answered QUESTIONS
-SELECT COUNT(DISTINCT question_id) INTO v_correct_count
-FROM quiz_responses
-WHERE quiz_attempt_id = v_quiz_attempt_id
-  AND question_id NOT IN (
-    SELECT question_id FROM quiz_responses
-    WHERE quiz_attempt_id = v_quiz_attempt_id AND is_correct = false
-  );
-
-score = v_correct_count    (counts questions where ALL responses were correct)
-```
-
-This means:
-- A question with only correct selections = 1 point
-- A question with any incorrect selection = 0 points
-- Single-answer/true-false questions (1 response each) behave the same as before
-
-**Optional data fix** for Billy's existing attempt:
-```text
-UPDATE quiz_attempts SET score = [corrected value] WHERE id = '06c120fc-...';
-```
