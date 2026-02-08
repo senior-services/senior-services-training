@@ -451,13 +451,13 @@ export const EmployeeManagement: React.FC<{
           }
 
           let quizResults = '--';
-          if (!assignment.hasQuiz) {
-            quizResults = 'N/A';
-          } else if (!quizAttempt) {
-            quizResults = 'Not Completed';
-          } else {
+          if (quizAttempt) {
             const percentage = Math.round(quizAttempt.score / quizAttempt.total_questions * 100);
             quizResults = `${percentage}% (${quizAttempt.score}/${quizAttempt.total_questions} Correct)`;
+          } else if (!assignment.hasQuiz) {
+            quizResults = 'N/A';
+          } else {
+            quizResults = 'Not Completed';
           }
 
           let dueDate = 'N/A';
@@ -482,7 +482,7 @@ export const EmployeeManagement: React.FC<{
             'Due Date': dueDate,
             'Completion Date': completionDate,
             'Quiz Results': quizResults,
-            'Quiz Version': quizAttempt?.quiz_version ? `v${quizAttempt.quiz_version}` : (assignment.hasQuiz ? '--' : 'N/A'),
+'Quiz Version': quizAttempt?.quiz_version ? `v${quizAttempt.quiz_version}` : (assignment.hasQuiz ? '--' : 'N/A'),
             ...(includeVisibility && { 'Visibility': hiddenEmployeeIds.has(employee.id) ? 'Hidden' : 'Active' })
           });
         });
