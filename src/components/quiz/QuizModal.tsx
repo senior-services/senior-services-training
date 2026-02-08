@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle } from "lucide-react";
 import { OptionList, OptionRow } from "@/components/ui/option-list";
-import { QuizScoreSummary } from "./QuizScoreSummary";
+
 
 interface QuizModalProps {
   quiz: QuizWithQuestions;
@@ -181,21 +181,28 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
   return (
     <div className="h-full overflow-y-auto">
       <div className="max-w-4xl mx-auto">
-        {/* Score Summary - shown when quiz is submitted */}
-        {isSubmitted && quizResults && (
-          <div className="mb-6">
-            <QuizScoreSummary 
-              quizResults={quizResults} 
-              totalQuestions={quiz.questions.length} 
-            />
-          </div>
-        )}
-
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">{quiz.title}</h2>
-          {quiz.description && (
-            <p className="text-muted-foreground">{quiz.description}</p>
-          )}
+        <div className="mb-6 flex items-center gap-3">
+          <h2 className="text-2xl font-bold">Quiz questions ({quiz.questions.length})</h2>
+          {isSubmitted && quizResults && (() => {
+            const totalQuestions = quiz.questions.length;
+            // Count unique questions where ALL responses are correct (handles multiple-choice)
+            const questionCorrectness = new Map<string, boolean>();
+            quizResults.forEach(r => {
+              const prev = questionCorrectness.get(r.question_id);
+              questionCorrectness.set(r.question_id, prev === undefined ? r.is_correct : prev && r.is_correct);
+            });
+            const correctAnswers = [...questionCorrectness.values()].filter(Boolean).length;
+            const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+            return (
+              <Badge
+                variant={percentage >= 70 ? "soft-success" : "soft-destructive"}
+                role="status"
+                aria-label={`${percentage}% — ${correctAnswers} of ${totalQuestions} correct`}
+              >
+                {percentage}% ({correctAnswers}/{totalQuestions} correct)
+              </Badge>
+            );
+          })()}
         </div>
 
         <div className="space-y-6">
