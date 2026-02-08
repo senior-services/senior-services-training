@@ -498,7 +498,7 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
                 setPendingHideVideo(null);
               }
             }}>
-              Hide
+              Hide Training
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
