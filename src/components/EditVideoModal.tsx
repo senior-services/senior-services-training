@@ -988,15 +988,7 @@ export const EditVideoModal = ({
             <Tabs defaultValue="info" className="w-full">
               <TabsList>
                 <TabsTrigger value="info">Details</TabsTrigger>
-                <TabsTrigger value="quiz" className="gap-2">
-                   Quiz
-                   {quiz && questions.length > 0 && (
-                     <span className="relative">
-                       <Badge variant="soft-tertiary" showIcon className="absolute left-0 top-1/2 -translate-y-1/2">{questions.length}</Badge>
-                       <Badge variant="soft-tertiary" showIcon className="invisible">{questions.length}</Badge>
-                     </span>
-                   )}
-                </TabsTrigger>
+                <TabsTrigger value="quiz">Quiz</TabsTrigger>
               </TabsList>
 
               <TabsContent value="info" className="space-y-6 mt-4">
