@@ -1,42 +1,55 @@
 
 
-## Edit Course Quiz Tab UI Updates
+## Quiz Tab UI Revisions + Badge Icon Support
 
 ### Changes
 
-**1. Quiz tab badge: show version number instead of question count**
+**1. Make "{N} Questions" a proper heading**
 
-Replace the badge next to "Quiz" that currently shows the number of questions. Instead, show the quiz version number (e.g., "v3"). Only display this badge when the version is greater than 1.
+Change `text-sm font-semibold` to `text-base font-semibold` on the questions count header so it reads as a proper `<h3>`.
 
-**2. Add "{N} Questions" header above the first question**
+**2. Add version badge next to "{N} Questions" header**
 
-Add a text header like "4 Questions" above the questions list, using the actual count of questions.
+Place a version badge (e.g., "v3") to the right of the questions header text. Only show when `versionCount > 1`. Uses `soft-tertiary` variant.
 
-**3. Change "Download quiz versions" to outline button style, align with questions header**
+**3. Revert Quiz tab badge back to question count with icon**
 
-Change the button from `variant="link"` to `variant="outline"`. Place both the "{N} Questions" header and the download button on the same row, horizontally aligned (header left, button right).
+Change the Quiz tab badge back to showing the number of questions (e.g., "4") instead of the version. Use `soft-tertiary` variant with `showIcon` enabled. The icon will be a chat/message icon (MessageSquare from Lucide).
 
-**4. Update versioning notice text**
+**4. Add icon support for primary, secondary, and tertiary badge variants**
 
-Change the banner description to: "This training is already assigned. Editing the quiz will create a new version for future employees. Completed trainings won't be affected."
+Update the Badge component to render icons for these three variants when `showIcon` is true:
+- **Primary**: a default/generic icon (e.g., Info)
+- **Secondary**: a secondary icon (e.g., Info)  
+- **Tertiary**: a chat-style icon (e.g., MessageSquare)
+
+**5. Update Component Gallery with new icon examples**
+
+Add `showIcon` examples for primary, secondary, and tertiary badges across all style groups (solid, hollow, soft, ghost) in the gallery.
 
 ### Technical Details
 
-All changes are in **`src/components/EditVideoModal.tsx`**:
+**File: `src/components/ui/badge.tsx`**
 
-**Lines 991-996** (tab badge): Replace `questions.length` badge with version badge showing `v{quiz.version}`, only when `versionCount > 1`.
+- Import `MessageSquare` and `Info` from lucide-react
+- Add icon rendering for primary/secondary/tertiary variants (and their hollow/ghost/soft counterparts):
+  - Primary and secondary: `Info` icon
+  - Tertiary: `MessageSquare` icon
 
-**Lines 1033-1055** (quiz tab content): Restructure to:
-- Keep the versioning banner as-is but update text (line 1037)
-- Replace the download button wrapper and questions start with a single row containing "{N} Questions" on the left and the outline-styled download button on the right
-- Remove the old `<div className="flex justify-end">` wrapper
+**File: `src/components/EditVideoModal.tsx`**
 
-**Line 1036-1038** (banner text): Update to the new wording.
+- Line 991-996 (Quiz tab badge): Revert to showing `questions.length` with `showIcon` enabled
+- Line 1042: Change `text-sm` to `text-base` on the header
+- Add a version badge (`soft-tertiary`, e.g., "v3") next to the header text, conditionally shown when `versionCount > 1`
+
+**File: `src/pages/ComponentsGallery.tsx`**
+
+- Lines 901-903: Add `showIcon` variants for primary, secondary, tertiary in solid section
+- Repeat for hollow, soft, and ghost sections
 
 ### Review
 
-- **Top 5 Risks**: (1) Quiz version number must be available from the `quiz` state object. (2) Badge visibility condition change is straightforward. (3) Layout alignment uses standard flex. (4) No logic changes. (5) No accessibility concerns with these visual updates.
-- **Top 5 Fixes**: (1) Swap badge content from count to version. (2) Add conditional rendering for badge. (3) Add questions count header. (4) Change button variant. (5) Update banner copy.
+- **Top 5 Risks**: (1) Adding icons to primary/secondary/tertiary is a new pattern -- needs to look right at small badge sizes. (2) MessageSquare icon must be visually appropriate at 12px (w-3 h-3). (3) No logic changes, purely visual. (4) Gallery updates are additive. (5) No accessibility concerns.
+- **Top 5 Fixes**: (1) Add 3 new icon mappings in Badge component. (2) Revert tab badge to question count. (3) Resize header. (4) Add version badge to header row. (5) Update gallery examples.
 - **Database Change Required**: No
-- **Go/No-Go**: Go -- purely visual changes within a single file
-
+- **Go/No-Go**: Go -- additive styling changes across 3 files
