@@ -1,51 +1,37 @@
 
+## Make Quiz Dialog Full Screen (Employee View)
 
-## Update Quiz Results Section
-
-Replace the large quiz completion banner with a compact inline badge next to a renamed title.
+A simple one-line change. The project already has a `FullscreenDialogContent` component in the design system -- we just need to use it.
 
 ### What Changes
 
-**Before:**
-- Full-width colored banner card showing score (QuizScoreSummary component)
-- Title shows quiz name (e.g., "Fire Safety")
-- Description text below title
-
-**After:**
-- No banner at all after completion
-- Title reads **"Quiz questions (9)"** (with question count)
-- After completion, a soft success badge appears to the right: **"100% (1/1 correct)"**
-- Description line removed (descriptions were already cleared in previous migration)
+- The quiz dialog on the employee video page (`VideoPage.tsx`) currently opens as a medium-width modal (`max-w-4xl`).
+- After: it opens as a full-screen dialog (same style used by the video player fullscreen dialog), filling the viewport with a small inset margin.
 
 ### Principal Engineer Review
 
 **Top 5 Risks/Issues:**
-1. QuizScoreSummary component becomes unused -- dead code if not cleaned up
-2. Score badge color should follow existing soft-variant conventions (already established in project)
-3. Accessibility: the score badge needs proper ARIA context since it replaces a role="status" element
-4. Minor: percentage edge case if totalQuestions is 0 (already guarded in QuizScoreSummary, need to replicate)
-5. No risk to employee data or quiz logic -- purely visual change
+1. None significant -- this is a one-component swap using an existing design-system primitive
+2. The quiz title in DialogHeader still shows `quiz?.title || 'Quiz'` which was previously cleared; verify it renders sensibly
+3. No mobile-specific concerns -- `FullscreenDialogContent` already handles responsive insets
+4. No accessibility impact -- same close button and focus management
+5. No data or logic changes
 
 **Top 5 Fixes/Improvements:**
-1. Add `role="status"` and `aria-label` to the score badge for accessibility parity
-2. Use existing `soft-success` / `soft-destructive` badge variants based on score threshold
-3. Remove the QuizScoreSummary import and component file (or leave for potential reuse -- recommend removing)
-4. Guard against zero-question edge case in percentage calculation
-5. Keep layout simple: flexbox row with title + badge, no extra wrappers
+1. Swap `DialogContent` to `FullscreenDialogContent` in the quiz dialog
+2. Update the import to include `FullscreenDialogContent`
+3. Remove the `max-w-4xl` class (not needed for fullscreen)
+4. Consider removing the DialogHeader title since QuizModal already renders its own "Quiz questions (N)" heading -- avoids duplication
+5. No other changes needed
 
 **Database Change Required:** No
 
-**Go/No-Go Verdict:** Go -- minimal, clean visual change with no logic or data impact.
+**Go/No-Go Verdict:** Go -- single-line swap using an existing component.
 
 ### Technical Details
 
-**`src/components/quiz/QuizModal.tsx`:**
-- Remove lines 184-192 (QuizScoreSummary block)
-- Replace lines 194-199 (title/description block) with:
-  - `h2` text: "Quiz questions ({quiz.questions.length})"
-  - When `isSubmitted && quizResults`: render an inline Badge with soft-success styling showing "{percentage}% ({correct}/{total} correct)"
-  - Score color: green (soft-success) for >= 70%, red (soft-destructive) for < 70%
-- Remove `QuizScoreSummary` import (line 13)
-
-**`src/components/quiz/QuizScoreSummary.tsx`:**
-- Delete file (no longer referenced anywhere after this change)
+**`src/pages/VideoPage.tsx`:**
+- Update import: add `FullscreenDialogContent` from `@/components/ui/dialog`
+- Line 329: replace `<DialogContent className="max-w-4xl">` with `<FullscreenDialogContent>`
+- Line 342: replace closing `</DialogContent>` with `</FullscreenDialogContent>`
+- Optionally remove `<DialogHeader>` block (lines 330-334) since QuizModal already shows "Quiz questions (N)" as a heading -- keeping both would be redundant
