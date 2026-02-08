@@ -50,6 +50,7 @@ export const EmployeeManagement: React.FC<{
   const [sortColumn, setSortColumn] = useState<'name' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [pendingHideEmployee, setPendingHideEmployee] = useState<EmployeeWithAssignments | null>(null);
+  const [pendingShowEmployee, setPendingShowEmployee] = useState<EmployeeWithAssignments | null>(null);
   const {
     toast
   } = useToast();
@@ -689,7 +690,7 @@ export const EmployeeManagement: React.FC<{
                                 <IconButtonWithTooltip 
                                   icon={Eye} 
                                   tooltip={getTooltipText('show-employee')} 
-                                  onClick={() => handleShowEmployee(employee)} 
+                                  onClick={() => setPendingShowEmployee(employee)} 
                                   variant="ghost" 
                                   size="sm" 
                                   className="text-muted-foreground hover:text-foreground" 
@@ -739,6 +740,29 @@ export const EmployeeManagement: React.FC<{
               }
             }}>
               Hide
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirmation Dialog for Show Employee */}
+      <AlertDialog open={!!pendingShowEmployee} onOpenChange={(open) => !open && setPendingShowEmployee(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Show this employee?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingShowEmployee?.full_name || pendingShowEmployee?.email} will be moved back to the main employee list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingShowEmployee(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (pendingShowEmployee) {
+                handleShowEmployee(pendingShowEmployee);
+                setPendingShowEmployee(null);
+              }
+            }}>
+              Show
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

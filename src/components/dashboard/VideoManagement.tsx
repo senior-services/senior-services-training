@@ -65,6 +65,7 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
 
   // Hide confirmation state
   const [pendingHideVideo, setPendingHideVideo] = useState<Video | null>(null);
+  const [pendingShowVideo, setPendingShowVideo] = useState<Video | null>(null);
 
   // Load videos on mount
   useEffect(() => {
@@ -458,7 +459,7 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
                             </TableCell>
                             <TableCell>
                               <div className="flex justify-center">
-                                <IconButtonWithTooltip icon={Eye} tooltip="Show video in main list" onClick={() => handleShowVideo(video)} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" ariaLabel={`Show ${video.title} in video list`} />
+                                <IconButtonWithTooltip icon={Eye} tooltip="Show video in main list" onClick={() => setPendingShowVideo(video)} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" ariaLabel={`Show ${video.title} in video list`} />
                               </div>
                             </TableCell>
                           </TableRow>)}
@@ -503,7 +504,29 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Confirmation Dialog for Assign to All */}
+      {/* Confirmation Dialog for Show Training */}
+      <AlertDialog open={!!pendingShowVideo} onOpenChange={(open) => !open && setPendingShowVideo(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Show this training?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{pendingShowVideo?.title}" will be moved back to the main training list and become visible to admins.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingShowVideo(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (pendingShowVideo) {
+                handleShowVideo(pendingShowVideo);
+                setPendingShowVideo(null);
+              }
+            }}>
+              Show
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={showConfirmDialog} onOpenChange={(open) => !open && handleCancelConfirmation()}>
         <AlertDialogContent>
           <AlertDialogHeader>
