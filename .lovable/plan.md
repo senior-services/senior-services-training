@@ -1,31 +1,36 @@
 
 
-## Remove Question Count Badge from Quiz Tab
+## Add Confirmation Prompts Before Hiding Training or Employee
 
 ### What's changing
-Removing the question count badge from the "Quiz" tab label entirely, along with all the extra code that was added to try to fix the spacing issue.
+Currently, clicking the "Hide" button on a training or employee immediately performs the action with no confirmation. This plan adds a confirmation dialog (using the existing `AlertDialog` pattern already used throughout the app) before hiding.
 
 ### Changes
 
-**File: `src/components/EditVideoModal.tsx`** (lines 991-999)
+**1. VideoManagement.tsx** -- Add hide confirmation for trainings
+- Add state to track the video pending hide (`pendingHideVideo`)
+- Instead of calling `handleHideVideo` directly, set the pending video to open a confirmation dialog
+- Add an `AlertDialog` that asks "Hide this training?" with the video title, explaining it will be moved to the hidden section
+- On confirm, proceed with the existing hide logic; on cancel, clear the pending state
 
-Replace the current Quiz tab trigger (with the badge wrapper, absolute positioning, and invisible spacer) with a simple tab trigger:
+**2. EmployeeManagement.tsx** -- Add hide confirmation for employees
+- Add state to track the employee pending hide (`pendingHideEmployee`)
+- Instead of calling `handleHideEmployee` directly, set the pending employee to open a confirmation dialog
+- Add an `AlertDialog` that asks "Hide this employee?" with the employee name, explaining they will be moved to the hidden section
+- On confirm, proceed with the existing hide logic; on cancel, clear the pending state
 
-```tsx
-<TabsTrigger value="quiz">
-  Quiz
-</TabsTrigger>
+### Pattern
+Both follow the same pattern already used for the "Assign to All" confirmation in `VideoManagement.tsx` and the "Unassign" confirmation in `AssignVideosModal.tsx`:
+
+```
+state variable -> click sets pending item -> AlertDialog opens -> confirm runs action + clears state -> cancel clears state
 ```
 
-This removes:
-- The `gap-2` class on the trigger (no longer needed)
-- The conditional badge rendering
-- The relative span wrapper
-- Both Badge components (absolute-positioned and invisible spacer)
+No new components or dependencies needed.
 
 ### Review
-- **Top 5 Risks**: None -- purely removing code.
-- **Top 5 Fixes**: (1) Remove badge and all related wrapper code from Quiz tab.
-- **Database Change Required**: No
-- **Go/No-Go**: Go -- clean removal, fixes the spacing issue by eliminating its cause.
 
+- **Top 5 Risks**: (1) None significant -- follows an established pattern used 4+ times in the same codebase.
+- **Top 5 Fixes**: (1) Add confirmation state + AlertDialog to VideoManagement. (2) Add confirmation state + AlertDialog to EmployeeManagement.
+- **Database Change Required**: No
+- **Go/No-Go**: Go -- straightforward addition using existing patterns, prevents accidental hides.
