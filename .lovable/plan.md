@@ -1,48 +1,60 @@
 
-## Fix: Employee Sees Wrong Quiz Version After Versioning
 
-### What's Happening Now
-When Jane opens her completed training, the app loads the quiz using `getByVideoId`, which always fetches the **latest active quiz** (Version 2 with 2 questions). So even though Jane completed Version 1 (1 question, scored 1/1), she sees Version 2's questions and an incorrect score of "50% (1/2 correct)."
+## Fix: Quiz Results Flash as "Incorrect" Before Showing Correct
 
-### What Should Happen
-Jane should see Version 1 -- the exact quiz she completed -- with her correct score of "100% (1/1 correct)."
+### What's Happening
+
+After submitting a quiz, the answers briefly flash as "Incorrect" (red) before correcting to "Correct" (green). This happens because the submission code updates the screen in two separate steps with a gap between them:
+
+1. First, it saves the employee's answers and shows results -- but at this point, the system doesn't yet know which answers are the "right" ones
+2. Then, it fetches the correct answers and updates the screen again
+
+In that brief gap, the screen shows everything as wrong because it doesn't have the correct answers to compare against yet.
 
 ### The Fix
-When an employee has already completed a quiz, load the quiz version from their attempt instead of the latest active version. This is an application code change in `VideoPlayerFullscreen.tsx`.
+
+Fetch both pieces of data (the employee's results AND the correct answers) before updating the screen. This way, the screen only updates once with all the information it needs, eliminating the flash.
 
 ### Risk Assessment
 
 **Top 5 Risks/Issues:**
-1. The `getUserAttempts` query already returns the quiz data via the `quizzes(*)` join -- we need to use it instead of discarding it
-2. Must not break the flow for employees who haven't yet taken a quiz (they should still see the active version)
-3. The correct options fetch (`getCorrectOptionsForQuiz`) must use the correct quiz ID (V1's ID, not V2's)
-4. The quiz questions/options need to be fully loaded for the completed version (the attempt only includes quiz metadata, not questions)
-5. Must handle the edge case where an employee completed V1 but V2 also exists and they haven't retaken it
+1. If either fetch fails, the quiz results won't display at all (same as current behavior -- error toast is shown)
+2. Slight delay before results appear (both fetches must complete) -- negligible in practice
+3. Must ensure the same fix pattern is applied consistently if similar logic exists elsewhere
+4. No change to what data is fetched, only the ordering of state updates
+5. No database or API changes needed
 
 **Top 5 Fixes/Improvements:**
-1. In `VideoPlayerFullscreen.tsx`, after detecting `wasEverCompleted`, fetch the completed quiz version using `getById(latestAttempt.quiz_id)` instead of relying on `getByVideoId`
-2. Use the completed quiz's ID for `getCorrectOptionsForQuiz` call
-3. Store the "display quiz" (completed version) in state, separate from the active quiz used for new attempts
-4. Fall back to the active quiz if no completed attempt exists
-5. No database changes needed -- this is purely an application-layer fix
+1. Move `getCorrectOptionsForQuiz` call before `setQuizResults` so both are ready before any re-render
+2. Batch both state updates together so React renders once with complete data
+3. No new dependencies or functions needed
+4. No database changes
+5. Same fix pattern could be applied to `VideoPage.tsx` if it has the same issue
 
 **Database Change Required:** No
-**Go/No-Go Verdict:** Go -- targeted fix in one component, corrects version-aware display logic.
+**Go/No-Go Verdict:** Go -- minimal reordering of two lines in one function.
 
 ### Technical Detail
 
-**File:** `src/components/VideoPlayerFullscreen.tsx`
+**File:** `src/components/VideoPlayerFullscreen.tsx`, `handleQuizSubmit` function (around lines 310-328)
 
-**Change 1: Add state for the completed quiz version**
-Add a new state variable `completedQuiz` to hold the quiz version the employee actually completed.
+**Current order:**
+```text
+1. submitQuiz()
+2. getUserAttempts() -> setQuizResults()    <-- triggers render with empty correctOptions
+3. getCorrectOptionsForQuiz() -> setCorrectOptions()  <-- triggers second render
+4. setQuizSubmitted(true)
+```
 
-**Change 2: Update the completed quiz results loading effect (lines 200-224)**
-When `wasEverCompleted` is true, use `quizOperations.getById(latestAttempt.quiz_id)` to load the specific quiz version the employee completed (with its questions and options). Store it in `completedQuiz`. Use that quiz's ID for `getCorrectOptionsForQuiz`.
+**New order:**
+```text
+1. submitQuiz()
+2. getUserAttempts()
+3. getCorrectOptionsForQuiz()
+4. setQuizResults()          <-- all three state updates happen together
+5. setCorrectOptions()
+6. setQuizSubmitted(true)
+```
 
-**Change 3: Update the QuizModal rendering (line 546-547)**
-Pass `completedQuiz` (when available) instead of `quiz` to QuizModal when displaying completed results:
-- When `wasEverCompleted && completedQuiz` -- use `completedQuiz`
-- When `quizStarted && quiz` (taking a new quiz) -- use `quiz` (the active version)
+By collecting both async results before calling any state setters, React batches all three updates into a single render with complete data -- no flash.
 
-**Change 4: Reset `completedQuiz` state**
-Add `completedQuiz` to the reset logic when the modal closes (around line 143).
