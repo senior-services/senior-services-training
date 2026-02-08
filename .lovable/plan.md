@@ -1,57 +1,51 @@
 
 
-## Remove Quiz Title, Description, and "Questions" Heading from Quiz Editor
+## Update Quiz Results Section
 
-Simplify the quiz editing experience by removing three fields admins don't need to manage. Quiz titles will be auto-generated from the course title instead.
+Replace the large quiz completion banner with a compact inline badge next to a renamed title.
 
-### What Changes for Admins
+### What Changes
 
-- The **Quiz Title** input, **Description** textarea, and **"Questions"** heading text are removed from the quiz tab in "Edit Course" and from the "Create Quiz" modal.
-- The quiz section now starts directly with the "Add Question" button and the question cards.
-- Quiz titles are automatically set to match the course title (admins never need to think about it).
+**Before:**
+- Full-width colored banner card showing score (QuizScoreSummary component)
+- Title shows quiz name (e.g., "Fire Safety")
+- Description text below title
 
-### What Changes for Employees
+**After:**
+- No banner at all after completion
+- Title reads **"Quiz questions (9)"** (with question count)
+- After completion, a soft success badge appears to the right: **"100% (1/1 correct)"**
+- Description line removed (descriptions were already cleared in previous migration)
 
-- Nothing visible changes. The quiz screen will continue to show a title (auto-generated from the course name) and questions as before.
+### Principal Engineer Review
 
-### Existing Quizzes
+**Top 5 Risks/Issues:**
+1. QuizScoreSummary component becomes unused -- dead code if not cleaned up
+2. Score badge color should follow existing soft-variant conventions (already established in project)
+3. Accessibility: the score badge needs proper ARIA context since it replaces a role="status" element
+4. Minor: percentage edge case if totalQuestions is 0 (already guarded in QuizScoreSummary, need to replicate)
+5. No risk to employee data or quiz logic -- purely visual change
 
-A database migration will update all existing quiz titles to match their linked course title, and clear all existing descriptions.
+**Top 5 Fixes/Improvements:**
+1. Add `role="status"` and `aria-label` to the score badge for accessibility parity
+2. Use existing `soft-success` / `soft-destructive` badge variants based on score threshold
+3. Remove the QuizScoreSummary import and component file (or leave for potential reuse -- recommend removing)
+4. Guard against zero-question edge case in percentage calculation
+5. Keep layout simple: flexbox row with title + badge, no extra wrappers
+
+**Database Change Required:** No
+
+**Go/No-Go Verdict:** Go -- minimal, clean visual change with no logic or data impact.
 
 ### Technical Details
 
-**Files Modified:**
+**`src/components/quiz/QuizModal.tsx`:**
+- Remove lines 184-192 (QuizScoreSummary block)
+- Replace lines 194-199 (title/description block) with:
+  - `h2` text: "Quiz questions ({quiz.questions.length})"
+  - When `isSubmitted && quizResults`: render an inline Badge with soft-success styling showing "{percentage}% ({correct}/{total} correct)"
+  - Score color: green (soft-success) for >= 70%, red (soft-destructive) for < 70%
+- Remove `QuizScoreSummary` import (line 13)
 
-1. **`src/components/EditVideoModal.tsx`**
-   - Remove Quiz Title input (lines 877-880) and Description textarea (lines 882-885)
-   - Remove "Questions" heading text (line 889), keep only the "Add Question" button
-   - Auto-set `quizTitle` from the video/course `title` (derive it, don't ask for it)
-   - Update `handleCreateQuiz` to use video title instead of requiring manual quiz title input
-   - Remove quiz title validation checks (lines 342-351, 706-713) since title is auto-derived
-   - Simplify `hasChanges` and `hasQuizChanges` to remove `quizTitle` and `quizDescription` comparisons
-   - Remove `quizTitle`, `quizDescription`, `originalQuizTitle`, `originalQuizDescription` state variables (replace with auto-derived value)
-
-2. **`src/components/quiz/CreateQuizModal.tsx`**
-   - Remove Quiz Title input (lines 219-227) and Description textarea (lines 229-237)
-   - Remove "Questions" heading (line 242), keep "Add Question" button
-   - Remove `title` and `description` from `formData` state; auto-set title from video context
-   - Update `QuizFormData` interface: keep `title` and `description` fields but auto-populate them
-   - Remove `formData.title.trim()` from `canSubmit` check (line 206)
-
-3. **`src/components/quiz/QuizModal.tsx`** (employee-facing)
-   - No changes. Continue displaying `quiz.title` (which will now be auto-generated).
-
-**Database Migration:**
-
-```sql
-UPDATE quizzes q
-SET title = v.title,
-    description = NULL,
-    updated_at = now()
-FROM videos v
-WHERE q.video_id = v.id;
-```
-
-This updates all existing quiz titles to match their course titles and clears descriptions.
-
-**No schema changes** -- the `title` column stays NOT NULL, just auto-populated instead of manually entered.
+**`src/components/quiz/QuizScoreSummary.tsx`:**
+- Delete file (no longer referenced anywhere after this change)
