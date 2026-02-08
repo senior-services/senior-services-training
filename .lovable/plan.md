@@ -1,85 +1,42 @@
 
 
-## Fix: Download All Quiz Versions in Excel Export
+## Edit Course Quiz Tab UI Updates
 
-### Summary
+### Changes
 
-The "Download quiz versions" feature only exports 1 version despite 3 existing in the database. The code logic is correct, but the database's row-level security (RLS) policies appear to filter out some archived quiz versions at runtime. The fix creates a dedicated database function that reliably returns all versions for admins, bypassing any RLS filtering issues.
+**1. Quiz tab badge: show version number instead of question count**
 
-### Root Cause
+Replace the badge next to "Quiz" that currently shows the number of questions. Instead, show the quiz version number (e.g., "v3"). Only display this badge when the version is greater than 1.
 
-The quiz table's RLS uses restrictive-only policies. While the admin policy should grant full access, the interaction between multiple restrictive policies (admin ALL + employee SELECT with archived_at filter) may cause unexpected filtering. A `SECURITY DEFINER` RPC function is the proven pattern in this codebase for reliable data access (used for quiz submission, progress updates, etc.).
+**2. Add "{N} Questions" header above the first question**
 
-### What Changes
+Add a text header like "4 Questions" above the questions list, using the actual count of questions.
 
-**1. New database function (migration)**
+**3. Change "Download quiz versions" to outline button style, align with questions header**
 
-Create `get_all_quiz_versions(p_video_id uuid)` as a `SECURITY DEFINER` function that:
-- Verifies the caller is an authenticated admin
-- Returns all quizzes for the video (active + archived) with their questions and options
-- Ordered by version ascending
+Change the button from `variant="link"` to `variant="outline"`. Place both the "{N} Questions" header and the download button on the same row, horizontally aligned (header left, button right).
 
-**2. Update `quizService.ts` -- `getVersionHistory` method**
+**4. Update versioning notice text**
 
-Replace the direct table query with a call to the new RPC function, or restructure to use the RPC. Since the RPC needs to return nested data (quizzes with questions with options), the simplest approach is to have the RPC return the quiz IDs reliably, then fetch questions/options using existing admin RLS (which works for those tables).
+Change the banner description to: "This training is already assigned. Editing the quiz will create a new version for future employees. Completed trainings won't be affected."
 
-Alternative simpler approach: Just create an RPC that returns quiz rows for a video_id (bypassing quiz table RLS), then keep the existing question/option fetching logic which works fine through their own admin RLS policies.
+### Technical Details
 
-### Risk Assessment
+All changes are in **`src/components/EditVideoModal.tsx`**:
 
-**Top 5 Risks/Issues:**
-1. RLS interaction is the root cause -- direct table queries may not return all archived rows
-2. New RPC function must verify admin role to prevent unauthorized access
-3. Questions and options tables have working admin RLS -- no changes needed there
-4. No risk to employee-facing views -- this is admin-only download functionality
-5. Migration is additive only -- no destructive changes
+**Lines 991-996** (tab badge): Replace `questions.length` badge with version badge showing `v{quiz.version}`, only when `versionCount > 1`.
 
-**Top 5 Fixes/Improvements:**
-1. Create `get_all_quiz_versions` RPC with `SECURITY DEFINER` and admin check
-2. Update `getVersionHistory` to call the RPC for quiz rows
-3. Keep existing question/option loading logic unchanged
-4. Remove diagnostic logging added in previous change (no longer needed)
-5. Function follows established pattern (e.g., `check_quiz_usage`, `get_correct_options_for_quiz`)
+**Lines 1033-1055** (quiz tab content): Restructure to:
+- Keep the versioning banner as-is but update text (line 1037)
+- Replace the download button wrapper and questions start with a single row containing "{N} Questions" on the left and the outline-styled download button on the right
+- Remove the old `<div className="flex justify-end">` wrapper
 
-**Database Change Required:** Yes -- new RPC function to reliably fetch all quiz versions bypassing RLS
+**Line 1036-1038** (banner text): Update to the new wording.
 
-**Go/No-Go Verdict:** Go -- follows established SECURITY DEFINER pattern, addresses confirmed RLS filtering issue
+### Review
 
-### Technical Detail
-
-**Migration SQL:**
-```sql
-CREATE OR REPLACE FUNCTION public.get_all_quiz_versions(p_video_id uuid)
-RETURNS SETOF quizzes
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-BEGIN
-  IF auth.uid() IS NULL THEN
-    RAISE EXCEPTION 'Not authenticated';
-  END IF;
-  
-  IF NOT has_role(auth.uid(), 'admin'::app_role) THEN
-    RAISE EXCEPTION 'Not authorized';
-  END IF;
-
-  RETURN QUERY
-  SELECT * FROM quizzes
-  WHERE video_id = p_video_id
-  ORDER BY version ASC;
-END;
-$$;
-```
-
-**File: `src/services/quizService.ts` -- `getVersionHistory`**
-
-Replace the direct `supabase.from('quizzes').select(...)` query with:
-```typescript
-const { data: quizzes, error } = await supabase.rpc('get_all_quiz_versions', {
-  p_video_id: videoId
-});
-```
-
-Keep the rest of the method (question/option loading loop) unchanged.
+- **Top 5 Risks**: (1) Quiz version number must be available from the `quiz` state object. (2) Badge visibility condition change is straightforward. (3) Layout alignment uses standard flex. (4) No logic changes. (5) No accessibility concerns with these visual updates.
+- **Top 5 Fixes**: (1) Swap badge content from count to version. (2) Add conditional rendering for badge. (3) Add questions count header. (4) Change button variant. (5) Update banner copy.
+- **Database Change Required**: No
+- **Go/No-Go**: Go -- purely visual changes within a single file
 
