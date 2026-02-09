@@ -1,41 +1,30 @@
 
 
-## Add Helper Text for Multiple Choice Questions
+## Remove Top Margin from Helper Text Pattern
 
 ### What's changing
-Three small additions to clarify the multiple-choice quiz behavior for both admins and employees, using the newly documented helper text pattern from the style guide.
+Removing `mt-1` from the helper text pattern everywhere it appears, so the helper text sits closer to the label above it. The bottom margin `mb-1.5` remains to keep spacing before the input.
 
-### Changes (3 files)
+### Changes (5 files)
 
-**File 1: `src/components/EditVideoModal.tsx`** (Edit Course dialog)
-- After the "Answer Options" label (line 1124), add helper text **only when** `question.question_type === 'multiple_choice'`:
-  ```
-  <p className="text-xs text-muted-foreground mt-1 mb-1.5">
-    Mark all correct answers. Employees must select all of these to pass the question.
-  </p>
-  ```
+**File 1: `STYLEGUIDE.md`**
+- Update the helper text pattern from `mt-1 mb-1.5` to `mb-1.5`
+- Update the guideline note from "Spacing: `mt-1` below label, `mb-1.5` above input" to "Spacing: `mb-1.5` above input"
 
-**File 2: `src/components/quiz/CreateQuizModal.tsx`** (Add New Course dialog)
-- After the "Answer Options" label (line 303), add the same helper text **only when** `question.question_type === 'multiple_choice'`:
-  ```
-  <p className="text-xs text-muted-foreground mt-1 mb-1.5">
-    Mark all correct answers. Employees must select all of these to pass the question.
-  </p>
-  ```
+**File 2: `src/pages/ComponentsGallery.tsx`**
+- Change the helper text example class from `text-xs text-muted-foreground mt-1 mb-1.5` to `text-xs text-muted-foreground mb-1.5`
 
-**File 3: `src/components/quiz/QuizModal.tsx`** (Employee quiz)
-- After the question title `<h3>` (line 228), add helper text **only when** `question.question_type === 'multiple_choice'`:
-  ```
-  <p className="text-xs text-muted-foreground">
-    Select all correct options for full credit.
-  </p>
-  ```
+**File 3: `src/components/EditVideoModal.tsx`**
+- Change the multiple choice helper text class from `mt-1 mb-1.5` to `mb-1.5`
 
-### Scoring behavior
-The existing quiz scoring logic already requires employees to select **all** correct options and **no** incorrect options to get the question right. No scoring changes needed -- this is purely a UI clarity improvement.
+**File 4: `src/components/quiz/CreateQuizModal.tsx`**
+- Change the multiple choice helper text class from `mt-1 mb-1.5` to `mb-1.5`
+
+**File 5: `src/components/quiz/QuizModal.tsx`**
+- No change needed -- this helper text already has no `mt-1`
 
 ### Review
-- **Top 5 Risks**: (1) Minimal -- text-only additions with no logic changes. (2) Helper text must only show for multiple_choice, not single_answer or true_false. (3) Consistent styling with new style guide pattern. (4) No database changes. (5) No accessibility concerns.
-- **Top 5 Fixes**: (1) Add admin helper text in EditVideoModal. (2) Add admin helper text in CreateQuizModal. (3) Add employee helper text in QuizModal. (4) Conditionally render only for multiple_choice type. (5) Follow style guide spacing tokens.
+- **Top 5 Risks**: (1) None -- purely cosmetic spacing tweak. (2) All instances must be updated consistently. (3) No logic changes. (4) No database changes. (5) Minimal risk.
+- **Top 5 Fixes**: (1) Update STYLEGUIDE.md pattern. (2) Update gallery example. (3) Update EditVideoModal. (4) Update CreateQuizModal. (5) Keep QuizModal as-is.
 - **Database Change Required**: No
 - **Go/No-Go**: Go
