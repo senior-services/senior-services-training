@@ -889,6 +889,25 @@ export const ComponentsGallery = ({
 
                 {/* Attention Banner */}
                 <Banner variant="attention" title="Attention" description="Attention banner for items requiring user action." />
+
+                <Separator className="my-6" />
+
+                <h4 className="text-sm font-medium text-muted-foreground">Inline Banners (Compact)</h4>
+
+                {/* Compact Info */}
+                <Banner variant="info" size="compact" description="This field is optional." />
+
+                {/* Compact Success */}
+                <Banner variant="success" size="compact" description="All answers saved." />
+
+                {/* Compact Warning */}
+                <Banner variant="warning" size="compact" description="Changes will take effect immediately." />
+
+                {/* Compact Error */}
+                <Banner variant="error" size="compact" description="Please fix the errors above." />
+
+                {/* Compact Attention */}
+                <Banner variant="attention" size="compact" description="Review pending items before submitting." />
               </div>
             </CardContent>
           </Card>
