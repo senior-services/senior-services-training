@@ -1,24 +1,19 @@
 
-## Remove Content Type Section from Add New Course Dialog
 
-### What's changing
-Removing the manual "Content Type" radio selector that appears when the URL type cannot be auto-detected (lines 286-314). The auto-detection logic will remain, but users will no longer be prompted to manually choose between Video and Presentation.
+## Fix: Reset Add New Course Dialog on Every Open
 
-### Changes
+### Problem
+When the dialog closes after saving a course (and subsequently deleting it), the form fields retain their previous values because the state is only reset in `handleClose` (the Cancel button handler). The `onOpenChange` prop is passed directly to the Dialog without resetting state.
+
+### Solution
+Add a reset effect that clears all form fields whenever the dialog opens, ensuring a clean form every time.
 
 **File: `src/components/content/AddContentModal.tsx`**
 
-1. **Remove the manual content type selector UI** (lines 286-314) -- the entire `{showManualSelector && !urlError && (...)}` block with the RadioGroup.
-
-2. **Remove the auto-detected success message** (lines 277-281) -- the "Auto-detected: Video/Presentation" text, since content type is no longer surfaced to the user.
-
-3. **Clean up unused imports** -- Remove `RadioGroup` and `RadioGroupItem` imports (line 14) since they are no longer used.
-
-4. **Remove `showManualSelector` state** (line 43) and all references to `setShowManualSelector` throughout the file (lines 59, 69, 80, 86, 94, 97, 184, 203, 259, 277).
+1. Add a `useEffect` that watches the `open` prop. When `open` becomes `true`, reset all form state to defaults (title, description, url, contentType, errors, assignToAll, dueDateOption, noDueDateRequired).
 
 ### Review
-
-- **Top 5 Risks**: (1) Content type will always default to "video" if auto-detection fails -- acceptable if that is the desired behavior. (2) No other risks -- UI-only change.
-- **Top 5 Fixes**: (1) Remove the manual selector block. (2) Remove unused state/imports. (3) Simplify URL status display.
+- **Top 5 Risks**: None -- straightforward state reset on open.
+- **Top 5 Fixes**: (1) Add useEffect to reset form on open.
 - **Database Change Required**: No
 - **Go/No-Go**: Go
