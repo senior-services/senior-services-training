@@ -34,6 +34,15 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingSkeleton, LoadingSpinner } from "@/components/ui/loading-spinner";
 import { TOOLTIP_CONFIG } from "@/constants/tooltip-config";
 import { logger } from "@/utils/logger";
+import {
+  isLegacyExempt as sharedIsLegacyExempt,
+  hasActiveQuizRequirement,
+  getDisplayQuizResults,
+  getDisplayQuizVersion,
+  getCompletionDate as getCompletionDateHelper,
+  isTrainingCompleted,
+  type QuizAttemptData,
+} from "@/utils/quizHelpers";
 
 interface AssignVideosModalProps {
   open: boolean;
@@ -89,7 +98,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const [videoIdsWithQuizzes, setVideoIdsWithQuizzes] = useState<Map<string, string>>(new Map());
   const [videoQuizVersions, setVideoQuizVersions] = useState<Map<string, number>>(new Map());
   const [employeeQuizResults, setEmployeeQuizResults] = useState<
-    Map<string, { score: number; total_questions: number; completed_at: string }>
+    Map<string, QuizAttemptData>
   >(new Map());
   
   // Sorting state
@@ -182,7 +191,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
       }
 
       // Process employee quiz attempts - keep most recent per video
-      const quizResultsMap = new Map<string, { score: number; total_questions: number; completed_at: string }>();
+      const quizResultsMap = new Map<string, QuizAttemptData>();
       if (userAttemptsResult && Array.isArray(userAttemptsResult)) {
         for (const attempt of userAttemptsResult) {
           if (attempt.quiz?.video_id) {
@@ -193,6 +202,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                 score: attempt.score,
                 total_questions: attempt.total_questions,
                 completed_at: attempt.completed_at,
+                quiz_version: attempt.quiz?.version || 1,
               });
             }
           }
@@ -213,22 +223,13 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
       const completed = new Set<string>();
 
       progressMap.forEach((progress, videoId) => {
-        const videoCompleted = progress.progress_percent === 100 || progress.completed_at;
+        const videoCompleted = !!(progress.progress_percent === 100 || progress.completed_at);
         const quizCreatedAt = quizMap.get(videoId);
+        const exempt = sharedIsLegacyExempt(progress.completed_at, quizCreatedAt);
+        const hasQuiz = hasActiveQuizRequirement(quizCreatedAt, progress.completed_at);
 
-        if (quizCreatedAt) {
-          // Video has quiz - check for legacy exemption
-          const isLegacyExempt = progress.completed_at &&
-            new Date(progress.completed_at) < new Date(quizCreatedAt);
-
-          if (videoCompleted && (quizResultsMap.has(videoId) || isLegacyExempt)) {
-            completed.add(videoId);
-          }
-        } else {
-          // No quiz - video completion is enough
-          if (videoCompleted) {
-            completed.add(videoId);
-          }
+        if (isTrainingCompleted(videoCompleted, hasQuiz, quizResultsMap.has(videoId), exempt)) {
+          completed.add(videoId);
         }
       });
       setCompletedVideoIds(completed);
@@ -474,31 +475,21 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
 
   // Format due date for display
   const formatDueDate = (videoId: string): string => {
-    // Not selected and not assigned - show "--"
-    // Completed videos: show completion date regardless of assignment status
+    // Completed videos: show completion date (prefer quiz attempt date)
     if (completedVideoIds.has(videoId)) {
       const progressData = videoProgressData.get(videoId);
-      if (progressData?.completed_at) {
-        return format(new Date(progressData.completed_at), "MMM dd, yyyy");
+      const quizAttempt = employeeQuizResults.get(videoId) as QuizAttemptData | undefined;
+      const completionDateStr = getCompletionDateHelper(quizAttempt ?? null, progressData?.completed_at);
+      if (completionDateStr) {
+        return format(new Date(completionDateStr), "MMM dd, yyyy");
       }
     }
     if (!assignedVideoIds.has(videoId) && !selectedVideoIds.has(videoId)) return "--";
 
-    // Newly selected but not yet assigned - show "--" unless user set a pending deadline
+    // Newly selected but not yet assigned
     if (selectedVideoIds.has(videoId) && !assignedVideoIds.has(videoId)) {
       const deadline = videoDeadlines.get(videoId);
-      if (deadline) {
-        return `Due ${format(deadline, "MMM dd, yyyy")}`;
-      }
-      return "--";
-    }
-
-    // For assigned videos, show completion date if completed
-    if (completedVideoIds.has(videoId)) {
-      const progressData = videoProgressData.get(videoId);
-      if (progressData?.completed_at) {
-        return format(new Date(progressData.completed_at), "MMM dd, yyyy");
-      }
+      return deadline ? `Due ${format(deadline, "MMM dd, yyyy")}` : "--";
     }
 
     // For assigned videos, show due date or "N/A" if none set
@@ -599,77 +590,30 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
     return sortVideos(filtered);
   };
 
-  // Check if an employee is legacy-exempt for a video's quiz
-  const isLegacyExempt = (videoId: string): boolean => {
+  // Shared helper wrappers that resolve per-video context
+  const getVideoQuizContext = (videoId: string) => {
     const quizCreatedAt = videoIdsWithQuizzes.get(videoId);
-    if (!quizCreatedAt) return false;
     const progress = videoProgressData.get(videoId);
-    if (!progress?.completed_at) return false;
-    return new Date(progress.completed_at) < new Date(quizCreatedAt);
+    const quizAttempt = employeeQuizResults.get(videoId);
+    const exempt = sharedIsLegacyExempt(progress?.completed_at, quizCreatedAt);
+    const hasQuiz = hasActiveQuizRequirement(quizCreatedAt, progress?.completed_at);
+    const isAssigned = assignedVideoIds.has(videoId) || selectedVideoIds.has(videoId) || completedVideoIds.has(videoId);
+    return { quizAttempt, exempt, hasQuiz, isAssigned };
   };
 
   // Get quiz results display for a video
   const getQuizResults = (videoId: string): React.ReactNode => {
-    const hasQuiz = videoIdsWithQuizzes.has(videoId);
-    const quizAttempt = employeeQuizResults.get(videoId);
-    const isAssigned = assignedVideoIds.has(videoId) || completedVideoIds.has(videoId);
-
-    // Priority 1: If employee has a quiz attempt, always show the actual score
-    if (quizAttempt) {
-      const percentage = Math.round((quizAttempt.score / quizAttempt.total_questions) * 100);
-      return (
-        <span>
-          {percentage}% ({quizAttempt.score}/{quizAttempt.total_questions} Correct)
-        </span>
-      );
-    }
-
-    if (!hasQuiz) {
-      // Show "N/A" for assigned courses without quiz, "--" for unassigned
-      return isAssigned 
-        ? <span className="text-muted-foreground" aria-label="No quiz for this course">N/A</span>
-        : <span className="text-muted-foreground" aria-label="No quiz available">--</span>;
-    }
-
-    // Unassigned videos show "--" instead of "Not Completed"
-    if (!isAssigned) {
-      return <span className="text-muted-foreground" aria-label="Not assigned">--</span>;
-    }
-
-    // Legacy exemption: completed before quiz existed (and no quiz attempt)
-    if (isLegacyExempt(videoId)) {
-      return <span aria-label="Completed before quiz was added">Exempt (No Quiz)</span>;
-    }
-
-    return <span>Not Completed</span>;
+    const { quizAttempt, exempt, hasQuiz, isAssigned } = getVideoQuizContext(videoId);
+    const text = getDisplayQuizResults(quizAttempt ?? null, hasQuiz, exempt, isAssigned);
+    const isMuted = text === '--' || text === 'N/A';
+    return <span className={isMuted ? 'text-muted-foreground' : ''} aria-label={text}>{text}</span>;
   };
 
   // Get quiz version display for a video
   const getQuizVersion = (videoId: string): string => {
-    const hasQuiz = videoIdsWithQuizzes.has(videoId);
-    const isAssigned = assignedVideoIds.has(videoId) || selectedVideoIds.has(videoId) || completedVideoIds.has(videoId);
-
-    // Unassigned videos always show "--"
-    if (!isAssigned) {
-      return "--";
-    }
-    // No quiz on the course: show "N/A"
-    if (!hasQuiz) {
-      return "N/A";
-    }
-    // If employee has a quiz attempt, always show the version
-    const quizAttempt = employeeQuizResults.get(videoId);
-    if (quizAttempt) {
-      const version = videoQuizVersions.get(videoId);
-      return version !== undefined ? `${version}` : "--";
-    }
-    // Legacy-exempt (no attempt): show "N/A"
-    if (isLegacyExempt(videoId)) {
-      return "N/A";
-    }
-    // Assigned, has quiz, not exempt: show version
-    const version = videoQuizVersions.get(videoId);
-    return version !== undefined ? `${version}` : "--";
+    const { quizAttempt, exempt, hasQuiz, isAssigned } = getVideoQuizContext(videoId);
+    const latestVersion = videoQuizVersions.get(videoId);
+    return getDisplayQuizVersion(quizAttempt ?? null, latestVersion, hasQuiz, exempt, isAssigned);
   };
 
   if (!employee) return null;

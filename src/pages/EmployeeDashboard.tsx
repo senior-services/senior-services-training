@@ -23,6 +23,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 // Enhanced utility imports
 import { sanitizeText, createSafeDisplayName, validateUserRole } from "@/utils/security";
 import { announceToScreenReader, getStatusAnnouncement, formatDurationSeconds } from "@/utils/accessibility";
+import { isLegacyExempt, hasActiveQuizRequirement } from "@/utils/quizHelpers";
 import {
   calculateTrainingProgress,
   useOptimizedMemo,
@@ -252,9 +253,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       const videoMarkedComplete = assignment?.completed_at || assignment?.progress_percent === 100;
       const quizInfo = videoIdsWithQuizzes.get(video.id);
       const quizCreatedAt = quizInfo?.createdAt;
-      // If employee completed before the quiz was created, they're exempt
-      const completedBeforeQuiz = quizCreatedAt && assignment?.completed_at && new Date(assignment.completed_at) < new Date(quizCreatedAt);
-      const hasQuiz = !!quizCreatedAt && !completedBeforeQuiz;
+      // Use shared helper for legacy exemption check
+      const hasQuiz = hasActiveQuizRequirement(quizCreatedAt, assignment?.completed_at);
       const quizDone = quizAttemptsByVideo[video.id] != null;
 
       let effectiveProgress: number;

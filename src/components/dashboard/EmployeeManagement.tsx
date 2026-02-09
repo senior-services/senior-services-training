@@ -32,6 +32,15 @@ import { quizOperations } from '@/services/quizService';
 import { sanitizeText, createSafeDisplayName } from '@/utils/security';
 import * as XLSX from 'xlsx';
 import { STATUS_LABELS } from '@/constants';
+import {
+  isLegacyExempt as sharedIsLegacyExempt,
+  hasActiveQuizRequirement,
+  getDisplayQuizResults,
+  getDisplayQuizVersion,
+  getCompletionDate as sharedGetCompletionDate,
+  isTrainingCompleted,
+  type QuizAttemptData,
+} from '@/utils/quizHelpers';
 export const EmployeeManagement: React.FC<{
   onCountChange?: (count: number) => void;
 }> = ({
@@ -144,10 +153,9 @@ export const EmployeeManagement: React.FC<{
           if (employee.assignments && Array.isArray(employee.assignments)) {
             const assignmentsWithQuizInfo = employee.assignments.map((assignment: any) => {
               const quizCreatedAt = quizCreationDates.get(assignment.video_id);
-              const completedBeforeQuiz = quizCreatedAt && assignment.completed_at && new Date(assignment.completed_at) < new Date(quizCreatedAt);
               return {
                 ...assignment,
-                hasQuiz: !!quizCreatedAt && !completedBeforeQuiz
+                hasQuiz: hasActiveQuizRequirement(quizCreatedAt, assignment.completed_at)
               };
             });
             videoMap.set(employee.id, assignmentsWithQuizInfo);
@@ -377,10 +385,9 @@ export const EmployeeManagement: React.FC<{
       if (employee.assignments && Array.isArray(employee.assignments)) {
         const assignmentsWithQuizInfo = employee.assignments.map((assignment: any) => {
           const quizCreatedAt = quizCreationDates.get(assignment.video_id);
-          const completedBeforeQuiz = quizCreatedAt && assignment.completed_at && new Date(assignment.completed_at) < new Date(quizCreatedAt);
           return {
             ...assignment,
-            hasQuiz: !!quizCreatedAt && !completedBeforeQuiz
+            hasQuiz: hasActiveQuizRequirement(quizCreatedAt, assignment.completed_at)
           };
         });
         videoMap.set(employee.id, assignmentsWithQuizInfo);
@@ -450,66 +457,37 @@ export const EmployeeManagement: React.FC<{
       } else {
         videos.forEach(assignment => {
           const employeeQuizData = quizzesMap.get(employee.id);
-          const quizAttempt = employeeQuizData?.get(assignment.video_id);
+          const quizAttempt = employeeQuizData?.get(assignment.video_id) as QuizAttemptData | undefined;
+          const quizCreatedAt = quizCreationDates.get(assignment.video_id);
+          const exempt = sharedIsLegacyExempt(assignment.completed_at, quizCreatedAt);
+          const videoCompleted = !!(assignment.progress_percent === 100 || assignment.completed_at);
+          const completed = isTrainingCompleted(videoCompleted, assignment.hasQuiz, !!quizAttempt, exempt);
 
           let status: string = STATUS_LABELS.pending;
-          const videoCompleted = assignment.progress_percent === 100 || assignment.completed_at;
-
-          let isCompleted = false;
-          if (assignment.hasQuiz) {
-            isCompleted = videoCompleted && !!quizAttempt;
-          } else {
-            isCompleted = videoCompleted;
-          }
-
-          if (isCompleted) {
+          if (completed) {
             status = STATUS_LABELS.completed;
           } else if (assignment.due_date) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const due = new Date(assignment.due_date);
             due.setHours(0, 0, 0, 0);
-            if (isPast(due)) {
-              status = STATUS_LABELS.overdue;
-            } else {
-              status = STATUS_LABELS.pending;
-            }
-          } else {
-            status = STATUS_LABELS.pending;
+            status = isPast(due) ? STATUS_LABELS.overdue : STATUS_LABELS.pending;
           }
 
-          let quizResults = '--';
-          if (quizAttempt) {
-            // Priority 1: actual quiz attempt data always wins
-            const percentage = Math.round(quizAttempt.score / quizAttempt.total_questions * 100);
-            quizResults = `${percentage}% (${quizAttempt.score}/${quizAttempt.total_questions} Correct)`;
-          } else if (!assignment.hasQuiz) {
-            // Check if there's a quiz at all for this video (hasQuiz is false for legacy-exempt too)
-            // If the video truly has no quiz, show N/A; if legacy-exempt with no attempt, show Legacy label
-            const quizCreatedAt = quizCreationDates.get(assignment.video_id);
-            if (quizCreatedAt) {
-              // Quiz exists but hasQuiz was set to false due to legacy exemption
-              quizResults = 'Exempt (No Quiz)';
-            } else {
-              quizResults = 'N/A';
-            }
-          } else {
-            quizResults = 'Not Completed';
-          }
+          const quizResults = getDisplayQuizResults(quizAttempt ?? null, assignment.hasQuiz, exempt);
+          const quizVersion = getDisplayQuizVersion(quizAttempt ?? null, quizVersions.get(assignment.video_id), assignment.hasQuiz, exempt);
 
           let dueDate = 'N/A';
           if (assignment.due_date) {
             dueDate = format(new Date(assignment.due_date), 'MMM dd, yyyy');
           }
 
-          let completionDate = '--';
-          if (isCompleted) {
-            if (quizAttempt && quizAttempt.completed_at) {
-              completionDate = format(new Date(quizAttempt.completed_at), 'MMM dd, yyyy');
-            } else if (assignment.completed_at) {
-              completionDate = format(new Date(assignment.completed_at), 'MMM dd, yyyy');
-            }
-          }
+          const completionDateStr = completed
+            ? sharedGetCompletionDate(quizAttempt ?? null, assignment.completed_at)
+            : null;
+          const completionDate = completionDateStr
+            ? format(new Date(completionDateStr), 'MMM dd, yyyy')
+            : '--';
 
           exportData.push({
             Name: employeeName,
@@ -519,9 +497,7 @@ export const EmployeeManagement: React.FC<{
             'Due Date': dueDate,
             'Completion Date': completionDate,
             'Quiz Results': quizResults,
-            'Quiz Version': (quizResults === 'Exempt (No Quiz)' || quizResults === 'N/A')
-              ? 'N/A'
-              : (quizVersions.get(assignment.video_id) ? `${quizVersions.get(assignment.video_id)}` : (assignment.hasQuiz ? '--' : 'N/A')),
+            'Quiz Version': quizVersion,
             ...(includeVisibility && { 'Visibility': hiddenEmployeeIds.has(employee.id) ? 'Hidden' : 'Active' })
           });
         });
