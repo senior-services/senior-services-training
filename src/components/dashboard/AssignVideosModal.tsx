@@ -87,6 +87,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const [hiddenVideoIds, setHiddenVideoIds] = useState<Set<string>>(new Set());
   const [filterMode, setFilterMode] = useState<"unassigned" | "assigned" | "completed" | "all">("assigned");
   const [videoIdsWithQuizzes, setVideoIdsWithQuizzes] = useState<Map<string, string>>(new Map());
+  const [videoQuizVersions, setVideoQuizVersions] = useState<Map<string, number>>(new Map());
   const [employeeQuizResults, setEmployeeQuizResults] = useState<
     Map<string, { score: number; total_questions: number; completed_at: string }>
   >(new Map());
@@ -126,7 +127,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
         employee
           ? progressOperations.getByEmployee(employee.id)
           : Promise.resolve({ success: true, data: [], error: null }),
-        supabase.from("quizzes").select("video_id, created_at").is("archived_at", null),
+        supabase.from("quizzes").select("video_id, created_at, version").is("archived_at", null),
         employee?.email
           ? quizOperations.getUserAttempts(employee.email).catch((err) => {
               logger.warn("Failed to load quiz attempts:", err);
@@ -160,16 +161,24 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
       // Process quiz data to find which videos have quizzes (with creation dates)
       if (quizzesResult.data) {
         const quizMap = new Map<string, string>();
+        const versionMap = new Map<string, number>();
         quizzesResult.data.forEach((quiz) => {
           // Keep the earliest created_at per video_id
           const existing = quizMap.get(quiz.video_id);
           if (!existing || new Date(quiz.created_at) < new Date(existing)) {
             quizMap.set(quiz.video_id, quiz.created_at);
           }
+          // Keep the highest version per video_id
+          const existingVersion = versionMap.get(quiz.video_id);
+          if (!existingVersion || quiz.version > existingVersion) {
+            versionMap.set(quiz.video_id, quiz.version);
+          }
         });
         setVideoIdsWithQuizzes(quizMap);
+        setVideoQuizVersions(versionMap);
       } else {
         setVideoIdsWithQuizzes(new Map());
+        setVideoQuizVersions(new Map());
       }
 
       // Process employee quiz attempts - keep most recent per video
@@ -440,6 +449,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
     resetDueDateDialog();
     // Reset quiz state
     setVideoIdsWithQuizzes(new Map());
+    setVideoQuizVersions(new Map());
     setEmployeeQuizResults(new Map());
     // Reset sort state to default
     setSortColumn('course');
@@ -627,6 +637,17 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
     return <span>Not Completed</span>;
   };
 
+  // Get quiz version display for a video
+  const getQuizVersion = (videoId: string): string => {
+    const hasQuiz = videoIdsWithQuizzes.has(videoId);
+    const isAssigned = assignedVideoIds.has(videoId) || selectedVideoIds.has(videoId);
+    if (!hasQuiz) {
+      return isAssigned ? "N/A" : "--";
+    }
+    const version = videoQuizVersions.get(videoId);
+    return version !== undefined ? `${version}` : "--";
+  };
+
   if (!employee) return null;
 
   const selectedUnassignedCount = getSelectedUnassignedIds().size;
@@ -768,6 +789,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                         </SortableTableHead>
                         <TableHead className="whitespace-nowrap">Date</TableHead>
                         <TableHead className="whitespace-nowrap">Quiz Results</TableHead>
+                        <TableHead className="whitespace-nowrap">Quiz Version</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -820,6 +842,9 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                             </TableCell>
                             <TableCell>
                               <span className="text-sm whitespace-nowrap">{getQuizResults(video.id)}</span>
+                            </TableCell>
+                            <TableCell>
+                              {(() => { const qv = getQuizVersion(video.id); return <span className={`text-sm whitespace-nowrap ${qv === '--' || qv === 'N/A' ? 'text-muted-foreground' : ''}`}>{qv}</span>; })()}
                             </TableCell>
                           </TableRow>
                         );
