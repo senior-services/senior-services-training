@@ -20,6 +20,7 @@ import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { sanitizeVideoUrl } from "@/utils/security";
 import { useVideoProgress } from "@/hooks/useVideoProgress";
 import { CompletionOverlay } from "@/components/video/CompletionOverlay";
+import { isLegacyExempt } from "@/utils/quizHelpers";
 
 export const VideoPage = () => {
   const { videoId } = useParams<{ videoId: string }>();
@@ -91,7 +92,7 @@ export const VideoPage = () => {
         }
 
         // Legacy exemption: hide quiz if employee completed before quiz was created
-        if (quizData && completedAt && new Date(completedAt) < new Date(quizData.created_at)) {
+        if (quizData && isLegacyExempt(completedAt, quizData.created_at)) {
           logger.info('Employee is legacy-exempt from quiz', {
             videoId: res.data.id,
             completedAt,
