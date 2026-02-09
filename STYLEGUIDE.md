@@ -66,7 +66,7 @@ Use optional helper text between a `Label` and its input to provide brief, conte
 ```tsx
 <div>
   <Label htmlFor="email">Email Address</Label>
-  <p className="text-xs text-muted-foreground mb-1.5">
+  <p className="text-xs text-muted-foreground mt-0 mb-1.5">
     We'll use this to send you login instructions.
   </p>
   <Input id="email" placeholder="you@example.com" />
@@ -75,7 +75,7 @@ Use optional helper text between a `Label` and its input to provide brief, conte
 
 **Guidelines:**
 - Uses `text-xs` size and `text-muted-foreground` color
-- Spacing: `mb-1.5` above input
+- Spacing: `mt-0` resets browser default paragraph margin; `mb-1.5` above input
 - Keep text to one short sentence
 - Most fields won't need helper text — use only when clarification adds value
 
