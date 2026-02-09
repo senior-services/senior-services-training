@@ -257,7 +257,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="url">Video URL</Label>
+              <Label htmlFor="url">Video or Presentation URL</Label>
               <div className="relative">
                 <Input
                   id="url"
