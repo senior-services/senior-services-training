@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle } from "lucide-react"; // CheckCircle/XCircle kept for true/false inline icons only
 import { OptionList, OptionRow } from "@/components/ui/option-list";
+import { Banner } from "@/components/ui/banner";
 
 
 interface QuizModalProps {
@@ -234,8 +235,29 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                     )}
                   </div>
 
-                  {question.question_type === 'multiple_choice' && (
+                  {question.question_type === 'multiple_choice' && (() => {
+                    // Hoist question-level correctness calculations for banner + per-option badges
+                    const mcCorrectOptionIds = question.options?.filter(opt => {
+                      return ('is_correct' in opt) ? opt.is_correct : !!correctOptions[question.id]?.includes(opt.id);
+                    }).map(opt => opt.id) || [];
+                    const mcTotalCorrectCount = mcCorrectOptionIds.length;
+                    const mcSelectedOptionIds = responses[question.id]?.selected_option_ids || [];
+                    const mcHasMissedCorrect = mcCorrectOptionIds.some(id => !mcSelectedOptionIds.includes(id));
+                    const mcHasAnyCorrectSelected = mcSelectedOptionIds.some(id => mcCorrectOptionIds.includes(id));
+                    const mcShouldShowAlsoCorrect = mcTotalCorrectCount > 1 && mcHasMissedCorrect && mcHasAnyCorrectSelected;
+                    const mcQuestionResults = getQuestionResults(question.id);
+                    const mcHasIncorrectAnswers = mcQuestionResults.some(r => !r.is_correct);
+                    const mcShouldShowSingleCorrect = mcTotalCorrectCount === 1 && mcHasIncorrectAnswers && mcHasMissedCorrect;
+
+                    return (
                     <>
+                      {isSubmitted && mcShouldShowAlsoCorrect && (
+                        <Banner 
+                          variant="attention" 
+                          size="compact" 
+                          description="Incomplete. You identified some correct answers, but not all of them were selected." 
+                        />
+                      )}
                       {question.options && question.options.length > 0 ? (
                         <div className="space-y-3">
                           {question.options
@@ -244,8 +266,7 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                               const currentSelections = responses[question.id]?.selected_option_ids || 
                                 (responses[question.id]?.selected_option_id ? [responses[question.id].selected_option_id!] : []);
                               const isSelected = currentSelections.includes(option.id);
-                              const questionResults = getQuestionResults(question.id);
-                              const selectedResults = questionResults.filter(r => r.selected_option_id === option.id);
+                              const selectedResults = mcQuestionResults.filter(r => r.selected_option_id === option.id);
                               const isSelectedCorrect = selectedResults.some(r => r.is_correct);
                               const isCorrect = ('is_correct' in option) 
                                 ? option.is_correct 
@@ -254,21 +275,8 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                 // Enhanced styling for quiz results
                                 let optionClassName = `flex-1 ${isSubmitted ? 'cursor-default' : 'cursor-pointer'} flex items-center justify-between transition-colors`;
                                 
-                                 // Check if user got any answer wrong for this question (for multiple choice)
-                                 const hasIncorrectAnswers = questionResults.some(r => !r.is_correct);
-                                 
-                                 // Calculate correct options and determine if "Also Correct" should be shown
-                                 const correctOptionIds = question.options?.filter(opt => {
-                                   return ('is_correct' in opt) ? opt.is_correct : !!correctOptions[question.id]?.includes(opt.id);
-                                 }).map(opt => opt.id) || [];
-                                 const totalCorrectCount = correctOptionIds.length;
-                                 const selectedOptionIds = responses[question.id]?.selected_option_ids || [];
-                                 const hasMissedCorrect = correctOptionIds.some(id => !selectedOptionIds.includes(id));
-                                 
-                                 // Show "Also Correct" for multiple correct answers when user missed some
-                                 const shouldShowAlsoCorrect = totalCorrectCount > 1 && hasMissedCorrect;
-                                 // Show "Correct" for single correct answer when user got it wrong
-                                 const shouldShowSingleCorrect = totalCorrectCount === 1 && hasIncorrectAnswers && hasMissedCorrect;
+                                 const shouldShowAlsoCorrect = mcShouldShowAlsoCorrect;
+                                 const shouldShowSingleCorrect = mcShouldShowSingleCorrect;
                                
                                  if (isSubmitted) {
                                    if (isSelected && isSelectedCorrect) {
@@ -315,7 +323,7 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                         </Badge>
                                       )}
                                       {isSubmitted && !isSelected && isCorrect && shouldShowAlsoCorrect && (
-                                        <Badge variant="soft-success" showIcon>
+                                        <Badge variant="soft-attention" showIcon>
                                           Also Correct
                                         </Badge>
                                       )}
@@ -336,7 +344,8 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                         </div>
                       )}
                     </>
-                  )}
+                    );
+                  })()}
 
                   {question.question_type === 'true_false' && (
                     <>
