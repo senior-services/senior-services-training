@@ -76,7 +76,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
   const [quizAttemptsByVideo, setQuizAttemptsByVideo] = useState<Record<string, QuizAttemptWithDetails | undefined>>(
     {},
   );
-  const [videoIdsWithQuizzes, setVideoIdsWithQuizzes] = useState<Map<string, string>>(new Map());
+  const [videoIdsWithQuizzes, setVideoIdsWithQuizzes] = useState<Map<string, { createdAt: string; questionCount: number }>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -129,11 +129,17 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
             setQuizAttemptsByVideo({});
           }
 
-          // Fetch which videos have quizzes with their creation dates
+          // Fetch which videos have quizzes with their creation dates and question counts
           try {
-            const { data: quizzesData } = await supabase.from("quizzes").select("video_id, created_at").is("archived_at", null);
-            const quizMap = new Map<string, string>();
-            quizzesData?.forEach(q => quizMap.set(q.video_id, q.created_at));
+            const { data: quizzesData } = await supabase
+              .from("quizzes")
+              .select("video_id, created_at, quiz_questions(count)")
+              .is("archived_at", null);
+            const quizMap = new Map<string, { createdAt: string; questionCount: number }>();
+            quizzesData?.forEach(q => {
+              const questionCount = (q.quiz_questions as any)?.[0]?.count ?? 0;
+              quizMap.set(q.video_id, { createdAt: q.created_at, questionCount });
+            });
             setVideoIdsWithQuizzes(quizMap);
           } catch (error) {
             logger.warn("Failed to load quiz video IDs", { error });
@@ -244,7 +250,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
 
       // Quiz-aware completion logic (aligned with admin dashboard)
       const videoMarkedComplete = assignment?.completed_at || assignment?.progress_percent === 100;
-      const quizCreatedAt = videoIdsWithQuizzes.get(video.id);
+      const quizInfo = videoIdsWithQuizzes.get(video.id);
+      const quizCreatedAt = quizInfo?.createdAt;
       // If employee completed before the quiz was created, they're exempt
       const completedBeforeQuiz = quizCreatedAt && assignment?.completed_at && new Date(assignment.completed_at) < new Date(quizCreatedAt);
       const hasQuiz = !!quizCreatedAt && !completedBeforeQuiz;
@@ -287,6 +294,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
         video_file_name: video.video_file_name,
         quizPending,
         quizSummary,
+        quizQuestionCount: hasQuiz ? quizInfo?.questionCount : undefined,
         completedAt: effectiveCompletedAt || undefined,
       };
     },

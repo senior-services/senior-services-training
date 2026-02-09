@@ -8,7 +8,8 @@ import React, { memo, useMemo, useCallback, useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Clock, Play, AlertCircle, ClipboardList } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { Calendar, Clock, Play, AlertCircle, ClipboardList, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, differenceInDays, isPast } from 'date-fns';
 
@@ -47,6 +48,7 @@ export interface TrainingVideo {
     percent: number;
     completedAt?: string;
   };
+  quizQuestionCount?: number;
 }
 
 /**
@@ -294,38 +296,69 @@ export const TrainingCard = memo<TrainingCardProps>(({
 
         {/* Card Content with Semantic HTML */}
         <CardHeader className="pb-3 pt-3 flex-none">
-          {/* Status Badge - above title */}
-          {dueDateInfo && dueDateInfo.text === 'Completed' && (
-            <div className="mb-1 flex items-center gap-2">
-              <Badge variant={dueDateInfo.variant} className={cn('text-xs font-medium', dueDateInfo.className)} aria-label={dueDateInfo.ariaLabel} role="status" showIcon={dueDateInfo.priority === 'high'}>
-                {dueDateInfo.text}
-              </Badge>
-              {sanitizedVideo.completedAt && (
-                <span className="text-xs text-muted-foreground">
-                  {format(new Date(sanitizedVideo.completedAt), 'MMM d, yyyy')}
-                </span>
-              )}
-            </div>
-          )}
-          {dueDateInfo && dueDateInfo.text !== 'Completed' && (
-            <div className="mb-1">
-              <Badge variant={dueDateInfo.variant} className={cn('text-xs font-medium', dueDateInfo.className)} aria-label={dueDateInfo.ariaLabel} role="status" showIcon={dueDateInfo.priority === 'high'}>
-                {dueDateInfo.text}
-              </Badge>
-            </div>
-          )}
-          {trainingStatus.isCompleted && !dueDateInfo && (
-            <div className="mb-1 flex items-center gap-2">
-              <Badge variant="soft-success" className="text-xs font-medium" aria-label="Training completed successfully" role="status" showIcon>
-                Completed
-              </Badge>
-              {sanitizedVideo.completedAt && (
-                <span className="text-xs text-muted-foreground">
-                  {format(new Date(sanitizedVideo.completedAt), 'MMM d, yyyy')}
-                </span>
-              )}
-            </div>
-          )}
+          {/* Status Badge Row - above title */}
+          <TooltipProvider delayDuration={300}>
+            {/* Completed courses: [Completed <date>] [quiz score] */}
+            {trainingStatus.isCompleted && (
+              <div className="mb-1 flex items-center gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <Badge variant={dueDateInfo?.variant || "soft-success"} className="text-xs font-medium" aria-label={dueDateInfo?.ariaLabel || "Training completed successfully"} role="status" showIcon>
+                        {sanitizedVideo.completedAt
+                          ? `Completed ${format(new Date(sanitizedVideo.completedAt), 'MMM d')}`
+                          : 'Completed'}
+                      </Badge>
+                    </div>
+                  </TooltipTrigger>
+                  {sanitizedVideo.completedAt && (
+                    <TooltipContent>
+                      Completed {format(new Date(sanitizedVideo.completedAt), 'MMMM d, yyyy')}
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+                {sanitizedVideo.quizSummary && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <Badge variant="soft-tertiary" className="text-xs font-medium" showIcon>
+                          {sanitizedVideo.quizSummary.percent}%
+                        </Badge>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Quiz score: {sanitizedVideo.quizSummary.percent}% ({sanitizedVideo.quizSummary.correct}/{sanitizedVideo.quizSummary.total} correct)
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            )}
+
+            {/* Required courses (not completed): [due date] [quiz question count] */}
+            {!trainingStatus.isCompleted && dueDateInfo && (
+              <div className="mb-1 flex items-center gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <Badge variant={dueDateInfo.variant} className={cn('text-xs font-medium', dueDateInfo.className)} aria-label={dueDateInfo.ariaLabel} role="status" showIcon={dueDateInfo.priority === 'high'}>
+                        {dueDateInfo.text}
+                      </Badge>
+                    </div>
+                  </TooltipTrigger>
+                  {sanitizedVideo.dueDate && (
+                    <TooltipContent>
+                      Due {format(new Date(sanitizedVideo.dueDate), 'MMMM d, yyyy')}
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+                {sanitizedVideo.quizQuestionCount != null && sanitizedVideo.quizQuestionCount > 0 && (
+                  <Badge variant="soft-tertiary" className="text-xs font-medium" showIcon>
+                    {sanitizedVideo.quizQuestionCount} question{sanitizedVideo.quizQuestionCount !== 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </div>
+            )}
+          </TooltipProvider>
 
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="text-lg leading-tight line-clamp-2">
@@ -336,12 +369,6 @@ export const TrainingCard = memo<TrainingCardProps>(({
           {sanitizedVideo.description && <CardDescription className="line-clamp-2">
               {sanitizedVideo.description}
             </CardDescription>}
-          {trainingStatus.isCompleted && sanitizedVideo.quizSummary && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1" role="status" aria-label={`Quiz score: ${sanitizedVideo.quizSummary.percent}% (${sanitizedVideo.quizSummary.correct} out of ${sanitizedVideo.quizSummary.total} correct)`}>
-              <ClipboardList className="w-4 h-4" aria-hidden="true" />
-              <span>Quiz: {sanitizedVideo.quizSummary.percent}% ({sanitizedVideo.quizSummary.correct}/{sanitizedVideo.quizSummary.total})</span>
-            </div>
-          )}
         </CardHeader>
 
         {/* Footer */}
