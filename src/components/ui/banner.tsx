@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "./button"
 
 const bannerVariants = cva(
-  "relative w-full rounded-lg border p-4 shadow-card hover:shadow-lg transition-shadow duration-300 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-current",
+  "relative w-full rounded-lg border transition-shadow duration-300",
   {
     variants: {
       variant: {
@@ -19,9 +19,14 @@ const bannerVariants = cva(
         destructive: "bg-destructive/10 text-destructive border-destructive/20",
         attention: "bg-attention/10 text-attention border-attention/20",
       },
+      size: {
+        default: "p-4 shadow-card hover:shadow-lg",
+        compact: "py-2 px-3",
+      },
     },
     defaultVariants: {
       variant: "default",
+      size: "default",
     },
   }
 )
@@ -53,6 +58,7 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>(
   ({ 
     className, 
     variant = "default", 
+    size = "default",
     title, 
     description, 
     icon: CustomIcon, 
@@ -64,18 +70,19 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>(
     ...props 
   }, ref) => {
     const IconComp = (CustomIcon || iconMap[variant as keyof typeof iconMap] || iconMap.default) as React.ElementType<{ className?: string }>
+    const iconClass = size === "compact" ? "h-4 w-4 mt-0.5 shrink-0" : "h-5 w-5 mt-0.5 shrink-0"
 
     return (
       <div
         ref={ref}
         role="alert"
-        className={cn(bannerVariants({ variant }), className)}
+        className={cn(bannerVariants({ variant, size }), className)}
         {...props}
       >
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3 flex-1">
             {showIcon && IconComp ? (
-              <IconComp className="h-5 w-5 mt-0.5 shrink-0" />
+              <IconComp className={iconClass} />
             ) : null}
             <div className="flex-1 min-w-0">
               {title && (

@@ -139,8 +139,36 @@ Use the `Banner` component as the unified solution for all notifications, alerts
 />
 ```
 
+**Inline Banners (Compact):**
+
+Use `size="compact"` with `description` only (no `title`) for brief, contextual messages within forms or sections. Use full banners for page-level alerts.
+
+```tsx
+// Compact inline info
+<Banner variant="info" size="compact" description="This field is optional." />
+
+// Compact inline warning
+<Banner variant="warning" size="compact" description="Changes will take effect immediately." />
+
+// Compact inline success
+<Banner variant="success" size="compact" description="All answers saved." />
+
+// Compact inline error
+<Banner variant="error" size="compact" description="Please fix the errors above." />
+
+// Compact with dismiss
+<Banner 
+  variant="attention" 
+  size="compact" 
+  description="Review pending items before submitting." 
+  dismissible 
+  onDismiss={() => handleDismiss()} 
+/>
+```
+
 **When to use Banner vs Toast vs AlertDialog:**
 - **Banner**: Persistent notifications, page-level alerts, status messages
+- **Banner (compact)**: Inline contextual messages within forms or sections
 - **Toast**: Temporary feedback, success/error confirmations
 - **AlertDialog**: Modal confirmations, destructive action warnings
 
