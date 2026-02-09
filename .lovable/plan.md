@@ -1,54 +1,42 @@
 
+## Fix Completed Video Data Display in Assign Videos Dialog
 
-## Fix Quiz Version Display in Assign Videos Dialog
-
-### Problems (from screenshot)
-1. **Unassigned videos with quizzes** (e.g., PPSX, PPTX) show a version number like "1" instead of "--". Unassigned videos should always show "--" regardless of whether the course has a quiz.
-2. **Completed videos with quiz attempts** (e.g., Anti-Harassment 67%, Paid Time Off 100%) show "N/A" instead of the actual version number. If there is a quiz and the employee has taken it, the version should always display.
+### Problem
+"Social Media and Communications Policy" for John shows "Completed" status but displays "--" for Date, Quiz Results, and Quiz Version. The Excel export correctly shows the data (Sep 10, 2025 / 0% (0/1 Correct) / 3). The discrepancy exists because the video has progress data (making it "completed") but may not be in the active assignments list, causing all display helpers to treat it as unassigned.
 
 ### Root Cause
-In `getQuizVersion` (line 641 of `AssignVideosModal.tsx`):
-- The `isAssigned` check only runs inside the `!hasQuiz` branch, so unassigned videos with quizzes skip it and display a version number.
-- The `isLegacyExempt` check runs before checking for an actual quiz attempt, so employees who voluntarily took the quiz still get "N/A".
+The completion status check (`getCompletionStatus`) correctly identifies a video as "Completed" by checking `completedVideoIds` first. However, the three data display functions -- `getQuizResults`, `getQuizVersion`, and `formatDueDate` -- only check `assignedVideoIds` (and `selectedVideoIds`) to decide whether to show data or "--". A completed video that is not in `assignedVideoIds` gets the correct "Completed" badge but "--" everywhere else.
 
 ### Change
 
-**File: `src/components/dashboard/AssignVideosModal.tsx`** (lines 641-653)
+**File: `src/components/dashboard/AssignVideosModal.tsx`**
 
-Rewrite `getQuizVersion` with corrected priority:
+Update the three display helper functions to treat completed videos the same as assigned videos:
 
-```
-const getQuizVersion = (videoId: string): string => {
-  const hasQuiz = videoIdsWithQuizzes.has(videoId);
-  const isAssigned = assignedVideoIds.has(videoId) || selectedVideoIds.has(videoId);
+1. **`getQuizResults`** (line 608): Change `isAssigned` to also include `completedVideoIds`:
+   ```
+   const isAssigned = assignedVideoIds.has(videoId) || completedVideoIds.has(videoId);
+   ```
 
-  // Unassigned videos always show "--"
-  if (!isAssigned) {
-    return "--";
-  }
-  // No quiz on the course: show "N/A"
-  if (!hasQuiz) {
-    return "N/A";
-  }
-  // If employee has a quiz attempt, always show the version
-  const quizAttempt = employeeQuizResults.get(videoId);
-  if (quizAttempt) {
-    const version = videoQuizVersions.get(videoId);
-    return version !== undefined ? `${version}` : "--";
-  }
-  // Legacy-exempt (no attempt): show "N/A"
-  if (isLegacyExempt(videoId)) {
-    return "N/A";
-  }
-  // Assigned, has quiz, not exempt: show version
-  const version = videoQuizVersions.get(videoId);
-  return version !== undefined ? `${version}` : "--";
-};
-```
+2. **`getQuizVersion`** (line 643): Same change:
+   ```
+   const isAssigned = assignedVideoIds.has(videoId) || selectedVideoIds.has(videoId) || completedVideoIds.has(videoId);
+   ```
+
+3. **`formatDueDate`** (line 478): Add a check for completed videos early in the function so they show the completion date instead of "--":
+   ```
+   // Completed videos: show completion date regardless of assignment status
+   if (completedVideoIds.has(videoId)) {
+     const progressData = videoProgressData.get(videoId);
+     if (progressData?.completed_at) {
+       return format(new Date(progressData.completed_at), "MMM dd, yyyy");
+     }
+   }
+   ```
+   This should be placed before the existing unassigned check.
 
 ### Review
-- **Top 5 Risks**: (1) None significant -- reuses existing data sources already loaded in the component.
-- **Top 5 Fixes**: (1) Move unassigned check to the top. (2) Check quiz attempts before legacy exemption. (3) Keep "N/A" only for no-quiz or exempt-without-attempt cases.
+- **Top 5 Risks**: (1) Edge case where a completed video was never formally assigned -- showing data is still correct since the employee did complete it. (2) No other significant risks.
+- **Top 5 Fixes**: (1) Include `completedVideoIds` in assignment checks across all three display helpers. (2) Prioritize completion date display for completed videos in `formatDueDate`.
 - **Database Change Required**: No
 - **Go/No-Go**: Go
-
