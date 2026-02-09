@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle } from "lucide-react"; // CheckCircle/XCircle kept for true/false inline icons only
 import { OptionList, OptionRow } from "@/components/ui/option-list";
 
 
@@ -268,8 +268,6 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                      optionClassName += ' text-success bg-success/10 border-success/20 rounded-md p-3 border';
                                    } else if (isSelected && !isSelectedCorrect) {
                                      optionClassName += ' text-destructive bg-destructive/10 border-destructive/20 rounded-md p-3 border';
-                                   } else if (!isSelected && isCorrect && (shouldShowAlsoCorrect || shouldShowSingleCorrect)) {
-                                     optionClassName += ' text-success bg-success/10 border-success/20 rounded-md p-3 border';
                                    }
                                  }
                               
@@ -300,35 +298,25 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                     <span className="flex-1">{option.option_text}</span>
                                     <div className="flex items-center gap-2">
                                       {isSubmitted && isSelected && isSelectedCorrect && (
-                                        <Badge variant="default" className="bg-success/20 text-success text-xs">
+                                        <Badge variant="soft-success" showIcon>
                                           Correct
                                         </Badge>
                                       )}
                                       {isSubmitted && isSelected && !isSelectedCorrect && (
-                                        <Badge variant="destructive" className="text-xs">
+                                        <Badge variant="soft-destructive" showIcon>
                                           Incorrect
                                         </Badge>
                                       )}
                                       {isSubmitted && !isSelected && isCorrect && shouldShowAlsoCorrect && (
-                                        <Badge variant="default" className="bg-success/20 text-success text-xs">
+                                        <Badge variant="soft-success" showIcon>
                                           Also Correct
                                         </Badge>
                                       )}
                                       {isSubmitted && !isSelected && isCorrect && shouldShowSingleCorrect && (
-                                        <Badge variant="default" className="bg-success/20 text-success text-xs">
+                                        <Badge variant="soft-success" showIcon>
                                           Correct
                                         </Badge>
                                       )}
-                                      {isSubmitted && isSelected && (
-                                        isSelectedCorrect ? (
-                                          <CheckCircle className="w-5 h-5 text-success" />
-                                        ) : (
-                                          <XCircle className="w-5 h-5 text-destructive" />
-                                        )
-                                      )}
-                                      {isSubmitted && !isSelected && isCorrect && (shouldShowAlsoCorrect || shouldShowSingleCorrect) && (
-                                       <CheckCircle className="w-5 h-5 text-success" />
-                                     )}
                                     </div>
                                   </Label>
                                 </OptionRow>
@@ -371,14 +359,12 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                const userAnsweredIncorrectly = questionResults.length > 0 && questionResults.some(r => !r.is_correct);
                                
                                 if (isSubmitted) {
-                                  if (isSelected && isSelectedCorrect) {
-                                    optionClassName += ' text-success bg-success/10 border-success/20 rounded-md p-3 border';
-                                  } else if (isSelected && !isSelectedCorrect) {
-                                    optionClassName += ' text-destructive bg-destructive/10 border-destructive/20 rounded-md p-3 border';
-                                  } else if (!isSelected && isCorrect && userAnsweredIncorrectly) {
-                                    optionClassName += ' text-success bg-success/10 border-success/20 rounded-md p-3 border';
-                                  }
-                                }
+                                   if (isSelected && isSelectedCorrect) {
+                                     optionClassName += ' text-success bg-success/10 border-success/20 rounded-md p-3 border';
+                                   } else if (isSelected && !isSelectedCorrect) {
+                                     optionClassName += ' text-destructive bg-destructive/10 border-destructive/20 rounded-md p-3 border';
+                                   }
+                                 }
                               
                               return (
                                 <OptionRow key={option.id} className={isSubmitted ? 'mb-2' : ''}>
@@ -394,29 +380,19 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                     </span>
                                     <div className="flex items-center gap-2">
                                       {isSubmitted && isSelected && isSelectedCorrect && (
-                                        <Badge variant="default" className="bg-success/20 text-success text-xs">
+                                        <Badge variant="soft-success" showIcon>
                                           Correct
                                         </Badge>
                                       )}
                                       {isSubmitted && isSelected && !isSelectedCorrect && (
-                                        <Badge variant="destructive" className="text-xs">
+                                        <Badge variant="soft-destructive" showIcon>
                                           Incorrect
                                         </Badge>
                                       )}
                                        {isSubmitted && !isSelected && isCorrect && userAnsweredIncorrectly && (
-                                         <Badge variant="default" className="bg-success/20 text-success text-xs">
+                                         <Badge variant="soft-success" showIcon>
                                            Correct
                                          </Badge>
-                                       )}
-                                       {isSubmitted && isSelected && (
-                                         isSelectedCorrect ? (
-                                           <CheckCircle className="w-5 h-5 text-success" />
-                                         ) : (
-                                           <XCircle className="w-5 h-5 text-destructive" />
-                                         )
-                                       )}
-                                       {isSubmitted && !isSelected && isCorrect && userAnsweredIncorrectly && (
-                                         <CheckCircle className="w-5 h-5 text-success" />
                                        )}
                                     </div>
                                   </Label>
@@ -464,9 +440,7 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                    optionClassName += ' text-success bg-success/10 border-success/20 rounded-md p-3 border';
                                  } else if (isSelected && !isSelectedCorrect) {
                                    optionClassName += ' text-destructive bg-destructive/10 border-destructive/20 rounded-md p-3 border';
-                                  } else if (!isSelected && isCorrect && userAnsweredIncorrectly) {
-                                    optionClassName += ' text-success bg-success/10 border-success/20 rounded-md p-3 border';
-                                  }
+                                 }
                                }
                               
                               return (
@@ -476,29 +450,19 @@ export function QuizModal({ quiz, onSubmit, onCancel, onResponsesChange, quizRes
                                     <span className="flex-1">{option.option_text}</span>
                                     <div className="flex items-center gap-2">
                                       {isSubmitted && isSelected && isSelectedCorrect && (
-                                        <Badge variant="default" className="bg-success/20 text-success text-xs">
+                                        <Badge variant="soft-success" showIcon>
                                           Correct
                                         </Badge>
                                       )}
                                       {isSubmitted && isSelected && !isSelectedCorrect && (
-                                        <Badge variant="destructive" className="text-xs">
+                                        <Badge variant="soft-destructive" showIcon>
                                           Incorrect
                                         </Badge>
                                       )}
                                        {isSubmitted && !isSelected && isCorrect && userAnsweredIncorrectly && (
-                                         <Badge variant="default" className="bg-success/20 text-success text-xs">
+                                         <Badge variant="soft-success" showIcon>
                                            Correct
                                          </Badge>
-                                       )}
-                                       {isSubmitted && isSelected && (
-                                         isSelectedCorrect ? (
-                                           <CheckCircle className="w-5 h-5 text-success" />
-                                         ) : (
-                                           <XCircle className="w-5 h-5 text-destructive" />
-                                         )
-                                       )}
-                                       {isSubmitted && !isSelected && isCorrect && userAnsweredIncorrectly && (
-                                         <CheckCircle className="w-5 h-5 text-success" />
                                        )}
                                     </div>
                                   </Label>
