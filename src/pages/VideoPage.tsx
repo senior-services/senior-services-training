@@ -67,18 +67,19 @@ export const VideoPage = () => {
       if (res.success && res.data) {
         setVideo(res.data);
         
-        // Load quiz for this video
+        // Load quiz and existing progress
+        let quizData: QuizWithQuestions | null = null;
         try {
-          const quizData = await quizOperations.getByVideoId(res.data.id);
-          setQuiz(quizData);
+          quizData = await quizOperations.getByVideoId(res.data.id);
         } catch (error) {
           console.log('No quiz found for this video or error loading quiz:', error);
         }
 
-        // Load existing progress after video is loaded
+        let completedAt: string | null = null;
         if (user?.email) {
           try {
-            await loadExistingProgress();
+            const progressResult = await loadExistingProgress();
+            completedAt = progressResult?.completedAt || null;
           } catch (error) {
             logger.error('Failed to load existing progress', error as Error);
             toast({
@@ -88,6 +89,18 @@ export const VideoPage = () => {
             });
           }
         }
+
+        // Legacy exemption: hide quiz if employee completed before quiz was created
+        if (quizData && completedAt && new Date(completedAt) < new Date(quizData.created_at)) {
+          logger.info('Employee is legacy-exempt from quiz', {
+            videoId: res.data.id,
+            completedAt,
+            quizCreatedAt: quizData.created_at,
+          });
+          quizData = null;
+        }
+
+        setQuiz(quizData);
       } else {
         throw new Error(res.error || 'Failed to load video');
       }

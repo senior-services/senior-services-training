@@ -198,9 +198,12 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
           completed: isVideoCompleted,
           locked: isVideoCompleted
         });
+
+        return { completedAt: progressData.completed_at || null };
       } else {
         logger.info('No existing progress found', { userEmail, videoId });
         resetProgress();
+        return { completedAt: null };
       }
     } catch (error) {
       logger.error('Failed to load existing progress', error);
