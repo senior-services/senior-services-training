@@ -572,7 +572,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         </DialogScrollArea>
 
         {/* Dialog Footer - Show for quiz interactions */}
-        {quiz && (quizStarted || quizSubmitted || wasEverCompleted) && <DialogFooter className="flex-row justify-between items-center">
+        {quiz && (quizStarted || quizSubmitted || wasEverCompleted) && <DialogFooter className="flex-row sm:justify-between items-center">
             <div className="flex items-center gap-2">
               <Checkbox
                 id="footer-quiz-attestation"
