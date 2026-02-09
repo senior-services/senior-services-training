@@ -1,42 +1,41 @@
 
 
-## Add Helper Text Pattern to Component Gallery
+## Add Helper Text for Multiple Choice Questions
 
 ### What's changing
-Adding a new "Helper Text" example to the Form Controls section of the Component Gallery. This demonstrates the pattern for optional descriptive text that sits between a field label and its input, using small size and secondary/muted color.
+Three small additions to clarify the multiple-choice quiz behavior for both admins and employees, using the newly documented helper text pattern from the style guide.
 
-### Changes (1 file)
+### Changes (3 files)
 
-**File: `src/pages/ComponentsGallery.tsx`**
-
-In the Form Controls section (around line 720-733, left column), add a new example field that shows a Label, helper text paragraph, and Input together:
-
-```
-<div>
-  <Label htmlFor="helper-input">Email Address</Label>
+**File 1: `src/components/EditVideoModal.tsx`** (Edit Course dialog)
+- After the "Answer Options" label (line 1124), add helper text **only when** `question.question_type === 'multiple_choice'`:
+  ```
   <p className="text-xs text-muted-foreground mt-1 mb-1.5">
-    We'll use this to send you login instructions.
+    Mark all correct answers. Employees must select all of these to pass the question.
   </p>
-  <Input id="helper-input" placeholder="you@example.com" />
-</div>
-```
+  ```
 
-This will be added as a new field example alongside the existing Text Input, Disabled Input, and Textarea examples -- providing a clear visual reference for when and how to use helper text.
+**File 2: `src/components/quiz/CreateQuizModal.tsx`** (Add New Course dialog)
+- After the "Answer Options" label (line 303), add the same helper text **only when** `question.question_type === 'multiple_choice'`:
+  ```
+  <p className="text-xs text-muted-foreground mt-1 mb-1.5">
+    Mark all correct answers. Employees must select all of these to pass the question.
+  </p>
+  ```
 
-### Pattern being documented
-- Helper text uses `text-xs` (14px per project standards) for small size
-- Uses `text-muted-foreground` for secondary color
-- Positioned between Label and Input with `mt-1 mb-1.5` spacing
-- Content is brief, instructional, and optional
+**File 3: `src/components/quiz/QuizModal.tsx`** (Employee quiz)
+- After the question title `<h3>` (line 228), add helper text **only when** `question.question_type === 'multiple_choice'`:
+  ```
+  <p className="text-xs text-muted-foreground">
+    Select all correct options for full credit.
+  </p>
+  ```
 
-### STYLEGUIDE.md update
-Add a new "Helper Text" subsection under Form Controls Spacing Guidelines documenting:
-- Use `<p className="text-xs text-muted-foreground mt-1 mb-1.5">` between Label and Input
-- Helper text is always optional -- most fields won't need it
-- Keep text concise (one short sentence)
+### Scoring behavior
+The existing quiz scoring logic already requires employees to select **all** correct options and **no** incorrect options to get the question right. No scoring changes needed -- this is purely a UI clarity improvement.
 
 ### Review
-- **Top 5 Risks**: (1) Minimal -- purely additive UI example. (2) Spacing values (mt-1 mb-1.5) should be verified visually. (3) No logic changes. (4) No accessibility concerns -- helper text is readable. (5) No risk to existing components.
-- **Top 5 Fixes**: (1) Add helper text example to gallery. (2) Update STYLEGUIDE.md with pattern docs. (3) Use consistent spacing tokens. (4) Match existing gallery card structure. (5) Keep example realistic.
+- **Top 5 Risks**: (1) Minimal -- text-only additions with no logic changes. (2) Helper text must only show for multiple_choice, not single_answer or true_false. (3) Consistent styling with new style guide pattern. (4) No database changes. (5) No accessibility concerns.
+- **Top 5 Fixes**: (1) Add admin helper text in EditVideoModal. (2) Add admin helper text in CreateQuizModal. (3) Add employee helper text in QuizModal. (4) Conditionally render only for multiple_choice type. (5) Follow style guide spacing tokens.
 - **Database Change Required**: No
 - **Go/No-Go**: Go
