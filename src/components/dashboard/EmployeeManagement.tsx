@@ -504,7 +504,7 @@ export const EmployeeManagement: React.FC<{
             'Due Date': dueDate,
             'Completion Date': completionDate,
             'Quiz Results': quizResults,
-'Quiz Version': quizAttempt?.quiz_version ? `v${quizAttempt.quiz_version}` : (assignment.hasQuiz ? '--' : 'N/A'),
+'Quiz Version': quizAttempt?.quiz_version ? `${quizAttempt.quiz_version}` : (assignment.hasQuiz ? '--' : 'N/A'),
             ...(includeVisibility && { 'Visibility': hiddenEmployeeIds.has(employee.id) ? 'Hidden' : 'Active' })
           });
         });
