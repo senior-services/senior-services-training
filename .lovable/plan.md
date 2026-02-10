@@ -1,49 +1,25 @@
 
 
-## Add Tooltip to Disabled "Submit Quiz" Button
+## Revised: Attestation Background Color When Active
 
 ### What Changes
-Replace the plain `Button` for "Submit Quiz" with the existing `ButtonWithTooltip` component. When disabled (questions incomplete or attestation unchecked), hovering shows: "Please answer all questions and check the attestation to submit." When enabled, no tooltip is shown.
+Update the attestation card container to show a white background (`bg-background`) when the checkbox is enabled (all questions answered), matching the quiz question card styling. When disabled, it stays transparent.
 
 ### Change (1 file)
 
 **File: `src/components/VideoPlayerFullscreen.tsx`**
 
-1. **Add import** for `ButtonWithTooltip` from `@/components/ui/button-with-tooltip`
+In the attestation container `div` (the one with `mt-6 border border-border rounded-lg p-6`), add a conditional background class:
 
-2. **Replace the Submit Quiz button** (line 617-619):
+```tsx
+<div className={`mt-6 border border-border rounded-lg p-6 ${allQuestionsAnswered ? 'bg-background' : ''}`}>
+```
 
-   Current:
-   ```tsx
-   <Button onClick={handleQuizSubmit} disabled={!allQuestionsAnswered || !quizAttestationChecked} className="shadow-md hover:shadow-lg transition-shadow">
-     Submit Quiz
-   </Button>
-   ```
-
-   Updated:
-   ```tsx
-   {(!allQuestionsAnswered || !quizAttestationChecked) ? (
-     <ButtonWithTooltip
-       tooltip="Please answer all questions and check the attestation to submit."
-       disabled
-       className="shadow-md hover:shadow-lg transition-shadow"
-     >
-       Submit Quiz
-     </ButtonWithTooltip>
-   ) : (
-     <Button
-       onClick={handleQuizSubmit}
-       className="shadow-md hover:shadow-lg transition-shadow"
-     >
-       Submit Quiz
-     </Button>
-   )}
-   ```
-
-   This conditionally renders: a disabled button with tooltip when not ready, or an active button without tooltip when ready.
+This applies `bg-background` (white) only when `allQuestionsAnswered` is true, visually matching the quiz question `Card` components. When questions are incomplete, the container remains transparent to reinforce the disabled/inactive state.
 
 ### Review
-- **Top 5 Risks**: (1) None -- uses an existing, tested component (`ButtonWithTooltip`). (2) No change to submission logic. (3) No accessibility regression -- `ButtonWithTooltip` already handles keyboard focus on disabled buttons. (4) No layout shift -- same button styling. (5) No database impact.
-- **Top 5 Fixes**: (1) Swap `Button` for conditional `ButtonWithTooltip`/`Button` render. (2) Add import. (3-5) N/A -- minimal change.
+- **Top 5 Risks**: (1) None -- purely visual, no logic change. (2) Consistent with existing Card styling in quiz questions. (3) No accessibility impact -- contrast remains the same. (4) No layout shift. (5) No database impact.
+- **Top 5 Fixes**: (1) Add conditional `bg-background` class. (2-5) N/A.
 - **Database Change Required**: No
 - **Go/No-Go**: Go
+
