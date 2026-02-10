@@ -255,6 +255,19 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     }
   }, [progress, overlayDismissed, quizStarted, wasEverCompleted]);
 
+  // Auto-start quiz when reopening dialog with video already fully watched
+  useEffect(() => {
+    if (!open || quizStarted || wasEverCompleted || overlayDismissed) return;
+    if (progress >= 99 && quiz && !quizLoading) {
+      setQuizStarted(true);
+      setOverlayDismissed(true);
+      setShowCompletionOverlay(false);
+      setTimeout(() => {
+        document.getElementById('quiz-section')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [open, progress, quiz, quizLoading, quizStarted, wasEverCompleted, overlayDismissed]);
+
   // Handle video ended
   const handleVideoEnded = useCallback(() => {
     // Update progress based on quiz existence
