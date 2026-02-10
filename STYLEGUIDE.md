@@ -181,3 +181,13 @@ The following ESLint rules are enforced to maintain consistency:
 - **Prefer Banner over Alert**: Use the unified `Banner` component instead of the deprecated `Alert` component
 
 Use the wrapper components instead to achieve proper spacing and styling.
+
+### Tooltip Styling
+
+All tooltips use a high-contrast dark background with white text and include a directional arrow by default.
+
+- **Background**: `bg-foreground` (dark) with `text-background` (white text)
+- **Arrow**: Included automatically via `TooltipPrimitive.Arrow` with `fill-foreground`
+- **Accessibility**: Meets WCAG AA contrast requirements in both light and dark modes
+
+No additional styling is needed when using `TooltipContent` — the dark style and arrow are applied globally.
