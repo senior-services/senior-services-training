@@ -161,7 +161,10 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
       // Load existing progress if user is authenticated
       if (user?.email) {
-        await loadExistingProgress();
+        const result = await loadExistingProgress();
+        if (result && !result.completedAt && result.progressPercent >= 99) {
+          setOverlayDismissed(true);
+        }
       }
     };
     initializeVideo();
@@ -257,7 +260,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
   // Auto-start quiz when reopening dialog with video already fully watched
   useEffect(() => {
-    if (!open || quizStarted || wasEverCompleted || overlayDismissed) return;
+    if (!open || quizStarted || wasEverCompleted || !overlayDismissed) return;
     if (progress >= 99 && quiz && !quizLoading) {
       setQuizStarted(true);
       setOverlayDismissed(true);
@@ -418,27 +421,22 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       setShowCompletionOverlay(true);
       return;
     }
-    if (hasQuizChanges) {
-      setShowCancelConfirmation(true);
-    } else {
-      // No changes made, cancel directly
-      setQuizStarted(false);
-      setShowCompletionOverlay(true);
-    }
-  }, [hasQuizChanges, quizSubmitted]);
+    setShowCancelConfirmation(true);
+  }, [quizSubmitted]);
 
   // Handle confirmed cancellation (user wants to lose changes)
   const handleConfirmedCancel = useCallback(() => {
     setShowCancelConfirmation(false);
     setQuizStarted(false);
-    setShowCompletionOverlay(true);
     setQuizResponses([]);
     setAllQuestionsAnswered(false);
     setHasQuizChanges(false);
     setQuizSubmitted(false);
     setQuizResults([]);
     setCompletedQuizResults([]);
-  }, []);
+    setQuizAttestationChecked(false);
+    onOpenChange(false);
+  }, [onOpenChange]);
 
   // Handle dialog close
   const handleDialogOpenChange = useCallback((open: boolean) => {
@@ -643,17 +641,23 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Cancel Quiz?</AlertDialogTitle>
+                      <AlertDialogTitle>
+                        {hasQuizChanges ? 'Discard unsaved progress?' : 'Exit training?'}
+                      </AlertDialogTitle>
                     </AlertDialogHeader>
                     <div>
                       <AlertDialogDescription>
-                        You have unsaved changes to your quiz responses. If you cancel now, your answers will be lost and you won't complete this training.
+                        {hasQuizChanges
+                          ? "If you leave now, your answers won't be saved and your training will remain incomplete."
+                          : "You haven't finished the quiz yet. You'll need to submit it to mark this training as complete."}
                       </AlertDialogDescription>
                     </div>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Keep Working</AlertDialogCancel>
+                      <AlertDialogCancel>
+                        {hasQuizChanges ? 'Keep editing' : 'Continue Quiz'}
+                      </AlertDialogCancel>
                       <AlertDialogAction onClick={handleConfirmedCancel}>
-                        Yes, Cancel Quiz
+                        {hasQuizChanges ? 'Discard & Exit' : 'Exit Quiz'}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
