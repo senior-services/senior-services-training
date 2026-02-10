@@ -6,6 +6,7 @@ import { ButtonWithTooltip } from "@/components/ui/button-with-tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { quizOperations } from '@/services/quizService';
 import { progressOperations } from '@/services/api';
 import { useAuth } from "@/hooks/useAuth";
@@ -574,22 +575,46 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           {/* Attestation - below quiz questions */}
           {quiz && (quizStarted || quizSubmitted || wasEverCompleted) && !quizSubmitted && !wasEverCompleted && (
             <div className={`mt-6 border border-border rounded-lg p-6${allQuestionsAnswered ? ' bg-background' : ''}`}>
-              <div className="flex items-start gap-2">
-                <Checkbox
-                  id="quiz-attestation-inline"
-                  checked={quizAttestationChecked}
-                  disabled={!allQuestionsAnswered}
-                  onCheckedChange={(checked) => setQuizAttestationChecked(checked === true)}
-                  className="mt-1"
-                />
-                <Label
-                  htmlFor="quiz-attestation-inline"
-                  className={`text-sm font-medium leading-relaxed select-none ${!allQuestionsAnswered ? 'text-muted-foreground cursor-not-allowed' : 'cursor-pointer'}`}
-                  mutedOnDisabled={false}
-                >
-                  I certify that I have read and understood this content.
-                </Label>
-              </div>
+              {!allQuestionsAnswered ? (
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="quiz-attestation-inline"
+                        checked={quizAttestationChecked}
+                        disabled
+                        className="mt-1"
+                      />
+                      <Label
+                        htmlFor="quiz-attestation-inline"
+                        className="text-sm font-medium leading-relaxed select-none text-muted-foreground cursor-not-allowed"
+                        mutedOnDisabled={false}
+                      >
+                        I certify that I have read and understood this content.
+                      </Label>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Complete the questions above to enable this checkbox.</p>
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="quiz-attestation-inline"
+                    checked={quizAttestationChecked}
+                    onCheckedChange={(checked) => setQuizAttestationChecked(checked === true)}
+                    className="mt-1"
+                  />
+                  <Label
+                    htmlFor="quiz-attestation-inline"
+                    className="text-sm font-medium leading-relaxed select-none cursor-pointer"
+                    mutedOnDisabled={false}
+                  >
+                    I certify that I have read and understood this content.
+                  </Label>
+                </div>
+              )}
             </div>
           )}
         </DialogScrollArea>
@@ -623,7 +648,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 
                 {(!allQuestionsAnswered || !quizAttestationChecked) ? (
                   <ButtonWithTooltip
-                    tooltip="Please answer all questions and check the attestation to submit."
+                    tooltip="Complete the questions above and the final confirmation to submit."
                     disabled
                     className="shadow-md hover:shadow-lg transition-shadow"
                   >
