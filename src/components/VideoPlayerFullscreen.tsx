@@ -594,7 +594,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                       </Label>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent side="top" align="start" sideOffset={6}>
                     <p>Complete the questions above to enable this checkbox.</p>
                   </TooltipContent>
                 </Tooltip>
