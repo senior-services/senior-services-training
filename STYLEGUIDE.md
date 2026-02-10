@@ -184,10 +184,49 @@ Use the wrapper components instead to achieve proper spacing and styling.
 
 ### Tooltip Styling
 
-All tooltips use a high-contrast dark background with white text and include a directional arrow by default.
+All tooltips use a high-contrast dark background (`bg-foreground`) with white text (`text-background`), extra-small text (`text-xs`), a max width of `300px`, and include a directional arrow by default. Meets WCAG AA contrast in both light and dark modes.
 
-- **Background**: `bg-foreground` (dark) with `text-background` (white text)
-- **Arrow**: Included automatically via `TooltipPrimitive.Arrow` with `fill-foreground`
-- **Accessibility**: Meets WCAG AA contrast requirements in both light and dark modes
+#### Arrow Alignment
 
-No additional styling is needed when using `TooltipContent` — the dark style and arrow are applied globally.
+The `align` prop controls where the arrow sits relative to the trigger element:
+
+| Align | Arrow Position | Use When |
+|-------|---------------|----------|
+| `"center"` (default) | Centered on tooltip | General use |
+| `"start"` | Far left (top/bottom) or top (left/right) | Tooltip trigger is at a left edge |
+| `"end"` | Far right (top/bottom) or bottom (left/right) | Tooltip trigger is at a right edge |
+
+#### Side & Spacing
+
+- `side`: `"top"` | `"bottom"` | `"left"` | `"right"` (default: `"top"`)
+- `sideOffset`: Gap in px between trigger and tooltip (default: `4`, use `6` for more breathing room)
+
+#### Examples
+
+**Default (centered arrow):**
+```tsx
+<Tooltip>
+  <TooltipTrigger>Hover me</TooltipTrigger>
+  <TooltipContent>Default centered tooltip</TooltipContent>
+</Tooltip>
+```
+
+**Start-aligned arrow (left):**
+```tsx
+<Tooltip>
+  <TooltipTrigger>Hover me</TooltipTrigger>
+  <TooltipContent side="top" align="start" sideOffset={6}>
+    Arrow on the left
+  </TooltipContent>
+</Tooltip>
+```
+
+**End-aligned arrow (right):**
+```tsx
+<Tooltip>
+  <TooltipTrigger>Hover me</TooltipTrigger>
+  <TooltipContent side="top" align="end" sideOffset={6}>
+    Arrow on the right
+  </TooltipContent>
+</Tooltip>
+```
