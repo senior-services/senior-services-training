@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Info, Loader2 } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { detectContentTypeFromUrl } from "@/utils/videoUtils";
 import { validateUrl, validateAndSanitize } from "@/utils/validation";
 import { ContentType } from "@/types";
@@ -257,13 +258,13 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="url">Video or Presentation URL</Label>
+              <Label htmlFor="url">Video or Presentation Link</Label>
               <div className="relative">
                 <Input
                   id="url"
                   value={url}
                   onChange={handleUrlChange}
-                  placeholder="Enter YouTube or Google Slides (PPSX only) URL"
+                  placeholder="https://youtube.com/... or https://docs.google.com/..."
                   aria-invalid={!!urlError}
                   aria-describedby={urlError ? "url-error" : url && !urlError ? "url-success" : undefined}
                   className={urlError ? "pr-10 border-destructive" : url ? "pr-10" : ""}
@@ -283,7 +284,19 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
                   <span>{urlError}</span>
                 </p>
               )}
-              <p className="text-xs text-muted-foreground mt-1">Only HTTPS URLs are supported for security</p>
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                Set Google Slides (saved as .ppsx) to 'Anyone with the link' and YouTube to 'Unlisted' so your team can see it.
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="inline-flex flex-shrink-0" aria-label="More info about privacy settings">
+                      <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Using 'Unlisted' on YouTube and 'Anyone with the link' on Slides ensures only people with access to this portal can view your content. It will not be searchable on the web.
+                  </TooltipContent>
+                </Tooltip>
+              </p>
             </div>
           </div>
 
