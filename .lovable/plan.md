@@ -1,42 +1,38 @@
 
 
-## Update Component Gallery Layout and Navigation
+## Fix Tooltip Arrow Clipped Inside Dialog Scroll Areas
 
-### What Changes
+### Problem
+The tooltip arrow is visible in normal page contexts (like the Components Gallery) but gets clipped when the tooltip is inside a `DialogScrollArea`, which has `overflow-y-auto`. This is because the `TooltipContent` component renders inline in the DOM -- it does not use a Radix Portal. Any parent container with overflow clipping will hide the arrow SVG that extends outside the tooltip box.
 
-1. **Rename page title** from "Components Gallery" to "Style Guide"
-2. **Convert anchor links to a vertical list** instead of multi-column layout
-3. **Add missing anchor links** so every section has a corresponding link (currently missing: Component Updates)
-4. **Add drag-to-reorder** on the anchor links using HTML5 drag-and-drop, with grab handles (GripVertical icon). Reordering the list also reorders the sections below to match.
-5. **Reduce spacing** throughout the page for a more condensed view
+### Root Cause
+The `TooltipContent` component in `src/components/ui/tooltip.tsx` renders `TooltipPrimitive.Content` directly without wrapping it in `TooltipPrimitive.Portal`. Without portaling, the tooltip is a child of whatever DOM container it's placed in. Inside `DialogScrollArea` (which has `overflow-y-auto`), the arrow -- which visually extends beyond the content box -- gets clipped.
 
-### Detailed Changes (1 file)
+### Fix (1 file)
 
-**`src/pages/ComponentsGallery.tsx`**
+**`src/components/ui/tooltip.tsx`**
+- Wrap `TooltipPrimitive.Content` inside `TooltipPrimitive.Portal` so the tooltip renders at the document root, outside any overflow-clipping containers.
 
-**Title**: Change `<h1>` text from "Components Gallery" to "Style Guide"
+Before:
+```tsx
+<TooltipPrimitive.Content ...>
+  {children}
+  <TooltipPrimitive.Arrow ... />
+</TooltipPrimitive.Content>
+```
 
-**Anchor navigation (lines ~206-284)**:
-- Replace the multi-column `<ul className="columns-2 sm:columns-3 ...">` with a single-column vertical `<ul>` list
-- Add a `GripVertical` icon (from lucide-react) as a drag handle on each list item
-- Store the section order in state: `useState` with an array of `{ id, label }` objects representing all sections
-- Implement HTML5 drag-and-drop (`draggable`, `onDragStart`, `onDragOver`, `onDrop`) to allow reordering
-- Ensure the list includes all sections: Banners, Badges, Buttons, Calendar, Color Palette, Component Updates, Data Display, Form Controls, Icons, Interactive, Layout, Progress, Toast, Tooltips, Training Cards, Typography (alphabetical default)
-
-**Section rendering**:
-- Instead of hardcoded section order in JSX, wrap each section in a lookup map and render them dynamically based on the `sectionOrder` state array. This way reordering the anchor list also reorders the page sections.
-
-**Spacing reductions**:
-- Page container: `py-8 space-y-12` changes to `py-4 space-y-4`
-- Card headers: tighten padding where needed
-- Remove `text-center space-y-4` from page header, use `space-y-2`
-
-**Footer text**: Update "Components Gallery" to "Style Guide"
+After:
+```tsx
+<TooltipPrimitive.Portal>
+  <TooltipPrimitive.Content ...>
+    {children}
+    <TooltipPrimitive.Arrow ... />
+  </TooltipPrimitive.Content>
+</TooltipPrimitive.Portal>
+```
 
 ### Review
-
-- **Top 5 Risks**: (1) Drag-and-drop adds state complexity -- kept simple with HTML5 native API, no extra dependencies. (2) Dynamic section rendering requires refactoring hardcoded JSX into a keyed map -- moderate code change but straightforward. (3) Reorder state is ephemeral (resets on page refresh) -- acceptable for a style guide. (4) No database impact. (5) No security impact.
-- **Top 5 Fixes**: (1) Replace columns layout with vertical list. (2) Add GripVertical drag handles. (3) Implement drag-and-drop reorder with section sync. (4) Add missing anchor links. (5) Reduce spacing tokens.
+- **Top 5 Risks**: (1) Portaling changes the stacking context -- mitigated by `z-50` already on the tooltip. (2) No visual change for tooltips outside dialogs since they already render correctly. (3) No impact on tooltip positioning logic (Radix handles portal positioning). (4) No database impact. (5) No security impact.
+- **Top 5 Fixes**: (1) Add `TooltipPrimitive.Portal` wrapper. (2-5) N/A -- single targeted fix.
 - **Database Change Required**: No
 - **Go/No-Go**: Go
-
