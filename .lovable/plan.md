@@ -1,56 +1,37 @@
 
 
-## Auto-Show Quiz When Reopening After Video Completion
+## Should Internal Variable Names Be Updated Too?
 
-### Problem
-When an employee watches a training video to 100% (with a quiz attached), sees the completion overlay, then closes the dialog, reopening it shows the completion overlay again with the "Start Quiz..." button. This is an unnecessary extra click -- the quiz should display automatically.
+### Short Answer: Yes, but the scope is small and low-risk.
 
-### Solution
-In `VideoPlayerFullscreen.tsx`, when the dialog opens and existing progress is loaded at 99%+ with a quiz present and the training is not yet completed, skip the completion overlay and go directly to the quiz.
+There is only **one file** with internal code references to "course" — `AssignVideosModal.tsx`. Updating these keeps the codebase consistent and avoids confusion when a developer sees `'course'` in code but "Training" in the UI.
 
-### Changes (1 file)
+### What Needs Updating
 
-**`src/components/VideoPlayerFullscreen.tsx`**
+**`src/components/dashboard/AssignVideosModal.tsx`** — 6 internal references:
 
-In the `useEffect` that initializes the video (lines ~137-168), after `loadExistingProgress()` resolves, check if progress is 99%+ AND a quiz exists AND `wasEverCompleted` is false. If so, set `quizStarted = true` and `overlayDismissed = true` to bypass the overlay entirely.
+| Line | Current | Updated | Type |
+|------|---------|---------|------|
+| 105 | `useState<'course' \| 'status' \| null>('course')` | `useState<'training' \| 'status' \| null>('training')` | State type + default |
+| 456 | `setSortColumn('course')` | `setSortColumn('training')` | Reset value |
+| 525 | `handleSort = useCallback((column: 'course' \| 'status')` | `handleSort = useCallback((column: 'training' \| 'status')` | Function parameter type |
+| 551 | `if (sortColumn === 'course')` | `if (sortColumn === 'training')` | Comparison |
+| 743 | `column="course"` | `column="training"` | JSX prop (passed to SortableTableHead) |
 
-Specifically, add a post-load check after `loadExistingProgress()`:
+The `SortableTableHead` component accepts `column` as a generic `string`, so changing `"course"` to `"training"` requires no changes to the shared component.
 
-```tsx
-// After loading existing progress, auto-start quiz if video was fully watched
-if (user?.email) {
-  await loadExistingProgress();
-}
+### What This Plan Adds to the Previous Terminology Plan
 
-// Auto-show quiz if video is fully watched but training not yet completed
-// This handles the case where the user closes and reopens the dialog
-```
+This would be folded into the existing "Course to Training" terminology plan as an additional section. The combined plan would cover:
 
-A new state flag or a simple check on progress after load will trigger `setQuizStarted(true)` and `setOverlayDismissed(true)` so the overlay effect (lines 244-256) never fires.
+1. All **20 user-facing text updates** across 8 files (already approved)
+2. These **6 internal code updates** in 1 file (this addition)
 
-Since `loadExistingProgress` sets progress synchronously via `setProgress`, and the quiz/video data may still be loading, we need to use a secondary effect that watches for the combination of: progress >= 99, quiz loaded (non-null), not completed, and dialog open. This avoids race conditions with async data loading.
-
-**New effect (after the overlay effect at line ~256):**
-```tsx
-// Auto-start quiz when reopening dialog with video already fully watched
-useEffect(() => {
-  if (!open || quizStarted || wasEverCompleted || overlayDismissed) return;
-  if (progress >= 99 && quiz && !quizLoading) {
-    setQuizStarted(true);
-    setOverlayDismissed(true);
-    setShowCompletionOverlay(false);
-    setTimeout(() => {
-      document.getElementById('quiz-section')?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-  }
-}, [open, progress, quiz, quizLoading, quizStarted, wasEverCompleted, overlayDismissed]);
-```
-
-This effect fires once all data is ready and will auto-navigate to the quiz section, skipping the overlay.
+No new files, no new logic, no database changes.
 
 ### Review
-- **Top 5 Risks**: (1) Effect could fire during initial video watch -- mitigated by `overlayDismissed` guard which is set when user first sees overlay. On fresh watch, the overlay shows first; on reopen, `progress` is already 99% from DB load so quiz shows immediately. (2) Race condition with async quiz loading -- mitigated by `quizLoading` guard. (3) No impact on completed trainings since `wasEverCompleted` blocks the effect. (4) No database changes. (5) No security impact.
-- **Top 5 Fixes**: (1) Add a new useEffect to auto-start quiz on dialog reopen with 99%+ progress. No other changes needed.
-- **Database Change Required**: No
-- **Go/No-Go**: Go
 
+- **Top 5 Risks**: (1) The type change from `'course'` to `'training'` is fully contained within one file -- no external consumers. (2) `SortableTableHead` uses `string` typing, so the prop change is safe. (3) Sort behavior is unchanged -- only the identifier string changes. (4) No database impact. (5) No security impact.
+- **Top 5 Fixes**: (1) Update the type union. (2) Update the default state value. (3) Update the reset value. (4) Update the comparison check. (5) Update the JSX column prop.
+- **Database Change Required**: No
+- **Go/No-Go**: Go -- minimal effort, improves consistency, zero risk.
