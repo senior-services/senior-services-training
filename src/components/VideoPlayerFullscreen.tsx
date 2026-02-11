@@ -6,7 +6,7 @@ import { ButtonWithTooltip } from "@/components/ui/button-with-tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Banner } from "@/components/ui/banner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { quizOperations } from '@/services/quizService';
 import { progressOperations } from '@/services/api';
@@ -496,11 +496,26 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         </DialogHeader>
         
         <DialogScrollArea>
-          {video?.description && video.description.trim() && <div className="pb-4" id="video-description">
-              <p className="text-sm text-foreground font-normal leading-relaxed">
-                {video.description}
-              </p>
-            </div>}
+          <div className="flex items-start justify-between gap-4 pb-4">
+            {video?.description && video.description.trim() && (
+              <div className="flex-1" id="video-description">
+                <p className="text-sm text-foreground font-normal leading-relaxed">
+                  {video.description}
+                </p>
+              </div>
+            )}
+            {isPresentation && !wasEverCompleted && (
+              timerActive ? (
+                <Banner variant="information" size="compact" icon={Clock} className="w-fit shrink-0">
+                  <span className="tabular-nums whitespace-nowrap">Time Remaining: {formattedTime}</span>
+                </Banner>
+              ) : (
+                <Banner variant="success" size="compact" className="w-fit shrink-0">
+                  Minimum time met
+                </Banner>
+              )
+            )}
+          </div>
 
           {/* Persistent Quiz CTA Button - only for non-presentation content */}
           {quiz && !isPresentation && !wasEverCompleted && overlayDismissed && !quizStarted && progress >= 99 && <div className="pb-4">
@@ -668,20 +683,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
         {/* Unified Presentation Footer */}
         {isPresentation && !wasEverCompleted && (
-          <DialogFooter className="sm:justify-between">
-            {/* Left: Countdown clock */}
-            {timerActive ? (
-              <Badge variant="soft-attention">
-                <Clock className="w-3 h-3 mr-1" />
-                <span className="tabular-nums">Time Remaining: {formattedTime}</span>
-              </Badge>
-            ) : (
-              <Badge variant="soft-success" showIcon>
-                Timer Complete
-              </Badge>
-            )}
-
-            {/* Right: Action buttons */}
+          <DialogFooter className="sm:justify-end">
             <div className="flex gap-2">
               {quiz && quizStarted && !quizSubmitted ? (
                 <>
