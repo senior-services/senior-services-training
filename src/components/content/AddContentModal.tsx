@@ -331,7 +331,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
           {url.trim() && !urlError && contentType === "presentation" && (
             <div>
               <div>
-                <Label htmlFor="min-viewing-time">Viewing Timer</Label>
+                <Label htmlFor="min-viewing-time">Viewing Timer (Seconds)</Label>
                 <p className="form-helper-text">Enter the time required for review.</p>
               </div>
               <Input
