@@ -1,51 +1,51 @@
 
 
-## Revised: Training Type Segmented Control
+## Style Guide + Add Training Modal Updates
 
-Two updates to the previously approved plan:
+### 1. Toggle Font Size -- Global Change
 
-### Change 1 -- Default to "Video"
+**File: `src/components/ui/toggle.tsx`** (line 8)
 
-The toggle will default to **Video** (not unselected). This means:
-- `contentType` stays as `ContentType` (no widening to `""`)
-- No extra validation needed for "must select a type"
-- Reset logic keeps defaulting to `"video"` (matches current behavior)
+Change `text-sm` to `text-xs` in the base `toggleVariants` CVA string. This is the single source of truth for all Toggle and ToggleGroup items across the app, so every instance updates automatically.
 
-### Change 2 -- Helper text for Minimum Viewing Time
+Before: `"btn-toggle ... text-sm font-medium ..."`
+After: `"btn-toggle ... text-xs font-medium ..."`
 
-The helper text below the "Minimum Viewing Time" input will read:
+**File: `STYLEGUIDE.md`** -- Add a note under a new "Toggle Components" section documenting that toggles use `text-xs` (14px) for consistency with Labels, Badge, and Tooltip.
 
-> Minimum 60 seconds required. Necessary for compliance to ensure review, as progress cannot be tracked for PPSX files.
+### 2. Reorder Privacy Hint Text
 
-Styled with `className="form-helper-text"`, placed between the label and the input.
+**File: `src/components/content/AddContentModal.tsx`** (line 294)
 
-### File Changes
+Change:
+> Set Google Slides (saved as .ppsx) to 'Anyone with the link' and YouTube to 'Unlisted' so your team can see it.
 
-**1. `src/utils/videoUtils.ts`** -- Add `.ppsx` detection
+To:
+> Set YouTube to 'Unlisted' and Google Slides (saved as .ppsx) to 'Anyone with the link' so your team can see it.
 
-Before the `return null` at the end of `detectContentTypeFromUrl`, add a check: if the URL path (lowercased) ends in `.ppsx`, return `'presentation'`.
+### 3. Move Helper Text Below the Input (as Additional Text)
 
-**2. `src/components/content/AddContentModal.tsx`**
+**File: `src/components/content/AddContentModal.tsx`** (lines 329-343)
 
-- Add imports: `ToggleGroup`, `ToggleGroupItem` from `@/components/ui/toggle-group`
-- Add state: `minViewingTime` (number, default `60`)
-- Keep `contentType` default as `"video"` (no change from current)
-- After the URL field block (line ~301), insert:
-  - **Training Type** label + `ToggleGroup` with `variant="pill"`, two items: Video / Presentation
-  - Conditionally (when `contentType === "presentation"`): **Minimum Viewing Time** label, helper text (`form-helper-text`), and number input (min 60, default 60)
-- Auto-detection in `handleUrlChange` unchanged (already sets contentType on match)
-- `handleSave`: add `duration_seconds: contentType === 'presentation' ? minViewingTime : undefined` to formData
-- `ContentFormData` interface: add `duration_seconds?: number`
-- Reset: `minViewingTime` resets to `60` in both `useEffect` and `handleClose`
+Restructure the Minimum Viewing Time block:
+- Remove the `<p className="form-helper-text">` from between the label and input
+- Add the input directly after the label (with `max-width: 100px` via `className="max-w-[100px]"`)
+- Add a `<p className="form-additional-text">` **after** the input with updated text:
+  > Minimum 60 seconds recommended -- necessary for compliance to ensure review, as progress cannot be tracked for presentation files.
 
-### Everything else stays the same
+Note the text changes: "required" becomes "recommended", "PPSX" becomes "presentation", and the dash style is an em-dash.
 
-No changes to existing fields, validation logic, commented-out assign-to-all section, or CSS definitions.
+### Summary of Files Changed
+
+| File | Change |
+|---|---|
+| `src/components/ui/toggle.tsx` | `text-sm` to `text-xs` in base CVA |
+| `STYLEGUIDE.md` | Add Toggle section documenting `text-xs` |
+| `src/components/content/AddContentModal.tsx` | Reorder privacy text, move helper to additional text below input, set input max-width 100px |
 
 ### Review
 
-- **Top 3 Risks:** (1) `duration_seconds` needs the parent handler to persist it -- if ignored, it silently drops. (2) Minimal visual risk since ToggleGroup pill variant is proven. (3) None structural.
-- **Top 3 Fixes:** (1) Clear visual indicator of training mode. (2) URL auto-detection reduces admin effort. (3) Helper text explains the compliance rationale for the timer.
+- **Top 3 Risks:** (1) Changing toggle font globally -- low risk since `text-xs` is already the standard for labels/badges per the typography memory. (2) None structural. (3) None.
+- **Top 3 Fixes:** (1) Consistent typography across all toggle instances. (2) Privacy hint reads in logical order (YouTube first, more common). (3) Compliance text repositioned as additional text per form conventions.
 - **Database Change:** No
 - **Verdict:** Go
-
