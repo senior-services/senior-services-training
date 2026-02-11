@@ -6,6 +6,7 @@ import { ButtonWithTooltip } from "@/components/ui/button-with-tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { quizOperations } from '@/services/quizService';
 import { progressOperations } from '@/services/api';
@@ -124,9 +125,11 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   });
 
   // Presentation timer constants and computed values
-  const PRESENTATION_MIN_SECONDS = 60;
+  const presentationMinSeconds = (video?.duration_seconds && video.duration_seconds >= 60)
+    ? video.duration_seconds
+    : 60;
   const isPresentation = video?.content_type === 'presentation';
-  const remainingSeconds = isPresentation ? Math.max(0, PRESENTATION_MIN_SECONDS - viewingSeconds) : 0;
+  const remainingSeconds = isPresentation ? Math.max(0, presentationMinSeconds - viewingSeconds) : 0;
   const timerActive = remainingSeconds > 0;
   const formattedTime = `${Math.floor(remainingSeconds / 60)}:${(remainingSeconds % 60).toString().padStart(2, '0')}`;
 
@@ -177,13 +180,13 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         const newSeconds = prev + 1;
 
         // Enable checkbox when minimum time reached
-        if (newSeconds >= PRESENTATION_MIN_SECONDS && !checkboxEnabled) {
+        if (newSeconds >= presentationMinSeconds && !checkboxEnabled) {
           setCheckboxEnabled(true);
-          setA11yAnnouncement(`You may now acknowledge that you have reviewed this training material after viewing for ${PRESENTATION_MIN_SECONDS} seconds.`);
+          setA11yAnnouncement(`You may now acknowledge that you have reviewed this training material after viewing for ${presentationMinSeconds} seconds.`);
           logger.info('Presentation acknowledgment unlocked', {
             videoId,
             viewingSeconds: newSeconds,
-            minimumRequired: PRESENTATION_MIN_SECONDS
+            minimumRequired: presentationMinSeconds
           });
         }
         return newSeconds;
@@ -524,8 +527,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 {/* Header with Title and Timer */}
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <p className="font-medium mb-2 text-sm text-muted-foreground">Training Acknowledgment</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-medium mb-2 text-sm text-foreground">Training Acknowledgment</p>
+                    <p className="text-sm text-foreground">
                       Please review all training content carefully. By acknowledging, you confirm you've read and understood the material — your confirmation will be recorded for compliance.
                     </p>
                   </div>
@@ -547,7 +550,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                   setA11yAnnouncement('Training material acknowledgment removed.');
                 }
               }} aria-describedby="acknowledgment-label" className="mt-1" />
-                  <label htmlFor="presentation-acknowledgment" id="acknowledgment-label" className={cn("text-sm font-medium leading-relaxed cursor-pointer select-none", !checkboxEnabled && "text-muted-foreground cursor-not-allowed")}>
+                  <label htmlFor="presentation-acknowledgment" id="acknowledgment-label" className={cn("text-sm font-medium leading-relaxed cursor-pointer select-none text-foreground", !checkboxEnabled && "opacity-60 cursor-not-allowed")}>
                     I confirm that I have read and understood this training material.
                   </label>
                 </div>
@@ -667,13 +670,16 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         {isPresentation && !wasEverCompleted && (
           <DialogFooter className="sm:justify-between">
             {/* Left: Countdown clock */}
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              {timerActive
-                ? <span className="tabular-nums">Time Remaining: {formattedTime}</span>
-                : <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Review complete</span>
-              }
-            </div>
+            {timerActive ? (
+              <Badge variant="soft-attention">
+                <Clock className="w-3 h-3 mr-1" />
+                <span className="tabular-nums">Time Remaining: {formattedTime}</span>
+              </Badge>
+            ) : (
+              <Badge variant="soft-success" showIcon>
+                Review Complete
+              </Badge>
+            )}
 
             {/* Right: Action buttons */}
             <div className="flex gap-2">
@@ -740,14 +746,21 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                     >
                       Start Quiz to Complete Training
                     </Button>
+                  ) : (timerActive || !presentationAcknowledged) ? (
+                    <ButtonWithTooltip
+                      tooltip={timerActive
+                        ? "Please wait for the viewing timer to complete."
+                        : "Please check the acknowledgment checkbox above to proceed."
+                      }
+                      disabled
+                      className={cn("transition-all duration-500")}
+                    >
+                      Complete Training
+                    </ButtonWithTooltip>
                   ) : (
                     <Button
-                      disabled={timerActive || !presentationAcknowledged}
                       onClick={handleCompleteTraining}
-                      className={cn(
-                        "transition-all duration-500",
-                        !timerActive && presentationAcknowledged && "animate-scale-in"
-                      )}
+                      className={cn("transition-all duration-500 animate-scale-in")}
                     >
                       Complete Training
                     </Button>
