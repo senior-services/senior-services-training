@@ -1,77 +1,53 @@
 
 
-## Comprehensive Form Text Refactor: Remaining Files
+## Clean Utility Class Overrides from Form Text Elements
 
 ### What Changes
 
-Apply standardized `.form-helper-text` and `.form-additional-text` CSS classes to the four remaining files that contain form field text using inline styles.
+Remove all extra Tailwind utility classes from `form-helper-text` and `form-additional-text` elements so the global CSS classes are the sole source of styling. No CSS definitions change -- only the usage sites are cleaned.
 
-### Audit Results
+### The Problem
 
-All `text-xs text-muted-foreground` instances were reviewed. Here is the classification:
+Three files have leftover utility classes attached alongside the semantic class:
 
-| File | Line | Position | Classification | Action |
-|------|------|----------|---------------|--------|
-| AddEmployeeModal.tsx | 138 | Below email input | Additional text | Update class |
-| Auth.tsx | 227 | Below sign-in email | Additional text | Update class |
-| Auth.tsx | 278 | Below sign-up email | Additional text | Update class |
-| AddContentModal.tsx | 287 | Below URL input | Additional text | Update class |
-| QuizModal.tsx | 232 | Between heading and options | Helper text | Update class |
-| Auth.tsx | 202, 253 | Inside Label element | Label annotation | No change |
-| DashboardOverview.tsx | 44, 59, 74, 89 | Card stat descriptions | Not form text | No change |
-| EmployeeManagement.tsx | 633, 675, 701 | Table cells / badges | Not form text | No change |
-| VideoManagement.tsx | 432, 455 | Table cells / badges | Not form text | No change |
-| EditVideoModal.tsx | 1006 | Content source label | Not form text | No change |
+- `not-italic` on 4 elements (overriding the global italic style)
+- `flex items-center gap-1` on 1 element (layout for an inline icon)
 
 ### File Changes
 
 **1. `src/components/dashboard/AddEmployeeModal.tsx` (line 138)**
 
-Replace: `className="text-xs text-muted-foreground"`
-With: `className="form-additional-text not-italic"`
+`className="form-additional-text not-italic"` becomes `className="form-additional-text"`
 
-The `not-italic` override preserves the current non-italic appearance since `.form-additional-text` includes italic by default.
+**2. `src/pages/Auth.tsx` (line 227)**
 
-**2. `src/pages/Auth.tsx` (lines 227 and 278)**
+`className="form-additional-text not-italic"` becomes `className="form-additional-text"`
 
-Two instances -- both are hint text below email inputs.
+**3. `src/pages/Auth.tsx` (line 278)**
 
-Line 227 replace: `className="text-xs text-muted-foreground"`
-With: `className="form-additional-text not-italic"`
+`className="form-additional-text not-italic"` becomes `className="form-additional-text"`
 
-Line 278 replace: `className="text-xs text-muted-foreground"`
-With: `className="form-additional-text not-italic"`
+**4. `src/components/content/AddContentModal.tsx` (line 287)**
 
-Note: These use `<div>` tags (not `<p>`), which is correct since they are tied to `aria-describedby`. Tag type stays unchanged.
+`className="form-additional-text not-italic flex items-center gap-1"` becomes `className="form-additional-text"`
 
-**3. `src/components/content/AddContentModal.tsx` (line 287)**
+The inline icon (Info tooltip button on line 291) already has `inline-flex` on itself, so it will still render inline with the text. The `gap-1` spacing between text and icon will be handled by natural inline flow.
 
-Replace: `className="text-xs text-muted-foreground mt-1 flex items-center gap-1"`
-With: `className="form-additional-text not-italic flex items-center gap-1"`
+### Visual Impact
 
-The `flex items-center gap-1` is kept for the inline icon layout. The `mt-1` is dropped since `.form-additional-text` provides `mt-1.5` (negligible visual difference).
+- All four additional text instances will now render in **italic** (matching the global `.form-additional-text` standard). Previously `not-italic` was overriding this.
+- The AddContentModal icon spacing may tighten slightly without `gap-1`, but the button's own `inline-flex` keeps it inline.
 
-**4. `src/components/quiz/QuizModal.tsx` (line 232)**
+### No Changes Needed
 
-Replace: `className="text-xs text-muted-foreground"`
-With: `className="form-helper-text"`
-
-This text appears between the question heading and answer options, matching the helper text pattern. This will change the color from `text-muted-foreground` to `text-foreground` to align with the standard.
-
-### What Stays the Same
-
-- Label annotations inside `<Label>` elements (Auth.tsx lines 202, 253) -- not form field text
-- Dashboard card descriptions -- not form field text
-- Table cell text and status badges -- not form field text
-- Content source metadata -- not form field text
-- All HTML element types (`<p>`, `<div>`) stay as they are
-- All `aria-describedby` relationships unchanged
-- No layout or structural changes
+- `form-helper-text` usages in EditVideoModal, CreateQuizModal, QuizModal, and ComponentsGallery are already clean (single class only).
+- `form-additional-text` usages in ComponentsGallery are already clean.
+- CSS class definitions in `src/index.css` stay the same.
 
 ### Review
 
-- **Top 5 Risks:** (1) Minor spacing shift on AddContentModal from `mt-1` to `mt-1.5` -- negligible. (2) QuizModal helper text changes from muted to foreground color -- aligns with standard. (3) `not-italic` overrides on additional text preserve current non-italic appearance. (4) No accessibility regression -- ARIA attributes unchanged. (5) No functional or data impact.
-- **Top 5 Fixes:** (1) Completes the refactor across 100% of form field text in the app. (2) All form text now governed by two centralized CSS classes. (3) Future style changes are single-point updates. (4) Clear audit trail of what qualifies as form text vs. other UI text. (5) Consistent naming convention throughout the codebase.
-- **Database Change Required:** No
-- **Go/No-Go:** Go
+- **Top 3 Risks:** (1) Four additional text elements gain italic -- intentional alignment with the design system. (2) AddContentModal icon spacing slightly changes -- minimal impact. (3) No functional or accessibility regression.
+- **Top 3 Fixes:** (1) Eliminates all utility class overrides on form text. (2) Global classes are now the single source of truth. (3) Four single-line edits, zero logic changes.
+- **Database Change:** No
+- **Verdict:** Go
 
