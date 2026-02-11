@@ -1,64 +1,79 @@
 
 
-## Update Form Controls in Style Guide -- Revised
+## Revised: Update Helper Text Patterns in Style Guide
 
 ### What Changes
 
-Update the Form Controls section in the Style Guide to document two distinct types of supporting text for form fields. Additionally, ensure dropdowns, checkbox groups, and radio button groups always include "additional context" examples, since those field types benefit most from supplementary guidance.
-
-### Two Helper Text Types
-
-| Type | Position | Style | Purpose |
-|------|----------|-------|---------|
-| **Helper Text** | Between label and input | `text-xs text-foreground mt-0 mb-1.5` (primary color) | Brief instruction before user interacts |
-| **Additional Context** | Below the input/control | `text-xs text-muted-foreground italic mt-1.5` (secondary, italic) | Extra tips, constraints, or clarification |
+1. Remove "additional context" from Radio Button Group and Checkbox Group examples (they only support optional helper text between label and fields).
+2. Ensure Select Dropdown, Text Input (the Email field), and Textarea all demonstrate both optional patterns: helper text (above) and additional context (below).
 
 ### Detailed Changes
 
 **File: `src/pages/ComponentsGallery.tsx`**
 
-**1. Update the "Email Address" field (lines 734-740)**
+**1. Remove additional context from Radio Button Group (lines 819-821)**
 
-Replace the existing single helper text demo with both types demonstrated together:
+Delete the paragraph: "Select the size that best fits your needs."
 
-- **Helper text** (above input): "We'll use this to send you login instructions." -- styled `text-xs text-foreground mt-0 mb-1.5`
-- **Additional context** (below input): "Must be a valid company email address." -- styled `text-xs text-muted-foreground italic mt-1.5`
+**2. Remove additional context from Checkbox Group (lines 838-840)**
 
-Label + helper text wrapped in a single `div` to prevent spacing issues from parent `space-y-*`.
+Delete the paragraph: "You can select multiple options. Changes take effect immediately."
 
-**2. Add additional context to Select Dropdown (lines 835-847)**
+**3. Select Dropdown already has additional context -- keep it as-is** (lines 855-857)
 
-Below the `Select` component, add:
+Already shows: "You can change this selection at any time." No change needed.
+
+**4. Email Address field already shows both patterns -- keep as-is** (lines 734-745)
+
+Already demonstrates helper text above and additional context below. No change needed.
+
+**5. Add helper text to Textarea (above the textarea control)**
+
+Currently the Textarea only has a label. Add helper text between label and control:
+
 ```
-"You can change this selection at any time."
+Helper text: "Provide as much detail as possible."
+```
+Styled as `text-xs text-foreground mt-0 mb-1.5`, wrapped with label in a `div`.
+
+**6. Add additional context below Textarea**
+
+```
+Additional context: "Maximum 500 characters recommended."
 ```
 Styled as `text-xs text-muted-foreground italic mt-1.5`.
 
-**3. Add additional context to Radio Button Group (lines 797-817)**
+**7. Add helper text to Select Dropdown (above the Select control)**
 
-Below the `RadioGroup` component, add:
-```
-"Select the size that best fits your needs."
-```
-Styled as `text-xs text-muted-foreground italic mt-1.5`.
+Currently the Select only has a label and additional context below. Add helper text between label and control:
 
-**4. Add additional context to Checkbox Group (lines 819-833)**
+```
+Helper text: "Choose from the available options."
+```
+Styled as `text-xs text-foreground mt-0 mb-1.5`, wrapped with label in a `div`.
 
-Below the checkbox group container, add:
-```
-"You can select multiple options. Changes take effect immediately."
-```
-Styled as `text-xs text-muted-foreground italic mt-1.5`.
+### Updated Helper Text Rules Summary
+
+| Field Type | Helper Text (above) | Additional Context (below) |
+|------------|---------------------|---------------------------|
+| Text Input | Optional | Optional |
+| Textarea | Optional | Optional |
+| Select Dropdown | Optional | Optional |
+| Radio Button Group | Optional | Not used |
+| Checkbox Group | Optional | Not used |
 
 ### What Stays the Same
 
-- All other form control examples (disabled input, textarea, switches, toggles, single checkbox) remain unchanged
+- Email Address field unchanged (already shows both)
+- Disabled input unchanged
+- Switches, toggles, single checkbox unchanged
 - Section header and card layout unchanged
 - No new components or imports needed
 
 ### Review
 
-- **Top 5 Risks:** (1) Helper text color change from `text-muted-foreground` to `text-foreground` increases visual weight -- intentional per request. (2) Existing forms across the app still use old pattern -- this is style guide only, not a refactor. (3) No accessibility regression -- both text types maintain WCAG AA contrast. (4) No functional impact. (5) No data or security impact.
-- **Top 5 Fixes:** (1) Documents two distinct helper text patterns clearly. (2) Dropdowns, checkbox groups, and radio groups always show additional context. (3) Italic styling on additional context creates clear visual hierarchy. (4) Wrapper pattern prevents spacing issues. (5) Examples can be used independently or together.
+- **Top 5 Risks:** (1) Adding helper text to Textarea and Select increases visual density -- intentional for documentation purposes. (2) No accessibility regression -- all text maintains WCAG AA contrast. (3) Style guide only -- no production form changes. (4) No functional impact. (5) No data or security impact.
+- **Top 5 Fixes:** (1) Consistent documentation of both optional patterns across text input, textarea, and select. (2) Radio and checkbox groups simplified to helper text only. (3) Clear visual hierarchy maintained. (4) Wrapper pattern applied consistently. (5) Each field type's supported patterns clearly demonstrated.
 - **Database Change Required:** No
 - **Go/No-Go:** Go
+
