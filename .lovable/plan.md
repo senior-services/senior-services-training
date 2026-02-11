@@ -1,37 +1,35 @@
 
 
-## Fix: Google Drive URLs Should Default to Presentation
+## Fix: Viewing Timer Input Behavior
 
 ### Problem
 
-When a Google Drive link like `https://drive.google.com/file/d/...` is entered, the `detectContentTypeFromUrl` function returns `null` (line 224) because it considers Drive URLs "ambiguous." Since `null` means no auto-detection fires, the toggle stays on its default of "Video."
-
-### Root Cause
-
-The detection logic (in `src/utils/videoUtils.ts`) has three tiers:
-1. Google Slides URLs --> `'presentation'` (works)
-2. YouTube URLs --> `'video'` (works)
-3. Generic Google Drive URLs --> `null` (broken -- should be `'presentation'`)
-
-In this app's context, Google Drive links are used for PPSX files (presentations). Google Slides links are already caught separately. So a generic Drive URL should default to `'presentation'`.
+The `onChange` handler on line 342 uses `Math.max(60, ...)` which clamps every keystroke to a minimum of 60. This means:
+- You cannot select all and type a new number (e.g., typing "9" immediately becomes "60")
+- You cannot clear the field to retype
 
 ### Fix
 
-**File: `src/utils/videoUtils.ts`** (line 224)
+**File: `src/components/content/AddContentModal.tsx`** (line 342)
 
-Change `return null;` to `return 'presentation';` inside the `isGoogleDriveUrl` branch.
+Change the `onChange` to allow free typing, storing the raw value. Move the minimum enforcement to `onBlur` so validation only happens when the user leaves the field.
 
-Update the doc comment (line 208) from:
-> 3. Generic Google Drive URLs (drive.google.com) --> null (ambiguous, file type unknown)
+Before:
+```
+onChange={(e) => setMinViewingTime(Math.max(60, parseInt(e.target.value) || 60))}
+```
 
-To:
-> 3. Generic Google Drive URLs (drive.google.com) --> 'presentation' (assumed PPSX hosting)
+After:
+```
+onChange={(e) => setMinViewingTime(parseInt(e.target.value) || 0)}
+onBlur={() => { if (minViewingTime < 60) setMinViewingTime(60); }}
+```
 
-One line change, one comment update. No other files affected.
+This lets the user type freely, and snaps to 60 only if they leave the field with a value below 60. The `min={60}` HTML attribute remains for accessibility/semantics.
 
 ### Review
 
-- **Top 3 Risks:** (1) If someone hosts a video on Google Drive, it will default to Presentation -- but the toggle is still manually switchable. (2) None structural. (3) None.
-- **Top 3 Fixes:** (1) Drive URLs now correctly auto-select Presentation. (2) Matches user expectation from screenshot. (3) No downstream impact.
+- **Top 3 Risks:** (1) Briefly allows sub-60 values while typing -- acceptable since blur enforces it. (2) None. (3) None.
+- **Top 3 Fixes:** (1) Users can select-all and retype. (2) Validation still enforced on blur. (3) No other files affected.
 - **Database Change:** No
 - **Verdict:** Go
