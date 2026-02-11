@@ -1,51 +1,49 @@
 
 
-## Style Guide + Add Training Modal Updates
+## Refactor: Conditional Reveal for Training Type + Timer
 
-### 1. Toggle Font Size -- Global Change
+### What Changes
 
-**File: `src/components/ui/toggle.tsx`** (line 8)
+The Training Type toggle and Viewing Timer sections will be hidden until a URL is entered. Auto-detection sets the toggle value. The timer label, helper text, and additional text are updated to match the specified class names and copy. All utility classes are stripped from the text elements.
 
-Change `text-sm` to `text-xs` in the base `toggleVariants` CVA string. This is the single source of truth for all Toggle and ToggleGroup items across the app, so every instance updates automatically.
+### Behavior
 
-Before: `"btn-toggle ... text-sm font-medium ..."`
-After: `"btn-toggle ... text-xs font-medium ..."`
+1. User opens modal -- sees Title, Description, URL fields only
+2. User enters a valid URL -- Training Type toggle appears (auto-set to Video or Presentation based on URL; defaults to Video if ambiguous)
+3. If Presentation is active -- Viewing Timer input appears below the toggle
 
-**File: `STYLEGUIDE.md`** -- Add a note under a new "Toggle Components" section documenting that toggles use `text-xs` (14px) for consistency with Labels, Badge, and Tooltip.
+### File: `src/components/content/AddContentModal.tsx`
 
-### 2. Reorder Privacy Hint Text
+**Conditional visibility for Training Type block (lines 309-327):**
+Wrap in `{url.trim() && !urlError && ( ... )}` so it only renders when a non-empty, error-free URL is present.
 
-**File: `src/components/content/AddContentModal.tsx`** (line 294)
+**Conditional visibility for Viewing Timer block (lines 329-345):**
+Keep existing `contentType === "presentation"` guard, but nest it inside the URL check (or keep separate since the toggle itself is hidden, so Presentation can never be active without a URL).
 
-Change:
-> Set Google Slides (saved as .ppsx) to 'Anyone with the link' and YouTube to 'Unlisted' so your team can see it.
+**Rename label (line 331):**
+Change `"Minimum Viewing Time (seconds)"` to `"Viewing Timer"`
 
-To:
-> Set YouTube to 'Unlisted' and Google Slides (saved as .ppsx) to 'Anyone with the link' so your team can see it.
+**Restructure timer text elements (lines 331-343):**
+Replace the current block with:
+- Label: `Viewing Timer`
+- Helper text (between label and input): `<p className="form-helper-text">Enter the time required for review.</p>` -- no additional utility classes
+- Input: unchanged (`max-w-[100px]`, type number, min 60)
+- Additional text (below input): `<p className="form-additional-text">Minimum 60 seconds recommended. Necessary for compliance to ensure review, as progress cannot be tracked for presentation files.</p>` -- no additional utility classes, uses period instead of dash
 
-### 3. Move Helper Text Below the Input (as Additional Text)
+**Reset logic:**
+No change needed -- `contentType` already resets to `"video"` and `minViewingTime` to `60` on open/close. When URL is cleared, the toggle hides and the default "video" remains ready for next URL entry.
 
-**File: `src/components/content/AddContentModal.tsx`** (lines 329-343)
+### What Stays the Same
 
-Restructure the Minimum Viewing Time block:
-- Remove the `<p className="form-helper-text">` from between the label and input
-- Add the input directly after the label (with `max-width: 100px` via `className="max-w-[100px]"`)
-- Add a `<p className="form-additional-text">` **after** the input with updated text:
-  > Minimum 60 seconds recommended -- necessary for compliance to ensure review, as progress cannot be tracked for presentation files.
-
-Note the text changes: "required" becomes "recommended", "PPSX" becomes "presentation", and the dash style is an em-dash.
-
-### Summary of Files Changed
-
-| File | Change |
-|---|---|
-| `src/components/ui/toggle.tsx` | `text-sm` to `text-xs` in base CVA |
-| `STYLEGUIDE.md` | Add Toggle section documenting `text-xs` |
-| `src/components/content/AddContentModal.tsx` | Reorder privacy text, move helper to additional text below input, set input max-width 100px |
+- All other form fields, validation, save logic, privacy hint text
+- Auto-detection logic in `handleUrlChange`
+- `ContentFormData` interface
+- Global toggle styling (`text-xs` in toggle.tsx)
+- No database changes
 
 ### Review
 
-- **Top 3 Risks:** (1) Changing toggle font globally -- low risk since `text-xs` is already the standard for labels/badges per the typography memory. (2) None structural. (3) None.
-- **Top 3 Fixes:** (1) Consistent typography across all toggle instances. (2) Privacy hint reads in logical order (YouTube first, more common). (3) Compliance text repositioned as additional text per form conventions.
+- **Top 3 Risks:** (1) If user clears URL after selecting Presentation, the toggle hides but `contentType` stays as "presentation" -- acceptable since the toggle reappears on next URL entry and auto-detection overrides. (2) None structural. (3) None.
+- **Top 3 Fixes:** (1) Cleaner UX -- fewer fields visible until needed. (2) Semantic class usage enforced (no utility overrides). (3) Helper/additional text placement matches style guide conventions.
 - **Database Change:** No
 - **Verdict:** Go
