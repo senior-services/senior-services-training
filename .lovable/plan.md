@@ -1,53 +1,87 @@
 
 
-## Clean Utility Class Overrides from Form Text Elements
+## Add Training Type Segmented Control to Create Training Form
 
 ### What Changes
 
-Remove all extra Tailwind utility classes from `form-helper-text` and `form-additional-text` elements so the global CSS classes are the sole source of styling. No CSS definitions change -- only the usage sites are cleaned.
+Add an explicit "Training Type" segmented control (Video / Presentation) to the Add New Training form, with URL-based auto-detection and a conditional "Minimum Viewing Time" field when Presentation is active.
 
-### The Problem
+### UI Layout (top to bottom)
 
-Three files have leftover utility classes attached alongside the semantic class:
-
-- `not-italic` on 4 elements (overriding the global italic style)
-- `flex items-center gap-1` on 1 element (layout for an inline icon)
+1. Training Title (existing)
+2. Description (existing)
+3. Video or Presentation Link (existing)
+4. **Training Type** -- NEW segmented control (Video | Presentation), unselected by default
+5. **Minimum Viewing Time** -- NEW input, visible only when Presentation is active
+6. Footer buttons (existing)
 
 ### File Changes
 
-**1. `src/components/dashboard/AddEmployeeModal.tsx` (line 138)**
+**1. `src/utils/videoUtils.ts` -- Update `detectContentTypeFromUrl`**
 
-`className="form-additional-text not-italic"` becomes `className="form-additional-text"`
+Add `.ppsx` extension detection. Update `drive.google.com` handling to return `null` (already does). Add a check: if the URL path ends in `.ppsx`, return `'presentation'`.
 
-**2. `src/pages/Auth.tsx` (line 227)**
+Current logic returns `null` for Google Drive URLs. The new logic adds:
+- URLs ending in `.ppsx` return `'presentation'`
 
-`className="form-additional-text not-italic"` becomes `className="form-additional-text"`
+No other detection changes needed -- YouTube and Google Slides detection already works.
 
-**3. `src/pages/Auth.tsx` (line 278)**
+**2. `src/components/content/AddContentModal.tsx` -- Main form changes**
 
-`className="form-additional-text not-italic"` becomes `className="form-additional-text"`
+State additions:
+- `contentType` initial value changes from `"video"` to `""` (empty string = unselected). Type widens to `ContentType | ""`.
+- New state: `minViewingTime` (number, default `60`)
 
-**4. `src/components/content/AddContentModal.tsx` (line 287)**
+New UI elements (inserted after the URL field block, before the commented-out "Assign to All" section):
 
-`className="form-additional-text not-italic flex items-center gap-1"` becomes `className="form-additional-text"`
+**Training Type segmented control:**
+- Uses the existing `ToggleGroup` / `ToggleGroupItem` components with `variant="pill"` and `size="pill"`
+- Two options: "Video" and "Presentation"
+- Value bound to `contentType` state
+- Manual selection always wins (user can override auto-detection)
 
-The inline icon (Info tooltip button on line 291) already has `inline-flex` on itself, so it will still render inline with the text. The `gap-1` spacing between text and icon will be handled by natural inline flow.
+**Minimum Viewing Time input:**
+- Conditionally rendered when `contentType === "presentation"`
+- Label: "Minimum Viewing Time (seconds)"
+- `form-helper-text` below the label: "How long the employee must view the presentation before they can mark it complete."
+- Number input, default value `60`, min `1`
 
-### Visual Impact
+**Auto-detection logic update:**
+- In `handleUrlChange`, after `detectContentTypeFromUrl` returns a value, set `contentType` to that value
+- If detection returns `null`, leave `contentType` unchanged (preserves manual selection)
 
-- All four additional text instances will now render in **italic** (matching the global `.form-additional-text` standard). Previously `not-italic` was overriding this.
-- The AddContentModal icon spacing may tighten slightly without `gap-1`, but the button's own `inline-flex` keeps it inline.
+**Validation update:**
+- `isValid` adds check: `contentType !== ""` (must select a type)
+- `handleSave` includes `contentType` (already does) and adds `duration_seconds: contentType === 'presentation' ? minViewingTime : undefined` to `formData`
 
-### No Changes Needed
+**Reset logic:**
+- Both `useEffect` (on open) and `handleClose` reset `contentType` to `""` and `minViewingTime` to `60`
 
-- `form-helper-text` usages in EditVideoModal, CreateQuizModal, QuizModal, and ComponentsGallery are already clean (single class only).
-- `form-additional-text` usages in ComponentsGallery are already clean.
-- CSS class definitions in `src/index.css` stay the same.
+**3. `src/components/content/AddContentModal.tsx` -- `ContentFormData` interface update**
+
+Add optional field: `duration_seconds?: number`
+
+### Auto-Detection Rules
+
+| URL Pattern | Auto-Set Type |
+|---|---|
+| `youtube.com` or `youtu.be` | Video |
+| `docs.google.com/presentation` | Presentation |
+| URL path ends in `.ppsx` | Presentation |
+| `drive.google.com` (generic) | No change (ambiguous) |
+| Anything else | No change |
+
+### What Stays the Same
+
+- All existing form fields, labels, and error handling
+- The `form-additional-text` privacy hint below the URL field
+- The commented-out "Assign to All" section
+- The `handleSave` flow and parent modal control
+- All other files unchanged
 
 ### Review
 
-- **Top 3 Risks:** (1) Four additional text elements gain italic -- intentional alignment with the design system. (2) AddContentModal icon spacing slightly changes -- minimal impact. (3) No functional or accessibility regression.
-- **Top 3 Fixes:** (1) Eliminates all utility class overrides on form text. (2) Global classes are now the single source of truth. (3) Four single-line edits, zero logic changes.
-- **Database Change:** No
-- **Verdict:** Go
-
+- **Top 3 Risks:** (1) Widening `contentType` to include `""` requires the save handler to validate before submitting. (2) The `duration_seconds` field needs the parent `onSave` handler to pass it through to the database -- if the parent ignores it, it silently drops. (3) The ToggleGroup `variant="pill"` style is already proven in ComponentsGallery so no visual risk.
+- **Top 3 Fixes:** (1) Admins get clear visual feedback on which training mode is active. (2) Auto-detection reduces manual effort and errors. (3) Minimum viewing time is only shown when relevant, keeping the form clean.
+- **Database Change:** No -- the `videos` table already has `duration_seconds` and `content_type` columns.
+- **Verdict:** Go -- focused feature addition with no structural changes.
