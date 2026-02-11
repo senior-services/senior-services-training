@@ -135,7 +135,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                 required
                 disabled={isSubmitting}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="form-additional-text not-italic">
                 The employee will be able to access assigned videos when they sign in with this email.
               </p>
             </div>
