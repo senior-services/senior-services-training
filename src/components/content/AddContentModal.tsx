@@ -339,7 +339,8 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
                 type="number"
                 className="max-w-[100px]"
                 value={minViewingTime}
-                onChange={(e) => setMinViewingTime(Math.max(60, parseInt(e.target.value) || 60))}
+                onChange={(e) => setMinViewingTime(parseInt(e.target.value) || 0)}
+                onBlur={() => { if (minViewingTime < 60) setMinViewingTime(60); }}
                 min={60}
                 aria-describedby="min-viewing-time-additional"
               />
