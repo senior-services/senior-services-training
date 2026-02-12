@@ -1,23 +1,26 @@
 
 
-## Add `text-body` to TableCell for Senior Legibility
+## Fix Assign Videos Dialog: Replace `text-small` with `text-body`
 
 ### Problem
-`TableCell` currently has no explicit font-size class, so it inherits whatever size its parent context provides -- which can inconsistently fall to 13px in some layouts. Senior users need a guaranteed 16px minimum for row data.
+The `AssignVideosModal` table cells contain inline `text-small` classes on `<span>` elements, which override the `TableCell` primitive's `text-body` class. This forces row data to render at 13px instead of the 16px senior minimum.
 
-### Change (1 file)
+### Changes (1 file)
 
-**`src/components/ui/table.tsx`** -- TableCell className (line 87)
+**`src/components/dashboard/AssignVideosModal.tsx`** -- 4 lines to update:
 
-| Before | After |
-|--------|-------|
-| `"px-4 py-2 align-middle [&:has([role=checkbox])]:pr-0"` | `"px-4 py-2 align-middle text-body [&:has([role=checkbox])]:pr-0"` |
+| Line | Element | Change |
+|------|---------|--------|
+| 786 | Video title `<span>` | `text-small` to `text-body` |
+| 809 | Due date `<span>` | `text-small` to `text-body` |
+| 812 | Quiz results `<span>` | `text-small` to `text-body` |
+| 815 | Quiz version `<span>` | `text-small` to `text-body` |
 
-Adding `text-body` locks cell content to 16px / 1rem with the `line-height: 1.6` already defined in the base layer's `.text-body` class.
+Each span currently reads `text-small whitespace-nowrap` and will be updated to `text-body whitespace-nowrap`.
 
 ### Review
-1. **Risks:** None -- `text-body` is the default body size, so this only makes the inheritance explicit. Header cells remain at `text-small` (13px) via their own class.
-2. **Fixes:** All table row data now renders at a guaranteed 16px for senior-friendly legibility.
+1. **Risks:** None -- these are purely typographic overrides within a single dialog.
+2. **Fixes:** All table row data in the Assign Videos dialog will render at 16px, matching the senior legibility standard.
 3. **Database Change:** No.
-4. **Verdict:** Go -- one-word addition.
+4. **Verdict:** Go -- four identical find-and-replace edits in one file.
 
