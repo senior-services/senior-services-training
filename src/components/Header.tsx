@@ -28,7 +28,7 @@ export const Header = ({ userRole, userName, userEmail, onLogout }: HeaderProps)
                 }}
               />
               <div>
-                <h1 className="text-h3 text-primary-foreground">
+                <h1 className="text-h4 text-primary-foreground">
                   <span className="font-bold">Training Portal</span>{" "}
                   <span className="font-normal">/ {userRole === "admin" ? "Admin" : "Employee"} Dashboard</span>
                   {userRole === "admin" && (
