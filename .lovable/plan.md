@@ -1,30 +1,42 @@
 
 
-## Push Presentation Timer to Far Right
+## Hide Presentation Attestation When Quiz Exists
 
 ### Problem
-When no training description is present, the timer Banner sits at the left side of the container because `justify-between` has no left-side element to push against.
+For presentation trainings **with** a quiz, the standalone attestation section (below the content player) appears immediately -- gated only by the timer. The correct flow should be:
+
+1. Timer counts down
+2. User clicks "Start Quiz..."
+3. Quiz questions appear
+4. Attestation appears **below the last quiz question** (reusing the existing quiz attestation block)
+
+The standalone presentation attestation should only appear for presentations **without** a quiz.
 
 ### Change (1 file)
 
-**`src/components/VideoPlayerFullscreen.tsx`** -- line 497
+**`src/components/VideoPlayerFullscreen.tsx`** -- line 533
 
-The `flex` container on line 497 already uses `justify-between`, but when the description is conditionally hidden, the timer loses its right alignment.
+Add `&& !quiz` to the existing condition so the presentation-specific attestation only renders when there is no quiz attached.
 
-**Fix:** Add `ml-auto` to the timer's Banner wrapper so it always aligns to the far right, regardless of whether the description div is rendered.
+| Before | After |
+|--------|-------|
+| `video && video.content_type === 'presentation' && !wasEverCompleted` | `video && video.content_type === 'presentation' && !wasEverCompleted && !quiz` |
 
-Wrap the timer block (lines 505-515) in a `div` with `className="ml-auto shrink-0"` -- or more simply, since both Banner variants already have `shrink-0`, just add `ml-auto` to each Banner's className.
+The quiz attestation block (lines 549-558) already renders for any content type when `quizStarted` is true, so no other changes are needed.
 
-| Line | Before | After |
-|------|--------|-------|
-| 507 | `className="w-fit shrink-0"` | `className="w-fit shrink-0 ml-auto"` |
-| 511 | `className="w-fit shrink-0"` | `className="w-fit shrink-0 ml-auto"` |
+### Flow After Fix
 
-`ml-auto` pushes the element to the far right within the flex container whether or not a sibling exists to the left.
+```text
+Presentation + Quiz:
+  Timer counting --> "Start Quiz..." button unlocks --> Click --> Quiz + Attestation appear below last question --> Submit Quiz
+
+Presentation + No Quiz:
+  Timer counting --> Attestation unlocks below content --> Check attestation --> Complete Training
+```
 
 ### Review
-1. **Risks:** None -- `ml-auto` is additive and has no effect when a left sibling already fills the space via `justify-between`.
-2. **Fixes:** Timer is always pinned to the far right.
+1. **Risks:** None -- the quiz attestation block already covers presentations with quizzes; we're just removing a duplicate/premature attestation.
+2. **Fixes:** Attestation only appears after "Start Quiz" is clicked, matching the video training pattern.
 3. **Database Change:** No.
-4. **Verdict:** Go -- two class additions.
+4. **Verdict:** Go -- single condition addition.
 
