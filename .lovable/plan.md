@@ -1,79 +1,92 @@
 
 
-## Final Structural Restoration: "Sandwich" Layout
+## Finalize Spacing and Conditional Logic for Training Dialog
 
-### Goal
-Restore the fixed header / scrollable body / fixed footer layout so header and footer are always visible, and only the middle content scrolls.
+### Changes across 2 files
 
-### Current vs. Target Structure
+---
 
-```text
-CURRENT (everything scrolls together):
-FullscreenDialogContent (flex-col, overflow-hidden)
-  +-- div[scrollable] (flex-1 overflow-y-auto, px-6 pb-6 pt-0)
-        +-- DialogHeader (pt-6 pb-4 px-0 border-b)
-        +-- content wrapper div
-        +-- DialogFooter (px-0 py-6 mt-6 border-t)
-        +-- DialogFooter (px-0 py-6 mt-6 border-t)
+### File 1: `src/components/VideoPlayerFullscreen.tsx`
 
-TARGET (sandwich):
-FullscreenDialogContent (flex-col, overflow-hidden)
-  +-- DialogHeader (flex-shrink-0) -- no className override, inherits primitive defaults
-  +-- div[scrollable] (flex-1 overflow-y-auto p-6 flex flex-col gap-6)
-  |     +-- description, video/slides, quiz, attestation
-  +-- DialogFooter (flex-shrink-0) -- no className override, inherits primitive defaults
-```
+**Change A -- Fix scrollable div padding (line 435)**
 
-### Technical Changes (single file: `src/components/VideoPlayerFullscreen.tsx`)
-
-**1. Move DialogHeader outside the scrollable div (lines 427-432)**
-
-Extract `DialogHeader` from inside the scrollable div and place it as a direct child of `FullscreenDialogContent`, before the scrollable div. Remove all className overrides (`pt-6 pb-4 px-0 border-b`) so it inherits the primitive defaults (`px-6 py-4 border-b flex-shrink-0`).
+Update the className from `p-6` to `px-6 pb-6 pt-0`:
 
 ```tsx
-<FullscreenDialogContent ...>
-  <DialogHeader>
-    <DialogTitle>{video?.title || 'Training Video'}</DialogTitle>
-  </DialogHeader>
-  <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 w-full p-6 flex flex-col gap-6" data-dialog-scroll-area>
-    {/* content starts here -- no inner wrapper div needed, gap-6 handles spacing */}
+// Before
+className="flex-1 overflow-y-auto min-h-0 w-full p-6 flex flex-col gap-6"
+
+// After
+className="flex-1 overflow-y-auto min-h-0 w-full px-6 pb-6 pt-0 flex flex-col gap-6"
 ```
 
-**2. Flatten the content wrapper (line 433)**
+This removes the 24px top gap so the first content element sits exactly 16px below the header border (the header's `py-4` provides 16px bottom padding, and `pt-0` on the scroll area adds nothing extra).
 
-Remove the inner `<div className="flex flex-col gap-6 pt-6">` wrapper. The scrollable div itself now carries `flex flex-col gap-6`, so the description block, video container, quiz section, and attestation become direct children. Remove `pt-6` since the scrollable div's `p-6` already provides top spacing.
+**Change B -- Conditional description block (lines 436-444)**
 
-**3. Move both DialogFooter blocks outside the scrollable div (lines 488-649)**
+The description wrapper currently renders a flex container with `pb-4` even when description is empty. Tighten the conditional and remove the outer wrapper so it only renders when content exists:
 
-Move the two `DialogFooter` blocks (quiz footer at line 489 and presentation footer at line 548) from inside the scrollable div to after the closing `</div>` of the scrollable div, as direct children of `FullscreenDialogContent`. Remove all className overrides (`px-0 py-6 mt-6 border-t`) so they inherit primitive defaults (`px-6 py-4 border-t flex-shrink-0`).
+```tsx
+// Before
+<div className="flex items-start justify-between gap-4 pb-4">
+  {video?.description && video.description.trim() && (
+    <div className="flex-1" id="video-description">
+      <p className="text-body text-foreground">
+        {video.description}
+      </p>
+    </div>
+  )}
+</div>
 
-**4. Harden scroll reset (line 414-424)**
+// After
+{video?.description && video.description.trim() !== '' && (
+  <div id="video-description">
+    <p className="text-body text-foreground">
+      {video.description}
+    </p>
+  </div>
+)}
+```
 
-The existing `onOpenAutoFocus` handler already resets `scrollRef.current.scrollTop = 0` inside a `setTimeout`. No change needed here -- with the header outside the scroll area, `scrollTop = 0` correctly shows the top of the content.
+The outer flex wrapper is removed entirely. When description is absent, nothing renders and the `gap-6` on the parent handles spacing naturally.
 
-**5. Add autoFocus={false} to ContentPlayer**
+**Change C -- Footer verification (no change needed)**
 
-Pass `autoFocus={false}` to the `ContentPlayer` component (line 452) to prevent the browser from scrolling to embedded iframes on dialog open. If `ContentPlayer` does not currently accept this prop, the `tabIndex={0}` on the parent `data-video-container` div already handles focus, and the `e.preventDefault()` in `onOpenAutoFocus` blocks native autofocus. This step may be a no-op if the iframe focus is already suppressed.
+Both `DialogFooter` blocks (lines 490-546 for quiz, lines 548-651 for presentation) are already direct children of `FullscreenDialogContent`, outside the scrollable div. No structural change required.
 
-**6. Senior-First Compliance Verification**
+---
 
-- `DialogTitle` renders as a bare tag with no inline overrides -- it inherits `.text-h3` (25px, weight 600) from the global CSS. Per the user's request for `.text-h4`, this would change to 20px/600 weight. This is a design decision.
-- Footer buttons use the `Button` primitive which inherits `.text-body` (16px) from the global CSS. No change needed.
+### File 2: `src/components/ui/dialog.tsx`
+
+**Change D -- DialogTitle scale step (line 133)**
+
+Update from `text-h3` to `text-h4` globally:
+
+```tsx
+// Before
+className={cn("text-h3", className)}
+
+// After
+className={cn("text-h4", className)}
+```
+
+This changes all dialog titles from 25px/600 weight to 20px/600 weight, matching the user's senior-first compliance requirement.
+
+---
 
 ### Summary
 
 | Area | Change |
 |------|--------|
-| DialogHeader | Moved outside scrollable div; no className override; inherits primitive `px-6 py-4 border-b flex-shrink-0` |
-| Scrollable div | `className="flex-1 overflow-y-auto min-h-0 w-full p-6 flex flex-col gap-6"` |
-| Content wrapper | Removed inner wrapper div; children become direct children of scrollable div |
-| Both DialogFooters | Moved outside scrollable div; no className override; inherits primitive `px-6 py-4 border-t flex-shrink-0` |
-| Scroll reset | No change needed -- existing logic handles it |
-| autoFocus | Already suppressed by `onOpenAutoFocus` `e.preventDefault()` |
+| Scrollable div | `p-6` changed to `px-6 pb-6 pt-0` to eliminate top spacing gap |
+| Description block | Outer wrapper removed; conditional tightened to `!== ''`; no residual spacing when empty |
+| DialogHeader | No change -- primitive defaults (`px-6 py-4 border-b flex-shrink-0`) are correct |
+| DialogFooter | No change -- already outside scrollable div, inherits primitive defaults |
+| DialogTitle (primitive) | `text-h3` changed to `text-h4` globally |
 
 ### Review
 
-1. **Top 3 Risks:** (a) Footer is now always visible, reducing vertical space for video by ~56px -- acceptable for senior legibility. (b) Two conditional DialogFooters render as siblings; only one shows at a time due to conditional logic, so no double-footer risk. (c) The `DialogTitle` scale step (h3 vs h4) needs a design decision from the user.
-2. **Top 3 Fixes:** (a) Header and footer permanently visible with consistent borders. (b) No negative-margin hacks or padding overrides on primitives. (c) Scroll position guaranteed at top on open.
+1. **Top 3 Risks:** (a) Changing DialogTitle to `text-h4` globally affects every dialog in the app (AlertDialogs, modals, etc.) -- this is likely the desired outcome for consistency. (b) Removing the description wrapper changes the `id="video-description"` anchor from a flex container to a plain div -- `aria-describedby` still works. (c) `pt-0` means the first child in the scroll area has no top padding, relying entirely on the header's bottom padding for separation.
+2. **Top 3 Fixes:** (a) No extra whitespace above video/slides. (b) Empty descriptions no longer leave phantom spacing. (c) Dialog titles standardized to `text-h4` (20px).
 3. **Database Change:** No.
 4. **Verdict:** Go.
