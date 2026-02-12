@@ -1,47 +1,26 @@
 
 
-## Move Presentation Timer to Dialog Footer (Bottom-Left)
+## Separate Timer from Buttons in Dialog Footer
 
-### Change (1 file)
+### Problem
+The timer Banner sits right next to the Cancel button because all three elements (timer, Cancel, action button) are siblings in the fragment. The footer's `sm:justify-between` distributes space evenly across all children instead of creating a left/right split.
 
-**`src/components/VideoPlayerFullscreen.tsx`** -- 2 edits
+### Fix (1 file)
 
-**Edit 1: Remove timer from scroll area (lines 505-515)**
-Delete the timer Banner block from the description row inside `DialogScrollArea`.
+**`src/components/VideoPlayerFullscreen.tsx`** -- lines 671-705
 
-**Edit 2: Add timer to footer (inside the pre-quiz/no-quiz branch, lines 668-704)**
-Insert the timer Banner as the first element inside the `<>` fragment (line 669), before the Cancel button. The footer already uses `sm:justify-between`, so placing the timer on the left and keeping Cancel + action buttons on the right is straightforward.
+Wrap the Cancel button and the action button (the entire "Pre-quiz or no-quiz" button group) in a `<div className="flex gap-2">` so the footer sees only two top-level children:
 
-Structure after change:
 ```text
 DialogFooter (sm:justify-between)
-  [LEFT]  Timer Banner (or "Minimum time met")
-  [RIGHT] Cancel | Action Button
+  [LEFT]   Timer Banner
+  [RIGHT]  <div flex gap-2>  Cancel | Action Button  </div>
 ```
 
-The timer block renders conditionally (`isPresentation && !wasEverCompleted`), so for video content or already-completed presentations, the footer layout is unchanged.
-
-When the quiz is active (`quizStarted`), the footer switches to the quiz-submit branch (line 632+), so the timer naturally disappears -- no extra logic needed.
-
-### Detail
-
-```text
-Footer layout:
-
-  +--------------------------------------------------+
-  | [i] Minimum review time: 2:30   Cancel | Start.. |
-  +--------------------------------------------------+
-
-  or after timer completes:
-
-  +--------------------------------------------------+
-  | [check] Minimum time met     Cancel | Complete.. |
-  +--------------------------------------------------+
-```
+This pushes the timer to the far left and keeps the buttons grouped on the far right.
 
 ### Review
-1. **Risks:** None -- the timer is purely presentational and all state variables are already in scope at the footer level.
-2. **Fixes:** Timer is always visible and pinned bottom-left, freeing up scroll area space.
+1. **Risks:** None -- purely layout, no logic change.
+2. **Fixes:** Timer pinned far-left, buttons grouped far-right.
 3. **Database Change:** No.
-4. **Verdict:** Go -- cut/paste of one block within the same component.
-
+4. **Verdict:** Go -- one wrapper div addition.
