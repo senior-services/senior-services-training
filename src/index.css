@@ -474,4 +474,38 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
       disabled:pointer-events-none disabled:opacity-50
       data-[active]:bg-accent/50 data-[state=open]:bg-accent/50;
   }
+
+  /* ── Page-Level Semantic Button Variants ── */
+  /* Social/Google sign-in button — neutral card style */
+  .button-social {
+    @apply bg-card text-foreground border border-border hover:bg-muted shadow-sm;
+  }
+
+  /* Play overlay button — large circular white */
+  .button-play-overlay {
+    @apply rounded-full bg-white/90 hover:bg-white text-primary hover:text-primary
+      shadow-lg hover:shadow-xl;
+  }
+
+  /* Dev quick-login outline tints */
+  .button-outline-primary {
+    @apply border-primary/30 text-primary hover:bg-primary/10;
+  }
+  .button-outline-success {
+    @apply border-success/30 text-success hover:bg-success/10;
+  }
+  .button-outline-destructive {
+    @apply border-destructive/30 text-destructive hover:bg-destructive/10;
+  }
+
+  /* Header logout — link with inverted colors, no padding */
+  .button-header-link {
+    @apply shadow-none hover:shadow-none text-primary-foreground hover:text-primary-foreground
+      underline-offset-4 hover:underline active:scale-100 p-0;
+  }
+
+  /* Button size: play overlay (large circle) */
+  .button-size-play {
+    @apply w-16 h-16;
+  }
 }

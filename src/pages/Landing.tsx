@@ -32,7 +32,7 @@ export const Landing = ({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <Button onClick={() => window.location.href = '/auth'} size="lg" className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm">
+              <Button onClick={() => window.location.href = '/auth'} size="lg" className="w-full button-social">
                 <LogIn className="w-5 h-5 mr-3" />
                 Sign In / Sign Up
               </Button>

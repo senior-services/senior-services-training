@@ -232,7 +232,7 @@ const AuthCallbackContent = () => {
             </p>
             <Button 
               onClick={handleRetry}
-              className="bg-card text-foreground hover:bg-muted"
+              className="button-social"
             >
               Try Again
             </Button>
