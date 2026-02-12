@@ -487,8 +487,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       }, 100);
     }} aria-describedby="video-description">
         
-        <div className="flex-1 overflow-y-auto min-h-0" data-dialog-scroll-area>
-        <DialogHeader className="flex-shrink-[unset] border-b-0">
+        <div className="flex-1 overflow-y-auto min-h-0 w-full p-6 flex flex-col gap-6" data-dialog-scroll-area>
+        <DialogHeader className="flex-shrink-[unset] border-b-0 px-0 pb-0 pt-0">
           <DialogTitle>
             {video?.title || 'Training Video'}
           </DialogTitle>
@@ -549,7 +549,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
         {/* Dialog Footer - Show for quiz interactions (non-presentation only) */}
         {quiz && !isPresentation && (quizStarted || quizSubmitted || wasEverCompleted) && <DialogFooter>
-            {!quizSubmitted && !wasEverCompleted ? <div className="flex w-full items-center justify-end gap-4 p-4">
+            {!quizSubmitted && !wasEverCompleted ? <div className="flex w-full items-center justify-end gap-4">
                 <AlertDialog open={showCancelConfirmation} onOpenChange={setShowCancelConfirmation}>
                   <AlertDialogTrigger asChild>
                     <Button variant="outline" onClick={handleCancelClick} className="shadow-md hover:shadow-lg transition-shadow">
@@ -596,7 +596,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                     Submit Quiz
                   </Button>
                 )}
-              </div> : <div className="flex w-full items-center justify-end gap-4 p-4">
+              </div> : <div className="flex w-full items-center justify-end gap-4">
                 <DialogClose asChild>
                   <Button className="shadow-md hover:shadow-lg transition-shadow">
                     Close
@@ -609,7 +609,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         {isPresentation && !wasEverCompleted && (
           <DialogFooter>
               {quiz && quizStarted && !quizSubmitted ? (
-                <div className="flex w-full items-center justify-end gap-4 p-4">
+                <div className="flex w-full items-center justify-end gap-4">
                   {/* Quiz started: Cancel with confirmation + Submit Quiz */}
                   <AlertDialog open={showCancelConfirmation} onOpenChange={setShowCancelConfirmation}>
                     <AlertDialogTrigger asChild>
@@ -655,7 +655,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                   )}
                 </div>
               ) : (
-                <div className="flex w-full items-center justify-between gap-4 p-4">
+                <div className="flex w-full items-center justify-between gap-4">
                   {/* Timer pinned to footer left */}
                   {timerActive ? (
                     <Banner variant="information" size="compact" icon={Clock} className="w-fit shrink-0">
