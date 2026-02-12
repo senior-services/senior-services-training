@@ -671,16 +671,22 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                       Cancel
                     </Button>
                     {quizLoading ? null : quiz ? (
-                      <Button
-                        disabled={timerActive}
-                        onClick={handleStartQuiz}
-                        className={cn(
-                          "transition-all duration-500",
-                          !timerActive && "animate-scale-in"
-                        )}
-                      >
-                        Start Quiz to Complete Training
-                      </Button>
+                      timerActive ? (
+                        <ButtonWithTooltip
+                          tooltip="Please wait for the viewing timer to complete."
+                          disabled
+                          className="transition-all duration-500"
+                        >
+                          Start Quiz to Complete Training
+                        </ButtonWithTooltip>
+                      ) : (
+                        <Button
+                          onClick={handleStartQuiz}
+                          className="transition-all duration-500 animate-scale-in"
+                        >
+                          Start Quiz to Complete Training
+                        </Button>
+                      )
                     ) : (timerActive || !presentationAcknowledged) ? (
                       <ButtonWithTooltip
                         tooltip={timerActive
