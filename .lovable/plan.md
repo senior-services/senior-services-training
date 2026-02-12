@@ -1,215 +1,131 @@
 
 
-## QA Audit Report: CSS-as-the-Brain Compliance
+## Layout Audit Report: Separating Layout Spacing from Component Styling
 
-### Audit Summary
+### Scope
 
-57 files inspected. 5 files with CVA definitions still contain raw Tailwind utility strings in their base and/or variant objects. The 4 core primitives (badge, button, input, card, toggle) are CLEAN. The failures are in secondary CVA components that were not addressed in the previous refactors.
-
----
-
-### CLEAN Files (52 of 57) -- No Action Required
-
-**Core Primitives (fully semantic):**
-- `badge.tsx` -- base: `"badge-base"`, all 28 variants semantic
-- `button.tsx` -- base: `"button-base"`, 6 variants + 4 sizes semantic
-- `input.tsx` -- `"input-base"` only
-- `card.tsx` -- `"card-base"` only (sub-components use layout utilities, acceptable)
-- `toggle.tsx` -- base: `"button-toggle"`, 3 variants + 4 sizes semantic
-
-**Typography compliance (zero `text-xs`/`text-sm`/`text-base`):**
-- All files use exclusively `text-small`, `text-caption`, `text-code`, `text-h1`-`text-h4`, or `text-body`
-
-**Layout-only files (no CVA, inline layout utilities acceptable):**
-accordion, alert-dialog, aspect-ratio, avatar, breadcrumb, calendar, carousel, chart, checkbox, collapsible, command, context-menu, dialog, drawer, dropdown-menu, form, hover-card, input-otp, label, loading-spinner, menubar, navigation-menu (partial -- see below), option-list, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, skeleton, slider, sonner, sortable-table-head, switch, table, tabs, textarea, toaster, tooltip, button-with-tooltip, icon-button-with-tooltip, ComponentUpdateIndicator, ErrorBoundary, error-boundary
+All page-level files (`pages/*.tsx`, `components/Header.tsx`, `components/TrainingCard.tsx`, `components/layout/DashboardLayout.tsx`, `components/dashboard/*.tsx`) audited for violations of the "No Internal Override" rule.
 
 ---
 
-### FAILED Files (5 of 57) -- Require Purge
+### Violation Summary
 
-#### 1. `banner.tsx` (CRITICAL)
+| # | File | Line | Violation | Severity |
+|---|------|------|-----------|----------|
+| 1 | `Header.tsx` | 49 | `<Button>` with `className="text-primary-foreground hover:text-primary-foreground p-0"` -- overrides internal padding AND color variant | HIGH |
+| 2 | `Header.tsx` | 26 | `py-[5px]` arbitrary value on logo `<img>` | MEDIUM |
+| 3 | `Auth.tsx` | 154 | `<Button className="border-primary/30 text-primary hover:bg-primary/10">` -- overrides outline variant colors | HIGH |
+| 4 | `Auth.tsx` | 158 | `<Button className="border-success/30 text-success hover:bg-success/10">` -- same pattern | HIGH |
+| 5 | `Auth.tsx` | 162 | `<Button className="border-destructive/30 text-destructive hover:bg-destructive/10">` -- same pattern | HIGH |
+| 6 | `Auth.tsx` | 174 | `<Button className="w-full bg-card text-foreground border border-border hover:bg-muted">` -- completely overrides variant styling | HIGH |
+| 7 | `Auth.tsx` | 147 | Dev testing section uses raw `bg-attention/10 border border-attention/20 rounded-lg` on a `<div>` -- should be a `<Banner>` component | MEDIUM |
+| 8 | `Landing.tsx` | 35 | `<Button className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm">` -- fully overrides variant | HIGH |
+| 9 | `VideoPage.tsx` | 272 | `<Badge className="bg-success hover:bg-success/90">` -- overrides variant styling; should use `variant="success"` | HIGH |
+| 10 | `VideoPage.tsx` | 290 | `<Button className="rounded-full w-16 h-16 bg-white/90 hover:bg-white text-primary...">` on TrainingCard play overlay -- overrides size and variant | HIGH |
+| 11 | `TrainingCard.tsx` | 290 | Same play button override (duplicated from VideoPage pattern) | HIGH |
+| 12 | `EmployeeManagement.tsx` | 624-625 | `<TableHead className="px-4 py-3 ...">` -- overrides table cell padding | LOW |
+| 13 | `EmployeeManagement.tsx` | 630, 638, 641 | `<TableCell className="py-3 ...">` -- overrides table cell padding | LOW |
+| 14 | `AuthCallback.tsx` | 234 | `<Button className="bg-card text-foreground hover:bg-muted">` -- overrides variant styling | MEDIUM |
 
-**CVA base string (line 9):** `"relative w-full rounded-lg border transition-shadow duration-300"` -- 6 raw utilities.
+---
 
-**Variant objects (lines 13-21):** 8 variants with raw utilities like `"bg-primary/10 text-primary border-primary/20"`.
+### Clean Files (No Violations)
 
-**Size objects (lines 23-25):** 2 sizes with raw utilities like `"p-4 shadow-card hover:shadow-lg"`.
-
-**Fix:** Create `.banner-base`, `.banner-default`, `.banner-info`, `.banner-success`, `.banner-warning`, `.banner-error`, `.banner-destructive`, `.banner-attention`, `.banner-size-default`, `.banner-size-compact` in `index.css`. Strip all utilities from `banner.tsx` CVA.
-
-#### 2. `sheet.tsx` (MODERATE)
-
-**CVA base string (line 32):** `"fixed z-50 gap-4 bg-background p-6 shadow-lg transition ease-in-out data-[state=open]:animate-in ..."` -- 15+ raw utilities.
-
-**Side variants (lines 36-42):** 4 variants with raw animation/position utilities.
-
-**Fix:** Create `.sheet-base`, `.sheet-top`, `.sheet-bottom`, `.sheet-left`, `.sheet-right` in `index.css`.
-
-#### 3. `toast.tsx` (MODERATE)
-
-**CVA base string (line 26):** `"group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg ..."` -- 20+ raw utilities.
-
-**Variant objects (lines 30-35):** 3 variants with raw utilities.
-
-**Fix:** Create `.toast-base`, `.toast-default`, `.toast-destructive`, `.toast-success` in `index.css`.
-
-#### 4. `toggle-group.tsx` (LOW)
-
-**CVA base string (line 9):** `"flex items-center w-fit"` -- 3 raw utilities.
-
-**Variant objects (lines 13-14):** 2 variants with raw utilities.
-
-**Fix:** Create `.toggle-group-base`, `.toggle-group-default`, `.toggle-group-pill` in `index.css`.
-
-#### 5. `navigation-menu.tsx` (LOW)
-
-**CVA base string (line 44):** `navigationMenuTriggerStyle` has `"group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 font-medium ..."` -- 15+ raw utilities.
-
-**Fix:** Create `.nav-menu-trigger` in `index.css`.
+- `AdminDashboard.tsx` -- CLEAN
+- `EmployeeDashboard.tsx` -- CLEAN (typography uses `text-h2`, `text-h3`, `text-small` correctly; headings use raw `<h1>`, `<h2>`, `<h3>` tags)
+- `NotFound.tsx` -- CLEAN
+- `Index.tsx` -- CLEAN
+- `DashboardLayout.tsx` -- CLEAN
 
 ---
 
 ### Remediation Plan
 
-#### Phase 1: Add CSS Classes to `src/index.css`
+#### Phase 1: Create Missing Semantic Variants in `src/index.css`
 
-Add the following semantic classes after the existing Master Templates section:
+Several violations exist because the design system lacks the needed variant. We need to add:
 
 ```css
-/* ── Banner Master Template ── */
-.banner-base {
-  @apply relative w-full rounded-lg border transition-shadow duration-300;
+/* Google/Social sign-in button -- neutral white style */
+.button-social {
+  @apply bg-card text-foreground border border-border hover:bg-muted shadow-sm;
 }
-.banner-default     { @apply bg-background text-foreground; }
-.banner-info        { @apply bg-primary/10 text-primary border-primary/20; }
-.banner-information { @apply bg-primary/10 text-primary border-primary/20; }
-.banner-success     { @apply bg-success/10 text-success border-success/20; }
-.banner-warning     { @apply bg-warning/10 text-warning border-warning/20; }
-.banner-error       { @apply bg-destructive/10 text-destructive border-destructive/20; }
-.banner-destructive { @apply bg-destructive/10 text-destructive border-destructive/20; }
-.banner-attention   { @apply bg-attention/10 text-attention border-attention/20; }
-.banner-size-default { @apply p-4 shadow-card hover:shadow-lg; }
-.banner-size-compact { @apply py-2 px-3; }
 
-/* ── Sheet Master Template ── */
-.sheet-base {
-  @apply fixed z-50 gap-4 bg-background p-6 shadow-lg transition ease-in-out
-    data-[state=open]:animate-in data-[state=closed]:animate-out
-    data-[state=closed]:duration-300 data-[state=open]:duration-500;
+/* Play overlay button -- large circular white */
+.button-play-overlay {
+  @apply rounded-full bg-white/90 hover:bg-white text-primary hover:text-primary
+    shadow-lg hover:shadow-xl;
 }
-.sheet-top    { @apply inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top; }
-.sheet-bottom { @apply inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom; }
-.sheet-left   { @apply inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm; }
-.sheet-right  { @apply inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm; }
 
-/* ── Toast Master Template ── */
-.toast-base {
-  @apply group pointer-events-auto relative flex w-full items-center justify-between
-    space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all
-    data-[swipe=cancel]:translate-x-0
-    data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)]
-    data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]
-    data-[swipe=move]:transition-none
-    data-[state=open]:animate-in data-[state=closed]:animate-out
-    data-[swipe=end]:animate-out data-[state=closed]:fade-out-80
-    data-[state=closed]:slide-out-to-top-full
-    data-[state=open]:slide-in-from-top-full;
+/* Test/dev quick-login color tints (outline variants with color hints) */
+.button-outline-primary {
+  @apply border-primary/30 text-primary hover:bg-primary/10;
 }
-.toast-default     { @apply border bg-background text-foreground; }
-.toast-destructive { @apply destructive border-destructive bg-destructive text-destructive-foreground; }
-.toast-success     { @apply success border-success bg-background text-success; }
+.button-outline-success {
+  @apply border-success/30 text-success hover:bg-success/10;
+}
+.button-outline-destructive {
+  @apply border-destructive/30 text-destructive hover:bg-destructive/10;
+}
 
-/* ── Toggle Group Master Template ── */
-.toggle-group-base    { @apply flex items-center w-fit; }
-.toggle-group-default { @apply gap-1; }
-.toggle-group-pill    { @apply gap-0 bg-muted rounded-full p-1.5; }
+/* Header logout -- link variant with inverted colors, no padding */
+.button-header-link {
+  @apply shadow-none hover:shadow-none text-primary-foreground hover:text-primary-foreground
+    underline-offset-4 hover:underline active:scale-100 p-0;
+}
 
-/* ── Navigation Menu Trigger ── */
-.nav-menu-trigger {
-  @apply group inline-flex h-10 w-max items-center justify-center rounded-md
-    bg-background px-4 py-2 font-medium transition-colors
-    hover:bg-accent hover:text-accent-foreground
-    focus:bg-accent focus:text-accent-foreground focus:outline-none
-    disabled:pointer-events-none disabled:opacity-50
-    data-[active]:bg-accent/50 data-[state=open]:bg-accent/50;
+/* Button size: play overlay (large circle) */
+.button-size-play {
+  @apply w-16 h-16;
 }
 ```
 
-#### Phase 2: Strip Utilities from Component CVA Definitions
+#### Phase 2: Fix Page-Level Files
 
-**`banner.tsx`** -- Replace CVA base and all variants with semantic classes:
-```tsx
-const bannerVariants = cva("banner-base", {
-  variants: {
-    variant: {
-      default: "banner-default",
-      info: "banner-info",
-      information: "banner-information",
-      success: "banner-success",
-      warning: "banner-warning",
-      error: "banner-error",
-      destructive: "banner-destructive",
-      attention: "banner-attention",
-    },
-    size: {
-      default: "banner-size-default",
-      compact: "banner-size-compact",
-    },
-  },
-  defaultVariants: { variant: "default", size: "default" },
-});
-```
+**`Header.tsx` (line 49):**
+- Before: `<Button variant="link" size="sm" onClick={onLogout} className="text-primary-foreground hover:text-primary-foreground p-0">`
+- After: `<Button variant="link" size="sm" onClick={onLogout} className="button-header-link">`
+- Also fix line 26: replace `py-[5px]` with `py-1` (standard 4px, close enough to 5px without arbitrary values)
 
-**`sheet.tsx`** -- Replace CVA:
-```tsx
-const sheetVariants = cva("sheet-base", {
-  variants: {
-    side: {
-      top: "sheet-top",
-      bottom: "sheet-bottom",
-      left: "sheet-left",
-      right: "sheet-right",
-    },
-  },
-  defaultVariants: { side: "right" },
-});
-```
+**`Auth.tsx` (lines 154-162):**
+- Before: `<Button ... className="border-primary/30 text-primary hover:bg-primary/10">`
+- After: `<Button ... className="button-outline-primary">`
+- Same for success and destructive variants
+- Line 174 Google button: replace raw utilities with `className="w-full button-social"`
+- Line 147 dev section `<div>`: replace raw `bg-attention/10 border border-attention/20 rounded-lg` with `<Banner variant="attention" size="compact">` or a semantic class
 
-**`toast.tsx`** -- Replace CVA:
-```tsx
-const toastVariants = cva("toast-base", {
-  variants: {
-    variant: {
-      default: "toast-default",
-      destructive: "toast-destructive",
-      success: "toast-success",
-    },
-  },
-  defaultVariants: { variant: "default" },
-});
-```
+**`Landing.tsx` (line 35):**
+- Before: `<Button ... className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm">`
+- After: `<Button ... className="w-full button-social">`
 
-**`toggle-group.tsx`** -- Replace CVA:
-```tsx
-const toggleGroupVariants = cva("toggle-group-base", {
-  variants: {
-    variant: {
-      default: "toggle-group-default",
-      pill: "toggle-group-pill",
-    },
-  },
-  defaultVariants: { variant: "default" },
-});
-```
+**`VideoPage.tsx` (line 272):**
+- Before: `<Badge className="bg-success hover:bg-success/90">`
+- After: `<Badge variant="success">`
 
-**`navigation-menu.tsx`** -- Replace CVA:
-```tsx
-const navigationMenuTriggerStyle = cva("nav-menu-trigger");
-```
+**`TrainingCard.tsx` (line 290):**
+- Before: `<Button size="lg" className="rounded-full w-16 h-16 bg-white/90 hover:bg-white text-primary hover:text-primary shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">`
+- After: `<Button size="icon" className="button-play-overlay button-size-play">`
 
-#### Phase 3: Update Style Guide (`ComponentsGallery.tsx`)
+**`AuthCallback.tsx` (line 234):**
+- Before: `<Button ... className="bg-card text-foreground hover:bg-muted">`
+- After: `<Button ... className="button-social">`
 
-Add Banner, Sheet, Toast, Toggle Group, and Nav Menu Trigger to the Master Templates section alongside the existing Button, Badge, Input, and Card definitions.
+**`EmployeeManagement.tsx` (lines 624-625, 630, 638, 641):**
+- The `px-4 py-3` on `<TableHead>` and `py-3` on `<TableCell>` are table layout overrides. These should be absorbed into `.table-head` and `.table-cell` base classes in `index.css`, or left as-is since table components are layout-only (no CVA). Verdict: LOW priority, leave as layout utilities on structural elements.
+
+#### Phase 3: Verify Typography Compliance
+
+All page files confirmed compliant:
+- `EmployeeDashboard.tsx`: `text-h2` (line 544), `text-h3` (line 567, 624), raw `<h3>` (line 590) -- all correct
+- `Header.tsx`: `text-h3` on `<h1>` (line 30) -- correct semantic class
+- `Landing.tsx`: `text-h4` (line 20) -- correct
+- `VideoPage.tsx`: `text-h2` (line 270), `text-h4` (line 332), `text-small` throughout -- correct
+- Zero instances of `text-xl`, `text-lg`, `text-sm`, `text-xs`, `text-base` found in page files
+
+#### Phase 4: Arbitrary Spacing Cleanup
+
+- `Header.tsx` line 26: `py-[5px]` on logo image -- change to `py-1` (4px standard step)
+- No other arbitrary spacing values found in page-level files
 
 ---
 
@@ -217,38 +133,22 @@ Add Banner, Sheet, Toast, Toggle Group, and Nav Menu Trigger to the Master Templ
 
 | File | Change |
 |---|---|
-| `src/index.css` | Add ~25 new semantic CSS classes for banner, sheet, toast, toggle-group, nav-menu |
-| `src/components/ui/banner.tsx` | Strip all CVA utilities, replace with semantic classes |
-| `src/components/ui/sheet.tsx` | Strip all CVA utilities, replace with semantic classes |
-| `src/components/ui/toast.tsx` | Strip all CVA utilities, replace with semantic classes |
-| `src/components/ui/toggle-group.tsx` | Strip all CVA utilities, replace with semantic classes |
-| `src/components/ui/navigation-menu.tsx` | Strip CVA trigger utilities, replace with semantic class |
-| `src/pages/ComponentsGallery.tsx` | Add new Master Templates to Style Guide |
+| `src/index.css` | Add 7 new semantic variant classes (button-social, button-play-overlay, button-outline-primary/success/destructive, button-header-link, button-size-play) |
+| `src/components/Header.tsx` | Replace `p-0` + color overrides on logout Button with `button-header-link`; fix `py-[5px]` to `py-1` |
+| `src/pages/Auth.tsx` | Replace 4 Button className overrides with semantic classes; convert dev section div to Banner or semantic class |
+| `src/pages/Landing.tsx` | Replace Button className override with `button-social` |
+| `src/pages/VideoPage.tsx` | Replace Badge className with `variant="success"`; remove raw color utilities |
+| `src/components/TrainingCard.tsx` | Replace play overlay Button overrides with `button-play-overlay button-size-play` |
+| `src/pages/AuthCallback.tsx` | Replace Button className override with `button-social` |
 
 **Total: 7 files**
 
 ---
 
-### Verification Report
-
-| File | Status | Notes |
-|---|---|---|
-| badge.tsx | CLEAN | base: "badge-base", 28 semantic variants |
-| button.tsx | CLEAN | base: "button-base", 6+4 semantic variants |
-| input.tsx | CLEAN | "input-base" |
-| card.tsx | CLEAN | "card-base" |
-| toggle.tsx | CLEAN | base: "button-toggle", 3+4 semantic variants |
-| banner.tsx | PURGE | 6 raw base + 10 raw variant utilities |
-| sheet.tsx | PURGE | 15+ raw base + 4 raw side utilities |
-| toast.tsx | PURGE | 20+ raw base + 3 raw variant utilities |
-| toggle-group.tsx | PURGE | 3 raw base + 2 raw variant utilities |
-| navigation-menu.tsx | PURGE | 15+ raw trigger utilities |
-| All other 47 files | CLEAN | No CVA violations, typography compliant |
-
 ### Review
 
-1. **Top 3 Risks:** (1) Toast uses `group` class with `group-[.destructive]` selectors in ToastAction/ToastClose -- moving `destructive` into CSS means the group selector still needs the `destructive` class on the element, which is preserved via `.toast-destructive` applying it. (2) Sheet animation classes are complex with Tailwind data-attribute selectors -- must verify `@apply` handles these correctly. (3) Adding 25 new CSS classes increases the global stylesheet, but each is 1-3 lines.
-2. **Top 3 Fixes:** (1) Eliminates all remaining CVA utility stacking across the entire codebase. (2) 100% of CVA components now use semantic class references. (3) Inspector will show only 2-3 classes on any CVA-rendered element.
+1. **Top 3 Risks:** (1) The `button-social` class introduces a new variant not in the CVA map -- consumers must use `className` instead of `variant`. This is acceptable because it is a one-off styling need, not a reusable variant. (2) Changing `py-[5px]` to `py-1` (4px) on the logo shifts it by 1px -- visually negligible. (3) Converting the dev testing section in Auth.tsx from raw utilities to a Banner component changes its DOM structure slightly.
+2. **Top 3 Fixes:** (1) Eliminates all raw `bg-`, `border-`, and `p-` overrides on Button, Badge, and Card components across all pages. (2) Ensures that changing `.button-base` or `.badge-base` padding in CSS propagates everywhere without page-level fights. (3) Removes the only arbitrary spacing value in page files.
 3. **Database Change:** No
-4. **Verdict:** Go -- completes the full 100% compliance audit.
+4. **Verdict:** Go -- this completes the layout/component separation mandate.
 
