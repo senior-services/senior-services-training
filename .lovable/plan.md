@@ -1,34 +1,30 @@
 
 
-## Add `text-body` to Label Component for Senior Legibility
+## Push Presentation Timer to Far Right
 
 ### Problem
-The `Label` component (used for radio group labels, checkbox group labels, and form field labels) has no explicit font-size class. It inherits from its parent context, which can result in labels rendering below the 16px senior minimum depending on the surrounding layout.
+When no training description is present, the timer Banner sits at the left side of the container because `justify-between` has no left-side element to push against.
 
-### Solution
-Add `text-body` to the Label primitive's base class so all labels -- including radio group labels, checkbox group labels, and form field group labels -- render at 16px (1rem) with the standard 1.6 line-height.
+### Change (1 file)
 
-### Changes (2 files)
+**`src/components/VideoPlayerFullscreen.tsx`** -- line 497
 
-**1. `src/components/ui/label.tsx`** -- Add `text-body` to the CVA base class
+The `flex` container on line 497 already uses `justify-between`, but when the description is conditionally hidden, the timer loses its right alignment.
 
-| Before | After |
-|--------|-------|
-| `"font-medium leading-none"` | `"text-body font-medium leading-none"` |
+**Fix:** Add `ml-auto` to the timer's Banner wrapper so it always aligns to the far right, regardless of whether the description div is rendered.
 
-This locks every Label instance to 16px system-wide.
+Wrap the timer block (lines 505-515) in a `div` with `className="ml-auto shrink-0"` -- or more simply, since both Banner variants already have `shrink-0`, just add `ml-auto` to each Banner's className.
 
-**2. `src/components/content/AddContentModal.tsx`** -- Remove conflicting `text-small` override (line 365)
+| Line | Before | After |
+|------|--------|-------|
+| 507 | `className="w-fit shrink-0"` | `className="w-fit shrink-0 ml-auto"` |
+| 511 | `className="w-fit shrink-0"` | `className="w-fit shrink-0 ml-auto"` |
 
-| Before | After |
-|--------|-------|
-| `className="text-small font-medium cursor-pointer"` | `className="cursor-pointer"` |
-
-The `text-small` override on this Label would fight the new base class. Removing it lets the Label inherit `text-body` from its own base. The `font-medium` is also redundant since it's already in the Label base class.
+`ml-auto` pushes the element to the far right within the flex container whether or not a sibling exists to the left.
 
 ### Review
-1. **Risks:** None -- `text-body` (16px) is the intended minimum for senior users. All label contexts benefit from this change.
-2. **Fixes:** All radio button group labels, checkbox group labels, and form field labels now render at a guaranteed 16px.
+1. **Risks:** None -- `ml-auto` is additive and has no effect when a left sibling already fills the space via `justify-between`.
+2. **Fixes:** Timer is always pinned to the far right.
 3. **Database Change:** No.
-4. **Verdict:** Go -- two small edits.
+4. **Verdict:** Go -- two class additions.
 
