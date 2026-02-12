@@ -1,148 +1,110 @@
 
 
-## Phase 1: Major Third Type Scale -- Global Foundation
+## Major Third Typography Utility System and Global Hardcoded Style Cleanup
 
 ### Overview
 
-This is Phase 1 of a 3-phase rollout to implement the Major Third (1.250) type scale across the entire application. Phase 1 establishes the global foundation: CSS variables, Tailwind config, and the Typography section of the Components Gallery.
-
-Phases 2 and 3 (UI primitives and app components) will follow in separate implementations after this phase is reviewed.
+This plan creates heading utility classes (.text-h1 through .text-h4), adds a Utility Classes reference section to the Style Guide, and performs a full audit of all 64 files (1,700+ instances) to strip every hardcoded Tailwind font-size utility and replace it with the correct semantic tag or utility class.
 
 ---
 
-### Major Third Scale Reference
+### Scale Reference
 
 ```text
-Step       Ratio       Rem         Pixels    Usage
-----       -----       ---         ------    -----
-h1         3.052       3.052rem    ~49px     Page titles
-h2         1.953       1.953rem    ~31px     Section headings
-h3         1.563       1.563rem    ~25px     Subsection headings
-h4         1.25        1.25rem     20px      Minor headings / Labels
-body       1.0         1rem        16px      Body text (Regular/Medium/Bold)
-small      0.8         0.8rem      ~13px     Secondary info
-caption    0.64        0.64rem     ~10px     Captions and labels
-code       0.9375      0.9375rem   15px      Monospace code snippets
+Utility Class   Rem         Pixels    Mapped From
+-----------     ---         ------    -----------
+.text-h1        3.052rem    ~49px     text-3xl / text-4xl
+.text-h2        1.953rem    ~31px     text-2xl
+.text-h3        1.563rem    ~25px     text-xl
+.text-h4        1.25rem     20px      text-lg
+.text-body      1rem        16px      text-base
+.text-small     0.8rem      ~13px     text-sm
+.text-xs        0.64rem     ~10px     text-xs (kept as-is, already remapped)
+.text-code      0.9375rem   15px      (monospace)
 ```
 
 ---
 
-### File Changes
+### Part 1: Create Heading Utility Classes
 
-#### 1. `src/index.css` -- Update heading sizes (lines 179-184)
+**File: `src/index.css`** -- Add to `@layer components` block (lines 302-306)
 
-Replace the current heading sizes with the Major Third scale values:
-
-```css
-/* Before */
-h1 { font-size: 2.25rem; }   /* 36px */
-h2 { font-size: 1.875rem; }  /* 30px */
-h3 { font-size: 1.5rem; }    /* 24px */
-h4 { font-size: 1.25rem; }   /* 20px */
-h5 { font-size: 1.125rem; }  /* 18px */
-h6 { font-size: 1rem; }      /* 16px */
-
-/* After */
-h1 { font-size: 3.052rem; }  /* ~49px - Major Third */
-h2 { font-size: 1.953rem; }  /* ~31px */
-h3 { font-size: 1.563rem; }  /* ~25px */
-h4 { font-size: 1.25rem; }   /* 20px */
-h5 { font-size: 1rem; }      /* 16px */
-h6 { font-size: 0.8rem; }    /* ~13px */
-```
-
-Add semantic text classes to the `@layer components` block:
+Add four new heading utility classes alongside the existing .text-body, .text-small, .text-caption, .text-code:
 
 ```css
-/* Semantic typography classes -- Major Third (1.250) scale */
-.text-body       { font-size: 1rem; line-height: 1.6; }
-.text-small      { font-size: 0.8rem; line-height: 1.5; }
-.text-caption    { font-size: 0.64rem; line-height: 1.4; }
-.text-code       { font-size: 0.9375rem; line-height: 1.5; font-family: ui-monospace, monospace; }
+/* Heading utility classes -- for visual overrides on non-heading tags */
+.text-h1 { font-size: 3.052rem; line-height: 1.2; }
+.text-h2 { font-size: 1.953rem; line-height: 1.3; }
+.text-h3 { font-size: 1.563rem; line-height: 1.4; }
+.text-h4 { font-size: 1.25rem;  line-height: 1.5; }
 ```
 
-Update existing helper/additional text classes to use the new scale:
-
-```css
-/* Before */
-.form-helper-text     { @apply text-xs text-foreground mt-0 mb-1.5; }
-.form-additional-text { @apply text-xs text-muted-foreground italic mt-1.5; }
-
-/* After -- uses 0.8rem (small) instead of text-xs */
-.form-helper-text     { font-size: 0.8rem; @apply text-foreground mt-0 mb-1.5; }
-.form-additional-text { font-size: 0.8rem; @apply text-muted-foreground italic mt-1.5; }
-```
-
-#### 2. `tailwind.config.ts` -- Remap fontSize tokens (lines 21-33)
-
-Remap the Tailwind `fontSize` entries to match the Major Third scale so any remaining utility usage aligns:
-
-```ts
-/* Before */
-'xs': ['0.875rem', ...],   /* 14px */
-'sm': ['0.9375rem', ...],  /* 15px */
-'base': ['1rem', ...],     /* 16px */
-'lg': ['1.125rem', ...],   /* 18px */
-'xl': ['1.25rem', ...],    /* 20px */
-'2xl': ['1.5rem', ...],    /* 24px */
-'3xl': ['1.875rem', ...],  /* 30px */
-'4xl': ['2.25rem', ...],   /* 36px */
-
-/* After -- Major Third aligned */
-'xs': ['0.64rem', { lineHeight: '1.4' }],     /* ~10px - caption */
-'sm': ['0.8rem', { lineHeight: '1.5' }],      /* ~13px - small */
-'base': ['1rem', { lineHeight: '1.6' }],      /* 16px  - body */
-'lg': ['1.25rem', { lineHeight: '1.5' }],     /* 20px  - h4 */
-'xl': ['1.563rem', { lineHeight: '1.4' }],    /* ~25px - h3 */
-'2xl': ['1.953rem', { lineHeight: '1.3' }],   /* ~31px - h2 */
-'3xl': ['3.052rem', { lineHeight: '1.2' }],   /* ~49px - h1 */
-'4xl': ['3.815rem', { lineHeight: '1.1' }],   /* ~61px - display (reserved) */
-```
-
-Also add a `code` size token:
-
-```ts
-'code': ['0.9375rem', { lineHeight: '1.5' }], /* 15px - monospace */
-```
-
-#### 3. `src/pages/ComponentsGallery.tsx` -- Update Typography section (lines 524-590)
-
-Replace the current Typography showcase with the new scale values and semantic class usage:
-
-- h1: "Heading 1" with annotation "(~49px / 3.052rem)"
-- h2: "Heading 2" with annotation "(~31px / 1.953rem)"
-- h3: "Heading 3" with annotation "(~25px / 1.563rem)"
-- h4: "Heading 4" with annotation "(20px / 1.25rem)"
-- Body (Regular, Medium, Bold): annotation "(16px / 1rem)"
-- Small (Regular, Medium, Bold): annotation "(~13px / 0.8rem)"
-- Caption (Regular, Medium, Bold): annotation "(~10px / 0.64rem)"
-- Code snippet: annotation "(15px / 0.9375rem)"
-
-Heading elements will use bare `<h1>` through `<h4>` tags (no `text-*` utility classes), relying on the global CSS rules. Body/small/caption will use the new semantic classes (`.text-body`, `.text-small`, `.text-caption`).
-
-#### 4. `STYLEGUIDE.md` -- Add typography scale documentation
-
-Add a new "Typography Scale" section documenting the Major Third scale values and the semantic CSS classes.
+These supplement the existing semantic classes and allow visual size overrides (e.g., an h2 tag styled as h3 visually).
 
 ---
 
-### What Stays the Same
+### Part 2: Update Style Guide -- Utility Classes Section
 
-- All component files (badge, button, label, tooltip, etc.) are untouched in Phase 1
-- All page/dashboard components are untouched in Phase 1
-- Color tokens, spacing, and all non-typography CSS remain unchanged
-- Dark mode behavior is unaffected
+**File: `src/pages/ComponentsGallery.tsx`** -- Insert new section after the existing Typography card (after line 607)
 
-### What Will Break (Temporarily)
+Add a new "Typography Utility Classes" card containing:
 
-Because the Tailwind `text-xs` and `text-sm` tokens will change meaning globally, some components will render at different sizes until Phases 2 and 3 replace those utility classes with semantic alternatives. This is expected and will be resolved in subsequent phases.
+1. **Reference Table** -- columns: Class Name, Size (rem), Size (px), Usage. Lists all 8 utility classes.
+2. **Semantic Tag vs. Visual Style** example -- demonstrates an h2 element using `.text-h3` to show how semantic meaning and visual presentation can be decoupled.
+3. **Usage Guidelines** -- brief notes: "Use semantic HTML tags (h1-h4, p) by default. Apply utility classes only when a visual override is needed."
 
 ---
+
+### Part 3: Global Hardcoded Style Cleanup
+
+This is the bulk of the work. Every instance of the following Tailwind utilities will be removed and replaced:
+
+**Targets for removal:** `text-xs`, `text-sm`, `text-base`, `text-lg`, `text-xl`, `text-2xl`, `text-3xl`, `text-4xl`, `text-[...]` (arbitrary values), plus conflicting `not-italic` and unnecessary `font-medium` overrides.
+
+**Replacement strategy per context:**
+
+| Current Usage | Replacement |
+|---|---|
+| Heading text using `text-3xl` / `text-4xl` | Use bare `<h1>` tag (inherits 3.052rem from global CSS) |
+| Heading text using `text-2xl` | Use bare `<h2>` tag (inherits 1.953rem) |
+| Heading text using `text-xl` | Use bare `<h3>` tag or `.text-h3` if tag differs |
+| Heading text using `text-lg` | Use bare `<h4>` tag or `.text-h4` if tag differs |
+| Body text using `text-base` | Remove class entirely (body inherits 1rem) |
+| Secondary text using `text-sm` | Use `.text-small` class |
+| Caption/label text using `text-xs` | Keep as `.text-xs` (already remapped to 0.64rem) or use `.text-small` if 13px is more appropriate |
+| Code text | Use `.text-code` class |
+
+**Files requiring changes (64 total, grouped by category):**
+
+**UI Primitives (34 files in src/components/ui/):**
+- card.tsx, table.tsx, sortable-table-head.tsx, command.tsx, breadcrumb.tsx, label.tsx, input.tsx, tabs.tsx, tooltip.tsx, badge.tsx, button.tsx, toggle.tsx, select.tsx, accordion.tsx, toast.tsx, dropdown-menu.tsx, banner.tsx, navigation-menu.tsx, context-menu.tsx, menubar.tsx, sidebar.tsx, input-otp.tsx, form.tsx, dialog.tsx, sheet.tsx, drawer.tsx, calendar.tsx, pagination.tsx, alert-dialog.tsx, popover.tsx, hover-card.tsx, option-list.tsx, ComponentUpdateIndicator.tsx, loading-spinner.tsx
+
+**App Components (22 files in src/components/):**
+- Header.tsx, TrainingCard.tsx, EditVideoModal.tsx, VideoPlayerFullscreen.tsx, VideoPlayerModal.tsx
+- dashboard/: DashboardOverview.tsx, EmployeeManagement.tsx, EmployeeList.tsx, VideoManagement.tsx, VideoTable.tsx, AssignVideosModal.tsx, AddEmployeeModal.tsx, AdminManagement.tsx, DownloadDataModal.tsx
+- content/: AddContentModal.tsx, ContentPlayer.tsx
+- quiz/: CreateQuizModal.tsx, QuizModal.tsx
+- shared/: DueDateSelector.tsx, TrainingAttestation.tsx
+- video/: VideoPlayer.tsx, CompletionOverlay.tsx
+- auth/: AuthErrorBoundary.tsx
+- presentation/: PresentationViewer.tsx
+
+**Pages (8 files in src/pages/):**
+- Auth.tsx, EmployeeDashboard.tsx, AdminDashboard.tsx, ComponentsGallery.tsx, Landing.tsx, Index.tsx, NotFound.tsx, VideoPage.tsx
+
+---
+
+### What Will NOT Change
+
+- Color utilities (text-foreground, text-muted-foreground, text-primary, etc.) -- these are color, not size
+- Font-weight classes (font-bold, font-semibold) that are semantically correct per the style guide -- only removing those that conflict
+- Layout/spacing utilities
+- Icon sizes (w-4 h-4, etc.)
 
 ### Review
 
-1. **Top 3 Risks:** (1) Changing Tailwind `fontSize` tokens globally will immediately affect all 64 files using `text-xs`/`text-sm` -- components will temporarily render at the new (different) sizes until explicitly migrated. (2) The `text-xs` token drops from 14px to ~10px, which could make some UI elements too small for senior users until Phase 2 migrates them. (3) The `text-sm` token drops from 15px to ~13px, affecting Labels, badges, and form descriptions.
-2. **Top 3 Fixes:** (1) Establishes a mathematically consistent type scale as the single source of truth. (2) Semantic CSS classes (`.text-body`, `.text-small`, `.text-caption`) decouple intent from arbitrary Tailwind tokens. (3) Typography gallery becomes an accurate reference for the new scale.
+1. **Top 3 Risks:** (1) 1,700+ replacements across 64 files is high-volume; typos or missed context could break layouts. (2) Some `text-sm` instances in UI primitives like card.tsx and form.tsx are consumed by external libraries or shadcn patterns -- changing them requires careful validation. (3) Removing `text-base` from body-level elements that rely on it for specificity could cause inheritance issues in nested components.
+2. **Top 3 Fixes:** (1) Every text element will follow the Major Third scale from a single source of truth. (2) New .text-h1 through .text-h4 utilities enable visual overrides without breaking semantic HTML. (3) The Style Guide becomes a complete, referenceable typography system for future prompts.
 3. **Database Change:** No
-4. **Verdict:** Go -- foundational change that enables clean migration in Phases 2 and 3.
+4. **Verdict:** Go -- this is the final cleanup pass that completes the Major Third migration started in Phases 1-3.
 
