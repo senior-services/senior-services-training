@@ -6,22 +6,22 @@ import { cn } from "@/lib/utils"
 import { Button } from "./button"
 
 const bannerVariants = cva(
-  "relative w-full rounded-lg border transition-shadow duration-300",
+  "banner-base",
   {
     variants: {
       variant: {
-        default: "bg-background text-foreground",
-        info: "bg-primary/10 text-primary border-primary/20",
-        information: "bg-primary/10 text-primary border-primary/20",
-        success: "bg-success/10 text-success border-success/20",
-        warning: "bg-warning/10 text-warning border-warning/20",
-        error: "bg-destructive/10 text-destructive border-destructive/20",
-        destructive: "bg-destructive/10 text-destructive border-destructive/20",
-        attention: "bg-attention/10 text-attention border-attention/20",
+        default: "banner-default",
+        info: "banner-info",
+        information: "banner-information",
+        success: "banner-success",
+        warning: "banner-warning",
+        error: "banner-error",
+        destructive: "banner-destructive",
+        attention: "banner-attention",
       },
       size: {
-        default: "p-4 shadow-card hover:shadow-lg",
-        compact: "py-2 px-3",
+        default: "banner-size-default",
+        compact: "banner-size-compact",
       },
     },
     defaultVariants: {

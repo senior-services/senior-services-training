@@ -6,12 +6,12 @@ import { cn } from "@/lib/utils"
 import { toggleVariants } from "@/components/ui/toggle"
 
 const toggleGroupVariants = cva(
-  "flex items-center w-fit",
+  "toggle-group-base",
   {
     variants: {
       variant: {
-        default: "gap-1",
-        pill: "gap-0 bg-muted rounded-full p-1.5",
+        default: "toggle-group-default",
+        pill: "toggle-group-pill",
       },
     },
     defaultVariants: {

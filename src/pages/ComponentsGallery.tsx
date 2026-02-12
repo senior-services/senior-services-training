@@ -785,6 +785,84 @@ variant: {
     bg-card text-card-foreground shadow-card;
 }`}</pre>
                   </div>
+                  <div className="p-4 rounded-lg bg-muted/30 border border-border-primary/50">
+                    <p className="text-small font-semibold text-foreground mb-2">.banner-base</p>
+                    <p className="text-caption text-muted-foreground mb-3">Referenced by <code className="text-code bg-muted px-1 rounded">banner.tsx</code> — CVA base: <code className="text-code bg-muted px-1 rounded">"banner-base"</code></p>
+                    <pre className="text-code bg-card p-3 rounded border overflow-x-auto whitespace-pre-wrap">{`.banner-base {
+  @apply relative w-full rounded-lg border
+    transition-shadow duration-300;
+}
+
+/* CVA variants → semantic classes */
+variant: {
+  default: "banner-default",
+  info: "banner-info",
+  success: "banner-success",
+  warning: "banner-warning",
+  error: "banner-error",
+  destructive: "banner-destructive",
+  attention: "banner-attention",
+}
+size: {
+  default: "banner-size-default",
+  compact: "banner-size-compact",
+}`}</pre>
+                  </div>
+                  <div className="p-4 rounded-lg bg-muted/30 border border-border-primary/50">
+                    <p className="text-small font-semibold text-foreground mb-2">.toast-base</p>
+                    <p className="text-caption text-muted-foreground mb-3">Referenced by <code className="text-code bg-muted px-1 rounded">toast.tsx</code> — CVA base: <code className="text-code bg-muted px-1 rounded">"group toast-base"</code></p>
+                    <pre className="text-code bg-card p-3 rounded border overflow-x-auto whitespace-pre-wrap">{`.toast-base {
+  @apply pointer-events-auto relative flex w-full
+    items-center justify-between space-x-4
+    overflow-hidden rounded-md border p-6 pr-8
+    shadow-lg transition-all ...;
+}
+
+/* CVA variants → semantic classes */
+variant: {
+  default: "toast-default",
+  destructive: "destructive toast-destructive",
+  success: "success toast-success",
+}`}</pre>
+                  </div>
+                  <div className="p-4 rounded-lg bg-muted/30 border border-border-primary/50">
+                    <p className="text-small font-semibold text-foreground mb-2">.sheet-base</p>
+                    <p className="text-caption text-muted-foreground mb-3">Referenced by <code className="text-code bg-muted px-1 rounded">sheet.tsx</code> — CVA base: <code className="text-code bg-muted px-1 rounded">"sheet-base"</code></p>
+                    <pre className="text-code bg-card p-3 rounded border overflow-x-auto whitespace-pre-wrap">{`.sheet-base {
+  @apply fixed z-50 gap-4 bg-background p-6
+    shadow-lg transition ease-in-out ...;
+}
+
+/* CVA variants → semantic classes */
+side: {
+  top: "sheet-top",
+  bottom: "sheet-bottom",
+  left: "sheet-left",
+  right: "sheet-right",
+}`}</pre>
+                  </div>
+                  <div className="p-4 rounded-lg bg-muted/30 border border-border-primary/50">
+                    <p className="text-small font-semibold text-foreground mb-2">.toggle-group-base</p>
+                    <p className="text-caption text-muted-foreground mb-3">Referenced by <code className="text-code bg-muted px-1 rounded">toggle-group.tsx</code> — CVA base: <code className="text-code bg-muted px-1 rounded">"toggle-group-base"</code></p>
+                    <pre className="text-code bg-card p-3 rounded border overflow-x-auto whitespace-pre-wrap">{`.toggle-group-base {
+  @apply flex items-center w-fit;
+}
+
+/* CVA variants → semantic classes */
+variant: {
+  default: "toggle-group-default",
+  pill: "toggle-group-pill",
+}`}</pre>
+                  </div>
+                  <div className="p-4 rounded-lg bg-muted/30 border border-border-primary/50">
+                    <p className="text-small font-semibold text-foreground mb-2">.nav-menu-trigger</p>
+                    <p className="text-caption text-muted-foreground mb-3">Referenced by <code className="text-code bg-muted px-1 rounded">navigation-menu.tsx</code> — CVA base: <code className="text-code bg-muted px-1 rounded">"nav-menu-trigger"</code></p>
+                    <pre className="text-code bg-card p-3 rounded border overflow-x-auto whitespace-pre-wrap">{`.nav-menu-trigger {
+  @apply inline-flex h-10 w-max items-center
+    justify-center rounded-md bg-background
+    px-4 py-2 font-medium transition-colors ...;
+}`}</pre>
+                  </div>
                 </div>
               </div>
             </CardContent>
