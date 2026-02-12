@@ -1,89 +1,46 @@
 
 
-## Final Layout and Compliance Correction
+## Root Cause: Footer Missing for "Workplace Learning" Training
 
-### Changes (single file: `src/components/VideoPlayerFullscreen.tsx`)
+### The Problem
 
----
+The footer is missing because `wasEverCompleted` is incorrectly set to `true` for this training. Here is why:
 
-### Change A -- Restore top padding on scrollable div (line 435)
+In `src/hooks/useVideoProgress.ts` (line 189), the completion check is:
 
-Revert `px-6 pb-6 pt-0` back to `p-6`:
+```
+progressPercent >= 100 || !!progressData.completed_at
+```
+
+The "Workplace Learning" training has `progress_percent: 100` but `completed_at: null`. The `>= 100` check alone causes `wasEverCompleted = true`, which hides both footer blocks (lines 489 and 547 of VideoPlayerFullscreen).
+
+This is a false positive -- the employee watched 100% of the video but never submitted the quiz or attestation. The system incorrectly treats it as "completed."
+
+### The Fix (single file: `src/hooks/useVideoProgress.ts`)
+
+**Change line 189** to only consider `completed_at` as the source of truth for completion:
 
 ```tsx
 // Before
-className="flex-1 overflow-y-auto min-h-0 w-full px-6 pb-6 pt-0 flex flex-col gap-6"
+const isVideoCompleted = progressPercent >= 100 || !!progressData.completed_at;
 
 // After
-className="flex-1 overflow-y-auto min-h-0 w-full p-6 flex flex-col gap-6"
+const isVideoCompleted = !!progressData.completed_at;
 ```
 
-This restores the 24px top gap between the header border and the first content element (description or video).
+This ensures `wasEverCompleted` is only `true` when the training was explicitly completed via attestation or quiz submission (which sets `completed_at`). Reaching 100% watch progress alone no longer falsely marks a training as done.
 
----
+### Impact Analysis
 
-### Change B -- Wrap both existing footers in `!wasEverCompleted` guard (lines 488-649)
-
-Both `DialogFooter` blocks should only render when the training is not already completed. The presentation footer (line 547) already has `!wasEverCompleted`. The quiz footer (line 489) partially handles it internally but still renders a "Close" button when `wasEverCompleted`. Wrap the entire quiz footer in the same guard:
-
-```tsx
-// Before (line 489)
-{quiz && !isPresentation && (quizStarted || quizSubmitted || wasEverCompleted) && <DialogFooter>
-
-// After
-{quiz && !isPresentation && !wasEverCompleted && (quizStarted || quizSubmitted) && <DialogFooter>
-```
-
-This removes the footer entirely once training is marked complete -- no "Close" button lingers. Users close via the dialog's X button.
-
----
-
-### Change C -- Add a universal "Close" footer for completed trainings (after line 649)
-
-Add a simple footer that renders for any completed training (video, presentation, or quiz) so there is always a visible close action:
-
-```tsx
-{wasEverCompleted && (
-  <DialogFooter>
-    <div className="flex w-full items-center justify-end">
-      <DialogClose asChild>
-        <Button>Close</Button>
-      </DialogClose>
-    </div>
-  </DialogFooter>
-)}
-```
-
-Wait -- the user said: "If the training is already marked as Completed, the footer should be completely removed from the DOM." This means no footer at all for completed trainings. So Change C is **not needed**. The user explicitly wants the footer gone when completed.
-
-Let me revise: For **non-completed** trainings, we need footers for all types. Currently missing is a footer for plain videos without quizzes. Let me check -- plain videos use the `CompletionOverlay` which has its own "Complete Training" button inline. So the footer gap is intentional for plain videos mid-watch. Once the overlay appears, it handles completion. No separate footer needed.
-
-**Revised Change C**: No new footer block. The two existing footers cover all active (non-completed) scenarios:
-- Quiz footer: handles video+quiz and presentation+quiz (when quiz is started)
-- Presentation footer: handles presentation-only and presentation+quiz (pre-quiz phase)
-- Plain video: uses `CompletionOverlay` inline, no footer needed
-
----
-
-### Change D -- DialogHeader border verification (line 428)
-
-The `DialogHeader` currently has no className override, inheriting the primitive defaults which include `border-b`. Confirm this is already present in the primitive. No code change needed -- the primitive in `dialog.tsx` defines `border-b` in the base class.
-
----
-
-### Summary
-
-| Area | Change |
-|------|--------|
-| Scrollable div | `pt-0` restored to `p-6` for uniform 24px gutters |
-| Quiz footer (line 489) | Guard tightened: add `!wasEverCompleted`, remove `wasEverCompleted` from condition |
-| Presentation footer (line 547) | Already has `!wasEverCompleted` -- no change |
-| Plain video footer | Not needed -- `CompletionOverlay` handles it inline |
-| DialogHeader | No change -- primitive defaults include `border-b` |
+- **Videos without quiz**: The `CompletionOverlay` will correctly appear at 100% progress, prompting attestation. After attestation, `markComplete()` sets `completed_at`, and `wasEverCompleted` becomes `true`.
+- **Videos with quiz**: Progress is capped at 99% until quiz submission (line 117). Even if progress is manually 100%, the footer now correctly renders because `completed_at` is the sole gate.
+- **Already completed trainings**: No change -- they have `completed_at` set, so `wasEverCompleted` remains `true` and the footer stays hidden as intended.
+- **Re-opened trainings at 100%**: The CompletionOverlay or quiz CTA will correctly reappear, giving the user a path to actually complete the training.
 
 ### Review
 
-1. **Top 3 Risks:** (a) Completed trainings will have no footer at all -- users must use the X button to close. This matches the user's explicit request. (b) Restoring `p-6` adds 24px above the first content element; if the header already provides 16px bottom padding, total gap is 40px. This is the user's stated preference. (c) Plain videos without quizzes still rely on the CompletionOverlay for the "Complete" action -- no fixed footer button.
-2. **Top 3 Fixes:** (a) Uniform 24px content gutters restored. (b) Completed trainings have a clean, footer-free view. (c) No styling overrides on primitives.
+1. **Top 3 Risks:** (a) If any code path relies on `progressPercent >= 100` to mean "completed," it will break. All completion paths go through `markComplete()` which sets `completed_at`, so this is safe. (b) Existing trainings with 100% progress but no `completed_at` will now correctly show as incomplete -- this is the desired behavior. (c) The `isLocked` flag is also set by the same condition, so progress regression protection changes. However, `isLocked` is only meaningful during the current session and `markComplete()` also sets it independently.
+2. **Top 3 Fixes:** (a) Root cause fix -- `completed_at` is the single source of truth. (b) Footer renders correctly for all non-completed trainings. (c) No UI or layout changes needed.
 3. **Database Change:** No.
 4. **Verdict:** Go.
+
