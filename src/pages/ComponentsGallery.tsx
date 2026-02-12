@@ -710,25 +710,53 @@ export const ComponentsGallery = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 rounded-lg bg-muted/30 border border-border-primary/50">
                     <p className="text-small font-semibold text-foreground mb-2">.button-base</p>
-                    <p className="text-caption text-muted-foreground mb-3">Referenced by <code className="text-code bg-muted px-1 rounded">button.tsx</code> CVA base string.</p>
+                    <p className="text-caption text-muted-foreground mb-3">Referenced by <code className="text-code bg-muted px-1 rounded">button.tsx</code> — CVA base: <code className="text-code bg-muted px-1 rounded">"button-base"</code></p>
                     <pre className="text-code bg-card p-3 rounded border overflow-x-auto whitespace-pre-wrap">{`.button-base {
+  @apply inline-flex items-center justify-center
+    gap-2 whitespace-nowrap rounded-md font-medium
+    ring-offset-background transition-all duration-200
+    focus-visible:outline-none focus-visible:ring-2
+    focus-visible:ring-ring focus-visible:ring-offset-2
+    disabled:pointer-events-none disabled:opacity-50
+    shadow-md hover:shadow-lg active:scale-[0.98];
+  @apply [&_svg]:pointer-events-none
+    [&_svg]:size-4 [&_svg]:shrink-0;
   min-height: 44px;
   padding: 0.75rem 1.5rem;
-  font-size: 1rem; /* text-body */
+  font-size: 1rem;
 }`}</pre>
                   </div>
                   <div className="p-4 rounded-lg bg-muted/30 border border-border-primary/50">
                     <p className="text-small font-semibold text-foreground mb-2">.badge-base</p>
-                    <p className="text-caption text-muted-foreground mb-3">Referenced by <code className="text-code bg-muted px-1 rounded">badge.tsx</code> CVA base string.</p>
+                    <p className="text-caption text-muted-foreground mb-3">Referenced by <code className="text-code bg-muted px-1 rounded">badge.tsx</code> — CVA base: <code className="text-code bg-muted px-1 rounded">"badge-base"</code></p>
                     <pre className="text-code bg-card p-3 rounded border overflow-x-auto whitespace-pre-wrap">{`.badge-base {
-  @apply inline-flex items-center
-    rounded-full border px-2.5 py-0.5
-    text-caption font-semibold
-    transition-all duration-200
-    whitespace-nowrap;
-  @apply focus:outline-none
-    focus:ring-2 focus:ring-ring
-    focus:ring-offset-2;
+  @apply inline-flex items-center rounded-full
+    border px-2.5 py-0.5 text-caption font-semibold
+    transition-all duration-200 whitespace-nowrap;
+  @apply focus:outline-none focus:ring-2
+    focus:ring-ring focus:ring-offset-2;
+}`}</pre>
+                  </div>
+                  <div className="p-4 rounded-lg bg-muted/30 border border-border-primary/50">
+                    <p className="text-small font-semibold text-foreground mb-2">.input-base</p>
+                    <p className="text-caption text-muted-foreground mb-3">Referenced by <code className="text-code bg-muted px-1 rounded">input.tsx</code> — className: <code className="text-code bg-muted px-1 rounded">"input-base"</code></p>
+                    <pre className="text-code bg-card p-3 rounded border overflow-x-auto whitespace-pre-wrap">{`.input-base {
+  @apply flex w-full rounded-md border border-input
+    bg-background px-3 py-2 ring-offset-background
+    file:border-0 file:bg-transparent
+    file:font-medium file:text-foreground
+    placeholder:text-muted-foreground
+    focus-visible:outline-none focus-visible:ring-2
+    focus-visible:ring-ring focus-visible:ring-offset-2
+    disabled:cursor-not-allowed disabled:opacity-50;
+}`}</pre>
+                  </div>
+                  <div className="p-4 rounded-lg bg-muted/30 border border-border-primary/50">
+                    <p className="text-small font-semibold text-foreground mb-2">.card-base</p>
+                    <p className="text-caption text-muted-foreground mb-3">Referenced by <code className="text-code bg-muted px-1 rounded">card.tsx</code> — Card className: <code className="text-code bg-muted px-1 rounded">"card-base"</code></p>
+                    <pre className="text-code bg-card p-3 rounded border overflow-x-auto whitespace-pre-wrap">{`.card-base {
+  @apply rounded-lg border border-border-primary
+    bg-card text-card-foreground shadow-card;
 }`}</pre>
                   </div>
                 </div>
