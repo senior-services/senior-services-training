@@ -432,16 +432,14 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         </DialogHeader>
 
         {/* Scrollable Body */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 w-full p-6 flex flex-col gap-6" data-dialog-scroll-area>
-            <div className="flex items-start justify-between gap-4 pb-4">
-              {video?.description && video.description.trim() && (
-                <div className="flex-1" id="video-description">
-                  <p className="text-body text-foreground">
-                    {video.description}
-                  </p>
-                </div>
-              )}
-            </div>
+        <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 w-full px-6 pb-6 pt-0 flex flex-col gap-6" data-dialog-scroll-area>
+            {video?.description && video.description.trim() !== '' && (
+              <div id="video-description">
+                <p className="text-body text-foreground">
+                  {video.description}
+                </p>
+              </div>
+            )}
 
             {/* Persistent Quiz CTA Button - only for non-presentation content */}
             {quiz && !isPresentation && !wasEverCompleted && overlayDismissed && !quizStarted && progress >= 99 && <div className="pb-4">
