@@ -584,7 +584,7 @@ export const EmployeeManagement: React.FC<{
   return <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="font-semibold">Employee Assignments</h3>
+          <h3>Employee Assignments</h3>
           <p className="text-muted-foreground">Manage employees and track their training progress</p>
         </div>
         <div className="flex gap-2">
