@@ -54,7 +54,7 @@ export function TrainingAttestation({
         {a11yAnnouncement}
       </div>
 
-      <p className="font-semibold text-foreground">
+      <p className="font-bold text-foreground">
         Training Acknowledgment
       </p>
       <p className={cn(

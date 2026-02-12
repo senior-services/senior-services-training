@@ -497,7 +497,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           <div className="flex items-start justify-between gap-4 pb-4">
             {video?.description && video.description.trim() && (
               <div className="flex-1" id="video-description">
-                <p className="text-small text-foreground">
+                <p className="text-body text-foreground">
                   {video.description}
                 </p>
               </div>
