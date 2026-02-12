@@ -1,42 +1,50 @@
 
 
-## Hide Presentation Attestation When Quiz Exists
+## Fix Presentation Dialog Flicker During Quiz Loading
 
 ### Problem
-For presentation trainings **with** a quiz, the standalone attestation section (below the content player) appears immediately -- gated only by the timer. The correct flow should be:
+When opening a presentation training that has a quiz, there's a visible flicker:
+1. Dialog opens with `quiz = null` and `quizLoading = true`
+2. The `!quiz` condition passes, briefly showing the attestation section and "Complete Training" button
+3. Quiz finishes loading, `quiz` becomes populated, UI updates to hide attestation and show "Start Quiz..." button
 
-1. Timer counts down
-2. User clicks "Start Quiz..."
-3. Quiz questions appear
-4. Attestation appears **below the last quiz question** (reusing the existing quiz attestation block)
+The root cause is that the UI renders the "no quiz" state while the quiz is still being fetched.
 
-The standalone presentation attestation should only appear for presentations **without** a quiz.
+### Solution
+Add `!quizLoading` to the conditions so the "no quiz" UI elements only render once we **know** there is no quiz (loading finished and quiz is still null).
 
-### Change (1 file)
+### Changes (1 file)
 
-**`src/components/VideoPlayerFullscreen.tsx`** -- line 533
+**`src/components/VideoPlayerFullscreen.tsx`** -- 2 edits
 
-Add `&& !quiz` to the existing condition so the presentation-specific attestation only renders when there is no quiz attached.
+**Edit 1: Attestation block (line 533)**
+Gate the standalone presentation attestation on `!quizLoading` so it doesn't flash while the quiz fetch is in-flight.
 
 | Before | After |
 |--------|-------|
-| `video && video.content_type === 'presentation' && !wasEverCompleted` | `video && video.content_type === 'presentation' && !wasEverCompleted && !quiz` |
+| `video.content_type === 'presentation' && !wasEverCompleted && !quiz` | `video.content_type === 'presentation' && !wasEverCompleted && !quiz && !quizLoading` |
 
-The quiz attestation block (lines 549-558) already renders for any content type when `quizStarted` is true, so no other changes are needed.
+**Edit 2: Footer "Complete Training" branch (line 674)**
+Gate the no-quiz footer buttons on `!quizLoading` so the "Complete Training" button doesn't flash before switching to "Start Quiz...".
+
+| Before | After |
+|--------|-------|
+| `{quiz ? (` (line 674, inside the pre-quiz/no-quiz footer branch) | `{quizLoading ? null : quiz ? (` |
+| closing `)` of the ternary (line 703) | Add matching `)` to close the new outer ternary |
+
+This means: while `quizLoading` is true, render nothing in that slot; once loaded, render either "Start Quiz..." (if quiz exists) or "Complete Training" (if no quiz).
 
 ### Flow After Fix
 
 ```text
-Presentation + Quiz:
-  Timer counting --> "Start Quiz..." button unlocks --> Click --> Quiz + Attestation appear below last question --> Submit Quiz
-
-Presentation + No Quiz:
-  Timer counting --> Attestation unlocks below content --> Check attestation --> Complete Training
+Dialog opens:
+  quizLoading=true --> No attestation shown, no footer action button shown
+  quizLoading=false, quiz exists --> "Start Quiz..." button appears (no flicker)
+  quizLoading=false, no quiz --> Attestation + "Complete Training" appear (no flicker)
 ```
 
 ### Review
-1. **Risks:** None -- the quiz attestation block already covers presentations with quizzes; we're just removing a duplicate/premature attestation.
-2. **Fixes:** Attestation only appears after "Start Quiz" is clicked, matching the video training pattern.
+1. **Risks:** Minimal -- during the brief quiz load (~100-300ms), the footer action area will be empty. This is preferable to showing incorrect UI that immediately changes.
+2. **Fixes:** Eliminates the attestation/button flicker for presentation trainings with quizzes.
 3. **Database Change:** No.
-4. **Verdict:** Go -- single condition addition.
-
+4. **Verdict:** Go -- two condition additions in one file.
