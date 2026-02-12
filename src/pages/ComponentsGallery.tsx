@@ -1355,10 +1355,10 @@ variant: {
                       <TableCaption>A simple data table</TableCaption>
                       <TableHeader>
                         <TableRow>
-                            <TableHead className="text-caption font-medium uppercase text-muted-foreground">Name</TableHead>
-                            <TableHead className="text-caption font-medium uppercase text-muted-foreground">Email</TableHead>
-                            <TableHead className="text-caption font-medium uppercase text-muted-foreground">Role</TableHead>
-                            <TableHead className="text-right text-caption font-medium uppercase text-muted-foreground">Actions</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Role</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1429,7 +1429,7 @@ variant: {
                           >
                             Department
                           </SortableTableHead>
-                           <TableHead className="text-right text-caption font-medium uppercase text-muted-foreground">Actions</TableHead>
+                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                        <TableBody>
@@ -1488,11 +1488,11 @@ variant: {
                       <TableCaption>Filtered table with search and dropdown filters</TableCaption>
                       <TableHeader>
                         <TableRow>
-                            <TableHead className="text-caption font-medium uppercase text-muted-foreground">User</TableHead>
-                            <TableHead className="text-caption font-medium uppercase text-muted-foreground">Status</TableHead>
-                            <TableHead className="text-caption font-medium uppercase text-muted-foreground">Role</TableHead>
-                            <TableHead className="text-caption font-medium uppercase text-muted-foreground">Last Activity</TableHead>
-                            <TableHead className="text-right text-caption font-medium uppercase text-muted-foreground">Actions</TableHead>
+                            <TableHead>User</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Role</TableHead>
+                            <TableHead>Last Activity</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                        <TableBody>
