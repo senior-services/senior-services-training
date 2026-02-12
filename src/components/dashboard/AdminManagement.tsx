@@ -235,7 +235,7 @@ export const AdminManagement: React.FC = () => {
                   >
                     Name
                   </SortableTableHead>
-                  <TableHead className="text-small font-medium uppercase text-muted-foreground">Email</TableHead>
+                  <TableHead>Email</TableHead>
                   <SortableTableHead
                     column="dateAdded"
                     sortColumn={sortColumn}
@@ -244,7 +244,7 @@ export const AdminManagement: React.FC = () => {
                   >
                     Date Added
                   </SortableTableHead>
-                  <TableHead className="text-right text-small font-medium uppercase text-muted-foreground">Actions</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
