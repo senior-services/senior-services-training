@@ -362,7 +362,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
               />
               <Label 
                 htmlFor="assign-to-all" 
-                className="text-small font-medium cursor-pointer"
+                className="cursor-pointer"
               >
                 Assign this training to all active employees
               </Label>
