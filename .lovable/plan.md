@@ -1,53 +1,64 @@
 
 
-## Fix Layout Regressions in Fullscreen Dialog Refactor
-
-### Problem
-
-The previous refactor removed `DialogScrollArea` (which provided `px-6 py-6 bg-muted/50`) and replaced it with a plain div. The current wrapper div has `data-dialog-scroll-area` but no explicit padding classes, and the inner footer branches add their own `p-4` which conflicts with the `px-6 py-4` already baked into the `DialogFooter` primitive.
+## Final Polish for Fullscreen Dialog
 
 ### Changes (single file: `src/components/VideoPlayerFullscreen.tsx`)
 
-**1. Scrollable wrapper -- restore content spacing**
+**1. Scroll Reset on Open**
 
-Line 490: Change the scrollable div from:
+Add a `useRef` for the scrollable wrapper and a `useEffect` that resets `scrollTop = 0` when the dialog opens or `videoId` changes.
+
+```tsx
+// Near existing refs (around line 60-80)
+const scrollRef = useRef<HTMLDivElement>(null);
+
+// New useEffect (near other open-dependent effects)
+useEffect(() => {
+  if (open && scrollRef.current) {
+    scrollRef.current.scrollTop = 0;
+  }
+}, [open, videoId]);
 ```
-<div className="flex-1 overflow-y-auto min-h-0" data-dialog-scroll-area>
+
+Attach the ref to the scrollable div at line 490:
+```tsx
+<div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 w-full p-6 flex flex-col gap-6" data-dialog-scroll-area>
+```
+
+**2. Restore Header Border with Edge Bleed**
+
+Line 491: Change the `DialogHeader` className from:
+```
+"flex-shrink-[unset] border-b-0 px-0 pb-0 pt-0"
 ```
 to:
 ```
-<div className="flex-1 overflow-y-auto min-h-0 w-full p-6 flex flex-col gap-6" data-dialog-scroll-area>
+"-mx-6 -mt-6 px-6 py-4 border-b flex-shrink-0"
 ```
 
-**2. Header -- remove double padding**
+This pulls the header to the edges of the `p-6` parent using negative margins, restoring the full-width bottom border. The header becomes visually pinned at the top of the scroll area (not the viewport) and scrolls away with the content. The `mb` is not needed because the parent's `gap-6` handles the spacing below.
 
-Line 491: Change `DialogHeader` from:
-```
-<DialogHeader className="flex-shrink-[unset] border-b-0">
-```
-to:
-```
-<DialogHeader className="flex-shrink-[unset] border-b-0 px-0 pb-0 pt-0">
-```
-This zeroes out the header's own `px-6 py-4` since the parent wrapper now provides the `p-6` padding. The header sits flush inside the scrollable container.
+**3. Verify DialogTitle**
 
-**3. Footer branches -- remove inner p-4, let primitive handle padding**
+Line 492-494: Confirm `DialogTitle` has no inline typography overrides. It currently renders as a bare tag, which correctly inherits `.text-h3` from the global CSS layer. No change needed here.
 
-The `DialogFooter` primitive already applies `px-6 py-4`. The inner wrapper divs must not duplicate padding. Four lines change:
+**4. Footer -- No Changes Needed**
 
-- Line 552: `"flex w-full items-center justify-end gap-4 p-4"` becomes `"flex w-full items-center justify-end gap-4"`
-- Line 599: `"flex w-full items-center justify-end gap-4 p-4"` becomes `"flex w-full items-center justify-end gap-4"`
-- Line 612: `"flex w-full items-center justify-end gap-4 p-4"` becomes `"flex w-full items-center justify-end gap-4"`
-- Line 658: `"flex w-full items-center justify-between gap-4 p-4"` becomes `"flex w-full items-center justify-between gap-4"`
+The `DialogFooter` is already outside the scrollable div (line 550+) and uses the primitive's built-in `px-6 py-4 border-t flex-shrink-0`. The inner wrapper divs already had `p-4` removed in the previous pass. No further changes required.
 
-**4. No changes to `dialog.tsx`**
+### Summary
 
-The `DialogFooter` primitive already has `px-6 py-4 border-t flex-shrink-0` -- this is correct and provides consistent 16px vertical / 24px horizontal padding across all states.
+| Area | Change |
+|------|--------|
+| Scroll reset | New `useRef` + `useEffect` to force `scrollTop = 0` on open |
+| Header | Negative margins for edge-bleed border, restored `border-b` |
+| Title | No change -- already inherits `.text-h3` |
+| Footer | No change -- already correct |
 
 ### Review
 
-1. **Risks:** None -- layout-only, no logic changes. The `data-dialog-scroll-area` attribute prevents the catch-all padding selector from also firing on this div.
-2. **Fixes:** Restores 24px content padding; eliminates double-padding from header and footer branches; consistent footer height across all states; Banner and Close button aligned within 24px side gutters.
+1. **Risks:** None -- layout and scroll-position only, no logic changes.
+2. **Fixes:** Header border restored with proper edge bleed; scroll position resets on open; no double-padding; footer remains pinned and consistent.
 3. **Database Change:** No.
 4. **Verdict:** Go.
 
