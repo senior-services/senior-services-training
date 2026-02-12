@@ -269,7 +269,7 @@ export const VideoPage = () => {
               <div className="flex items-center gap-3">
                 <CardTitle className="text-h2">{video.title || 'Untitled Video'}</CardTitle>
                 {isCompleted && (
-                  <Badge className="bg-success hover:bg-success/90">
+                  <Badge variant="success">
                     <CheckCircle className="w-4 h-4 mr-1" />
                     Completed
                   </Badge>

@@ -144,22 +144,22 @@ export const Auth = () => {
               {emailError && `Email validation error: ${emailError}`}
             </div>
             {/* Development Testing Section */}
-            <div className="mb-6 p-4 bg-attention/10 border border-attention/20 rounded-lg">
+            <div className="mb-6 p-4 banner-base banner-attention">
               <div className="text-center mb-3">
                 <h3 className="font-semibold text-attention text-small">Development Testing</h3>
                 <p className="text-small text-attention/80">Quick login for testing (@southsoundseniors.org only)</p>
               </div>
               <div className="space-y-2">
                 <div className="grid grid-cols-3 gap-2">
-                  <Button onClick={handleTestEmployeeLogin} disabled={isLoading} variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10">
+                  <Button onClick={handleTestEmployeeLogin} disabled={isLoading} variant="outline" size="sm" className="button-outline-primary">
                     <User className="w-4 h-4 mr-1" />
                     Jane
                   </Button>
-                  <Button onClick={handleTestEmployee2Login} disabled={isLoading} variant="outline" size="sm" className="border-success/30 text-success hover:bg-success/10">
+                  <Button onClick={handleTestEmployee2Login} disabled={isLoading} variant="outline" size="sm" className="button-outline-success">
                     <User className="w-4 h-4 mr-1" />
                     John
                   </Button>
-                  <Button onClick={handleTestAdminLogin} disabled={isLoading} variant="outline" size="sm" className="border-destructive/30 text-destructive hover:bg-destructive/10">
+                  <Button onClick={handleTestAdminLogin} disabled={isLoading} variant="outline" size="sm" className="button-outline-destructive">
                     <User className="w-4 h-4 mr-1" />
                     Test Admin
                   </Button>
@@ -171,7 +171,7 @@ export const Auth = () => {
             </div>
 
             <div className="flex justify-center mb-4">
-              <Button onClick={handleGoogleSignIn} disabled={isLoading} size="lg" className="w-full bg-card text-foreground border border-border hover:bg-muted">
+              <Button onClick={handleGoogleSignIn} disabled={isLoading} size="lg" className="w-full button-social">
                 <LogIn className="w-5 h-5 mr-3" />
                 Sign in with Google
               </Button>

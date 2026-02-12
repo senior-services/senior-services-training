@@ -287,7 +287,7 @@ export const TrainingCard = memo<TrainingCardProps>(({
 
           {/* Play Button Overlay with Enhanced Accessibility */}
           <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Button size="lg" className="rounded-full w-16 h-16 bg-white/90 hover:bg-white text-primary hover:text-primary shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" onClick={handlePlay} onKeyDown={handleCardKeyPress} aria-label={ariaLabels.playButton}>
+            <Button size="icon" className="button-play-overlay button-size-play" onClick={handlePlay} onKeyDown={handleCardKeyPress} aria-label={ariaLabels.playButton}>
               <Play className="w-6 h-6 ml-1" aria-hidden="true" />
               <span className="sr-only">{ariaLabels.playButton}</span>
             </Button>

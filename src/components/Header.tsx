@@ -23,7 +23,7 @@ export const Header = ({
           {/* Left Side - Logo and Title */}
           <div className="flex items-center space-x-4">
             <Link to="/dashboard" className="flex items-center space-x-6 hover:opacity-80 transition-all duration-200">
-              <img src="/lovable-uploads/SS_logo_reversed_cropped.png" alt="Senior Services for South Sound" className="h-12 w-auto object-cover py-[5px]" style={{
+              <img src="/lovable-uploads/SS_logo_reversed_cropped.png" alt="Senior Services for South Sound" className="h-12 w-auto object-cover py-1" style={{
               objectPosition: 'left center'
             }} />
               <div>
@@ -46,7 +46,7 @@ export const Header = ({
             </div>
             <span className="hidden sm:inline text-small font-medium text-primary-foreground">{userName}</span>
             <span className="text-primary-foreground/40" aria-hidden="true">|</span>
-            <Button variant="link" size="sm" onClick={onLogout} className="text-primary-foreground hover:text-primary-foreground p-0">
+            <Button variant="link" size="sm" onClick={onLogout} className="button-header-link">
               Logout
             </Button>
           </div>
