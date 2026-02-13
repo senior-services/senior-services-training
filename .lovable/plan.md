@@ -1,28 +1,45 @@
 
 
-## Hide Dialog Footer for Completed Trainings
+## Fix: Footer Container Visible for Completed Trainings
 
 ### Problem
-When a user opens a training they have already completed, the footer still renders a "Training Completed" banner and a "Close" button. The request is to remove the footer entirely for completed trainings, since the completion state is already communicated elsewhere.
+The `DialogFooter` wrapper always renders, even when its child content is `null`. This means the border-top of the footer is still visible (as shown in the screenshot). Additionally, there's a flash of the Close button because `wasEverCompleted` is `false` during initialization -- it only becomes `true` after `loadExistingProgress` resolves.
 
-### Change
+Two issues to fix:
+1. The `DialogFooter` container renders its border even when content is `null`.
+2. During `isInitializing`, the footer falls through to a non-completed state and briefly shows buttons.
 
-**`src/components/VideoPlayerFullscreen.tsx`** -- single change
+### Changes
 
-Currently (line 486), the `wasEverCompleted` branch renders a footer with a banner and Close button. Instead, return `null` so no `DialogFooter` content is rendered:
+**`src/components/VideoPlayerFullscreen.tsx`** -- wrap the `DialogFooter` in a conditional
+
+Move the completed/initializing check **outside** the `DialogFooter` so the entire element (including its border) is suppressed:
 
 ```typescript
-// State: completed
-if (wasEverCompleted) {
-  return null;
-}
+{/* Unified Footer */}
+{!wasEverCompleted && !isInitializing && (
+  <DialogFooter>
+    {(() => {
+      // State: quiz-done
+      if (quizSubmitted) {
+        // ... existing code
+      }
+      // State: quiz-active
+      // ... existing code
+      // State: content
+      // ... existing code
+    })()}
+  </DialogFooter>
+)}
 ```
 
-This removes the 6-line block (lines 487-496) that renders the banner and Close button, replacing it with a single `return null`. The user can still close the dialog via the header's X button.
+This:
+- Removes the `if (wasEverCompleted) return null` branch inside the IIFE (no longer needed).
+- Adds `!isInitializing` to prevent any footer flash during the async load.
+- Ensures the `DialogFooter` element itself (and its border) never renders for completed trainings or during initialization.
 
 ### Review
-1. **Top 3 Risks:** (a) Users lose the explicit "Close" button in the footer -- mitigated by the X button in the dialog header. (b) The "Training Completed" banner in the footer is removed -- if this visual confirmation is still needed, it could be moved to the body instead. (c) No other states affected.
-2. **Top 3 Fixes:** (a) Clean removal of footer for completed state. (b) No new code or complexity. (c) Consistent with the request.
+1. **Top 3 Risks:** (a) Footer hidden during initialization -- acceptable, content is still loading anyway. (b) No regression on incomplete trainings since the guard only blocks completed + initializing. (c) No logic changes to quiz or attestation flows.
+2. **Top 3 Fixes:** (a) Eliminates border flash. (b) Eliminates button flash. (c) Single conditional wrapping.
 3. **Database Change:** No.
-4. **Verdict:** Go -- straightforward removal.
-
+4. **Verdict:** Go -- clean fix addressing both the container border and the button flash.
