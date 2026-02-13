@@ -1,72 +1,101 @@
 
 
-## Update Typography Scale: Major Third (1.250) to Major Second (1.125)
+## Composite Typography Token Refactor -- UI Primitives First
 
-### New Scale (from reference image)
+### Priority 1: Foundation Files
 
-| Step | Old (1.250) | New (1.125) | Semantic Class | Usage |
-|------|-------------|-------------|----------------|-------|
-| h1 | 3.052rem (~49px) | 2.027rem (~32px) | `.text-h1` / `h1` | Page titles |
-| h2 | 1.953rem (~31px) | 1.802rem (~29px) | `.text-h2` / `h2` | Section headings |
-| h3 | 1.563rem (~25px) | 1.602rem (~26px) | `.text-h3` / `h3` | Subsection headings |
-| h4 | 1.25rem (20px) | 1.424rem (~23px) | `.text-h4` / `h4` | Minor headings |
-| h5 | 1rem (16px) | 1.266rem (~20px) | `h5` | Sub-labels |
-| h6 | 0.8rem (~13px) | 1.125rem (18px) | `h6` | Smallest heading |
-| body | 1rem (16px) | 1rem (16px) | `.text-body` | Body text (unchanged) |
-| small | 0.8rem (~13px) | 0.889rem (~14px) | `.text-small` | Secondary info |
-| caption | 0.64rem (~10px) | 0.79rem (~13px) | `.text-caption` | Captions |
-| code | 0.9375rem (15px) | 0.9375rem (15px) | `.text-code` | Monospace (unchanged) |
+#### A. `tailwind.config.ts` -- Replace fontSize map with composite tokens
 
-### Summary of Impact
+Remove old aliases (`xs`, `sm`, `base`, `lg`, `xl`, `2xl`, `3xl`, `4xl`) and replace with semantic names carrying weight, leading, and tracking:
 
-The new scale is significantly more compact at the top (h1 drops from 49px to 32px) and slightly larger at the bottom (small goes from 13px to 14px, caption from 10px to 13px). This improves overall legibility uniformity while reducing visual weight on page titles.
-
-### Files to Edit
-
-**1. `tailwind.config.ts`** -- Update the `fontSize` map (lines 21-31)
-
-New values:
-```text
-xs:   0.79rem   (caption, ~13px)
-sm:   0.889rem  (small, ~14px)
-base: 1rem      (body, 16px) -- unchanged
-lg:   1.424rem  (h4, ~23px)
-xl:   1.602rem  (h3, ~26px)
-2xl:  1.802rem  (h2, ~29px)
-3xl:  2.027rem  (h1, ~32px)
-4xl:  2.281rem  (display, ~37px) -- one step above h1
-code: 0.9375rem (unchanged)
+```ts
+fontSize: {
+  'h1':      ['1.802rem', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.02em' }],
+  'h2':      ['1.602rem', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '-0.01em' }],
+  'h3':      ['1.424rem', { lineHeight: '1.2', fontWeight: '600', letterSpacing: '0' }],
+  'h4':      ['1.266rem', { lineHeight: '1.3', fontWeight: '600', letterSpacing: '0' }],
+  'body-lg': ['1.125rem', { lineHeight: '1.5', fontWeight: '400', letterSpacing: '0' }],
+  'body':    ['1rem',     { lineHeight: '1.6', fontWeight: '400', letterSpacing: '0' }],
+  'body-sm': ['0.889rem', { lineHeight: '1.5', fontWeight: '400', letterSpacing: '0' }],
+  'caption': ['0.79rem',  { lineHeight: '1.4', fontWeight: '400', letterSpacing: '0' }],
+  'code':    ['0.9375rem',{ lineHeight: '1.5', fontWeight: '400', letterSpacing: '0' }],
+},
 ```
 
-**2. `src/index.css`** -- All hardcoded `font-size` values updated to new scale
+#### B. `src/index.css` -- Base tag reset and semantic class cleanup
 
-Locations and changes:
+**Base tags** (lines 166-208): Replace hardcoded `font-size`/`font-weight`/`line-height` with `@apply` tokens. Remove the shared heading `line-height: 1.3` block (lines 174-181).
 
-| Line(s) | Selector | Old Value | New Value |
-|---------|----------|-----------|-----------|
-| 185 | `h1` | 3.052rem | 2.027rem |
-| 190 | `h2` | 1.953rem | 1.802rem |
-| 194 | `h3` | 1.563rem | 1.602rem |
-| 198 | `h4` | 1.25rem | 1.424rem |
-| 202 | `h5` | 1rem | 1.266rem |
-| 206 | `h6` | 0.8rem | 1.125rem |
-| 515 | `.text-h1` | 3.052rem | 2.027rem |
-| 520 | `.text-h2` | 1.953rem | 1.802rem |
-| 525 | `.text-h3` | 1.563rem | 1.602rem |
-| 530 | `.text-h4` | 1.25rem | 1.424rem |
-| 540 | `.text-small` | 0.8rem | 0.889rem |
-| 544 | `.tooltip-content` | 0.8rem | 0.889rem |
-| 548 | `.text-caption` | 0.64rem | 0.79rem |
-| 559 | `.form-helper-text` | 0.8rem | 0.889rem |
-| 565 | `.form-additional-text` | 0.8rem | 0.889rem |
+```css
+body { @apply bg-background-main text-foreground font-sans antialiased text-body; }
 
-Body (1rem) and code (0.9375rem) remain unchanged.
+h1 { @apply text-h1; }
+h2 { @apply text-h2; }
+h3 { @apply text-h3; }
+h4 { @apply text-h4; }
+h5 { @apply text-body-lg; font-weight: 600; }
+h6 { @apply text-body-lg; font-weight: 600; }
+```
 
-**3. `STYLEGUIDE.md`** -- Update scale table and token mapping to reflect new values and "Major Second (1.125)" label.
+**Semantic utility classes** (lines 512-555): Remove manual `font-size`/`line-height`/`font-weight` declarations from `.text-h1` through `.text-caption` -- the Tailwind composite tokens now generate these automatically. Keep `.text-code` only for its `font-family` rule.
+
+**Other hardcoded values updated:**
+- `.tooltip-content` (line 543): replace with `@apply text-body-sm`
+- `.form-helper-text` (line 559): replace `font-size` with `@apply text-body-sm`
+- `.form-additional-text` (line 565): replace `font-size` with `@apply text-body-sm`
+- `.button-base` (line 232): replace `font-size: 1rem` with `@apply text-body` (size only -- weight stays `font-medium` from existing `@apply`)
+- `.button-toggle` (line 244): rename `text-small` to `text-body-sm`
+- Input base rule `font-size: 1rem` (line 215): replace with `@apply text-body`
+- `.badge-base` (line 259): rename `text-body` stays (already correct)
+
+---
+
+### Priority 2: `src/components/ui` File Updates
+
+Rename `text-small` to `text-body-sm` in all UI primitives. These are mechanical find-and-replace changes:
+
+| File | Line(s) | Change |
+|------|---------|--------|
+| `alert-dialog.tsx` | 106 | `text-small` to `text-body-sm` |
+| `calendar.tsx` | 24, 35, 37 | `text-small` to `text-body-sm` |
+| `drawer.tsx` | 99 | `text-small` to `text-body-sm` |
+| `error-boundary.tsx` | 124, 184, 226, 229, 306 | `text-small` to `text-body-sm` |
+| `ErrorBoundary.tsx` | 133, 134, 140 | `text-small` to `text-body-sm` |
+| `form.tsx` | 136, 158 | `text-small` to `text-body-sm` |
+| `loading-spinner.tsx` | 81 | `text-small` to `text-body-sm` |
+| `sheet.tsx` | 119 | `text-small` to `text-body-sm` |
+| `sidebar.tsx` | 437, 520, 723 | `text-small` to `text-body-sm` |
+| `table.tsx` | 83, 109 | `text-small` to `text-body-sm` |
+| `toast.tsx` | 107 | `text-small` to `text-body-sm` |
+
+**Surgical override cleanup in UI files:**
+- `drawer.tsx` line 85: `font-semibold leading-none tracking-tight` -- **PRESERVE** (intentional title override)
+- `toast.tsx` line 63: `font-medium` -- **PRESERVE** (action button emphasis)
+- `toast.tsx` line 95: `font-semibold` -- **PRESERVE** (title weight override)
+- `label.tsx` line 8: `font-medium leading-none` -- **PRESERVE** (form alignment override)
+- `banner.tsx` line 89: `font-medium leading-none` -- **PRESERVE** (banner title override)
+- `table.tsx` line 83: `font-medium` on TableHead -- **PRESERVE** (table emphasis)
+- `form.tsx` line 158: `font-medium` on error message -- **PRESERVE** (error emphasis)
+
+---
+
+### Priority 3: Remaining Project Files
+
+Rename `text-small` to `text-body-sm` in non-UI files (~20 additional files across `src/pages/`, `src/components/dashboard/`, `src/components/content/`, etc.). Same mechanical rename.
+
+---
+
+### Priority 4: `STYLEGUIDE.md`
+
+- Replace scale table with composite token table (size + weight + leading + tracking)
+- Add **Override Clause**: "The 80/20 Rule: 80% of the app should use naked tokens (e.g., `text-body`). 20% (Forms, Tables, Banners) may use utility overrides (e.g., `text-body font-medium leading-tight`) when specific layout constraints require them."
+- Remove references to old `text-xs`, `text-sm`, `text-base` aliases
+
+---
 
 ### Review
 
-1. **Top 3 Risks:** (a) h4 grows from 20px to 23px -- Dialog titles use `.text-h4`, so they will be slightly larger; acceptable. (b) h1 shrinks from 49px to 32px -- page titles will be notably smaller; this is the intended outcome. (c) Small text grows from 13px to 14px -- badges (now `.text-body`) are unaffected, but tooltips and helper text get marginally larger.
-2. **Top 3 Fixes:** (a) All hardcoded `font-size` values replaced with new scale -- zero magic numbers remain. (b) Tighter heading scale improves visual hierarchy without extreme size jumps. (c) Small/caption sizes now meet or exceed 13px minimum.
+1. **Top 3 Risks:** (a) Removing old Tailwind aliases (`text-xs`, `text-sm`, etc.) may break shadcn internals -- each UI file has been audited above and none use the old aliases directly. (b) Scale shift: h1 drops from ~32px to ~29px, h4 from ~23px to ~20px. (c) `text-small` rename touches ~30 files total -- high surface area but purely mechanical.
+2. **Top 3 Fixes:** (a) Single composite token carries size + weight + leading + tracking. (b) Base HTML tags auto-inherit via `@apply`. (c) Override clause documents when manual values are acceptable.
 3. **Database Change:** No.
-4. **Verdict:** Go -- pure CSS and config change, zero component file edits.
+4. **Verdict:** Go.
