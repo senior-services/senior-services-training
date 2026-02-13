@@ -1,49 +1,58 @@
 
-## Fix: Assign Videos Modal Data Discrepancy
 
-### Root Cause
+## Update: Badge Typography from `text-small` (13px) to `text-body` (16px)
 
-The "Assign Videos" modal determines "Assigned" vs "Unassigned" by querying the `video_assignments` table directly (`assignmentOperations.getByEmployee`). This only returns videos with a formal assignment row.
-
-However, John has 2 videos where he watched content (99% progress via `video_progress`) but was never formally assigned. These progress-only records:
-- **Admin Employee tab**: Counted as required (via `get_all_employee_assignments` UNION ALL)
-- **Employee Dashboard**: Counted as required (via `get_user_video_assignments` UNION ALL -- just fixed)
-- **Data Export**: Counted as required (same DB function)
-- **Assign Videos modal**: Shows as "Unassigned" because they have no `video_assignments` row
-
-This means the modal shows 5 Assigned + the 2 progress-only items hidden under "Unassigned", while every other view shows 7.
+### Problem
+All badge text currently renders at 13px (`text-small`), which falls below the 16px senior-first legibility minimum established for primary UI elements. This applies to both the `.badge-base` master template and the `.status-badge` utility class.
 
 ### Fix
 
-**File: `src/components/dashboard/AssignVideosModal.tsx`**
+**File: `src/index.css`**
 
-After loading progress data (around line 237), add progress-only video IDs to `assignedVideoIds` so they appear in the "Assigned" filter. Videos with existing progress but no formal assignment should be treated as effectively assigned for display consistency.
+Two changes in the single source of truth:
 
-In `loadVideosAndAssignments`, after processing assignments (line 237-259), iterate `videoProgressData` and add any video IDs that have progress but are NOT in `assignedVideoIds` to the assigned set:
+**1. `.badge-base` (line 259, 261-262):**
+- Change `text-small` to `text-body`
+- Remove the manual `font-size: 0.8rem` and `line-height: 1.5` overrides (these were locking in 13px; `text-body` provides 16px with its own line-height)
 
-```tsx
-// After setting assignedVideoIds from assignments data:
-// Add progress-only videos (no formal assignment but have progress) to assigned set
-if (progressResult.success && progressResult.data) {
-  const currentlyAssigned = new Set(assignmentsResult.data.map((a) => a.video_id));
-  progressResult.data.forEach((progress) => {
-    if (!currentlyAssigned.has(progress.video_id)) {
-      currentlyAssigned.add(progress.video_id);
-    }
-  });
-  setAssignedVideoIds(currentlyAssigned);
+```css
+/* Before */
+.badge-base {
+  @apply ... text-small font-semibold ...;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* After */
+.badge-base {
+  @apply ... text-body font-semibold ...;
 }
 ```
 
-This single change ensures:
-- "Assigned" tab count matches admin/employee/export counts
-- "Unassigned" tab no longer shows videos the employee already started
-- "Completed" tab remains unchanged (driven by `completedVideoIds`)
-- Progress-only videos cannot be "unassigned" (no assignment row to delete) -- they already pass the `completedVideoIds` or checkbox guard
+**2. `.status-badge` (line 488):**
+- Change `text-small` to `text-body`
+
+```css
+/* Before */
+.status-badge {
+  @apply px-3 py-2 rounded-md text-small font-semibold;
+  ...
+}
+
+/* After */
+.status-badge {
+  @apply px-3 py-2 rounded-md text-body font-semibold;
+  ...
+}
+```
+
+### Scope
+
+No component files need editing. Both `.badge-base` and `.status-badge` are CSS-only master templates -- every `Badge` primitive and status indicator across the app (employee dashboard, admin tabs, Components Gallery, training cards) inherits the update automatically.
 
 ### Review
 
-1. **Top 3 Risks:** (a) Progress-only items appear in the Assigned tab but lack a formal assignment row, so the "Unassign" action would be a no-op -- mitigated because the checkbox guard already prevents toggling completed items, and progress-only items without completion still pass through `getSelectedAssignedIds` which checks `assignmentData` for the actual row. (b) If an admin tries to unassign a progress-only item, `assignmentData.get(videoId)` returns undefined, so the delete promise is skipped. (c) No visual change to completed or unassigned items that genuinely have no progress.
-2. **Top 3 Fixes:** (a) Assigned count now matches all other views. (b) Unassigned count no longer inflated by started trainings. (c) Single-file change, no DB migration needed.
+1. **Top 3 Risks:** (a) Badges will be slightly wider at 16px -- acceptable given the existing `whitespace-nowrap` and flexible layouts. (b) Training card badge rows may wrap on very narrow viewports -- the grid already caps at 4 columns with adequate spacing. (c) No downstream `text-small` overrides found on Badge components.
+2. **Top 3 Fixes:** (a) All badges meet 16px senior legibility minimum. (b) Consistent with Label, TableCell, and description typography standards. (c) Two-line CSS change, zero component edits.
 3. **Database Change:** No.
 4. **Verdict:** Go.
