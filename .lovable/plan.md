@@ -1,30 +1,39 @@
 
 
-## Update Badge Base Typography to Small Text Medium
+## Fix: Button font-weight Override
 
-### What Changes
+### Problem
+The composite `text-body` token includes `fontWeight: 400` baked in. On `.button-base`, `@apply text-body` (line 200) appears **after** `font-medium` (line 193), so the 400 weight wins due to CSS cascade order. The inspector confirms buttons render at 400 instead of the intended 500.
 
-The badge base class in `src/index.css` currently uses `text-body font-semibold` (16px, weight 600). This update changes it to `text-body-sm font-medium` (~14px, weight 500) for a more proportionate badge size consistent with the design system's accessibility minimum of 13px.
+### Solution
+Move `font-medium` **after** `text-body` so it overrides the token's baked-in weight. This is a single-line reorder within `.button-base`.
 
-### File to Edit
+**`src/index.css`** -- lines 191-201
 
-**`src/index.css`** (line 227)
-
-Replace:
+Before:
 ```css
-@apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-body font-semibold transition-all ...
+.button-base {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap
+      rounded-md font-medium ring-offset-background transition-all duration-200
+      ...
+    @apply text-body;
+}
 ```
 
-With:
+After:
 ```css
-@apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-body-sm font-medium transition-all ...
+.button-base {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap
+      rounded-md ring-offset-background transition-all duration-200
+      ...
+    @apply text-body font-medium;
+}
 ```
 
-This is a single-line change. All badge variants inherit from `.badge-base`, so every badge in the app updates automatically.
+`font-medium` moves from line 193 to line 200 (after `text-body`), ensuring weight 500 takes precedence. This is the correct application of the 80/20 override rule: buttons are a permitted override context.
 
 ### Review
-
-1. **Top 3 Risks:** (a) Badges shrink from 16px to ~14px -- intentional per request. (b) Weight drops from semibold (600) to medium (500) -- slightly lighter but still distinct from body text. (c) No risk of breaking variant styles since they only override color/border, not typography.
-2. **Top 3 Fixes:** (a) Single-line change propagates to all badge variants. (b) Stays above 13px accessibility minimum. (c) `font-medium` is a permitted override per the 80/20 rule.
+1. **Top 3 Risks:** (a) None -- purely a cascade reorder within one class. (b) No other components affected. (c) Aligns with documented override clause.
+2. **Top 3 Fixes:** (a) Restores intended 500 weight on all buttons project-wide. (b) Zero component file changes needed. (c) Follows existing override pattern.
 3. **Database Change:** No.
-4. **Verdict:** Go -- one CSS line, zero component file edits.
+4. **Verdict:** Go -- single-line cascade fix.
