@@ -587,7 +587,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 </div>
 
                 {/* Right zone: Cancel + Primary */}
-                <div className="flex gap-2">
+                <div className="flex gap-4">
                   <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
                     <AlertDialogTrigger asChild>
                       <Button variant="outline" onClick={() => setCancelDialogOpen(true)}>Cancel</Button>
