@@ -1,39 +1,30 @@
 
-
-## Fix: People Not Visible Due to Null Assignment Crash
-
-### Problem
-The People tab shows "No people found" because `employeeOperations.getAll()` crashes with `TypeError: Cannot read properties of null (reading 'progress_percent')`. This prevents any data from loading.
-
-### Root Cause
-The `get_all_employee_assignments()` database function uses `LEFT JOIN LATERAL` + `json_agg`. When a person has zero assignments (like the admin user), the lateral join produces a single null row, and `json_agg` aggregates it as `[null]` instead of `[]`.
-
-In `src/services/api.ts` line 424, the code does:
-```
-assignments.filter((a: any) => a.progress_percent === 100)
-```
-When `a` is `null`, accessing `.progress_percent` throws a TypeError, which aborts the entire `getAll()` call.
+## Add Admin Header Background Color Token
 
 ### Changes
 
-**1. `src/services/api.ts` (line 423)**
+**1. `src/index.css` -- Add CSS variable (2 locations)**
 
-Filter out null entries from the assignments array before processing:
+- Light mode (line 14, after `--background-header`): Add `--background-header-admin: 261 33% 48%;` with comment `/* #6d53a3 - Purple admin */`
+- Dark mode (line 98, after `--background-header`): Add `--background-header-admin: 261 33% 38%;` (slightly darker for dark mode consistency)
 
-```typescript
-const assignments = Array.isArray(emp.assignments) 
-  ? emp.assignments.filter((a: any) => a != null) 
-  : [];
-```
+**2. `tailwind.config.ts` -- Register Tailwind color (line 55)**
 
-This single-line change fixes the crash. The same null-filtering should also be applied in the `getHidden()` method if it has the same pattern.
+- Add `'background-header-admin': 'hsl(var(--background-header-admin))'` after the `background-header` entry.
 
-### Result
-- All four people (admin, John, Jane, Billy) will appear in the People tab.
-- Admin users with no assignments will show correctly with an empty assignment list.
+**3. `src/components/Header.tsx` -- Use new token (line 31)**
+
+- Change: `const headerBg = isAdminView ? "bg-attention" : "bg-background-header";`
+- To: `const headerBg = isAdminView ? "bg-background-header-admin" : "bg-background-header";`
+- Update the user avatar circle background on line 71 from `bg-attention-foreground` to `bg-primary-foreground` (white circle works on both purple and navy).
+- Update the user avatar icon color on line 72 from `text-attention` to `text-background-header-admin`.
+
+**4. `src/pages/ComponentsGallery.tsx` -- Add swatch (after line 381)**
+
+- Insert a new color swatch block for "Background Header Admin" / `--background-header-admin` using `bg-background-header-admin`, positioned directly below the "Background Header" swatch.
 
 ### Review
-1. **Top 3 Risks:** (a) None -- defensive null filtering. (b) No database change. (c) No behavior change for non-null data.
-2. **Top 3 Fixes:** (a) People tab loads correctly. (b) Handles edge case of users with zero assignments. (c) Minimal change.
+1. **Top 3 Risks:** (a) HSL conversion accuracy -- verified #6d53a3 = 261 33% 48%. (b) Contrast with white text -- 4.5:1 ratio met (purple at 48% lightness). (c) None other.
+2. **Top 3 Fixes:** (a) Distinct admin vs employee header identity. (b) Replaces orange attention color with purposeful purple. (c) Style guide kept in sync.
 3. **Database Change:** No.
-4. **Verdict:** Go -- one-line defensive fix.
+4. **Verdict:** Go -- clean token addition following existing patterns.
