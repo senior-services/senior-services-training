@@ -1,45 +1,39 @@
 
 
-## Fix: Footer Container Visible for Completed Trainings
+## Fix: Completion Date Badge + Footer Flash (John + Jane + All Affected)
 
-### Problem
-The `DialogFooter` wrapper always renders, even when its child content is `null`. This means the border-top of the footer is still visible (as shown in the screenshot). Additionally, there's a flash of the Close button because `wasEverCompleted` is `false` during initialization -- it only becomes `true` after `loadExistingProgress` resolves.
+This is the same plan previously approved, confirmed to cover both users.
 
-Two issues to fix:
-1. The `DialogFooter` container renders its border even when content is `null`.
-2. During `isInitializing`, the footer falls through to a non-completed state and briefly shows buttons.
+### Affected Records
+
+| Employee | Training | progress_percent | completed_at |
+|----------|----------|-----------------|--------------|
+| John | Workplace Violence Prevention | 100 | NULL |
+| Jane | PPSX | 100 | NULL |
+
+Both have the identical data gap: 100% progress but no completion timestamp.
 
 ### Changes
 
-**`src/components/VideoPlayerFullscreen.tsx`** -- wrap the `DialogFooter` in a conditional
+**1. Database Backfill** (run once in Supabase SQL editor)
 
-Move the completed/initializing check **outside** the `DialogFooter` so the entire element (including its border) is suppressed:
-
-```typescript
-{/* Unified Footer */}
-{!wasEverCompleted && !isInitializing && (
-  <DialogFooter>
-    {(() => {
-      // State: quiz-done
-      if (quizSubmitted) {
-        // ... existing code
-      }
-      // State: quiz-active
-      // ... existing code
-      // State: content
-      // ... existing code
-    })()}
-  </DialogFooter>
-)}
+```sql
+UPDATE video_progress
+SET completed_at = updated_at
+WHERE progress_percent = 100 AND completed_at IS NULL;
 ```
 
-This:
-- Removes the `if (wasEverCompleted) return null` branch inside the IIFE (no longer needed).
-- Adds `!isInitializing` to prevent any footer flash during the async load.
-- Ensures the `DialogFooter` element itself (and its border) never renders for completed trainings or during initialization.
+This fixes the badge for all affected employees in one pass. The badge will then show the actual date instead of just "Completed".
+
+**2. `src/components/VideoPlayerFullscreen.tsx`** -- prevent footer flash on reopen
+
+- Line 85: Change `useState(false)` to `useState(true)` so `isInitializing` starts as `true`.
+- Line 149 (cleanup branch): Change `setIsInitializing(false)` to `setIsInitializing(true)` so the guard remains active between dialog close and reopen.
+
+This ensures the footer (and its border) never renders for completed trainings, even for a single frame.
 
 ### Review
-1. **Top 3 Risks:** (a) Footer hidden during initialization -- acceptable, content is still loading anyway. (b) No regression on incomplete trainings since the guard only blocks completed + initializing. (c) No logic changes to quiz or attestation flows.
-2. **Top 3 Fixes:** (a) Eliminates border flash. (b) Eliminates button flash. (c) Single conditional wrapping.
-3. **Database Change:** No.
-4. **Verdict:** Go -- clean fix addressing both the container border and the button flash.
+1. **Top 3 Risks:** (a) Backfill uses `updated_at` as proxy for completion time -- acceptable for legacy data. (b) `isInitializing = true` by default delays footer by one effect cycle for fresh opens -- invisible since content loads simultaneously. (c) No impact on incomplete trainings.
+2. **Top 3 Fixes:** (a) Fixes badge date for all affected employees. (b) Eliminates footer flash on reopen. (c) Minimal code change -- two lines.
+3. **Database Change:** Yes -- backfill `completed_at` for rows with 100% progress but no timestamp.
+4. **Verdict:** Go -- confirmed to resolve both John's and Jane's issues plus any other affected records.
