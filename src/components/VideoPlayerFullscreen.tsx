@@ -82,7 +82,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const [storedAttemptTotal, setStoredAttemptTotal] = useState<number | undefined>(undefined);
   const [videoAttestationChecked, setVideoAttestationChecked] = useState(false);
   const [showVideoCompletedBadge, setShowVideoCompletedBadge] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Refs
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -146,7 +146,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         setCompletedQuizResults([]);
         setCompletedQuiz(null);
         setVideoAttestationChecked(false);
-        setIsInitializing(false);
+        setIsInitializing(true);
         return;
       }
       setIsInitializing(true);
