@@ -67,7 +67,7 @@ export const Header = ({ userRole, userName, userEmail, onLogout, currentView }:
             {/* User Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className={`${headerTextColor} hover:bg-white/10`}>
+                <Button variant="ghost" className={`button-ghost-dark ${headerTextColor}`}>
                   {userName} <ChevronDown className="w-4 h-4 ml-2" />
                 </Button>
               </DropdownMenuTrigger>

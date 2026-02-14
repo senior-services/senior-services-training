@@ -1741,6 +1741,21 @@ export const ComponentsGallery = ({
                     <DropdownMenuItem><Settings className="w-4 h-4 mr-2" />Settings</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                {/* Ghost Dropdown on Dark Background */}
+                <div className="bg-background-header rounded-lg p-4 inline-block">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="button-ghost-dark text-primary-foreground">
+                        Options <ChevronDown className="w-4 h-4 ml-2" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem>Profile</DropdownMenuItem>
+                      <DropdownMenuItem>Settings</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
                 
                 <Tooltip>
                   <TooltipTrigger asChild>
