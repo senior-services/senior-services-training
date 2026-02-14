@@ -1,31 +1,39 @@
 
 
-## Fix: Admin Not Recognized on Employee Dashboard
+## Fix: People Not Visible Due to Null Assignment Crash
 
 ### Problem
-The `EmployeeDashboard` component hardcodes `userRole="employee"` when rendering the `Header`. This means when an admin visits `/dashboard` (their personal training view), the Header shows no Admin badge and the dropdown only shows "Logout" instead of the admin navigation options.
+The People tab shows "No people found" because `employeeOperations.getAll()` crashes with `TypeError: Cannot read properties of null (reading 'progress_percent')`. This prevents any data from loading.
 
 ### Root Cause
-The user's role is determined in `App.tsx` via `useUserRole()`, but it is never passed as a prop to `EmployeeDashboard`. The dashboard then passes a hardcoded `"employee"` string to the Header.
+The `get_all_employee_assignments()` database function uses `LEFT JOIN LATERAL` + `json_agg`. When a person has zero assignments (like the admin user), the lateral join produces a single null row, and `json_agg` aggregates it as `[null]` instead of `[]`.
+
+In `src/services/api.ts` line 424, the code does:
+```
+assignments.filter((a: any) => a.progress_percent === 100)
+```
+When `a` is `null`, accessing `.progress_percent` throws a TypeError, which aborts the entire `getAll()` call.
 
 ### Changes
 
-**1. `src/pages/EmployeeDashboard.tsx`**
+**1. `src/services/api.ts` (line 423)**
 
-- Add `userRole` prop to the `EmployeeDashboardProps` interface (type: `"admin" | "employee"`, default: `"employee"`).
-- Pass `userRole` to the `Header` component in both render locations (error state at line 492 and main render at line 525) instead of the hardcoded `"employee"`.
+Filter out null entries from the assignments array before processing:
 
-**2. `src/App.tsx`**
+```typescript
+const assignments = Array.isArray(emp.assignments) 
+  ? emp.assignments.filter((a: any) => a != null) 
+  : [];
+```
 
-- Pass `userRole={isAdmin ? "admin" : "employee"}` to the `EmployeeDashboard` component at line 119.
+This single-line change fixes the crash. The same null-filtering should also be applied in the `getHidden()` method if it has the same pattern.
 
 ### Result
-- Admins visiting `/dashboard` will see the orange "Admin" badge and the full dropdown (My Personal Trainings, Admin Dashboard, Logout).
-- Standard employees see no badge and only "Logout" -- unchanged behavior.
-- Header background stays navy on `/dashboard` for both roles (the orange background is reserved for `/admin`).
+- All four people (admin, John, Jane, Billy) will appear in the People tab.
+- Admin users with no assignments will show correctly with an empty assignment list.
 
 ### Review
-1. **Top 3 Risks:** (a) None significant -- two-line prop threading. (b) No database change. (c) No security implication since role is already fetched server-side via `user_roles` table.
-2. **Top 3 Fixes:** (a) Admin badge appears on personal dashboard. (b) Dropdown navigation restored. (c) Minimal change footprint.
+1. **Top 3 Risks:** (a) None -- defensive null filtering. (b) No database change. (c) No behavior change for non-null data.
+2. **Top 3 Fixes:** (a) People tab loads correctly. (b) Handles edge case of users with zero assignments. (c) Minimal change.
 3. **Database Change:** No.
-4. **Verdict:** Go -- straightforward prop pass-through fix.
+4. **Verdict:** Go -- one-line defensive fix.
