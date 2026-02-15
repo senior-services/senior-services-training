@@ -3,49 +3,46 @@
 ## Add "Form Section Header" to Style Guide
 
 ### Overview
-Add a new semantic element demonstration called "Form Section Header" to the Form Controls section of the Components Gallery. This element standardizes the typography for grouping related form fields (e.g., "Contact Information", "Administrative Settings").
+Add a new "Form Section Header" live preview to the Form Controls section of the Components Gallery, placed directly above the existing "Text Input" field demonstration.
 
 ### Specification
-- **Typography**: `.text-body` (16px, inherited weight/leading from the composite token)
+- **Typography**: `.text-body` composite token (16px)
 - **Weight override**: `font-bold` (permitted under the 80/20 rule for form contexts)
-- **Color**: `text-foreground` (semantic token, no hardcoded hex)
-- **Spacing**: `mt-6` top margin to separate from previous group, `mb-2` bottom margin above the fields it labels
+- **Color**: `text-foreground` (semantic token)
+- **Spacing**: `mt-6` top margin, `mb-2` bottom margin
 
 ### Changes
 
 **File: `src/pages/ComponentsGallery.tsx`**
 
-Insert a new subsection at the top of the Form Controls `CardContent` area (after line 825, before the existing rounded-lg container). The new block will contain:
-
-1. A descriptive sub-heading: "Form Section Header"
-2. A live preview showing two form section headers, each above a sample text input, separated to demonstrate the spacing pattern:
-
-```
--- Live Preview --
-[Form Section Header: "Contact Information"]
-  [Text Input: "Enter your email..."]
-
-[Form Section Header: "Administrative Settings"]  (with mt-6)
-  [Text Input: "Enter department..."]
-```
-
-The markup for each header element:
+Insert a new block inside the Form Controls `CardContent` (line 825), **before** the existing `rounded-lg` container (line 826). The new block demonstrates two form section headers, each above a sample text input:
 
 ```tsx
-<h3 className="text-body font-bold text-foreground mt-6 mb-2">
-  Contact Information
-</h3>
+{/* Form Section Header */}
+<div className="rounded-lg p-6 border border-border-primary/50 shadow-md space-y-1">
+  <h4 className="text-body font-bold text-foreground mb-3">Form Section Header</h4>
+  <p className="text-body-sm text-muted-foreground mb-4">
+    Use to label groups of related form fields. Combines the <code className="text-code bg-muted px-1 py-0.5 rounded">.text-body</code> token with a <code className="text-code bg-muted px-1 py-0.5 rounded">font-bold</code> override.
+  </p>
+  <div className="rounded-md bg-card/50 p-4">
+    <h3 className="text-body font-bold text-foreground mb-2">Contact Information</h3>
+    <Input placeholder="Enter your email..." className="shadow-sm" />
+
+    <h3 className="text-body font-bold text-foreground mt-6 mb-2">Administrative Settings</h3>
+    <Input placeholder="Enter department..." className="shadow-sm" />
+  </div>
+</div>
 ```
 
 ### Design System Audit
-- **Typography**: Uses only `.text-body` composite token. `font-bold` is a permitted override per the 80/20 rule for form layout contexts.
+- **Typography**: Uses only `.text-body` composite token. `font-bold` is a permitted override per the 80/20 rule.
 - **Color**: `text-foreground` is a semantic CSS custom property -- no hardcoded hex values.
 - **Spacing**: `mt-6` and `mb-2` are standard Tailwind steps on the 4px grid -- no arbitrary bracket values.
-- **No new CSS classes required**: This is a composition of existing tokens, not a new primitive.
+- **No new CSS classes required**: Composition of existing tokens only.
 
 ### Review
-1. **Top 3 Risks**: (a) None -- additive-only change to the gallery page. (b) No new primitives or CSS classes introduced. (c) No impact on production components.
-2. **Top 3 Fixes**: (a) Documents a previously informal pattern. (b) Provides a live reference for developers. (c) Prevents future "class soup" by establishing the canonical markup.
+1. **Top 3 Risks**: (a) None -- additive-only gallery change. (b) No new primitives. (c) No production impact.
+2. **Top 3 Fixes**: (a) Documents a previously informal pattern. (b) Provides live reference. (c) Prevents class soup.
 3. **Database Change**: No.
 4. **Verdict**: Go -- single-file, gallery-only addition.
 
