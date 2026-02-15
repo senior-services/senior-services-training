@@ -1,47 +1,56 @@
 
-## Implement Admin Self-Revocation Logout Trigger
+
+## Fix State Persistence Bug in Admin Self-Revocation
 
 ### Overview
-When an admin removes their own admin privileges via the Person Settings modal, the app should complete the database update, then redirect them to `/dashboard` (employee view) since they no longer have access to `/admin`.
+Ensure atomic database writes during admin demotion, eliminate redundant DB calls, and guarantee immediate data refresh for all admin viewers after a save.
 
-### Approach
-Rather than a full logout (which would force re-authentication), the cleanest approach is to navigate to `/dashboard` and force a role refresh. The existing `useUserRole` hook uses a real-time subscription that will pick up the change, causing the `/admin` route guard to deny access. However, to ensure immediate effect without race conditions, a page reload after navigation is safest.
+### Problem Analysis
+1. **Redundant employees update**: `handleToggleAdmin` (line 90-93) updates `employees.is_admin` manually, but `AdminService.removeAdminRole` (line 318-323 in adminService.ts) already does the same update. This creates a race condition where the second write could fail silently.
+2. **No explicit reload after non-self saves**: `onAdminToggled` calls `loadPeople()`, which is correct, but doesn't `await` before closing the modal -- the modal closes optimistically.
+3. **Self-revocation redirect fires before confirming DB write completion**: The `await handleToggleAdmin(stagedAdmin)` does await, but the redundant second write at lines 90-93 could still be in-flight.
 
 ### Changes
 
-**1. `PersonSettingsModal.tsx` -- Accept new props and add self-revocation check**
+**1. `PersonSettingsModal.tsx` -- Remove redundant employees update from `handleToggleAdmin`**
 
-- Add two new props: `currentUserEmail: string` and `onSelfDemote: () => void`.
-- In `handleSave`, after the admin toggle API call succeeds and `stagedAdmin` is `false` while `person.is_admin` was `true`, check if `person.email` matches `currentUserEmail` (case-insensitive).
-- If self-revocation detected, call `onSelfDemote()` instead of `onAdminToggled()` / `onOpenChange(false)`.
+In the demotion branch (lines 77-88), `AdminService.removeAdminRole` already:
+- Deletes the `admin` role from `user_roles`
+- Inserts `employee` role back
+- Updates `employees.is_admin = false`
 
-**2. `PeopleManagement.tsx` -- Pass current user email and handle self-demote**
+Remove the redundant `supabase.from('employees').update(...)` call at lines 90-93 for the demotion case (keep it for the promotion case where `AdminService.addAdminByEmail` handles it similarly).
 
-- Accept a new prop `userEmail: string` (already available -- AdminDashboard passes it).
-- Import `useNavigate` from react-router-dom.
-- Pass `currentUserEmail={userEmail}` and `onSelfDemote` callback to `PersonSettingsModal`.
-- The `onSelfDemote` callback navigates to `/dashboard` then triggers `window.location.reload()` to force a full state refresh (clears role cache, re-fetches role from DB).
+Refactor `handleToggleAdmin` so the shared employees update (lines 90-93) only runs for the **promotion** path, since `removeAdminRole` already handles the demotion path's employees update internally.
 
-**3. `PeopleManagement.tsx` -- Verify `userEmail` prop exists**
+**2. `PersonSettingsModal.tsx` -- Ensure self-revocation waits for full completion**
 
-- Check if `userEmail` is already a prop. If not, thread it from `AdminDashboard`.
-
-### Resulting Flow
+Move the self-revocation check to run only after all DB operations have fully resolved. The current order is correct (await then check), but make it explicit by restructuring:
 
 ```text
-Admin clicks "Save Changes" with admin unchecked on their own record
-  --> DB update completes (user_roles + employees table)
-  --> Self-revocation detected (person.email === currentUserEmail)
-  --> Toast: "Your admin access has been removed"
-  --> Navigate to /dashboard
-  --> window.location.reload() forces fresh role fetch
-  --> useUserRole returns 'employee'
-  --> /admin route guard redirects away
-  --> Header loses purple background, admin dropdown links gone
+handleSave:
+  1. Compute wasDemoted flag
+  2. await handleToggleAdmin(stagedAdmin)  // DB writes complete here
+  3. if (stagedHidden) onHide(person)
+  4. Check self-revocation -> toast + onSelfDemote + return
+  5. Otherwise -> onAdminToggled() + close modal
 ```
 
+This is already the current order, so no structural change needed -- just the cleanup in step 1.
+
+**3. `PeopleManagement.tsx` -- Make `onAdminToggled` await `loadPeople`**
+
+Change `onAdminToggled={() => loadPeople()}` to ensure the people list is refreshed before the modal closes. Currently `loadPeople` is called but not awaited before the modal state updates. The real-time subscription provides eventual consistency, but an explicit refresh is more reliable.
+
+Update the `onSelfDemote` callback to also invalidate any cached state before redirecting.
+
+### Files Modified
+- `src/components/dashboard/PersonSettingsModal.tsx` (refactor `handleToggleAdmin` to remove redundant employees write on demotion)
+- `src/components/dashboard/PeopleManagement.tsx` (ensure `loadPeople` completes on admin toggle callback)
+
 ### Review
-1. **Top 3 Risks**: (a) Brief moment between DB write and reload where stale admin state exists -- mitigated by immediate reload. (b) If DB update fails, self-demote is never triggered (correct behavior). (c) `window.location.reload()` loses in-memory state -- acceptable since user is changing contexts.
-2. **Top 3 Fixes**: (a) Self-revocation safely redirects instead of leaving admin in broken state. (b) Full reload ensures all caches (role, query client) are cleared. (c) Toast feedback before redirect informs user of what happened.
+1. **Top 3 Risks**: (a) Removing the redundant employees write relies on `AdminService.removeAdminRole` always updating `employees.is_admin` -- verified it does at lines 318-323. (b) `loadPeople` is async; if it fails, modal still closes -- acceptable since real-time sub provides backup. (c) No new risk to self-revocation flow.
+2. **Top 3 Fixes**: (a) Eliminates race condition from duplicate DB writes. (b) Explicit data refresh ensures badge sync for other admins. (c) Self-revocation pathway is cleaner with single atomic write path.
 3. **Database Change**: No.
-4. **Verdict**: Go -- two-file change, no new dependencies.
+4. **Verdict**: Go -- surgical cleanup in two files.
+
