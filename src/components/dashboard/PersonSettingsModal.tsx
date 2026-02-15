@@ -28,6 +28,8 @@ interface PersonSettingsModalProps {
   person: (EmployeeWithAssignments & { is_admin?: boolean }) | null;
   onHide: (person: EmployeeWithAssignments) => void;
   onAdminToggled: () => void;
+  currentUserEmail?: string;
+  onSelfDemote?: () => void;
 }
 
 export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
@@ -36,6 +38,8 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
   person,
   onHide,
   onAdminToggled,
+  currentUserEmail,
+  onSelfDemote,
 }) => {
   const [stagedAdmin, setStagedAdmin] = useState(false);
   const [stagedHidden, setStagedHidden] = useState(false);
@@ -101,12 +105,25 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      const wasDemoted = (person.is_admin || false) && !stagedAdmin;
+
       if (stagedAdmin !== (person.is_admin || false)) {
         await handleToggleAdmin(stagedAdmin);
       }
       if (stagedHidden) {
         onHide(person);
       }
+
+      // Self-revocation: admin removed their own privileges
+      const isSelf = currentUserEmail && person.email &&
+        person.email.toLowerCase() === currentUserEmail.toLowerCase();
+
+      if (wasDemoted && isSelf && onSelfDemote) {
+        toast({ title: "Admin access removed", description: "Your admin access has been removed. Redirecting…" });
+        onSelfDemote();
+        return;
+      }
+
       onAdminToggled();
       onOpenChange(false);
     } catch {
