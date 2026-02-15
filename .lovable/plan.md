@@ -1,33 +1,72 @@
 
 
-## Fix Ghost Admin Badge -- Final Cleanup
+## Harden Real-Time Sync and Fix Silent Failure in Admin Demotion
 
-### Overview
-Remove the last redundant `employees` table update in the promotion path and streamline the self-demote callback. The real-time subscription already handles cross-admin badge sync.
+### Root Cause Identified
+In `AdminService.removeAdminRole` (lines 312-322), the `employees.is_admin = false` update is wrapped in an `if (profile?.email)` guard. If the `profiles` table lookup returns null (e.g., due to RLS timing or a missing row), the `employees` table is **never updated**, leaving the Admin badge visible -- the "Ghost Badge."
 
-### Root Cause
-The promotion path (lines 93-97 in `PersonSettingsModal.tsx`) still manually updates `employees.is_admin`, but `AdminService.addAdminByEmail` already does this at line 195-199. This creates the same race condition pattern that was fixed for the demotion path.
-
-For cross-admin visibility ("other admins see the badge disappear"), the existing real-time Supabase channel in `PeopleManagement.tsx` (line 74) already subscribes to `employees` table changes and calls `loadPeople()` automatically -- no `queryClient` is needed since this component uses direct state management, not React Query.
+The real-time subscription (line 74) correctly listens for `employees` changes, but if no change is written, no event fires.
 
 ### Changes
 
-**1. `PersonSettingsModal.tsx` -- Remove redundant promotion employees update**
+**1. `adminService.ts` -- Fix silent failure and add logging (lines 311-323)**
 
-Remove lines 93-97 (the manual `supabase.from('employees').update(...)` call). Both `addAdminByEmail` and `removeAdminRole` already handle the `employees.is_admin` column internally. This eliminates the last race condition.
+Replace the `profiles` lookup with the `email` parameter that's already available at the call site. The caller in `PersonSettingsModal.tsx` already has `person.email` -- pass it directly to avoid the redundant lookup.
 
-The `handleToggleAdmin` function becomes purely a dispatcher to `AdminService` methods with no direct table writes.
+Alternative (minimal change): Add a `console.warn` when the profile is not found, and also update by `user_id` join as fallback. But the cleanest fix is to accept an optional `email` parameter.
 
-**2. `PeopleManagement.tsx` -- Remove wasteful `loadPeople` from self-demote**
+Proposed approach: Add an optional `email` parameter to `removeAdminRole`. When provided, use it directly for the `employees` update instead of looking it up from `profiles`. Add `console.log` after the update to confirm success.
 
-Remove `await loadPeople()` from the `onSelfDemote` callback. The user is about to be redirected and the page reloaded -- fetching data that will be immediately discarded adds latency to the redirect.
+```typescript
+static async removeAdminRole(userId: string, isPending: boolean = false, email?: string): Promise<void> {
+  // ... existing logic for pending, admin count check, role deletion ...
+
+  // Update employees.is_admin using provided email or profile lookup
+  const targetEmail = email || profile?.email;
+  if (targetEmail) {
+    const { error: empError } = await supabase
+      .from('employees')
+      .update({ is_admin: false } as any)
+      .eq('email', targetEmail);
+    console.log(`[AdminService] removeAdminRole employees update for ${targetEmail}:`, empError ? 'FAILED' : 'SUCCESS');
+  } else {
+    console.warn(`[AdminService] removeAdminRole: No email found for user ${userId}, employees.is_admin NOT updated`);
+  }
+}
+```
+
+**2. `PersonSettingsModal.tsx` -- Pass email to removeAdminRole (line 86)**
+
+Change the call from:
+```typescript
+await AdminService.removeAdminRole(profile.user_id, false);
+```
+to:
+```typescript
+await AdminService.removeAdminRole(profile.user_id, false, person.email);
+```
+
+This guarantees the `employees` update always runs, regardless of the `profiles` table lookup.
+
+**3. `PeopleManagement.tsx` -- Add focus-based failsafe refresh**
+
+Add a `useEffect` that listens for window `focus` events and calls `loadPeople()`. This acts as a safety net when real-time subscription events are missed (e.g., network blip, channel drop).
+
+```typescript
+useEffect(() => {
+  const handleFocus = () => { loadPeople(); };
+  window.addEventListener('focus', handleFocus);
+  return () => window.removeEventListener('focus', handleFocus);
+}, [loadPeople]);
+```
 
 ### Files Modified
-- `src/components/dashboard/PersonSettingsModal.tsx` (remove lines 93-97)
-- `src/components/dashboard/PeopleManagement.tsx` (remove `await loadPeople()` from `onSelfDemote`)
+- `src/services/adminService.ts` (accept optional email param, add console.log confirmation)
+- `src/components/dashboard/PersonSettingsModal.tsx` (pass `person.email` to `removeAdminRole`)
+- `src/components/dashboard/PeopleManagement.tsx` (add focus-based failsafe refresh)
 
 ### Review
-1. **Top 3 Risks**: (a) Relies on `addAdminByEmail` always updating `employees.is_admin` -- verified at lines 195-199 of adminService.ts. (b) Real-time subscription handles cross-admin sync -- verified at line 74 of PeopleManagement.tsx. (c) No risk to self-revocation flow since DB writes complete before redirect.
-2. **Top 3 Fixes**: (a) Eliminates last redundant DB write race condition. (b) Faster self-demote redirect without unnecessary data fetch. (c) Single source of truth for `is_admin` updates (AdminService only).
+1. **Top 3 Risks**: (a) Adding optional param to `removeAdminRole` -- backward compatible, no risk. (b) Focus event could cause frequent re-fetches -- mitigated by Supabase caching and debounce potential. (c) Console.log in production -- acceptable for debugging, can be replaced with `logger.info` for consistency.
+2. **Top 3 Fixes**: (a) Eliminates silent failure when profiles lookup returns null. (b) Focus-based refresh ensures eventual consistency even if subscriptions drop. (c) Logging confirms DB write success for audit trail.
 3. **Database Change**: No.
-4. **Verdict**: Go -- two surgical edits.
+4. **Verdict**: Go -- three surgical edits across three files.
