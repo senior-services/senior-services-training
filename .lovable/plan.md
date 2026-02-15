@@ -1,24 +1,29 @@
 
 
-## Fix Checkbox Vertical Alignment in TrainingAttestation
+## Fix Attestation Checkbox Vertical Alignment
 
 ### Changes in `src/components/shared/TrainingAttestation.tsx`
 
-**1. Fix the span wrapper class (line 72)**
+**1. Fix parent flex alignment (line 68)**
 
-Change `className="inline-flex"` to `className="flex items-center"` on the `<span>` inside `TooltipTrigger`. This converts the wrapper to a flex container that vertically centers the checkbox, aligning it with the label text baseline.
+Change `items-start` to `items-center` on the parent `div`. This is the root cause -- `items-start` forces the checkbox to the top of the row, ignoring the span's internal centering.
 
-**2. Standardize label spacing (line 99)**
+**2. Clean up span wrapper (line 72)**
 
-The `<Label>` currently uses `ml-3` for spacing. This is fine and consistent -- no change needed here. The `ml-3` provides clean horizontal separation from both the bare `Checkbox` and the `span`-wrapped `Checkbox`.
+Update the span class to `"flex items-center justify-center"` for explicit centering in both axes.
+
+**3. Verify tooltip and label**
+
+- `TooltipContent` already has `align="center"` -- no change needed.
+- Label's `ml-3` spacing remains intact and will now share the same horizontal center axis as the checkbox.
 
 ### Summary
-- One class change on line 72: `"inline-flex"` to `"flex items-center"`
-- Single file, single line edit
+
+Two class changes on lines 68 and 72. Single file, no logic changes.
 
 ### Review
-1. **Top 3 Risks**: None -- purely visual fix.
-2. **Top 3 Fixes**: (a) Checkbox aligns vertically with label. (b) Tooltip arrow remains centered via existing `align="center"`. (c) No spacing regressions since `ml-3` on label is unchanged.
+1. **Top 3 Risks**: None -- purely visual.
+2. **Top 3 Fixes**: (a) Parent flex centers both children. (b) Span wrapper explicitly centers checkbox. (c) Tooltip arrow already centered.
 3. **Database Change**: No.
 4. **Verdict**: Go.
 
