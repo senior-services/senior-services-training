@@ -1,27 +1,51 @@
 
 
-## Fix: Jane Doe Missing Admin Role in `user_roles`
+## Add "Form Section Header" to Style Guide
 
-### Problem
-Jane Doe (`jane.doe@southsoundseniors.org`) is marked as `is_admin = true` in the `employees` table, which lets her see the Admin Dashboard. However, she has no corresponding row in the `user_roles` table. All database security policies check `user_roles` to verify admin access, so every admin action (like granting admin to someone else) is blocked with "new row violates row-level security policy."
+### Overview
+Add a new semantic element demonstration called "Form Section Header" to the Form Controls section of the Components Gallery. This element standardizes the typography for grouping related form fields (e.g., "Contact Information", "Administrative Settings").
 
-### Root Cause
-A data inconsistency: `employees.is_admin` was set to `true` without a matching `user_roles` entry being created. The other three admins all have both records in sync.
+### Specification
+- **Typography**: `.text-body` (16px, inherited weight/leading from the composite token)
+- **Weight override**: `font-bold` (permitted under the 80/20 rule for form contexts)
+- **Color**: `text-foreground` (semantic token, no hardcoded hex)
+- **Spacing**: `mt-6` top margin to separate from previous group, `mb-2` bottom margin above the fields it labels
 
-### Fix (Database Migration)
-A single SQL statement to insert the missing admin role for Jane:
+### Changes
 
-```sql
-INSERT INTO public.user_roles (user_id, role)
-VALUES ('b8f92745-f8c0-48ab-a22b-86aa6d39d604', 'admin')
-ON CONFLICT (user_id, role) DO NOTHING;
+**File: `src/pages/ComponentsGallery.tsx`**
+
+Insert a new subsection at the top of the Form Controls `CardContent` area (after line 825, before the existing rounded-lg container). The new block will contain:
+
+1. A descriptive sub-heading: "Form Section Header"
+2. A live preview showing two form section headers, each above a sample text input, separated to demonstrate the spacing pattern:
+
+```
+-- Live Preview --
+[Form Section Header: "Contact Information"]
+  [Text Input: "Enter your email..."]
+
+[Form Section Header: "Administrative Settings"]  (with mt-6)
+  [Text Input: "Enter department..."]
 ```
 
-### No Code Changes Required
-The application code and RLS policies are functioning correctly. This is purely a data sync issue for one user.
+The markup for each header element:
+
+```tsx
+<h3 className="text-body font-bold text-foreground mt-6 mb-2">
+  Contact Information
+</h3>
+```
+
+### Design System Audit
+- **Typography**: Uses only `.text-body` composite token. `font-bold` is a permitted override per the 80/20 rule for form layout contexts.
+- **Color**: `text-foreground` is a semantic CSS custom property -- no hardcoded hex values.
+- **Spacing**: `mt-6` and `mb-2` are standard Tailwind steps on the 4px grid -- no arbitrary bracket values.
+- **No new CSS classes required**: This is a composition of existing tokens, not a new primitive.
 
 ### Review
-1. **Top 3 Risks:** (a) None -- ON CONFLICT ensures idempotency. (b) No schema changes. (c) No code changes.
-2. **Top 3 Fixes:** (a) Restores Jane's ability to perform all admin operations. (b) Aligns `user_roles` with `employees.is_admin`. (c) Single-row insert with no side effects.
-3. **Database Change:** Yes -- one row inserted into `user_roles`.
-4. **Verdict:** Go -- minimal, targeted data fix.
+1. **Top 3 Risks**: (a) None -- additive-only change to the gallery page. (b) No new primitives or CSS classes introduced. (c) No impact on production components.
+2. **Top 3 Fixes**: (a) Documents a previously informal pattern. (b) Provides a live reference for developers. (c) Prevents future "class soup" by establishing the canonical markup.
+3. **Database Change**: No.
+4. **Verdict**: Go -- single-file, gallery-only addition.
+
