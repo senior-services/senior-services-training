@@ -1,53 +1,64 @@
 
 
-## Diagnose and Fix Ghost Admin Badge -- Error Visibility and Diagnostics
+## Fix Ghost Badge: Case-Safe Email Update and Self-Demotion Verification
 
-### Overview
-Three surgical edits to surface silent DB failures, confirm subscription health, and isolate whether the ghost badge is a backend or frontend issue.
+### Problem
+The `employees` table update in `removeAdminRole` uses `.eq('email', targetEmail)`, which is case-sensitive in PostgreSQL. If the email stored in `employees` differs in casing from the one passed in (e.g., `Jane.Doe@...` vs `jane.doe@...`), the update matches zero rows -- Supabase returns success with no error, but nothing changes.
+
+### Why `.eq('user_id', userId)` Won't Work
+The `employees` table has **no `user_id` column**. Its columns are: `id, email, full_name, created_at, updated_at, archived_at, is_admin`. There is no foreign key to `auth.users`. The email is the only link between `employees` and authenticated users.
 
 ### Changes
 
-**1. `src/services/adminService.ts` (lines 322-330) -- Throw on failure instead of logging**
+**1. `src/services/adminService.ts` -- Case-insensitive email match + row-count verification**
 
-Replace the current log-only pattern with a thrown error so the modal's `handleSave` catch block surfaces a red toast to the user.
+Replace the current update block (lines 322-332) with:
+- Use a Supabase RPC or `.ilike()` filter (Supabase JS does not natively support case-insensitive `.eq()`).
+- After the update, add `.select()` to verify rows were actually affected.
+- If zero rows returned, throw an error (catches silent RLS filtering or email mismatch).
 
 ```typescript
 if (targetEmail) {
-  const { error: empError } = await supabase
+  const { data: updatedRows, error: empError } = await supabase
     .from('employees')
     .update({ is_admin: false } as any)
-    .eq('email', targetEmail);
-  console.log(`[AdminService] removeAdminRole employees update for ${targetEmail}:`, empError ? 'FAILED' : 'SUCCESS');
+    .ilike('email', targetEmail)
+    .select('id, email, is_admin');
+
+  console.log(`[AdminService] removeAdminRole employees update for ${targetEmail}:`, empError ? 'FAILED' : 'SUCCESS', 'rows affected:', updatedRows?.length ?? 0);
+
   if (empError) throw new Error('Failed to update employee admin status: ' + empError.message);
+  if (!updatedRows || updatedRows.length === 0) {
+    throw new Error('Employee admin status update matched zero rows -- possible email mismatch or RLS rejection');
+  }
 } else {
-  console.warn(`[AdminService] removeAdminRole: No email found for user ${userId}, employees.is_admin NOT updated`);
+  console.warn(`[AdminService] removeAdminRole: No email found for user ${userId}`);
   throw new Error('No email found for user, cannot update admin status');
 }
 ```
 
-This ensures that if RLS blocks the write, the UI shows a destructive toast instead of silently closing the modal.
+Key improvements:
+- `.ilike('email', targetEmail)` -- case-insensitive match eliminates casing mismatches.
+- `.select()` after `.update()` -- returns affected rows so we can verify the write actually landed.
+- Zero-row check -- catches the scenario where Supabase returns no error but RLS silently filters the update.
 
-**2. `src/components/dashboard/PeopleManagement.tsx` (line 93, inside `loadPeople`) -- Add Jane diagnostic log**
+**2. `src/components/dashboard/PeopleManagement.tsx` -- Self-demotion failsafe (no change needed)**
 
-After `const data = await employeeOperations.getAll();`, add:
-
+Already correctly implemented at line 489-491:
 ```typescript
-console.log('[PeopleManagement] Jane data from DB:', data.data?.find(p => p.email === 'jane.doe@southsoundseniors.org'));
+onSelfDemote={() => {
+  navigate('/dashboard');
+  setTimeout(() => window.location.reload(), 100);
+}}
 ```
-
-This proves whether the ghost badge is a backend data issue (DB still has `is_admin: true`) or a frontend rendering bug.
-
-**3. `src/components/dashboard/PeopleManagement.tsx` (line 72) -- No changes needed**
-
-The subscription already uses `schema: 'public'`, `event: '*'`, and `table: 'employees'` at line 74. The channel name `'people-management'` is fine -- the `'public:employees'` naming convention is cosmetic only; the filter params are what matter. No change required here.
+This navigates away and forces a full page reload, purging cached admin state.
 
 ### Files Modified
-- `src/services/adminService.ts` (throw on empError + throw when no email found)
-- `src/components/dashboard/PeopleManagement.tsx` (add Jane diagnostic log in loadPeople)
+- `src/services/adminService.ts` (lines 322-332: `.ilike()` + `.select()` + zero-row guard)
 
 ### Review
-1. **Top 3 Risks**: (a) Throwing on failure could surface previously hidden RLS errors -- this is desired behavior. (b) The Jane-specific log is diagnostic only, should be removed after debugging. (c) No subscription change needed; current config is already correct.
-2. **Top 3 Fixes**: (a) Silent failures become visible error toasts. (b) Diagnostic log isolates backend vs. frontend root cause. (c) Both `else` branches (no email found) now also throw, preventing silent no-ops.
+1. **Top 3 Risks**: (a) `.ilike()` uses LIKE semantics -- exact email strings won't have wildcard issues since emails don't contain `%` or `_`. (b) `.select()` after `.update()` adds one extra field to the response -- negligible overhead. (c) No schema change required.
+2. **Top 3 Fixes**: (a) Case-insensitive match eliminates the most likely root cause. (b) Row-count verification catches silent RLS filtering. (c) Thrown errors surface failures to the user via toast.
 3. **Database Change**: No.
-4. **Verdict**: Go -- two files, three lines added.
+4. **Verdict**: Go -- single file, one block replaced.
 
