@@ -1,26 +1,27 @@
 
 
-## Add Separator Between Modal Sections
+## Fix: Jane Doe Missing Admin Role in `user_roles`
 
-### Overview
-Add horizontal rule separators between the main sections in both PersonSettingsModal and TrainingSettingsModal using the existing `Separator` component from `@/components/ui/separator`.
+### Problem
+Jane Doe (`jane.doe@southsoundseniors.org`) is marked as `is_admin = true` in the `employees` table, which lets her see the Admin Dashboard. However, she has no corresponding row in the `user_roles` table. All database security policies check `user_roles` to verify admin access, so every admin action (like granting admin to someone else) is blocked with "new row violates row-level security policy."
 
-### Changes
+### Root Cause
+A data inconsistency: `employees.is_admin` was set to `true` without a matching `user_roles` entry being created. The other three admins all have both records in sync.
 
-**File 1: `src/components/dashboard/PersonSettingsModal.tsx`**
-- Import `Separator` from `@/components/ui/separator`.
-- Add `<Separator />` between the Person info section and the Admin toggle section.
-- Add `<Separator />` between the Admin toggle section and the Hide person section.
+### Fix (Database Migration)
+A single SQL statement to insert the missing admin role for Jane:
 
-**File 2: `src/components/dashboard/TrainingSettingsModal.tsx`**
-- Import `Separator` from `@/components/ui/separator`.
-- Add `<Separator />` between the Training info section and the Hide training section.
+```sql
+INSERT INTO public.user_roles (user_id, role)
+VALUES ('b8f92745-f8c0-48ab-a22b-86aa6d39d604', 'admin')
+ON CONFLICT (user_id, role) DO NOTHING;
+```
 
-### Technical Detail
-The `Separator` component renders a semantic `<hr>` with `bg-border` styling. The parent `space-y-6` handles vertical spacing around each separator automatically, so no additional margin classes are needed.
+### No Code Changes Required
+The application code and RLS policies are functioning correctly. This is purely a data sync issue for one user.
 
 ### Review
-1. **Top 3 Risks:** None -- purely additive visual change.
-2. **Top 3 Fixes:** (a) Restores visual section boundaries. (b) Uses the design system `Separator` primitive instead of raw border utilities. (c) Consistent across both modals.
-3. **Database Change:** No.
-4. **Verdict:** Go -- two-file, minimal change.
+1. **Top 3 Risks:** (a) None -- ON CONFLICT ensures idempotency. (b) No schema changes. (c) No code changes.
+2. **Top 3 Fixes:** (a) Restores Jane's ability to perform all admin operations. (b) Aligns `user_roles` with `employees.is_admin`. (c) Single-row insert with no side effects.
+3. **Database Change:** Yes -- one row inserted into `user_roles`.
+4. **Verdict:** Go -- minimal, targeted data fix.
