@@ -1,61 +1,66 @@
 
 
-## Prevent Admin Self-Demotion and Clean Up Diagnostics
+## Fix Download Data in PeopleManagement
 
-### Overview
-Disable the admin toggle when editing one's own account, add contextual guidance, and remove obsolete self-demotion logic and diagnostic logs.
+### Problem
+The "Download Data" button in PeopleManagement opens the modal but the `onConfirm` callback is a no-op (`() => { setShowDownloadModal(false); }`). There is no `exportToExcel` function in this component. The working export logic exists in `EmployeeManagement.tsx` and needs to be replicated.
+
+### Root Cause
+When PeopleManagement was created as the unified replacement for EmployeeManagement, the download/export logic was never wired up -- only the modal shell was added.
 
 ### Changes
 
-**1. `src/components/dashboard/PersonSettingsModal.tsx` -- Disable self-demotion + helper text**
+**1. `src/components/dashboard/PeopleManagement.tsx`**
 
-- Compute `isSelf` from `currentUserEmail` and `person.email` (case-insensitive).
-- Set the admin checkbox `disabled` to `true` when `isSelf` (or when `isSaving`).
-- Add a `<p className="form-additional-text">` below the checkbox with the guidance message when `isSelf`.
-- Remove the `onSelfDemote` prop from the interface and all internal references (the self-demotion block in `handleSave` at lines 117-125, and the prop declaration at line 32/42).
+Add the missing export pipeline by porting the three functions from `EmployeeManagement.tsx`:
+
+- **Add missing imports**: `isLegacyExempt`, `hasActiveQuizRequirement`, `getDisplayQuizResults`, `getDisplayQuizVersion`, `getCompletionDate`, `isTrainingCompleted`, `QuizAttemptData` from `@/utils/quizHelpers`.
+
+- **Add state**: `isExporting` boolean state variable.
+
+- **Add `loadHiddenPeopleQuizData`**: Async function that fetches quiz creation dates and loads quiz attempts for each hidden person (mirrors `loadHiddenEmployeeQuizData` in EmployeeManagement).
+
+- **Add `processEmployeesForExport`**: Transforms employee + video + quiz data into flat rows for the Excel sheet, including conditional "Visibility" column when hidden employees are included.
+
+- **Add `exportToExcel`**: Orchestrates the export -- merges hidden data if requested, fetches quiz metadata, calls `processEmployeesForExport`, generates the XLSX file, and shows success/error toasts.
+
+- **Add `handleDownloadClick`**: If no hidden people exist, directly call `exportToExcel(false)`. Otherwise, open the download modal.
+
+- **Wire up the modal**: Change `onConfirm` from the no-op to `exportToExcel`, pass `isExporting` to `isLoading`, and update the button `onClick` to use `handleDownloadClick`.
+
+### Technical Detail
+
+The key wiring fix on the modal (line 471-477):
 
 ```tsx
-// Computed near top of component body:
-const isSelf = !!(currentUserEmail && person?.email &&
-  person.email.toLowerCase() === currentUserEmail.toLowerCase());
-
-// Checkbox:
-<Checkbox
-  id="admin-toggle"
-  checked={stagedAdmin}
-  onCheckedChange={(checked) => setStagedAdmin(checked === true)}
-  disabled={isSaving || isSelf}
-  aria-label="Toggle administrative privileges"
+// Before (broken):
+<DownloadDataModal
+  onConfirm={() => { setShowDownloadModal(false); }}
+  isLoading={false}
 />
 
-// Below the checkbox Label, conditionally:
-{isSelf && (
-  <p className="form-additional-text">
-    Admins cannot remove their own administrative privileges. To change your access level, please contact another administrator.
-  </p>
-)}
+// After (working):
+<DownloadDataModal
+  onConfirm={exportToExcel}
+  isLoading={isExporting}
+/>
 ```
 
-**2. `src/components/dashboard/PeopleManagement.tsx` -- Remove self-demotion callback + diagnostic log**
+And the button (line 306):
+```tsx
+// Before: always opens modal
+onClick={() => setShowDownloadModal(true)}
 
-- Line 94: Remove the `console.log('[PeopleManagement] Jane DB is_admin:...')` diagnostic.
-- Lines 489-492: Remove `onSelfDemote` prop from `<PersonSettingsModal>`.
-- The `useNavigate` import and `navigate` variable can also be removed if no other code uses them (will verify during implementation).
-
-**3. `src/services/adminService.ts` -- Remove diagnostic log, keep error guards**
-
-- Line 329: Remove `console.log('[AdminService] removeAdminRole employees update...')`.
-- Line 336: Remove `console.warn('[AdminService] removeAdminRole: No email found...')`.
-- Keep the `throw` statements on lines 331-333 and 337 -- these are production-grade error guards.
+// After: direct download when no hidden people
+onClick={handleDownloadClick}
+```
 
 ### Files Modified
-- `src/components/dashboard/PersonSettingsModal.tsx` (disable checkbox for self, add helper text, remove `onSelfDemote` prop and logic)
-- `src/components/dashboard/PeopleManagement.tsx` (remove `onSelfDemote` callback, remove diagnostic log)
-- `src/services/adminService.ts` (remove diagnostic console.log/warn, keep throws)
+- `src/components/dashboard/PeopleManagement.tsx` (add export functions, wire modal, add state)
 
 ### Review
-1. **Top 3 Risks**: (a) Removing `onSelfDemote` is safe because the checkbox is now disabled for self -- the code path is unreachable. (b) `isSelf` uses case-insensitive comparison, consistent with the `.ilike()` fix. (c) Helper text uses only `.form-additional-text` -- no utility classes.
-2. **Top 3 Fixes**: (a) UI-level prevention of self-demotion aligns with HR best practices. (b) Diagnostic logs removed to keep production console clean. (c) Error throws retained as permanent safety guards.
+1. **Top 3 Risks**: (a) Data consistency -- porting the identical logic from EmployeeManagement ensures reports match. (b) Quiz data for hidden people is loaded on-demand during export, consistent with the existing pattern. (c) No database changes needed.
+2. **Top 3 Fixes**: (a) Wire `exportToExcel` to `onConfirm`. (b) Add `handleDownloadClick` for direct-download when no hidden people. (c) Pass `isExporting` state to show loading indicator.
 3. **Database Change**: No.
-4. **Verdict**: Go -- three files, clean removal of obsolete code plus one UX addition.
+4. **Verdict**: Go -- single file, porting proven logic from sibling component.
 
