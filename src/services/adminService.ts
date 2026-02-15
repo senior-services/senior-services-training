@@ -320,14 +320,20 @@ export class AdminService {
     }
 
     if (targetEmail) {
-      const { error: empError } = await supabase
+      const { data: updatedRows, error: empError } = await supabase
         .from('employees')
         .update({ is_admin: false } as any)
-        .eq('email', targetEmail);
-      console.log(`[AdminService] removeAdminRole employees update for ${targetEmail}:`, empError ? 'FAILED' : 'SUCCESS');
+        .ilike('email', targetEmail)
+        .select('id, email, is_admin');
+
+      console.log(`[AdminService] removeAdminRole employees update for ${targetEmail}:`, empError ? 'FAILED' : 'SUCCESS', 'rows affected:', updatedRows?.length ?? 0);
+
       if (empError) throw new Error('Failed to update employee admin status: ' + empError.message);
+      if (!updatedRows || updatedRows.length === 0) {
+        throw new Error('Employee admin status update matched zero rows -- possible email mismatch or RLS rejection');
+      }
     } else {
-      console.warn(`[AdminService] removeAdminRole: No email found for user ${userId}, employees.is_admin NOT updated`);
+      console.warn(`[AdminService] removeAdminRole: No email found for user ${userId}`);
       throw new Error('No email found for user, cannot update admin status');
     }
   }
