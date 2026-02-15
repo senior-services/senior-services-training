@@ -39,7 +39,7 @@ export const AdminDashboard = ({
             </TabsContent>
 
             <TabsContent value="people" className="space-y-6">
-              <PeopleManagement />
+              <PeopleManagement userEmail={userEmail} />
             </TabsContent>
           </Tabs>
         </div>
