@@ -1,35 +1,41 @@
 
 
-## Fix: Black Border on Training Card
+## Enlarge Dialog Close "X" Icon
 
-### Problem
+### Overview
 
-The inline `style={{ borderColor: 'var(--border-primary)' }}` on the TrainingCard header fails because `--border-primary` stores raw HSL values (e.g., `210 20% 77%`) without the `hsl()` wrapper. The browser treats this as invalid CSS and falls back to black.
+Increase the Lucide `X` icon size in the shared Dialog component from `h-4 w-4` (16px) to a larger size for better visibility and tap-target accessibility.
 
 ### Change
 
-**File: `src/components/TrainingCard.tsx`** (line 221)
+**File: `src/components/ui/dialog.tsx`**
 
-Replace the inline style with the Tailwind semantic class:
+Two lines need updating:
 
-```tsx
-// Before
-<header className="relative border-b" style={{ borderColor: 'var(--border-primary)' }}>
+1. **Line 46** (standard `DialogContent`):
+   ```tsx
+   // Before
+   <X className="h-4 w-4" />
+   // After
+   <X className="h-5 w-5" />
+   ```
 
-// After
-<header className="relative border-b border-border-primary">
-```
+2. **Line 73** (`FullscreenDialogContent`):
+   ```tsx
+   // Before
+   <X className="h-4 w-4" />
+   // After
+   <X className="h-5 w-5" />
+   ```
 
-### Audit Results
+Use `h-5 w-5` (20px) for a balanced increase. If you prefer even larger, `h-6 w-6` (24px) is also an option.
 
-A full codebase scan confirms this is the **only** instance of raw `var(--border-...)` or `var(--input)` used in inline styles. All other border usages (Header, DashboardLayout, Tabs, Dialog, EmployeeList, Sonner, Chart, ComponentsGallery) already use the correct Tailwind classes (`border-border-primary`, `border-border-secondary`).
-
-The Tailwind config (`tailwind.config.ts`) correctly wraps all border tokens in `hsl()`, so the semantic classes work as intended.
+The close button's hit area on `FullscreenDialogContent` is already `h-10 w-10`, so the larger icon fits comfortably. On `DialogContent`, the button container is minimal -- consider also adding padding (e.g., `p-2`) to increase the tap target for accessibility compliance.
 
 ### Review
 
-1. **Top 3 Risks:** None -- single attribute swap, no layout impact.
-2. **Top 3 Fixes:** (a) Correct color rendering. (b) Removes inline style in favor of semantic class. (c) Consistent with all other border usage in the codebase.
+1. **Top 3 Risks:** None -- icon sizing only, no layout shift.
+2. **Top 3 Fixes:** (a) Improved visibility for senior users. (b) Consistent icon size across both dialog variants. (c) Better WCAG tap-target compliance.
 3. **Database Change:** No.
-4. **Verdict:** Go -- single-line fix, zero risk.
+4. **Verdict:** Go.
 
