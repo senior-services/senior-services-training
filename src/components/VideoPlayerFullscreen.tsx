@@ -107,6 +107,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
   // Presentation compliance states
   const [viewingSeconds, setViewingSeconds] = useState(0);
+  const viewingSecondsRef = useRef(0);
   const [checkboxEnabled, setCheckboxEnabled] = useState(false);
   const [presentationAcknowledged, setPresentationAcknowledged] = useState(false);
   const [a11yAnnouncement, setA11yAnnouncement] = useState("");
@@ -229,20 +230,32 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     return () => clearInterval(timer);
   }, [open, video, checkboxEnabled, videoId]);
 
+  // Keep ref in sync with viewingSeconds state
+  useEffect(() => {
+    viewingSecondsRef.current = viewingSeconds;
+  }, [viewingSeconds]);
+
   // Periodic save of viewing seconds for presentations
   useEffect(() => {
     if (!open || !video || video.content_type !== 'presentation' || !user?.email || !videoId) return;
 
-    const saveInterval = setInterval(() => {
-      if (viewingSeconds > 0) {
-        progressOperations.updateByEmail(
-          user.email!, videoId, progress, undefined, undefined, viewingSeconds
+    const saveInterval = setInterval(async () => {
+      const currentSeconds = viewingSecondsRef.current;
+      if (currentSeconds > 0) {
+        console.log('[Timer Sync] Attempting save, seconds:', currentSeconds);
+        const result = await progressOperations.updateByEmail(
+          user.email!, videoId, 0, undefined, undefined, currentSeconds
         );
+        if (result.success) {
+          console.log('[Timer Sync] Successfully saved seconds:', currentSeconds);
+        } else {
+          console.error('[Timer Sync] Failed to save:', result.error);
+        }
       }
-    }, 10000); // Save every 10 seconds
+    }, 5000);
 
     return () => clearInterval(saveInterval);
-  }, [open, video, user?.email, videoId, viewingSeconds, progress]);
+  }, [open, video, user?.email, videoId]);
 
   // Reset presentation states and badge when dialog opens/closes
   useEffect(() => {
