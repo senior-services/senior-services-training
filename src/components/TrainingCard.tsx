@@ -49,6 +49,7 @@ export interface TrainingVideo {
     completedAt?: string;
   };
   quizQuestionCount?: number;
+  acknowledgmentViewingSeconds?: number;
 }
 
 /**
@@ -135,13 +136,15 @@ export const TrainingCard = memo<TrainingCardProps>(({
   // Calculate training status and progress
   const trainingStatus = useOptimizedMemo(() => {
     const isCompleted = sanitizedVideo.progress === 100;
-    const hasStarted = sanitizedVideo.progress > 0;
+    const hasStarted = sanitizedVideo.progress > 0
+      || (sanitizedVideo.acknowledgmentViewingSeconds != null
+          && sanitizedVideo.acknowledgmentViewingSeconds > 0);
     return {
       isCompleted,
       hasStarted,
       statusText: isCompleted ? 'Completed' : hasStarted ? 'In Progress' : 'Not Started'
     };
-  }, [sanitizedVideo.progress]);
+  }, [sanitizedVideo.progress, sanitizedVideo.acknowledgmentViewingSeconds]);
 
   // Calculate due date status with centralized utility
   const dueDateInfo = useOptimizedMemo(() => {
