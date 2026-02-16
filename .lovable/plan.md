@@ -1,52 +1,60 @@
 
 
-## Show "Continue Training" for In-Progress Presentations
+## Fix "Continue Training" Button Detection
 
-### Problem
+### Root Cause Analysis
 
-The heartbeat saves `progress_percent: 0` to the database (by design, to avoid overwriting real progress). This means presentations with accumulated viewing time but no completion still show `progress: 0` in the TrainingCard, so the button reads "Start Training" even though the user has been viewing.
+The code paths look correct on paper: the interface has the field, the transform maps it, and the hasStarted logic checks it. There are two possible failure points to fix simultaneously:
 
-### Solution: Two changes
+1. **Falsy-value bug on line 301 of EmployeeDashboard.tsx**: The expression `assignment?.acknowledgment_viewing_seconds || undefined` will silently convert a value of `0` to `undefined`. While the current DB values are 91 and 66, this is fragile and should use nullish coalescing (`??`) instead of logical OR (`||`).
 
-**1. Update the DB function `get_user_video_assignments` to expose `acknowledgment_viewing_seconds`**
+2. **Missing debug visibility**: Without a console log, we cannot confirm whether the data is arriving at the card or being lost somewhere in the pipeline.
 
-Add `acknowledgment_viewing_seconds` to the JSON object returned in both UNION branches:
+3. **Defensive hasStarted logic**: The current check relies on `sanitizedVideo.acknowledgmentViewingSeconds != null` which is correct, but adding an explicit `> 0` guard and a debug log will make the flow transparent.
 
-- Branch 1 (formal assignments): add `'acknowledgment_viewing_seconds', vp.acknowledgment_viewing_seconds`
-- Branch 2 (progress-only): add `'acknowledgment_viewing_seconds', vp2.acknowledgment_viewing_seconds`
+### Changes
 
-This is a non-breaking addition -- existing consumers ignore unknown keys.
+**File 1: `src/pages/EmployeeDashboard.tsx` (line 301)**
 
-**2. Pass `acknowledgmentViewingSeconds` through the data pipeline to TrainingCard**
+Replace the falsy-unsafe `||` with nullish coalescing `??`:
 
-- **`TrainingVideo` interface** (`src/components/TrainingCard.tsx`, line 29): Add optional field `acknowledgmentViewingSeconds?: number`
-- **`transformToTrainingVideo`** (`src/pages/EmployeeDashboard.tsx`, ~line 283): Map `assignment.acknowledgment_viewing_seconds` into the new field
-- **`trainingStatus` memo** (`src/components/TrainingCard.tsx`, line 136-144): Update `hasStarted` to also check `acknowledgmentViewingSeconds > 0`:
-  ```
+```
+// Before
+acknowledgmentViewingSeconds: assignment?.acknowledgment_viewing_seconds || undefined
+
+// After
+acknowledgmentViewingSeconds: assignment?.acknowledgment_viewing_seconds ?? undefined
+```
+
+**File 2: `src/components/TrainingCard.tsx` (lines 136-147)**
+
+Add a temporary debug log right before the status calculation, and keep the hasStarted logic explicit:
+
+```tsx
+const trainingStatus = useOptimizedMemo(() => {
+  const isCompleted = sanitizedVideo.progress === 100;
   const hasStarted = sanitizedVideo.progress > 0
     || (sanitizedVideo.acknowledgmentViewingSeconds != null
         && sanitizedVideo.acknowledgmentViewingSeconds > 0);
-  ```
 
-### What changes for the user
+  console.log('[Card Debug]', sanitizedVideo.title,
+    'progress:', sanitizedVideo.progress,
+    'viewingSec:', sanitizedVideo.acknowledgmentViewingSeconds,
+    'hasStarted:', hasStarted,
+    'buttonText:', isCompleted ? 'Review' : hasStarted ? 'Continue' : 'Start');
 
-| State | Button Text |
-|-------|------------|
-| No progress, no viewing seconds | Start Training |
-| Viewing seconds > 0 but not complete | Continue Training |
-| progress > 0 but not complete | Continue Training (unchanged) |
-| Completed | Review Training (unchanged) |
-
-### Technical details
-
-- **Database migration**: ALTER FUNCTION `get_user_video_assignments` to include the new column in both JSON builders.
-- **TrainingCard.tsx**: Add interface field + update `hasStarted` logic (2 lines).
-- **EmployeeDashboard.tsx**: Pass `acknowledgmentViewingSeconds: assignment?.acknowledgment_viewing_seconds || undefined` in the return object (~line 283).
-- No new dependencies, no styling changes, no new components.
+  return {
+    isCompleted,
+    hasStarted,
+    statusText: isCompleted ? 'Completed' : hasStarted ? 'In Progress' : 'Not Started'
+  };
+}, [sanitizedVideo.progress, sanitizedVideo.acknowledgmentViewingSeconds]);
+```
 
 ### Review
 
-1. **Top 3 Risks**: (a) DB function change is additive -- no breaking impact. (b) Null-safe check prevents false positives. (c) No effect on completed training display.
-2. **Top 3 Fixes**: (a) Surfaces real viewing data to the UI. (b) Minimal code change. (c) Works for both videos and presentations.
-3. **Database Change**: Yes -- update `get_user_video_assignments` function to include `acknowledgment_viewing_seconds` in JSON output.
-4. **Verdict**: Go.
+1. **Top 3 Risks**: (a) `?? undefined` is semantically identical for non-zero values but fixes the 0-case. (b) Debug log is temporary -- remove after verification. (c) No logic change to hasStarted, just added visibility.
+2. **Top 3 Fixes**: (a) Nullish coalescing prevents silent data loss. (b) Console log provides immediate verification. (c) No other files or DB changes needed.
+3. **Database Change**: No.
+4. **Verdict**: Go -- two surgical line edits.
+
