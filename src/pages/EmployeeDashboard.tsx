@@ -297,7 +297,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
         quizPending,
         quizSummary,
         quizQuestionCount: hasQuiz ? quizInfo?.questionCount : undefined,
-        completedAt: effectiveCompletedAt || undefined
+        completedAt: effectiveCompletedAt || undefined,
+        acknowledgmentViewingSeconds: assignment?.acknowledgment_viewing_seconds || undefined
       };
     },
     [userEmail, quizAttemptsByVideo, videoIdsWithQuizzes]
