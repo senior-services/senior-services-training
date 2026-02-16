@@ -104,8 +104,8 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
   }, [userEmail, videoId, wasEverCompleted, hasQuiz, isLocked, progress]);
 
   const updateProgress = useCallback((progressPercent: number) => {
-    // Block updates if locked
-    if (isLocked && progressPercent < 100) {
+    // Block ALL updates if locked (completed) — prevents debounced writes from overwriting completed_at
+    if (isLocked) {
       logger.info('Progress locked - ignoring update', {
         videoId,
         attemptedProgress: progressPercent
