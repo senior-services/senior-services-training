@@ -578,18 +578,18 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 storedScore={wasEverCompleted ? storedAttemptScore : undefined}
                 storedTotalQuestions={wasEverCompleted ? storedAttemptTotal : undefined}
               />
-            </div>
-          )}
 
-          {/* Attestation - below quiz questions */}
-          {quiz && (quizStarted || quizSubmitted || wasEverCompleted) && !quizSubmitted && !wasEverCompleted && (
-            <div className="mt-6 max-w-4xl mx-auto">
-              <TrainingAttestation
-                enabled={allQuestionsAnswered}
-                checked={quizAttestationChecked}
-                onCheckedChange={setQuizAttestationChecked}
-                disabledTooltip="Complete the questions above to enable this checkbox."
-              />
+              {/* Attestation - inline after quiz questions */}
+              {!quizSubmitted && !wasEverCompleted && (
+                <div className="mt-6 max-w-4xl mx-auto">
+                  <TrainingAttestation
+                    enabled={allQuestionsAnswered}
+                    checked={quizAttestationChecked}
+                    onCheckedChange={setQuizAttestationChecked}
+                    disabledTooltip="Complete the questions above to enable this checkbox."
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
