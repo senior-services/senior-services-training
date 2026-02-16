@@ -638,7 +638,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                     )}
                     {isPresentation && !timerActive && (
                       <Banner variant="success" size="compact" className="w-fit shrink-0">
-                        Minimum time met
+                        Minimum Time Met
                       </Banner>
                     )}
                     {!isPresentation && showVideoCompletedBadge && (
