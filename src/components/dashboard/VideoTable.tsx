@@ -199,7 +199,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                             Add your first video to get started with training content.
                           </p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={onAddVideo} aria-label="Add your first training">
+                        <Button variant="outline" onClick={onAddVideo} aria-label="Add your first training">
                           <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
                           Add First Training
                         </Button>
@@ -335,6 +335,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                               tooltip="Training settings"
                               onClick={() => handleVideoAction("Open settings", video, () => onSettings(video))}
                               variant="ghost"
+                              size="icon"
                               className="text-muted-foreground hover:text-foreground"
                               ariaLabel={`Settings for ${video.title}`}
                             />
