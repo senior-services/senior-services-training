@@ -1144,19 +1144,14 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <h3 className="text-h4">
-                      {questions.length} {questions.length === 1 ? "Quiz Question" : "Quiz Questions"}
+                      {questions.length === 1 ? "Quiz Question" : "Quiz Questions"} {questions.length}
                     </h3>
-                    {versionCount > 1 && quiz && <Badge variant="soft-tertiary">v{quiz.version}</Badge>}
+                    {versionCount > 1 && quiz && <Badge variant="soft-tertiary">Version {quiz.version}</Badge>}
                   </div>
                   {versionCount > 1 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleDownloadVersions}
-                      disabled={isDownloadingVersions}
-                    >
+                    <Button variant="outline" onClick={handleDownloadVersions} disabled={isDownloadingVersions}>
                       <Download className="w-4 h-4 mr-1" />
-                      {isDownloadingVersions ? "Downloading..." : "Download quiz versions"}
+                      {isDownloadingVersions ? "Downloading..." : "Download Quiz Versions"}
                     </Button>
                   )}
                 </div>
@@ -1166,7 +1161,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                     <Card key={questionIndex} className="border-border">
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-body font-bold">Question {questionIndex + 1}</CardTitle>
+                          <CardTitle className="form-section-header">Question {questionIndex + 1}</CardTitle>
                           <Button
                             onClick={() => removeQuestion(questionIndex)}
                             variant="ghost"
