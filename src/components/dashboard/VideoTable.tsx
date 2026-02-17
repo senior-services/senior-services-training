@@ -323,7 +323,6 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                         >
                           <Button
                             variant="outline"
-                            size="sm"
                             onClick={() => handleVideoAction("Edit video", video, () => onEdit(video))}
                             aria-label={`Edit ${video.title}`}
                           >
