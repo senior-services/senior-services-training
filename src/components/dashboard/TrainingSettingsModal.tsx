@@ -63,10 +63,9 @@ export const TrainingSettingsModal: React.FC<TrainingSettingsModalProps> = ({ op
 
             {/* Hide training */}
             <div>
-              <h3 className="form-section-header !mt-0">Remove from Active View</h3>
+              <h3 className="form-section-header !mt-0">Hide Training from Main List</h3>
               <p className="form-helper-text">
-                Hide this training from the main list. It will move to the "Hidden" tab, but all existing progress and
-                assignments will remain safe.
+                It will move to the "Hidden" tab, but all existing progress and assignments will remain safe.
               </p>
               <div className="flex items-center gap-2 mt-3">
                 <Checkbox
@@ -76,7 +75,7 @@ export const TrainingSettingsModal: React.FC<TrainingSettingsModalProps> = ({ op
                   aria-label="Hide training from active list"
                 />
                 <Label htmlFor="hide-training" className="cursor-pointer">
-                  Hide from active view
+                  Hide Training
                 </Label>
               </div>
             </div>
