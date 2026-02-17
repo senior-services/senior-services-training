@@ -2,7 +2,7 @@
  * TrainingSettingsModal - Settings modal for managing a training's visibility.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,12 +10,12 @@ import {
   DialogHeader,
   DialogScrollArea,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
-import type { Video } from '@/types';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import type { Video } from "@/types";
 
 interface TrainingSettingsModalProps {
   open: boolean;
@@ -24,12 +24,7 @@ interface TrainingSettingsModalProps {
   onHide: (video: Video) => void;
 }
 
-export const TrainingSettingsModal: React.FC<TrainingSettingsModalProps> = ({
-  open,
-  onOpenChange,
-  video,
-  onHide,
-}) => {
+export const TrainingSettingsModal: React.FC<TrainingSettingsModalProps> = ({ open, onOpenChange, video, onHide }) => {
   const [stagedHidden, setStagedHidden] = useState(false);
 
   // Reset staged state when modal opens
@@ -68,9 +63,10 @@ export const TrainingSettingsModal: React.FC<TrainingSettingsModalProps> = ({
 
             {/* Hide training */}
             <div>
-              <h3 className="form-section-header !mt-0">Hide Training From Active List</h3>
+              <h3 className="form-section-header !mt-0">Remove from Active View</h3>
               <p className="form-helper-text">
-                Moves to the Hidden section without affecting existing assignments or progress.
+                Hide this training from the main list. It will move to the "Hidden" tab, but all existing progress and
+                assignments will remain safe.
               </p>
               <div className="flex items-center gap-2 mt-3">
                 <Checkbox
@@ -80,7 +76,7 @@ export const TrainingSettingsModal: React.FC<TrainingSettingsModalProps> = ({
                   aria-label="Hide training from active list"
                 />
                 <Label htmlFor="hide-training" className="cursor-pointer">
-                  Hide this training
+                  Hide from active view
                 </Label>
               </div>
             </div>
