@@ -170,12 +170,26 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   }
 
   /* Heading tags inherit composite tokens automatically */
-  h1 { @apply text-h1; }
-  h2 { @apply text-h2; }
-  h3 { @apply text-h3; }
-  h4 { @apply text-h4; }
-  h5 { @apply text-body-lg; font-weight: 600; }
-  h6 { @apply text-body-lg; font-weight: 600; }
+  h1 {
+    @apply text-h1;
+  }
+  h2 {
+    @apply text-h2;
+  }
+  h3 {
+    @apply text-h3;
+  }
+  h4 {
+    @apply text-h4;
+  }
+  h5 {
+    @apply text-body-lg;
+    font-weight: 600;
+  }
+  h6 {
+    @apply text-body-lg;
+    font-weight: 600;
+  }
 
   /* Enhanced input sizing */
   input,
@@ -188,20 +202,6 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
 }
 
 @layer components {
-  /* Button Base Classes - Component-Scoped Styling */
-  /* ── Master Template: Button ── */
-  .button-base {
-    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap
-      rounded-md ring-offset-background transition-all duration-200
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-      focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50
-      shadow-md hover:shadow-lg active:scale-[0.98];
-    @apply [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
-    min-height: 44px;
-    padding: 0.75rem 1.5rem;
-    @apply text-body font-medium;
-  }
-
   /* Compact reset for Radix form controls */
   .button-compact {
     min-height: auto;
@@ -244,48 +244,6 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   /* ── Master Template: Card ── */
   .card-base {
     @apply rounded-lg border border-border-primary bg-card text-card-foreground shadow-card;
-  }
-
-  /* ── Button Variant Classes ── */
-  .button-default {
-    @apply bg-primary text-primary-foreground hover:bg-primary/80;
-  }
-  .button-destructive {
-    @apply bg-destructive text-destructive-foreground hover:bg-destructive/80;
-  }
-  .button-outline {
-    @apply border border-input bg-background hover:bg-muted hover:text-primary;
-  }
-  .button-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
-  }
-  .button-ghost {
-    @apply shadow-none hover:shadow-md hover:bg-muted hover:text-primary;
-  }
-  .button-ghost-dark {
-    @apply shadow-none;
-  }
-  .button-ghost-dark:hover {
-    --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    background-color: rgb(255 255 255 / 0.1);
-    color: inherit;
-  }
-  .button-link {
-    @apply shadow-none hover:shadow-none text-primary underline-offset-4 hover:underline active:scale-100;
-  }
-
-  /* ── Button Size Classes ── */
-  .button-size-default {
-    @apply h-10 px-4 py-2;
-  }
-  .button-size-sm {
-    @apply h-9 rounded-md px-3;
-  }
-  .button-size-lg {
-    @apply h-11 rounded-md px-8;
-  }
-  .button-size-icon {
-    @apply h-10 w-10;
   }
 
   /* ── Badge Variant Classes ── */
