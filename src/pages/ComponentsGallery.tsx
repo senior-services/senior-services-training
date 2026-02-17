@@ -2235,12 +2235,12 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Ghost Dropdown Variant */}
-              <div className="bg-background-header rounded-lg p-8 space-y-4">
+              {/* Ghost Dropdown Variant With Icons on Dark Background*/}
+              <div className="bg-background-header rounded-lg">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost">
-                      Options <ChevronDown className="w-4 h-4" />
+                      Menu With Icons <ChevronDown className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
@@ -2256,12 +2256,13 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </DropdownMenu>
               </div>
 
-              {/* Ghost Dropdown on Dark Background */}
-              <div className="bg-background-header rounded-lg p-8 space-y-4">
+              {/* Ghost Dropdown Variant on Dark Background */}
+              <div className="bg-background-header rounded-lg">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost">
-                      Options <ChevronDown className="w-4 h-4" />
+                      Menu Without Icons
+                      <ChevronDown className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
