@@ -37,7 +37,10 @@ export const Header = ({ userRole, userName, userEmail, onLogout, currentView }:
         <div className="flex items-center justify-between">
           {/* Left Side - Logo and Title */}
           <div className="flex items-center space-x-4">
-            <Link to={isAdmin ? "/admin" : "/dashboard"} className="flex items-center space-x-6 hover:opacity-80 transition-all duration-200">
+            <Link
+              to={isAdmin ? "/admin" : "/dashboard"}
+              className="flex items-center space-x-6 hover:opacity-80 transition-all duration-200"
+            >
               <img
                 src="/lovable-uploads/SS_logo_reversed_cropped.png"
                 alt="Senior Services for South Sound"
@@ -48,8 +51,7 @@ export const Header = ({ userRole, userName, userEmail, onLogout, currentView }:
               />
               <div>
                 <h1 className={`text-h4 ${headerTextColor}`}>
-                  <span className="font-bold">Training Portal</span>{" "}
-                  <span className="font-normal">/ {subtitle}</span>
+                  <span className="font-bold">Training Portal</span> <span className="font-normal">/ {subtitle}</span>
                 </h1>
               </div>
             </Link>
@@ -68,7 +70,7 @@ export const Header = ({ userRole, userName, userEmail, onLogout, currentView }:
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className={`button-ghost-dark hover:text-inherit ${headerTextColor}`}>
-                  {userName} <ChevronDown className="w-4 h-4 ml-2" />
+                  {userName} <ChevronDown className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
