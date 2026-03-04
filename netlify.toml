@@ -1,1 +1,9 @@
-Coming soon
+[[redirects]]
+  from = "/preview"
+  to = "/"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/maintenance.html"
+  status = 302
