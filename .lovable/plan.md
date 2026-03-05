@@ -1,30 +1,33 @@
 
 
-## Add `modestbranding=1` to YouTube Player Parameters
+## Restore YouTube Keyboard Controls
 
-Single-line addition to the existing `playerVars` object.
+### Root Cause
 
-### Change — `src/components/video/VideoPlayer.tsx`
+When `new YT.Player('yt-player-ID', { playerVars: {...} })` is called on an **existing iframe element**, passing `playerVars` causes the API to **destroy and recreate** the iframe. The new iframe loses focus context and keyboard interactivity. Since `rel=0`, `modestbranding=1`, `enablejsapi=1`, etc. are already baked into the iframe `src` URL (line 148), the `playerVars` in the constructor are redundant and harmful.
 
-**Line 163**: Add `modestbranding: 1` after `loop: 0` in the `playerVars` block:
+### Fix — `src/components/video/VideoPlayer.tsx`
+
+**Remove `playerVars` from the `YT.Player` constructor** (lines 163–169). The iframe `src` URL already contains all necessary parameters. The constructor should only attach event handlers to the existing iframe:
 
 ```typescript
-playerVars: {
-  rel: 0,
-  enablejsapi: 1,
-  origin: window.location.origin,
-  loop: 0,
-  modestbranding: 1,
-},
+ytPlayerRef.current = new YTGlobal.Player(`yt-player-${id}`, {
+  events: {
+    onReady: (e: any) => { ... },
+    onStateChange: (e: any) => { ... }
+  }
+});
 ```
 
-Also update the iframe `src` URL (if `modestbranding` is not already in the query string) for consistency.
+### Why This Works
 
-### Database Change
-**No.**
+- `rel=0` and `modestbranding=1` remain in the iframe `src` query string — YouTube respects them.
+- Without `playerVars`, the API wraps the existing iframe instead of replacing it, preserving keyboard focus and native controls (spacebar, arrow keys, etc.).
+- Anti-skip tracking and all event handlers remain unchanged.
 
 ### Files Changed
+
 | File | Change |
 |------|--------|
-| `src/components/video/VideoPlayer.tsx` | Add `modestbranding: 1` to `playerVars` |
+| `src/components/video/VideoPlayer.tsx` | Remove `playerVars` block from `YT.Player` constructor (lines 163–169) |
 
