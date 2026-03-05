@@ -725,7 +725,6 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                     <ButtonWithTooltip
                       onClick={() => setShowDueDateDialog(true)}
                       disabled={isSubmitting || hasCompetingSelections}
-                      size="sm"
                       tooltip={
                         hasCompetingSelections
                           ? competingTooltip
@@ -740,7 +739,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                       variant="destructive"
                       onClick={() => setShowUnassignDialog(true)}
                       disabled={isSubmitting || hasCompetingSelections}
-                      size="sm"
+                      
                       tooltip={
                         hasCompetingSelections
                           ? competingTooltip
