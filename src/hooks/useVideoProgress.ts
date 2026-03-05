@@ -15,6 +15,8 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
   const [isCompleted, setIsCompleted] = useState(false);
   const [wasEverCompleted, setWasEverCompleted] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [furthestWatchedSeconds, setFurthestWatchedSeconds] = useState(0);
+  const furthestWatchedRef = useRef(0);
   const progressUpdateTimeoutRef = useRef<NodeJS.Timeout>();
 
   const updateProgressToDatabase = useCallback(async (
@@ -56,7 +58,8 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
           shouldComplete,
           hasQuiz,
           forceComplete,
-          hasAcknowledgment: !!acknowledgmentData
+          hasAcknowledgment: !!acknowledgmentData,
+          furthestWatchedSeconds: furthestWatchedRef.current
         });
 
         const result = await progressOperations.updateByEmail(
@@ -65,7 +68,8 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
           progressPercent,
           completedAt,
           acknowledgmentData?.acknowledgedAt,
-          acknowledgmentData?.viewingSeconds
+          acknowledgmentData?.viewingSeconds,
+          furthestWatchedRef.current
         );
 
         if (!result.success) {
@@ -102,6 +106,14 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
 
     return updateResult;
   }, [userEmail, videoId, wasEverCompleted, hasQuiz, isLocked, progress]);
+
+  const updateFurthestWatched = useCallback((seconds: number) => {
+    const newFurthest = Math.max(furthestWatchedRef.current, Math.floor(seconds));
+    if (newFurthest > furthestWatchedRef.current) {
+      furthestWatchedRef.current = newFurthest;
+      setFurthestWatchedSeconds(newFurthest);
+    }
+  }, []);
 
   const updateProgress = useCallback((progressPercent: number) => {
     // Block ALL updates if locked (completed) — prevents debounced writes from overwriting completed_at
@@ -163,6 +175,8 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
     setProgress(0);
     setIsCompleted(false);
     setWasEverCompleted(false);
+    setFurthestWatchedSeconds(0);
+    furthestWatchedRef.current = 0;
     if (progressUpdateTimeoutRef.current) {
       clearTimeout(progressUpdateTimeoutRef.current);
     }
@@ -196,16 +210,20 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
         const progressData = progressResult.data;
         const progressPercent = progressData.progress_percent;
         const isVideoCompleted = !!progressData.completed_at;
+        const storedFurthest = progressData.furthest_watched_seconds || 0;
         
         setProgress(progressPercent);
         setIsCompleted(isVideoCompleted);
         setWasEverCompleted(isVideoCompleted);
         setIsLocked(isVideoCompleted);
+        setFurthestWatchedSeconds(storedFurthest);
+        furthestWatchedRef.current = storedFurthest;
         
         logger.videoEvent('progress_restored', videoId, {
           progress: progressPercent,
           completed: isVideoCompleted,
-          locked: isVideoCompleted
+          locked: isVideoCompleted,
+          furthestWatchedSeconds: storedFurthest
         });
 
         return { completedAt: progressData.completed_at || null, progressPercent, acknowledgmentViewingSeconds: progressData.acknowledgment_viewing_seconds ?? null };
@@ -224,6 +242,8 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
     progress,
     isCompleted,
     wasEverCompleted,
+    furthestWatchedSeconds,
+    updateFurthestWatched,
     updateProgress,
     markComplete,
     resetProgress,

@@ -9,6 +9,8 @@ interface ContentPlayerProps {
   onComplete?: () => void;
   loading?: boolean;
   progress?: number;
+  furthestWatchedSeconds?: number;
+  onFurthestUpdate?: (seconds: number) => void;
 }
 
 export const ContentPlayer: React.FC<ContentPlayerProps> = ({
@@ -17,6 +19,8 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   onComplete,
   loading = false,
   progress = 0,
+  furthestWatchedSeconds = 0,
+  onFurthestUpdate,
 }) => {
   // Default to video if content_type is not specified (backward compatibility)
   const contentType = content.content_type || 'video';
@@ -34,7 +38,6 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   // Create video-compatible object for VideoPlayer
   const videoForPlayer = {
     ...content,
-    // Ensure all required video fields are present
     completion_rate: content.completion_rate || 0,
     created_at: content.created_at || new Date().toISOString(),
     updated_at: content.updated_at || new Date().toISOString(),
@@ -49,6 +52,8 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
       progress={progress}
       onProgressUpdate={onProgressUpdate || (() => {})}
       onVideoEnded={onComplete || (() => {})}
+      furthestWatchedSeconds={furthestWatchedSeconds}
+      onFurthestUpdate={onFurthestUpdate}
     />
   );
 };

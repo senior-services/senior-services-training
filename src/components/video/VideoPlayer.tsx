@@ -11,6 +11,8 @@ interface VideoPlayerProps {
   progress: number;
   onProgressUpdate: (progress: number) => void;
   onVideoEnded: () => void;
+  furthestWatchedSeconds?: number;
+  onFurthestUpdate?: (seconds: number) => void;
 }
 
 export function VideoPlayer({ 
@@ -18,13 +20,21 @@ export function VideoPlayer({
   loading, 
   progress, 
   onProgressUpdate, 
-  onVideoEnded
+  onVideoEnded,
+  furthestWatchedSeconds = 0,
+  onFurthestUpdate
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout>();
   const ytPlayerRef = useRef<any>(null);
   const ytProgressIntervalRef = useRef<NodeJS.Timeout>();
   const completionTriggeredRef = useRef<boolean>(false);
+  const furthestRef = useRef<number>(furthestWatchedSeconds);
+
+  // Keep furthestRef in sync with prop
+  useEffect(() => {
+    furthestRef.current = Math.max(furthestRef.current, furthestWatchedSeconds);
+  }, [furthestWatchedSeconds]);
 
   // Ensure YouTube IFrame API is loaded
   const ensureYouTubeAPI = useCallback((): Promise<void> => {
@@ -43,12 +53,29 @@ export function VideoPlayer({
 
   // Handle video progress updates for HTML5 videos
   const handleVideoProgress = useCallback((event: React.SyntheticEvent<HTMLVideoElement>) => {
-    const video = event.currentTarget;
-    if (!video.duration || video.currentTime < 0) return;
+    const videoEl = event.currentTarget;
+    if (!videoEl.duration || videoEl.currentTime < 0) return;
     
-    const progressPercent = Math.min(100, Math.max(0, Math.floor((video.currentTime / video.duration) * 100)));
+    // Update furthest watched
+    if (videoEl.currentTime <= furthestRef.current + 1) {
+      const newFurthest = Math.max(furthestRef.current, videoEl.currentTime);
+      if (newFurthest > furthestRef.current) {
+        furthestRef.current = newFurthest;
+        onFurthestUpdate?.(newFurthest);
+      }
+    }
+    
+    const progressPercent = Math.min(100, Math.max(0, Math.floor((videoEl.currentTime / videoEl.duration) * 100)));
     onProgressUpdate(progressPercent);
-  }, [onProgressUpdate]);
+  }, [onProgressUpdate, onFurthestUpdate]);
+
+  // HTML5 seeking enforcement
+  const handleSeeking = useCallback((event: React.SyntheticEvent<HTMLVideoElement>) => {
+    const videoEl = event.currentTarget;
+    if (videoEl.currentTime > furthestRef.current + 1) {
+      videoEl.currentTime = furthestRef.current;
+    }
+  }, []);
 
   const handleVideoEnded = useCallback(() => {
     onProgressUpdate(100);
@@ -91,7 +118,6 @@ export function VideoPlayer({
       const id = getYouTubeVideoId(videoUrl);
       if (id) {
         return (
-          // Use youtube-nocookie.com for GDPR compliance - delays cookie setting until video plays
           <iframe 
             id={`yt-player-${id}`}
             src={`https://www.youtube-nocookie.com/embed/${id}?enablejsapi=1&origin=${window.location.origin}&loop=0&rel=0`}
@@ -114,7 +140,20 @@ export function VideoPlayer({
                       ytProgressIntervalRef.current = setInterval(() => {
                         const current = e.target.getCurrentTime ? e.target.getCurrentTime() : 0;
                         const duration = e.target.getDuration ? e.target.getDuration() : (video.duration_seconds || 0);
+                        
                         if (duration > 0) {
+                          // Anti-skip enforcement: if user jumped beyond furthest + 2s buffer, snap back
+                          if (current > furthestRef.current + 2) {
+                            e.target.seekTo(furthestRef.current, true);
+                            return;
+                          }
+                          
+                          // Update furthest watched point
+                          if (current > furthestRef.current) {
+                            furthestRef.current = Math.floor(current);
+                            onFurthestUpdate?.(furthestRef.current);
+                          }
+                          
                           const progressPercent = Math.min(100, Math.floor((current / duration) * 100));
                           onProgressUpdate(progressPercent);
                           
@@ -132,7 +171,6 @@ export function VideoPlayer({
                       if (e.data === state.ENDED) {
                         onProgressUpdate(100);
                         if (ytProgressIntervalRef.current) clearInterval(ytProgressIntervalRef.current);
-                        // Backup trigger for completion in case progress tracker failed (e.g., duration = 0)
                         if (!completionTriggeredRef.current) {
                           completionTriggeredRef.current = true;
                           onVideoEnded();
@@ -148,7 +186,7 @@ export function VideoPlayer({
       }
     }
 
-    // Google Drive video handling
+    // Google Drive video handling (no seek restriction — opaque iframe)
     if (videoUrl && isGoogleDriveUrl(videoUrl)) {
       const embedUrl = getGoogleDriveEmbedUrl(videoUrl);
       if (embedUrl) {
@@ -210,13 +248,14 @@ export function VideoPlayer({
         preload="metadata"
         aria-label={`Video player for ${video.title}`}
         onTimeUpdate={handleVideoProgress}
+        onSeeking={handleSeeking}
         onEnded={handleVideoEnded}
       >
         {src && <source src={src} type="video/mp4" />}
         Your browser does not support the video tag.
       </video>
     );
-  }, [video, onProgressUpdate, progress, handleVideoProgress, handleVideoEnded, onVideoEnded, ensureYouTubeAPI]);
+  }, [video, onProgressUpdate, progress, handleVideoProgress, handleSeeking, handleVideoEnded, onVideoEnded, ensureYouTubeAPI, onFurthestUpdate]);
 
   if (loading) {
     return (
