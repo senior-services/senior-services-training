@@ -457,10 +457,18 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   }, [onOpenChange]);
 
   const handleDialogOpenChange = useCallback(
-    (open: boolean) => {
-      onOpenChange(open);
+    (newOpen: boolean) => {
+      if (!newOpen && !wasEverCompleted && !quizSubmitted) {
+        if (quizStarted) {
+          setShowCancelConfirmation(true);
+        } else {
+          setCancelDialogOpen(true);
+        }
+        return;
+      }
+      onOpenChange(newOpen);
     },
-    [onOpenChange],
+    [onOpenChange, wasEverCompleted, quizSubmitted, quizStarted],
   );
 
   const trainingContent = useMemo<TrainingContent | null>(() => {
