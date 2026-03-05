@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { progressOperations } from '@/services/api';
 import { logger } from '@/utils/logger';
 import { withErrorHandler } from '@/utils/errorHandler';
@@ -12,6 +12,7 @@ interface UseVideoProgressProps {
 
 export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz }: UseVideoProgressProps) {
   const [progress, setProgress] = useState(0);
+  const progressRef = useRef(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [wasEverCompleted, setWasEverCompleted] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
@@ -20,6 +21,9 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
   const furthestWatchedRef = useRef(0);
   const lastPositionRef = useRef(0);
   const progressUpdateTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Keep progressRef in sync so flushLastPosition reads current value without state dependency
+  useEffect(() => { progressRef.current = progress; }, [progress]);
 
   const updateProgressToDatabase = useCallback(async (
     progressPercent: number, 
@@ -190,9 +194,9 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
     if (posToSave <= 0 && furthestToSave <= 0) return;
     logger.info('Flushing last position before close', { videoId, posToSave, furthestToSave });
     await progressOperations.updateByEmail(
-      userEmail, videoId, progress, undefined, undefined, undefined, furthestToSave, posToSave
+      userEmail, videoId, progressRef.current, undefined, undefined, undefined, furthestToSave, posToSave
     );
-  }, [userEmail, videoId, progress]);
+  }, [userEmail, videoId]);
 
   const resetProgress = useCallback(() => {
     setIsLocked(false);
