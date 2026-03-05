@@ -1,29 +1,58 @@
 
 
-## Remove Box-Shadow from All Banner Components
+## Furthest-Point Tracking for Training Videos
 
-### Problem
-The `.banner-size-default` class on line 503 of `src/index.css` applies `shadow-card hover:shadow-lg`, giving banners a box-shadow and a hover shadow effect. This needs to be removed.
+### Overview
+Implement anti-skip protection on video trainings by tracking the furthest timestamp watched, preventing forward seeks beyond that point, and persisting this value in the database for session continuity.
 
-### Changes
+### Database Change
 
-| File | Line | Before | After |
-|------|------|--------|-------|
-| `src/index.css` | 503 | `@apply p-4 shadow-card hover:shadow-lg;` | `@apply p-4;` |
+**Add column to `video_progress`:**
+```sql
+ALTER TABLE video_progress ADD COLUMN furthest_watched_seconds integer DEFAULT 0;
+```
 
-That single change removes box-shadow from all default-size banners globally. Compact banners (`.banner-size-compact`) have no shadow, so no change needed there.
-
-The `.banner-base` class also has `transition-shadow duration-300` which becomes unnecessary — remove it:
-
-| File | Line | Before | After |
-|------|------|--------|-------|
-| `src/index.css` | 476 | `@apply relative w-full rounded-lg border transition-shadow duration-300;` | `@apply relative w-full rounded-lg border;` |
-
-No changes needed in `STYLEGUIDE.md` — the banner section documents variants and usage patterns but does not reference shadow properties. The `Banner` component (`banner.tsx`) uses CVA referencing these CSS classes, so it will inherit the update automatically.
+**Update `update_video_progress_by_email` function** to accept a new `p_furthest_watched_seconds` parameter and persist it using `GREATEST` to never regress:
+```sql
+furthest_watched_seconds = GREATEST(
+  COALESCE(EXCLUDED.furthest_watched_seconds, 0),
+  COALESCE(video_progress.furthest_watched_seconds, 0)
+)
+```
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/index.css` | Remove `shadow-card hover:shadow-lg` from `.banner-size-default`; remove `transition-shadow duration-300` from `.banner-base` |
+| DB migration | Add `furthest_watched_seconds` column; update RPC function |
+| `src/services/api.ts` | Add `furthestWatchedSeconds` param to `updateByEmail`; return it from `getByEmailAndVideo` |
+| `src/hooks/useVideoProgress.ts` | Track `furthestWatchedSeconds` state; persist on every debounced write; expose it and a setter; restore on `loadExistingProgress` |
+| `src/components/video/VideoPlayer.tsx` | Accept `furthestWatchedSeconds` + `onFurthestUpdate` props; enforce seek restriction in YouTube polling loop (snap back if `currentTime > furthest + 2s buffer`); enforce on HTML5 via `seeking` event; update furthest on each tick |
+| `src/components/content/ContentPlayer.tsx` | Pass through new props from parent |
+| `src/components/VideoPlayerFullscreen.tsx` | Wire `furthestWatchedSeconds` from `useVideoProgress` through `ContentPlayer` → `VideoPlayer` |
+
+### Behavior Details
+
+**YouTube videos** (primary use case):
+- In the 1-second polling interval, compare `getCurrentTime()` to `furthestWatchedSeconds`
+- If `currentTime > furthestWatched + 2` (2s buffer for natural playback), call `player.seekTo(furthestWatched, true)`
+- Otherwise, update `furthestWatched = max(furthestWatched, currentTime)`
+- Report furthest point upward for persistence
+
+**HTML5 videos:**
+- Listen to `seeking` event; if `currentTime > furthestWatchedSeconds`, snap to `furthestWatchedSeconds`
+- Update furthest on `timeupdate`
+
+**Persistence:**
+- `useVideoProgress.updateProgressToDatabase` sends `furthestWatchedSeconds` alongside progress
+- `loadExistingProgress` restores it so reopening the dialog resumes with the correct cap
+- DB function uses `GREATEST` guard to prevent regression
+
+**Unlock logic** (already exists):
+- The `videoReady` flag (`progress >= 99`) already gates the attestation/quiz section — no change needed there
+
+### Risk Assessment
+1. **YouTube API seek enforcement** (Medium) — 2-second buffer prevents false triggers from normal playback jitter
+2. **GREATEST guard on DB** (Low) — Mirrors existing `COALESCE` pattern for `completed_at`
+3. **Google Drive videos** (N/A) — These use estimated watch-time tracking without seek control; restriction not enforceable on opaque iframes. No change.
 
