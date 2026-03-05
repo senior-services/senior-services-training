@@ -1,34 +1,40 @@
 
 
-## Add "Save Quiz?" Confirmation for First-Time Unassigned Quiz Save
+## Investigate "Save Quiz?" Dialog Not Appearing
 
-### Where It Applies
+### Analysis
 
-Only in `EditVideoModal.tsx` — when an admin adds a quiz to an existing training that has **no assignments** and **no existing quiz**. The condition is: `isCreatingNewQuiz === true && !hasAssignments`.
+The code logic at lines 401–406 appears correct:
 
-Trainings that already have assignments show the versioning banner instead, so no overlap.
+```typescript
+const isCreatingNewQuizForSave = !quiz && questions.length > 0;
+if (isCreatingNewQuizForSave && !hasAssignments) {
+  setSaveQuizConfirmDialogOpen(true);
+  return;
+}
+```
 
-### Changes — `src/components/EditVideoModal.tsx`
+**Possible failure points:**
+1. **`quiz` is not null** — If `loadQuiz` returns an existing quiz object for this training, `!quiz` evaluates to `false`. This would mean the training already has a quiz (not a first-time creation).
+2. **`hasAssignments` is `true`** — The async call to `quizOperations.hasAssignments(video.id)` at line 153 might be returning `true` unexpectedly (e.g., stale assignment data in `video_assignments`).
+3. **Early return before line 401** — Validation failure at line 378 or a caught error in the version check block could prevent reaching line 401, though this would also prevent the save from happening at all.
+4. **`questions.length === 0`** — If questions array is empty when Save is clicked, the condition fails. This seems unlikely but worth confirming.
 
-1. **New state**: `saveQuizConfirmDialogOpen` (boolean, default `false`)
+### Plan — `src/components/EditVideoModal.tsx`
 
-2. **Modify `handleSave`** (line ~400): Before calling `performSave(false)`, check if `isCreatingNewQuiz && !hasAssignments`. If true, set `saveQuizConfirmDialogOpen = true` and return early (wait for confirmation). Otherwise proceed as-is.
+Add temporary `console.log` statements inside `handleSave` to trace all relevant values:
 
-3. **New handler**: `handleSaveQuizConfirm` — closes the dialog and calls `performSave(false)`.
+1. **At the top of `handleSave`** (after line 361): Log `quiz`, `questions.length`, and `hasAssignments`.
 
-4. **New AlertDialog** (after the existing Version Confirmation Dialog, ~line 1557):
+2. **Just before the new-quiz confirmation check** (before line 402): Log the computed `isCreatingNewQuizForSave` value and the final condition result.
 
-   - **Title**: "Save Quiz?"
-   - **Description**: "Your quiz will be saved. You may continue making changes until this training is assigned to employees. Once assigned, any future edits will automatically be saved as a new version to ensure accurate completion records."
-   - **Cancel button**: "Cancel" — returns to editor
-   - **Action button**: "Save Quiz" — calls `handleSaveQuizConfirm`
+3. **Inside the version check block** (line 388): Log that the version check is being entered, to confirm whether an early return is happening there.
+
+This is a single-file, diagnostic-only change — no logic modifications.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/EditVideoModal.tsx` | Add confirmation state, guard in `handleSave`, new AlertDialog |
-
-### Database Change
-**No.**
+| `src/components/EditVideoModal.tsx` | Add 3 `console.log` statements in `handleSave` for debugging |
 
