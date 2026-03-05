@@ -1294,6 +1294,16 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
 
               {/* Compact Attention */}
               <Banner variant="attention" size="compact" description="Review pending items before submitting." />
+
+              <Separator className="my-6" />
+
+              <h4 className="text-body-sm font-medium text-muted-foreground">Inline Banners (Compact, Constrained)</h4>
+
+              <Banner variant="information" size="compact-constrained" description="This field is optional." />
+              <Banner variant="success" size="compact-constrained" description="All answers saved." />
+              <Banner variant="warning" size="compact-constrained" description="Changes will take effect immediately." />
+              <Banner variant="error" size="compact-constrained" description="Please fix the errors above." />
+              <Banner variant="attention" size="compact-constrained" description="Review pending items before submitting." />
             </div>
           </CardContent>
         </Card>
