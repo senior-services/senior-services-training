@@ -361,7 +361,14 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
     if (!video) return;
 
     // DEBUG: Log all values relevant to Save Quiz confirmation
-    console.log('[handleSave] quiz:', quiz, '| questions.length:', questions.length, '| hasAssignments:', hasAssignments);
+    console.log(
+      "[handleSave] quiz:",
+      quiz,
+      "| questions.length:",
+      questions.length,
+      "| hasAssignments:",
+      hasAssignments,
+    );
 
     // Enable validation display and cleanup/validate questions before saving
     setShowQuizValidation(true);
@@ -389,7 +396,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
 
     // Version check: if quiz exists and has been changed, check for attempts
     if (quiz && hasQuizChanges()) {
-      console.log('[handleSave] Entering version check block');
+      console.log("[handleSave] Entering version check block");
       try {
         const { attemptCount } = await quizOperations.checkUsage(quiz.id);
         if (attemptCount > 0) {
@@ -404,7 +411,14 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
 
     // First-time quiz save on unassigned training: show confirmation
     const isCreatingNewQuizForSave = !quiz && questions.length > 0;
-    console.log('[handleSave] isCreatingNewQuizForSave:', isCreatingNewQuizForSave, '| !hasAssignments:', !hasAssignments, '| shouldShowDialog:', isCreatingNewQuizForSave && !hasAssignments);
+    console.log(
+      "[handleSave] isCreatingNewQuizForSave:",
+      isCreatingNewQuizForSave,
+      "| !hasAssignments:",
+      !hasAssignments,
+      "| shouldShowDialog:",
+      isCreatingNewQuizForSave && !hasAssignments,
+    );
     if (isCreatingNewQuizForSave && !hasAssignments) {
       setSaveQuizConfirmDialogOpen(true);
       return;
@@ -1157,9 +1171,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
 
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-h4">
-                      {questions.length === 1 ? `Quiz Question (1)` : `Quiz Questions (${questions.length})`}
-                    </h3>
+                    <h3>{questions.length === 1 ? `Quiz Question (1)` : `Quiz Questions (${questions.length})`}</h3>
                     {versionCount > 1 && quiz && <Badge variant="soft-tertiary">Version {quiz.version}</Badge>}
                   </div>
                   {versionCount > 1 && (
@@ -1583,12 +1595,21 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
           <AlertDialogHeader>
             <AlertDialogTitle>Save Quiz?</AlertDialogTitle>
             <AlertDialogDescription>
-              Your quiz will be saved. You may continue making changes until this training is assigned to employees. Once assigned, any future edits will automatically be saved as a new version to ensure accurate completion records.
+              Your quiz will be saved. You may continue making changes until this training is assigned to employees.
+              Once assigned, any future edits will automatically be saved as a new version to ensure accurate completion
+              records.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { setSaveQuizConfirmDialogOpen(false); performSave(false); }}>Save Quiz</AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => {
+                setSaveQuizConfirmDialogOpen(false);
+                performSave(false);
+              }}
+            >
+              Save Quiz
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
