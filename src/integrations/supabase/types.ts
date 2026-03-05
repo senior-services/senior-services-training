@@ -393,6 +393,7 @@ export type Database = {
           completed_at: string | null
           created_at: string
           employee_id: string
+          furthest_watched_seconds: number | null
           id: string
           presentation_acknowledged_at: string | null
           progress_percent: number
@@ -404,6 +405,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           employee_id: string
+          furthest_watched_seconds?: number | null
           id?: string
           presentation_acknowledged_at?: string | null
           progress_percent?: number
@@ -415,6 +417,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           employee_id?: string
+          furthest_watched_seconds?: number | null
           id?: string
           presentation_acknowledged_at?: string | null
           progress_percent?: number
@@ -620,6 +623,18 @@ export type Database = {
               p_acknowledgment_viewing_seconds?: number
               p_completed_at?: string
               p_email: string
+              p_presentation_acknowledged_at?: string
+              p_progress_percent: number
+              p_video_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_acknowledgment_viewing_seconds?: number
+              p_completed_at?: string
+              p_email: string
+              p_furthest_watched_seconds?: number
               p_presentation_acknowledged_at?: string
               p_progress_percent: number
               p_video_id: string

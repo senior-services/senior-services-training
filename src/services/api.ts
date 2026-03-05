@@ -1040,7 +1040,8 @@ export const progressOperations = {
     progressPercent: number,
     completedAt?: Date,
     presentationAcknowledgedAt?: Date,
-    acknowledgmentViewingSeconds?: number
+    acknowledgmentViewingSeconds?: number,
+    furthestWatchedSeconds?: number
   ): Promise<ApiResult<boolean>> {
     const operation = 'progress.updateByEmail';
     performanceTracker.start(operation);
@@ -1052,8 +1053,9 @@ export const progressOperations = {
         p_progress_percent: Math.max(0, Math.min(100, progressPercent)),
         p_completed_at: completedAt?.toISOString() || null,
         p_presentation_acknowledged_at: presentationAcknowledgedAt?.toISOString() || null,
-        p_acknowledgment_viewing_seconds: acknowledgmentViewingSeconds || null
-      });
+        p_acknowledgment_viewing_seconds: acknowledgmentViewingSeconds || null,
+        p_furthest_watched_seconds: furthestWatchedSeconds ?? null
+      } as any);
 
       if (error) {
         logger.error('Failed to update progress by email', undefined, {
@@ -1082,7 +1084,7 @@ export const progressOperations = {
   async getByEmailAndVideo(
     email: string,
     videoId: string
-  ): Promise<ApiResult<{ progress_percent: number; completed_at: string | null; acknowledgment_viewing_seconds: number | null } | null>> {
+  ): Promise<ApiResult<{ progress_percent: number; completed_at: string | null; acknowledgment_viewing_seconds: number | null; furthest_watched_seconds: number | null } | null>> {
     const operation = 'progress.getByEmailAndVideo';
     performanceTracker.start(operation);
     try {
@@ -1108,7 +1110,7 @@ export const progressOperations = {
 
       const { data, error } = await supabase
         .from('video_progress')
-        .select('progress_percent, completed_at, acknowledgment_viewing_seconds')
+        .select('progress_percent, completed_at, acknowledgment_viewing_seconds, furthest_watched_seconds')
         .eq('employee_id', employee.id)
         .eq('video_id', videoId)
         .maybeSingle();
