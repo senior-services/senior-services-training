@@ -1,26 +1,20 @@
 
 
-## Update Hollow Badge Backgrounds to Transparent
+## Update Export Date Format to `formatLong`
 
 ### Change
 
-In `src/index.css`, replace `bg-background` with `bg-transparent` on all 7 hollow badge variants (lines 274–292).
+In `src/components/dashboard/PeopleManagement.tsx`, replace two `formatShort` calls with `formatLong` in the export data builder:
 
-| Line | Class | Before | After |
-|------|-------|--------|-------|
-| 274 | `.badge-hollow-primary` | `bg-background` | `bg-transparent` |
-| 277 | `.badge-hollow-secondary` | `bg-background` | `bg-transparent` |
-| 280 | `.badge-hollow-tertiary` | `bg-background` | `bg-transparent` |
-| 283 | `.badge-hollow-destructive` | `bg-background` | `bg-transparent` |
-| 286 | `.badge-hollow-success` | `bg-background` | `bg-transparent` |
-| 289 | `.badge-hollow-warning` | `bg-background` | `bg-transparent` |
-| 292 | `.badge-hollow-attention` | `bg-background` | `bg-transparent` |
+- **Line 37**: Update import from `formatShort` to `formatLong`
+- **Line 472**: `formatShort(assignment.due_date)` → `formatLong(assignment.due_date)`
+- **Line 478**: `formatShort(completionDateStr)` → `formatLong(completionDateStr)`
+
+Result: Due Date and Completion Date columns in the Excel export will display as "February 16, 2026" instead of "Feb 16, '26".
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/index.css` | `bg-background` → `bg-transparent` on all hollow variants |
-
-No component file or database changes needed — all instances inherit from these CSS classes automatically.
+| `src/components/dashboard/PeopleManagement.tsx` | Import + 2 `formatShort` → `formatLong` swaps |
 
