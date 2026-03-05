@@ -120,13 +120,22 @@ export function useVideoProgress({ videoId, userEmail, onProgressUpdate, hasQuiz
     setProgress(currentProgress => Math.max(currentProgress, cappedProgress));
     onProgressUpdate?.(cappedProgress);
 
-    // Debounce database updates
-    if (progressUpdateTimeoutRef.current) {
-      clearTimeout(progressUpdateTimeoutRef.current);
-    }
-    progressUpdateTimeoutRef.current = setTimeout(() => {
+    if (cappedProgress >= 99) {
+      // Critical milestone — write immediately, no debounce
+      if (progressUpdateTimeoutRef.current) {
+        clearTimeout(progressUpdateTimeoutRef.current);
+        progressUpdateTimeoutRef.current = undefined;
+      }
       updateProgressToDatabase(cappedProgress);
-    }, 1000);
+    } else {
+      // Normal progress — debounce
+      if (progressUpdateTimeoutRef.current) {
+        clearTimeout(progressUpdateTimeoutRef.current);
+      }
+      progressUpdateTimeoutRef.current = setTimeout(() => {
+        updateProgressToDatabase(cappedProgress);
+      }, 1000);
+    }
   }, [updateProgressToDatabase, onProgressUpdate, hasQuiz, wasEverCompleted, videoId, isLocked]);
 
   const markComplete = useCallback(async () => {
