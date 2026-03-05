@@ -1,40 +1,46 @@
 
 
-## Investigate "Save Quiz?" Dialog Not Appearing
+## Quiz Question Deletion Rules & Banner Updates
 
-### Analysis
+### Changes — `src/components/EditVideoModal.tsx`
 
-The code logic at lines 401–406 appears correct:
+**1. Trash icon visibility (lines 1179–1186)**
 
-```typescript
-const isCreatingNewQuizForSave = !quiz && questions.length > 0;
-if (isCreatingNewQuizForSave && !hasAssignments) {
-  setSaveQuizConfirmDialogOpen(true);
-  return;
-}
+Conditionally render the delete button: hide it when `hasAssignments && questions.length === 1`.
+
+```tsx
+{!(hasAssignments && questions.length === 1) && (
+  <Button onClick={() => removeQuestion(questionIndex)} ...>
+    <Trash2 ... />
+  </Button>
+)}
 ```
 
-**Possible failure points:**
-1. **`quiz` is not null** — If `loadQuiz` returns an existing quiz object for this training, `!quiz` evaluates to `false`. This would mean the training already has a quiz (not a first-time creation).
-2. **`hasAssignments` is `true`** — The async call to `quizOperations.hasAssignments(video.id)` at line 153 might be returning `true` unexpectedly (e.g., stale assignment data in `video_assignments`).
-3. **Early return before line 401** — Validation failure at line 378 or a caught error in the version check block could prevent reaching line 401, though this would also prevent the save from happening at all.
-4. **`questions.length === 0`** — If questions array is empty when Save is clicked, the condition fails. This seems unlikely but worth confirming.
+No changes needed for unassigned trainings — all questions (including the last) remain deletable as-is.
 
-### Plan — `src/components/EditVideoModal.tsx`
+**2. Versioning banner (lines 1151–1156)**
 
-Add temporary `console.log` statements inside `handleSave` to trace all relevant values:
+Update the banner to dynamically change variant and message when assigned with only 1 question remaining:
 
-1. **At the top of `handleSave`** (after line 361): Log `quiz`, `questions.length`, and `hasAssignments`.
-
-2. **Just before the new-quiz confirmation check** (before line 402): Log the computed `isCreatingNewQuizForSave` value and the final condition result.
-
-3. **Inside the version check block** (line 388): Log that the version check is being entered, to confirm whether an early return is happening there.
-
-This is a single-file, diagnostic-only change — no logic modifications.
+```tsx
+{hasAssignments && quiz && (
+  <Banner
+    variant={questions.length === 1 ? "warning" : "attention"}
+    title="Versioning Notice"
+  >
+    This training is already assigned. Editing the quiz will create a new version for future employees.
+    Completed trainings won't be affected.
+    {questions.length === 1 && ' A minimum of one question is required.'}
+  </Banner>
+)}
+```
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/EditVideoModal.tsx` | Add 3 `console.log` statements in `handleSave` for debugging |
+| `src/components/EditVideoModal.tsx` | Conditional trash icon visibility + dynamic banner variant/message |
+
+### Database Change
+**No.**
 
