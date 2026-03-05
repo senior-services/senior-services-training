@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,15 +6,15 @@ import {
   DialogHeader,
   DialogScrollArea,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { UserPlus, Mail } from 'lucide-react';
-import { employeeOperations } from '@/services/api';
-import type { Employee } from '@/types/employee';
-import { useToast } from '@/hooks/use-toast';
-import { logger } from '@/utils/logger';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { UserPlus, Mail } from "lucide-react";
+import { employeeOperations } from "@/services/api";
+import type { Employee } from "@/types/employee";
+import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/utils/logger";
 
 interface AddEmployeeModalProps {
   open: boolean;
@@ -22,12 +22,8 @@ interface AddEmployeeModalProps {
   onEmployeeAdded: (employee: Employee) => void;
 }
 
-export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
-  open,
-  onOpenChange,
-  onEmployeeAdded,
-}) => {
-  const [email, setEmail] = useState('');
+export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ open, onOpenChange, onEmployeeAdded }) => {
+  const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const { toast } = useToast();
@@ -39,7 +35,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email.trim()) {
       toast({
         title: "Error",
@@ -68,22 +64,22 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
           email: result.data.email,
           full_name: result.data.name,
           created_at: result.data.created_at || new Date().toISOString(),
-          updated_at: result.data.updated_at || new Date().toISOString()
+          updated_at: result.data.updated_at || new Date().toISOString(),
         };
         onEmployeeAdded(employee);
         handleClose();
         toast({
           title: "Success",
-          description: "Employee added successfully"
+          description: "Employee added successfully",
         });
       } else {
-        throw new Error(result.error || 'Failed to add employee');
+        throw new Error(result.error || "Failed to add employee");
       }
     } catch (error: any) {
-      logger.error('Error adding employee', error as Error);
-      
+      logger.error("Error adding employee", error as Error);
+
       // Handle duplicate email error
-      if (error?.code === '23505' || error?.message?.includes('duplicate')) {
+      if (error?.code === "23505" || error?.message?.includes("duplicate")) {
         toast({
           title: "Error",
           description: "An employee with this email already exists",
@@ -102,7 +98,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
   };
 
   const handleClose = () => {
-    setEmail('');
+    setEmail("");
     setIsSubmitting(false);
     setHasChanges(false);
     onOpenChange(false);
@@ -112,21 +108,17 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            Add New Employee
-          </DialogTitle>
+          <DialogTitle>Add New Employee</DialogTitle>
         </DialogHeader>
 
         <DialogScrollArea>
           <form id="add-employee-form" onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">
-                Email Address
-              </Label>
+              <Label htmlFor="email">Email Address</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="employee@company.com"
+                placeholder="employee@southsoundseniors.org"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -139,21 +131,15 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                 The employee will be able to access assigned videos when they sign in with this email.
               </p>
             </div>
-
           </form>
         </DialogScrollArea>
 
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            disabled={isSubmitting}
-          >
+          <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button type="submit" form="add-employee-form" disabled={isSubmitting || !hasChanges}>
-            {isSubmitting ? 'Adding...' : 'Add Employee'}
+            {isSubmitting ? "Adding..." : "Add Employee"}
           </Button>
         </DialogFooter>
       </DialogContent>
