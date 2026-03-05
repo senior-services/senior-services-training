@@ -1161,14 +1161,6 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
               </TabsContent>
 
               <TabsContent value="quiz" className="space-y-6 mt-4">
-                {/* Attention banner for assigned trainings */}
-                {hasAssignments && quiz && (
-                  <Banner variant="attention" title="Versioning Notice">
-                    This training is already assigned. Editing the quiz will create a new version for future employees.
-                    Completed trainings won't be affected.
-                  </Banner>
-                )}
-
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <h3>{questions.length === 1 ? `Quiz Question (1)` : `Quiz Questions (${questions.length})`}</h3>
@@ -1181,6 +1173,14 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                     </Button>
                   )}
                 </div>
+
+                {/* Attention banner for assigned trainings */}
+                {hasAssignments && quiz && (
+                  <Banner variant="attention" title="Versioning Notice">
+                    This training is already assigned. Editing the quiz will create a new version for future employees.
+                    Completed trainings won't be affected.
+                  </Banner>
+                )}
 
                 <div className="space-y-4">
                   {questions.map((question, questionIndex) => (
