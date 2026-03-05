@@ -22,6 +22,7 @@ const bannerVariants = cva(
       size: {
         default: "banner-size-default",
         compact: "banner-size-compact",
+        "compact-constrained": "banner-size-compact-constrained",
       },
     },
     defaultVariants: {

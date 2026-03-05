@@ -1188,7 +1188,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                           )}
                         </div>
                         {hasAssignments && questions.length === 1 && (
-                          <Banner variant="warning" size="compact">
+                          <Banner variant="warning" size="compact-constrained">
                             A minimum of one question is required for assigned trainings.
                           </Banner>
                         )}
