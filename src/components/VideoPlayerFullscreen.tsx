@@ -662,15 +662,16 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
               {!quizSubmitted && !wasEverCompleted && (() => {
                 console.log('[VPF render] TrainingAttestation enabled:', allQuestionsAnswered, 'checked:', quizAttestationChecked);
                 return (
-                <div className="mt-6 max-w-4xl mx-auto">
-                  <TrainingAttestation
-                    enabled={allQuestionsAnswered}
-                    checked={quizAttestationChecked}
-                    onCheckedChange={setQuizAttestationChecked}
-                    disabledTooltip="Complete the questions above to enable this checkbox."
-                  />
-                </div>
-              )}
+                  <div className="mt-6 max-w-4xl mx-auto">
+                    <TrainingAttestation
+                      enabled={allQuestionsAnswered}
+                      checked={quizAttestationChecked}
+                      onCheckedChange={setQuizAttestationChecked}
+                      disabledTooltip="Complete the questions above to enable this checkbox."
+                    />
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
