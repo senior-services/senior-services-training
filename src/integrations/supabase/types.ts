@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          id: string
+          timestamp: string
+          user_id: string | null
+          user_email: string | null
+          action_type: string
+          resource_type: string
+          resource_id: string | null
+          resource_title: string | null
+          old_values: Json | null
+          new_values: Json | null
+          ip_address: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          timestamp?: string
+          user_id?: string | null
+          user_email?: string | null
+          action_type: string
+          resource_type: string
+          resource_id?: string | null
+          resource_title?: string | null
+          old_values?: Json | null
+          new_values?: Json | null
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          timestamp?: string
+          user_id?: string | null
+          user_email?: string | null
+          action_type?: string
+          resource_type?: string
+          resource_id?: string | null
+          resource_title?: string | null
+          old_values?: Json | null
+          new_values?: Json | null
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      auth_activity: {
+        Row: {
+          id: string
+          user_id: string
+          user_email: string | null
+          event_type: string
+          provider: string | null
+          ip_address: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          user_email?: string | null
+          event_type: string
+          provider?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          user_email?: string | null
+          event_type?: string
+          provider?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           archived_at: string | null
@@ -486,12 +567,73 @@ export type Database = {
           },
         ]
       }
+      video_versions: {
+        Row: {
+          id: string
+          video_id: string
+          version: number
+          title: string
+          description: string | null
+          video_url: string | null
+          video_file_name: string | null
+          thumbnail_url: string | null
+          content_type: string | null
+          duration_seconds: number | null
+          changed_by: string | null
+          changed_by_email: string | null
+          change_reason: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          video_id: string
+          version?: number
+          title: string
+          description?: string | null
+          video_url?: string | null
+          video_file_name?: string | null
+          thumbnail_url?: string | null
+          content_type?: string | null
+          duration_seconds?: number | null
+          changed_by?: string | null
+          changed_by_email?: string | null
+          change_reason?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          video_id?: string
+          version?: number
+          title?: string
+          description?: string | null
+          video_url?: string | null
+          video_file_name?: string | null
+          thumbnail_url?: string | null
+          content_type?: string | null
+          duration_seconds?: number | null
+          changed_by?: string | null
+          changed_by_email?: string | null
+          change_reason?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_versions_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       videos: {
         Row: {
           archived_at: string | null
           completion_rate: number
           content_type: Database["public"]["Enums"]["content_type"]
           created_at: string
+          created_by: string | null
+          created_by_email: string | null
           description: string | null
           duration_seconds: number | null
           id: string
@@ -499,6 +641,8 @@ export type Database = {
           title: string
           type: string
           updated_at: string
+          updated_by: string | null
+          updated_by_email: string | null
           video_file_name: string | null
           video_url: string | null
         }
@@ -507,6 +651,8 @@ export type Database = {
           completion_rate?: number
           content_type?: Database["public"]["Enums"]["content_type"]
           created_at?: string
+          created_by?: string | null
+          created_by_email?: string | null
           description?: string | null
           duration_seconds?: number | null
           id?: string
@@ -514,6 +660,8 @@ export type Database = {
           title: string
           type?: string
           updated_at?: string
+          updated_by?: string | null
+          updated_by_email?: string | null
           video_file_name?: string | null
           video_url?: string | null
         }
@@ -522,6 +670,8 @@ export type Database = {
           completion_rate?: number
           content_type?: Database["public"]["Enums"]["content_type"]
           created_at?: string
+          created_by?: string | null
+          created_by_email?: string | null
           description?: string | null
           duration_seconds?: number | null
           id?: string
@@ -529,6 +679,8 @@ export type Database = {
           title?: string
           type?: string
           updated_at?: string
+          updated_by?: string | null
+          updated_by_email?: string | null
           video_file_name?: string | null
           video_url?: string | null
         }
@@ -539,6 +691,37 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      log_auth_activity: {
+        Args: {
+          p_event_type: string
+          p_provider?: string | null
+          p_ip_address?: string | null
+          p_user_agent?: string | null
+        }
+        Returns: undefined
+      }
+      snapshot_video_version: {
+        Args: {
+          p_video_id: string
+          p_changed_by: string
+          p_changed_by_email: string
+          p_change_reason?: string | null
+        }
+        Returns: number
+      }
+      write_audit_log: {
+        Args: {
+          p_action_type: string
+          p_resource_type: string
+          p_resource_id?: string | null
+          p_resource_title?: string | null
+          p_old_values?: Json | null
+          p_new_values?: Json | null
+          p_ip_address?: string | null
+          p_user_agent?: string | null
+        }
+        Returns: string
+      }
       check_quiz_usage: {
         Args: { quiz_id: string }
         Returns: {

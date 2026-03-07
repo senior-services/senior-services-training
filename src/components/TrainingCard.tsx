@@ -50,6 +50,7 @@ export interface TrainingVideo {
   };
   quizQuestionCount?: number;
   acknowledgmentViewingSeconds?: number;
+  content_type?: 'video' | 'presentation';
 }
 
 /**
@@ -66,7 +67,7 @@ interface TrainingCardProps {
  * Status badge configuration with enhanced accessibility
  */
 interface BadgeConfig {
-  variant: 'success' | 'destructive' | 'warning' | 'secondary' | 'default' | 'tertiary'
+  variant: 'success' | 'destructive' | 'warning' | 'secondary' | 'default'
     | 'soft-success' | 'soft-destructive' | 'soft-warning' | 'soft-secondary';
   className: string;
   text: string;
@@ -222,29 +223,46 @@ export const TrainingCard = memo<TrainingCardProps>(({
   }, [thumbnailCandidates, thumbIndex, sanitizedVideo.id, sanitizedVideo.title]);
   return <article className={cn('training-card group relative overflow-hidden focus-within:ring-2 focus-within:ring-ring', className)} aria-label={ariaLabels.card} role="article">
       <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-card border-0">
-        {/* Video Thumbnail with Enhanced Accessibility */}
+        {/* Thumbnail with Enhanced Accessibility */}
         <header className="relative border-b border-border-primary">
           <button type="button" onClick={handlePlay} aria-label={ariaLabels.playButton} className="block focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-t-lg w-full text-left overflow-hidden">
-            <img 
-              src={thumbnailCandidates[thumbIndex]} 
-              alt={`${sanitizedVideo.title} - Training video thumbnail`} 
-              className="w-full aspect-video object-cover bg-muted transition-transform duration-300 group-hover:scale-105 rounded-t-lg" 
-              loading={priority ? "eager" : "lazy"}
-              onError={handleImageError}
-              onLoad={() => {
-                logger.debug('Thumbnail loaded successfully', {
-                  videoId: sanitizedVideo.id,
-                  videoTitle: sanitizedVideo.title,
-                  thumbnailSrc: thumbnailCandidates[thumbIndex],
-                  fallbackIndex: thumbIndex
-                });
-              }}
-              // Add crossOrigin to handle CORS issues with external thumbnails
-              crossOrigin="anonymous"
-            />
+            {video.content_type === 'presentation' ? (
+              <div className="w-full aspect-video bg-gradient-to-br from-slate-300 via-slate-250 to-slate-200 dark:from-slate-700 dark:via-slate-650 dark:to-slate-600 flex items-center justify-center rounded-t-lg transition-transform duration-300 group-hover:scale-105">
+                <svg width="96" height="72" viewBox="0 0 96 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="drop-shadow-sm">
+                  {/* Back slide - rotated left */}
+                  <rect x="14" y="8" width="56" height="42" rx="3" transform="rotate(-6 14 8)" fill="white" fillOpacity="0.6" stroke="currentColor" strokeOpacity="0.1" strokeWidth="1" className="text-slate-400" />
+                  {/* Middle slide - rotated right */}
+                  <rect x="24" y="6" width="56" height="42" rx="3" transform="rotate(3 52 27)" fill="white" fillOpacity="0.75" stroke="currentColor" strokeOpacity="0.12" strokeWidth="1" className="text-slate-400" />
+                  {/* Front slide - centered, no rotation */}
+                  <rect x="20" y="12" width="56" height="42" rx="3" fill="white" fillOpacity="0.95" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" className="text-slate-400" />
+                  {/* Content lines on front slide */}
+                  <rect x="28" y="22" width="24" height="3" rx="1.5" fill="currentColor" fillOpacity="0.18" className="text-slate-500" />
+                  <rect x="28" y="29" width="40" height="2" rx="1" fill="currentColor" fillOpacity="0.1" className="text-slate-400" />
+                  <rect x="28" y="34" width="36" height="2" rx="1" fill="currentColor" fillOpacity="0.1" className="text-slate-400" />
+                  <rect x="28" y="39" width="28" height="2" rx="1" fill="currentColor" fillOpacity="0.1" className="text-slate-400" />
+                </svg>
+              </div>
+            ) : (
+              <img
+                src={thumbnailCandidates[thumbIndex]}
+                alt={`${sanitizedVideo.title} - Training video thumbnail`}
+                className="w-full aspect-video object-cover bg-muted transition-transform duration-300 group-hover:scale-105 rounded-t-lg"
+                loading={priority ? "eager" : "lazy"}
+                onError={handleImageError}
+                onLoad={() => {
+                  logger.debug('Thumbnail loaded successfully', {
+                    videoId: sanitizedVideo.id,
+                    videoTitle: sanitizedVideo.title,
+                    thumbnailSrc: thumbnailCandidates[thumbIndex],
+                    fallbackIndex: thumbIndex
+                  });
+                }}
+                crossOrigin="anonymous"
+              />
+            )}
           </button>
 
-          {/* Play Button Overlay with Enhanced Accessibility */}
+          {/* Overlay with Enhanced Accessibility */}
           <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <Button size="icon" className="button-play-overlay button-size-play" onClick={handlePlay} onKeyDown={handleCardKeyPress} aria-label={ariaLabels.playButton}>
               <Play className="w-6 h-6 ml-1" aria-hidden="true" />
@@ -280,7 +298,8 @@ export const TrainingCard = memo<TrainingCardProps>(({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div>
-                        <Badge variant="soft-tertiary" showIcon>
+                        <Badge variant="soft-secondary">
+                          <MessageSquare className="w-3 h-3 mr-1" />
                           {sanitizedVideo.quizSummary.percent}%
                         </Badge>
                       </div>
@@ -314,7 +333,8 @@ export const TrainingCard = memo<TrainingCardProps>(({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div>
-                        <Badge variant="soft-tertiary" showIcon>
+                        <Badge variant="soft-secondary">
+                          <MessageSquare className="w-3 h-3 mr-1" />
                           {sanitizedVideo.quizQuestionCount}
                         </Badge>
                       </div>

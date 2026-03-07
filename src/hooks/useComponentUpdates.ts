@@ -114,9 +114,6 @@ export const useComponentUpdates = (): ComponentUpdateHook => {
         variant: results.healthyComponents === results.totalComponents ? "success" : "default",
       });
 
-      if (results.unhealthyComponents.length > 0) {
-        console.log('Unhealthy components:', results.unhealthyComponents);
-      }
       
     } catch (error) {
       console.error('Error validating all components:', error);

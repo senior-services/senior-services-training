@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -57,15 +56,8 @@ export const Header = ({ userRole, userName, userEmail, onLogout, currentView }:
             </Link>
           </div>
 
-          {/* Right Side - Admin Badge + User Dropdown */}
+          {/* Right Side - User Dropdown */}
           <div className="flex items-center space-x-3">
-            {/* Admin Badge - shown when user is admin, regardless of current view */}
-            {isAdmin && (
-              <Badge variant="attention" showIcon>
-                Admin
-              </Badge>
-            )}
-
             {/* User Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

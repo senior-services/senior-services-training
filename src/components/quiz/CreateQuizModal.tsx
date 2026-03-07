@@ -252,7 +252,7 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
+                  <div className="space-y-1.5">
                     <Label>Question Text</Label>
                     <Textarea
                       value={question.question_text}
@@ -271,7 +271,7 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                     )}
                   </div>
 
-                  <div>
+                  <div className="space-y-1.5">
                     <Label>Question Type</Label>
                     <Select
                       value={question.question_type}
@@ -347,7 +347,7 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                                   />
                                   <Label 
                                     htmlFor={`question_${questionIndex}_option_${optionIndex}`} 
-                                    className="whitespace-nowrap cursor-pointer"
+                                    className="whitespace-nowrap cursor-pointer font-normal"
                                   >
                                     Correct
                                   </Label>
@@ -395,7 +395,7 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                                   />
                                   <Label 
                                     htmlFor={`question_${questionIndex}_option_${optionIndex}`} 
-                                    className="whitespace-nowrap cursor-pointer"
+                                    className="whitespace-nowrap cursor-pointer font-normal"
                                   >
                                     Correct
                                   </Label>
@@ -444,13 +444,13 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="True" id={`question_${questionIndex}_true`} />
-                            <Label htmlFor={`question_${questionIndex}_true`} className="cursor-pointer">
+                            <Label htmlFor={`question_${questionIndex}_true`} className="cursor-pointer font-normal">
                               True
                             </Label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="False" id={`question_${questionIndex}_false`} />
-                            <Label htmlFor={`question_${questionIndex}_false`} className="cursor-pointer">
+                            <Label htmlFor={`question_${questionIndex}_false`} className="cursor-pointer font-normal">
                               False
                             </Label>
                           </div>

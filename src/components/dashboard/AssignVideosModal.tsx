@@ -547,7 +547,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
       case "pending":
         return "soft-primary";
       case "unassigned":
-        return "ghost-tertiary";
+        return "ghost-secondary";
     }
   };
 
@@ -810,7 +810,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
                             <TableCell>
                               <Label
                                 htmlFor={`video-${video.id}`}
-                                className={cn("flex items-center gap-2", !isCompleted && "cursor-pointer")}
+                                className={cn("flex items-center gap-2 font-normal", !isCompleted && "cursor-pointer")}
                               >
                                 <span className="font-medium text-body">{video.title}</span>
                                 {hiddenVideoIds.has(video.id) && (

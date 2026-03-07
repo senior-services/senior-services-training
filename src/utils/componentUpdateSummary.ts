@@ -82,11 +82,7 @@ export const COMPONENT_UPDATE_SUMMARY = {
   consistencyScore: '100%'
 } as const;
 
-// Helper function to log update summary
+// Helper function to get update summary
 export const logUpdateSummary = () => {
-  console.log('📦 COMPONENT LIBRARY UPDATE COMPLETE');
-  console.log('🔄 Updated Files:', COMPONENT_UPDATE_SUMMARY.updatedFiles.length);
-  console.log('✅ All dialogs now use DialogScrollArea pattern');
-  console.log('🎯 Consistency Score:', COMPONENT_UPDATE_SUMMARY.consistencyScore);
   return COMPONENT_UPDATE_SUMMARY;
 };

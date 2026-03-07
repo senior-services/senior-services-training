@@ -26,28 +26,29 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --primary: 206 75% 36%; /* rgb(23, 101, 161) */
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: More Contrast */
-    --secondary: 205 52% 63%; /* rgb(107, 168, 213) */
-    --secondary-foreground: 0 0% 100%; /* White text for better readability */
+    /* Secondary: WCAG AA compliant (5.39:1 on white) */
+    --secondary: 205 55% 40%; /* #2e6f9e */
+    --secondary-foreground: 0 0% 100%;
 
     /* Muted: Higher Contrast for Senior Vision */
     --muted: 210 20% 93%; /* Less subtle background */
     --muted-foreground: 215 25% 45%; /* Slightly lighter while maintaining AA accessibility */
 
-    /* Success Green & Warning Colors */
-    --success: 161 93% 30%; /* #059669 - Deep emerald green */
+    /* Success Green & Warning Colors — all WCAG AA compliant (≥4.5:1) */
+    --success: 161 93% 25%; /* #047b55 — 5.28:1 on white */
     --success-foreground: 0 0% 100%;
-    --warning: 21 90% 48%; /* #EA580C - Orange */
+    --warning: 21 90% 38%; /* #b8470a — 5.33:1 on white */
     --warning-foreground: 0 0% 100%;
-    --attention: 32 94% 44%; /* #D97706 - Amber/gold */
+    --warning-bg: 35 100% 91%; /* #ffecd1 — warm amber tint, 4.61:1 with warning text */
+    --attention: 32 94% 33%; /* #a35905 — 5.24:1 on white */
     --attention-foreground: 0 0% 100%;
-    --destructive: 0 72% 51%; /* #DC2626 - Red */
+    --destructive: 0 72% 45%; /* #c52020 — 5.81:1 on white */
     --destructive-foreground: 0 0% 100%;
 
     /* UI Elements - Stronger Borders and Inputs */
-    --border-primary: 210 20% 77%; /* Unified with input for consistency */
-    --border-secondary: 210 20% 77%; /* Medium border - between primary and input */
-    --input: 210 20% 77%; /* Match border-secondary for consistency */
+    --border-primary: 210 14% 89%; /* Light modern border */
+    --border-secondary: 210 14% 89%; /* Medium border - between primary and input */
+    --input: 210 14% 83%; /* Slightly stronger for input fields */
     --accent: 210 20% 90%;
     --accent-foreground: 215 25% 15%;
     --ring: 206 75% 36%;
@@ -75,10 +76,10 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(var(--primary) / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(var(--primary) / 0.1), 0 2px 4px -1px hsl(var(--primary) / 0.06);
-    --shadow-lg: 0 10px 15px -3px hsl(var(--primary) / 0.1), 0 4px 6px -2px hsl(var(--primary) / 0.05);
-    --shadow-card: 0 4px 16px -4px hsl(var(--primary) / 0.12);
+    --shadow-sm: 0 1px 3px 0 hsl(220 20% 20% / 0.08), 0 1px 2px -1px hsl(220 20% 20% / 0.05);
+    --shadow-md: 0 4px 8px -2px hsl(220 20% 20% / 0.12), 0 2px 4px -2px hsl(220 20% 20% / 0.08);
+    --shadow-lg: 0 12px 24px -4px hsl(220 20% 20% / 0.14), 0 4px 8px -2px hsl(220 20% 20% / 0.08);
+    --shadow-card: 0 2px 8px -2px hsl(220 20% 20% / 0.1), 0 6px 20px -4px hsl(220 20% 20% / 0.1);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -110,8 +111,8 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --primary: 206 75% 70%; /* Brighter primary in dark mode */
     --primary-foreground: 219 79% 6%;
 
-    --secondary: 205 52% 35%; /* Match new hue */
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 205 55% 60%; /* #61a2d1 — 7.11:1 on dark bg */
+    --secondary-foreground: 219 79% 6%;
 
     --muted: 219 79% 12%; /* Darker muted background */
     --muted-foreground: 215 16% 80%; /* Slightly brighter muted text */
@@ -120,14 +121,15 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --success-foreground: 219 79% 6%;
     --warning: 21 90% 62%; /* #EA580C - Brighter orange for dark mode */
     --warning-foreground: 219 79% 6%;
+    --warning-bg: 25 60% 14%; /* #39200e — warm dark amber, 5.97:1 with warning text */
     --attention: 32 94% 58%; /* #D97706 - Brighter amber for dark mode */
     --attention-foreground: 219 79% 6%;
     --destructive: 0 72% 65%; /* #DC2626 - Brighter red for dark mode */
     --destructive-foreground: 219 79% 6%;
 
-    --border-primary: 219 79% 25%; /* Unified with input for consistency */
-    --border-secondary: 219 79% 25%; /* Medium border - between primary and input */
-    --input: 219 79% 25%; /* Match border-secondary for consistency */
+    --border-primary: 219 30% 22%; /* Subtle dark mode border */
+    --border-secondary: 219 30% 22%; /* Medium border */
+    --input: 219 40% 28%; /* Slightly stronger for input fields */
     --accent: 219 79% 15%;
     --accent-foreground: 210 20% 98%;
     --ring: 206 73% 70%;
@@ -153,10 +155,10 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
 
     /* Dark shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.1);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.2), 0 2px 4px -1px hsl(0 0% 0% / 0.12);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.2), 0 4px 6px -2px hsl(0 0% 0% / 0.1);
-    --shadow-card: 0 4px 16px -4px hsl(0 0% 0% / 0.25);
+    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.2), 0 1px 2px -1px hsl(0 0% 0% / 0.15);
+    --shadow-md: 0 4px 8px -2px hsl(0 0% 0% / 0.3), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
+    --shadow-lg: 0 12px 24px -4px hsl(0 0% 0% / 0.35), 0 4px 8px -2px hsl(0 0% 0% / 0.2);
+    --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.2), 0 6px 20px -4px hsl(0 0% 0% / 0.25);
   }
 }
 
@@ -252,9 +254,6 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply border-transparent bg-primary text-primary-foreground;
   }
   .badge-secondary {
-    @apply border-transparent bg-secondary text-secondary-foreground;
-  }
-  .badge-tertiary {
     @apply border-transparent bg-muted-foreground text-white;
   }
   .badge-destructive {
@@ -269,14 +268,17 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   .badge-attention {
     @apply border-transparent bg-attention text-attention-foreground;
   }
+  .badge-admin {
+    @apply border-transparent bg-background-header-admin text-white;
+  }
+  .badge-soft-admin {
+    @apply border-transparent text-background-header-admin bg-background-header-admin/10;
+  }
   /* Hollow */
   .badge-hollow-primary {
     @apply border-primary text-primary bg-transparent;
   }
   .badge-hollow-secondary {
-    @apply border-secondary text-secondary bg-transparent;
-  }
-  .badge-hollow-tertiary {
     @apply border-muted-foreground text-muted-foreground bg-transparent;
   }
   .badge-hollow-destructive {
@@ -296,9 +298,6 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply border-transparent text-primary bg-transparent;
   }
   .badge-ghost-secondary {
-    @apply border-transparent text-secondary bg-transparent;
-  }
-  .badge-ghost-tertiary {
     @apply border-transparent text-muted-foreground bg-transparent;
   }
   .badge-ghost-destructive {
@@ -318,9 +317,6 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply border-transparent text-primary bg-primary/10;
   }
   .badge-soft-secondary {
-    @apply border-transparent text-secondary bg-secondary/10;
-  }
-  .badge-soft-tertiary {
     @apply border-transparent text-muted-foreground bg-muted;
   }
   .badge-soft-destructive {
@@ -330,7 +326,7 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply border-transparent text-success bg-success/10;
   }
   .badge-soft-warning {
-    @apply border-transparent text-warning bg-warning/10;
+    @apply border-transparent text-warning bg-[hsl(var(--warning-bg))];
   }
   .badge-soft-attention {
     @apply border-transparent text-attention bg-attention/10;
@@ -458,7 +454,7 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
 
   /* Form Helper Text - between label and input */
   .form-helper-text {
-    @apply text-body-sm text-foreground mt-0 mb-1.5;
+    @apply text-body text-muted-foreground mt-0 mb-1.5;
   }
 
   /* Form Additional Text - below input/control */
@@ -488,16 +484,13 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply bg-success/10 text-success border-success/20;
   }
   .banner-warning {
-    @apply bg-warning/10 text-warning border-warning/20;
+    @apply bg-[hsl(var(--warning-bg))] text-warning border-warning/20;
   }
   .banner-error {
     @apply bg-destructive/10 text-destructive border-destructive/20;
   }
   .banner-destructive {
     @apply bg-destructive/10 text-destructive border-destructive/20;
-  }
-  .banner-attention {
-    @apply bg-attention/10 text-attention border-attention/20;
   }
   .banner-size-default {
     @apply p-4;
@@ -506,7 +499,7 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply py-2 px-3;
   }
   .banner-size-compact-constrained {
-    @apply py-2 px-3 w-fit whitespace-nowrap;
+    @apply py-1.5 px-2.5 text-sm w-fit whitespace-nowrap;
   }
 
   /* ── Master Template: Sheet ── */
@@ -625,7 +618,7 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
 
   /* ── Table Semantic Classes ── */
   .table-head-cell {
-    @apply px-4 py-3 text-body-sm font-medium uppercase text-muted-foreground;
+    @apply px-4 py-3 text-sm font-medium uppercase text-muted-foreground;
   }
   .table-body-cell {
     @apply py-3;

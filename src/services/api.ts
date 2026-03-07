@@ -6,11 +6,12 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger, performanceTracker } from '@/utils/logger';
 import { getYouTubeVideoId, getGoogleDriveFileId, isYouTubeUrl, isGoogleDriveUrl } from '@/utils/videoUtils';
-import type { 
-  Video, 
+import type {
+  Video,
   VideoCreateData,
-  VideoUpdateData 
+  VideoUpdateData
 } from '@/types';
+import { auditLogOperations, videoVersionOperations } from '@/services/auditService';
 
 // Strict API response type
 interface ApiResult<T> {
@@ -194,6 +195,9 @@ export const videoOperations = {
       // Generate thumbnail URL from video URL if available
       const thumbnailUrl = generateThumbnailUrl(video_url);
 
+      // Get current user for attribution
+      const { data: { user } } = await supabase.auth.getUser();
+
       const { data, error } = await supabase
         .from('videos')
         .insert({
@@ -206,6 +210,10 @@ export const videoOperations = {
           content_type: videoData.content_type || 'video',
           duration_seconds: videoData.duration_seconds || 0,
           completion_rate: 0,
+          created_by: user?.id || null,
+          created_by_email: user?.email || null,
+          updated_by: user?.id || null,
+          updated_by_email: user?.email || null,
         })
         .select()
         .single();
@@ -214,6 +222,13 @@ export const videoOperations = {
         logger.error('Failed to create video', undefined, { title: videoData.title, supabaseError: error.message });
         return { data: null, error: error.message, success: false };
       }
+
+      // Audit log
+      auditLogOperations.log('created', 'training', {
+        resourceId: data.id,
+        resourceTitle: data.title,
+        newValues: { title: data.title, description: data.description, video_url: data.video_url, type: data.type },
+      });
 
       logger.info('Video created successfully', { videoId: data.id, title: data.title });
       return { data: data as Video, error: null, success: true };
@@ -228,8 +243,15 @@ export const videoOperations = {
   async update(id: string, updates: VideoUpdateData): Promise<ApiResult<Video>> {
     const operation = 'video.update';
     performanceTracker.start(operation);
-    
+
     try {
+      // Snapshot current version before overwriting
+      const { data: oldData } = await supabase.from('videos').select('*').eq('id', id).single();
+      await videoVersionOperations.snapshotBeforeUpdate(id, 'Admin edit');
+
+      // Get current user for attribution
+      const { data: { user } } = await supabase.auth.getUser();
+
       const { data, error } = await supabase
         .from('videos')
         .update({
@@ -238,6 +260,8 @@ export const videoOperations = {
           ...(updates.type && { type: updates.type }),
           ...(updates.content_type && { content_type: updates.content_type }),
           updated_at: new Date().toISOString(),
+          updated_by: user?.id || null,
+          updated_by_email: user?.email || null,
         })
         .eq('id', id)
         .select()
@@ -247,6 +271,14 @@ export const videoOperations = {
         logger.error('Failed to update video', undefined, { videoId: id, supabaseError: error.message });
         return { data: null, error: error.message, success: false };
       }
+
+      // Audit log with old/new values
+      auditLogOperations.log('updated', 'training', {
+        resourceId: id,
+        resourceTitle: updates.title,
+        oldValues: oldData ? { title: oldData.title, description: oldData.description } : undefined,
+        newValues: { title: updates.title, description: updates.description },
+      });
 
       logger.info('Video updated successfully', { videoId: id, title: updates.title });
       return { data: data as Video, error: null, success: true };
@@ -306,6 +338,9 @@ export const videoOperations = {
         return { data: null, error: message, success: false };
       }
 
+      // Get video details before deletion for audit log
+      const { data: videoData } = await supabase.from('videos').select('title').eq('id', id).single();
+
       const { error } = await supabase
         .from('videos')
         .delete()
@@ -315,6 +350,12 @@ export const videoOperations = {
         logger.error('Failed to delete video', undefined, { videoId: id, supabaseError: error.message });
         return { data: null, error: error.message, success: false };
       }
+
+      auditLogOperations.log('deleted', 'training', {
+        resourceId: id,
+        resourceTitle: videoData?.title,
+        oldValues: videoData ? { title: videoData.title } : undefined,
+      });
 
       logger.info('Video deleted successfully', { videoId: id });
       return { data: true, error: null, success: true };
@@ -329,8 +370,10 @@ export const videoOperations = {
   async archive(id: string): Promise<ApiResult<boolean>> {
     const operation = 'video.hide';
     performanceTracker.start(operation);
-    
+
     try {
+      const { data: videoData } = await supabase.from('videos').select('title').eq('id', id).single();
+
       const { error } = await supabase
         .from('videos')
         .update({ archived_at: new Date().toISOString() })
@@ -340,6 +383,11 @@ export const videoOperations = {
         logger.error('Failed to hide video', undefined, { videoId: id, supabaseError: error.message });
         return { data: null, error: error.message, success: false };
       }
+
+      auditLogOperations.log('archived', 'training', {
+        resourceId: id,
+        resourceTitle: videoData?.title,
+      });
 
       logger.info('Video hidden successfully', { videoId: id });
       return { data: true, error: null, success: true };
@@ -490,6 +538,12 @@ export const employeeOperations = {
         updated_at: data.updated_at
       };
 
+      auditLogOperations.log('created', 'employee', {
+        resourceId: data.id,
+        resourceTitle: name || email,
+        newValues: { email, name },
+      });
+
       logger.info('Employee added successfully', { employeeId: data.id, email });
       return { data: employeeWithAssignments, error: null, success: true };
     } catch (error) {
@@ -514,6 +568,8 @@ export const employeeOperations = {
         logger.error('Failed to delete employee', undefined, { employeeId, supabaseError: error.message });
         return { data: null, error: error.message, success: false };
       }
+
+      auditLogOperations.log('deleted', 'employee', { resourceId: employeeId });
 
       logger.info('Employee deleted successfully', { employeeId });
       return { data: true, error: null, success: true };
@@ -584,6 +640,8 @@ export const employeeOperations = {
         return { data: null, error: error.message, success: false };
       }
 
+      auditLogOperations.log('archived', 'employee', { resourceId: employeeId });
+
       logger.info('Employee hidden successfully', { employeeId });
       return { data: true, error: null, success: true };
     } catch (error) {
@@ -608,6 +666,8 @@ export const employeeOperations = {
         logger.error('Failed to show employee', undefined, { employeeId, supabaseError: error.message });
         return { data: null, error: error.message, success: false };
       }
+
+      auditLogOperations.log('restored', 'employee', { resourceId: employeeId });
 
       logger.info('Employee shown successfully', { employeeId });
       return { data: true, error: null, success: true };
@@ -738,6 +798,11 @@ export const assignmentOperations = {
         logger.error('Failed to create assignment', undefined, { videoId, employeeId, supabaseError: error.message });
         return { data: null, error: error.message, success: false };
       }
+
+      auditLogOperations.log('assigned', 'assignment', {
+        resourceId: data.id,
+        newValues: { video_id: videoId, employee_id: employeeId, due_date: dueDate?.toISOString() || null },
+      });
 
       logger.info('Assignment created successfully', { videoId, employeeId });
       return { data: data as VideoAssignment, error: null, success: true };

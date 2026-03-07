@@ -72,7 +72,7 @@ export const DueDateSelector: React.FC<DueDateSelectorProps> = ({
   return (
     <div className={cn("space-y-3", className)}>
       {showLabel && (
-        <Label className="font-medium">Select due date</Label>
+        <Label>Select due date</Label>
       )}
       <RadioGroup
         value={currentValue}

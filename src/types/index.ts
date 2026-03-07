@@ -42,6 +42,10 @@ export interface Video {
   archived_at?: string | null; // Controls visibility - when set, item is "hidden" from active lists
   created_at: string;
   updated_at: string;
+  created_by?: string | null;
+  created_by_email?: string | null;
+  updated_by?: string | null;
+  updated_by_email?: string | null;
   content_type?: ContentType; // Optional for backward compatibility
 }
 

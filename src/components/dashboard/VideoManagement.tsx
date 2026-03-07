@@ -65,6 +65,9 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
   const [settingsVideo, setSettingsVideo] = useState<Video | null>(null);
   const [pendingShowVideo, setPendingShowVideo] = useState<Video | null>(null);
 
+  // Highlight newly added video
+  const [highlightVideoId, setHighlightVideoId] = useState<string | null>(null);
+
   // Load videos on mount
   useEffect(() => {
     loadVideos();
@@ -179,6 +182,9 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
     const result = await videoOperations.create(sanitizedData);
     if (result.success) {
       toast.success(`"${sanitizedData.title}" has been added to the training library.`);
+      if (result.data?.id) {
+        setHighlightVideoId(result.data.id);
+      }
       await loadVideos();
       setIsAddVideoModalOpen(false);
     } else {
@@ -434,6 +440,8 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
         onPlay={handlePlayVideo}
         onAddVideo={() => setIsAddVideoModalOpen(true)}
         onSettings={(video) => setSettingsVideo(video)}
+        highlightVideoId={highlightVideoId}
+        onHighlightComplete={() => setHighlightVideoId(null)}
       />
 
       {/* Hidden Videos Section */}

@@ -112,8 +112,6 @@ export function QuizModal({
 
   // Fire onResponsesChange on mount when drafts are loaded so parent gets allQuestionsAnswered
   useEffect(() => {
-    console.log('[QuizModal mount] initialDraftResponses:', initialDraftResponses);
-    console.log('[QuizModal mount] isSubmitted:', isSubmitted, 'hasFired:', hasFiredInitialRef.current);
     if (hasFiredInitialRef.current || isSubmitted || !initialDraftResponses?.length || !quiz?.questions?.length) return;
     hasFiredInitialRef.current = true;
 
@@ -149,8 +147,6 @@ export function QuizModal({
     });
 
     const draftAttestation = initialDraftResponses[0]?.attestation_checked ?? false;
-    console.log('[QuizModal mount] allAnswered:', allAnswered, 'draftAttestation:', draftAttestation);
-    console.log('[QuizModal mount] calling onResponsesChange with', { responseCount: responseArray.length, allAnswered, draftAttestation });
     onResponsesChange?.(responseArray, allAnswered, draftAttestation);
   }, [initialDraftResponses, isSubmitted, quiz, onResponsesChange]);
 
@@ -257,10 +253,6 @@ export function QuizModal({
 
   const allQuestionsAnswered =
     quiz?.questions.every((question) => {
-      // DEBUG: log per-question answer status
-      const r = responses[question.id];
-      console.log('[QuizModal render] question', question.id, 'type:', question.question_type, 'response:', r);
-      void r; // consumed above for logging only
       const response = responses[question.id];
       if (question.question_type === "multiple_choice") {
         return response && response.selected_option_ids && response.selected_option_ids.length > 0;
@@ -375,7 +367,7 @@ export function QuizModal({
                                         : !!correctOptions[question.id]?.includes(option.id);
 
                                     // Enhanced styling for quiz results
-                                    let optionClassName = `flex-1 ${isSubmitted ? "cursor-default" : "cursor-pointer"} flex items-center justify-between transition-colors`;
+                                    let optionClassName = `flex-1 font-normal ${isSubmitted ? "cursor-default" : "cursor-pointer"} flex items-center justify-between transition-colors`;
 
                                     const shouldShowAlsoCorrect = mcShouldShowAlsoCorrect;
                                     const shouldShowSingleCorrect = mcShouldShowSingleCorrect;
@@ -474,7 +466,7 @@ export function QuizModal({
                                     : !!correctOptions[question.id]?.includes(option.id);
 
                                 // Enhanced styling for quiz results
-                                let optionClassName = `flex-1 ${isSubmitted ? "cursor-default" : "cursor-pointer"} flex items-center justify-between transition-colors`;
+                                let optionClassName = `flex-1 font-normal ${isSubmitted ? "cursor-default" : "cursor-pointer"} flex items-center justify-between transition-colors`;
 
                                 // Check if user got the question wrong (for single answer questions)
                                 const userAnsweredIncorrectly =
@@ -557,7 +549,7 @@ export function QuizModal({
                                     : !!correctOptions[question.id]?.includes(option.id);
 
                                 // Enhanced styling for quiz results
-                                let optionClassName = `flex-1 ${isSubmitted ? "cursor-default" : "cursor-pointer"} flex items-center justify-between transition-colors`;
+                                let optionClassName = `flex-1 font-normal ${isSubmitted ? "cursor-default" : "cursor-pointer"} flex items-center justify-between transition-colors`;
 
                                 // Check if user got the question wrong (for single answer questions)
                                 const userAnsweredIncorrectly =

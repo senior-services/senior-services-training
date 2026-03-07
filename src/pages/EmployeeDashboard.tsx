@@ -298,7 +298,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
         quizSummary,
         quizQuestionCount: hasQuiz ? quizInfo?.questionCount : undefined,
         completedAt: effectiveCompletedAt || undefined,
-        acknowledgmentViewingSeconds: assignment?.acknowledgment_viewing_seconds ?? undefined
+        acknowledgmentViewingSeconds: assignment?.acknowledgment_viewing_seconds ?? undefined,
+        content_type: video.content_type
       };
     },
     [userEmail, quizAttemptsByVideo, videoIdsWithQuizzes]
@@ -490,7 +491,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
   // Error boundary fallback
   if (error) {
     return (
-      <div className="min-h-screen bg-muted/30">
+      <div className="min-h-screen bg-background">
         <Header
           userRole={userRole}
           userName={sanitizedUserData.displayName}
@@ -523,7 +524,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
   }
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-muted/30">
+      <div className="min-h-screen bg-background">
         <Header
           userRole={userRole}
           userName={sanitizedUserData.displayName}

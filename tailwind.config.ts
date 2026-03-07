@@ -149,13 +149,19 @@ export default {
 				'slide-in': {
 					from: { opacity: '0', transform: 'translateY(10px)' },
 					to: { opacity: '1', transform: 'translateY(0)' }
+				},
+				'highlight-pulse': {
+					'0%': { boxShadow: 'inset 0 0 0 2px rgba(34, 197, 94, 0.6)' },
+					'50%': { boxShadow: 'inset 0 0 0 2px rgba(59, 130, 246, 0.6)' },
+					'100%': { boxShadow: 'inset 0 0 0 2px rgba(34, 197, 94, 0.6)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'progress-fill': 'progress-fill 1s ease-out',
-				'slide-in': 'slide-in 0.3s ease-out'
+				'slide-in': 'slide-in 0.3s ease-out',
+				'highlight-pulse': 'highlight-pulse 1.5s ease-in-out infinite'
 			}
 		}
 	},

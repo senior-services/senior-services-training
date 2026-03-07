@@ -28,6 +28,8 @@ interface VideoTableProps {
   onAddVideo: () => void;
   onSettings?: (video: Video) => void;
   className?: string;
+  highlightVideoId?: string | null;
+  onHighlightComplete?: () => void;
 }
 
 /**
@@ -52,12 +54,37 @@ export const VideoTable: React.FC<VideoTableProps> = ({
   onAddVideo,
   onSettings,
   className,
+  highlightVideoId,
+  onHighlightComplete,
 }) => {
   const [sortColumn, setSortColumn] = useState<"title" | "created_at">("title");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [videoQuizzes, setVideoQuizzes] = useState<
     Map<string, { version: number; versionCount: number; questionCount: number }>
   >(new Map());
+  const [fadingHighlightId, setFadingHighlightId] = useState<string | null>(null);
+
+  // Scroll to and highlight newly added video
+  useEffect(() => {
+    if (!highlightVideoId) return;
+    setFadingHighlightId(highlightVideoId);
+    // Wait for render, then scroll
+    const scrollTimer = setTimeout(() => {
+      const row = document.querySelector(`[data-video-id="${highlightVideoId}"]`);
+      if (row) {
+        row.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 100);
+    // Fade out highlight after 2.5s
+    const fadeTimer = setTimeout(() => {
+      setFadingHighlightId(null);
+      onHighlightComplete?.();
+    }, 2500);
+    return () => {
+      clearTimeout(scrollTimer);
+      clearTimeout(fadeTimer);
+    };
+  }, [highlightVideoId, onHighlightComplete]);
 
   // Load quiz version info for each video
   useEffect(() => {
@@ -208,54 +235,74 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                   </TableRow>
                 ) : (
                   sortedVideos.map((video, index) => (
-                    <TableRow key={video.id} className="group">
+                    <TableRow
+                      key={video.id}
+                      data-video-id={video.id}
+                      className={cn(
+                        "group transition-all duration-700",
+                        fadingHighlightId === video.id && "bg-green-50 dark:bg-green-950/30 animate-highlight-pulse"
+                      )}
+                    >
                       {/* Video title and preview */}
                       <TableCell className="py-2 w-full">
                         <div className="flex items-center gap-3">
-                          {/* Video preview */}
+                          {/* Content preview */}
                           <div className="relative w-20 h-12 rounded-md overflow-hidden bg-muted shrink-0">
-                            {(() => {
-                              // Determine best thumbnail source
-                              let thumbSrc: string | null = null;
-                              if (video.thumbnail_url) {
-                                thumbSrc = video.thumbnail_url;
-                              } else if (video.video_url) {
-                                if (isYouTubeUrl(video.video_url)) {
-                                  const id = getYouTubeVideoId(video.video_url);
-                                  if (id) thumbSrc = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-                                } else if (isGoogleDriveUrl(video.video_url)) {
-                                  const id = getGoogleDriveFileId(video.video_url);
-                                  if (id) thumbSrc = `https://drive.google.com/thumbnail?id=${id}&sz=w400-h300`;
-                                }
-                              }
-                              if (thumbSrc) {
-                                return (
-                                  <img
-                                    src={thumbSrc}
-                                    alt={`${video.title} thumbnail`}
-                                    className="w-full h-full object-cover"
-                                    loading="lazy"
-                                    onError={(e) => {
-                                      // Fallback to colored placeholder if image fails to load
-                                      const target = e.target as HTMLImageElement;
-                                      target.style.display = "none";
-                                      const fallback = target.nextElementSibling as HTMLElement;
-                                      if (fallback) fallback.classList.remove("hidden");
-                                    }}
-                                  />
-                                );
-                              }
-                              return null;
-                            })()}
-                            <div
-                              className={cn(
-                                "absolute inset-0 flex items-center justify-center",
-                                generateThumbnailColor(video.title),
-                                video.video_url || video.thumbnail_url ? "hidden" : "",
-                              )}
-                            >
-                              <Play className="w-4 h-4 text-white" aria-hidden="true" />
-                            </div>
+                            {video.content_type === 'presentation' ? (
+                              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-300 via-slate-250 to-slate-200 dark:from-slate-700 dark:via-slate-650 dark:to-slate-600">
+                                <svg width="32" height="24" viewBox="0 0 96 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                  <rect x="14" y="8" width="56" height="42" rx="3" transform="rotate(-6 14 8)" fill="white" fillOpacity="0.6" stroke="currentColor" strokeOpacity="0.1" strokeWidth="2" className="text-slate-400" />
+                                  <rect x="24" y="6" width="56" height="42" rx="3" transform="rotate(3 52 27)" fill="white" fillOpacity="0.75" stroke="currentColor" strokeOpacity="0.12" strokeWidth="2" className="text-slate-400" />
+                                  <rect x="20" y="12" width="56" height="42" rx="3" fill="white" fillOpacity="0.95" stroke="currentColor" strokeOpacity="0.15" strokeWidth="2" className="text-slate-400" />
+                                  <rect x="28" y="22" width="24" height="3" rx="1.5" fill="currentColor" fillOpacity="0.18" className="text-slate-500" />
+                                  <rect x="28" y="29" width="40" height="2" rx="1" fill="currentColor" fillOpacity="0.1" className="text-slate-400" />
+                                  <rect x="28" y="34" width="36" height="2" rx="1" fill="currentColor" fillOpacity="0.1" className="text-slate-400" />
+                                </svg>
+                              </div>
+                            ) : (
+                              <>
+                                {(() => {
+                                  let thumbSrc: string | null = null;
+                                  if (video.thumbnail_url) {
+                                    thumbSrc = video.thumbnail_url;
+                                  } else if (video.video_url) {
+                                    if (isYouTubeUrl(video.video_url)) {
+                                      const id = getYouTubeVideoId(video.video_url);
+                                      if (id) thumbSrc = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+                                    } else if (isGoogleDriveUrl(video.video_url)) {
+                                      const id = getGoogleDriveFileId(video.video_url);
+                                      if (id) thumbSrc = `https://drive.google.com/thumbnail?id=${id}&sz=w400-h300`;
+                                    }
+                                  }
+                                  if (thumbSrc) {
+                                    return (
+                                      <img
+                                        src={thumbSrc}
+                                        alt={`${video.title} thumbnail`}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                        onError={(e) => {
+                                          const target = e.target as HTMLImageElement;
+                                          target.style.display = "none";
+                                          const fallback = target.nextElementSibling as HTMLElement;
+                                          if (fallback) fallback.classList.remove("hidden");
+                                        }}
+                                      />
+                                    );
+                                  }
+                                  return null;
+                                })()}
+                                <div
+                                  className={cn(
+                                    "absolute inset-0 flex items-center justify-center",
+                                    generateThumbnailColor(video.title),
+                                    video.video_url || video.thumbnail_url ? "hidden" : "",
+                                  )}
+                                >
+                                  <Play className="w-4 h-4 text-white" aria-hidden="true" />
+                                </div>
+                              </>
+                            )}
                             <a
                               href="#"
                               onClick={(e) => {

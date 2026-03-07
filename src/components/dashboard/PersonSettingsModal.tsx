@@ -145,13 +145,13 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-body">{person.full_name || 'Unknown'}</span>
                 {stagedAdmin && !(person.is_admin || false) && (
-                  <Badge variant="attention" showIcon>Admin pending</Badge>
+                  <Badge variant="soft-admin" showIcon>Admin pending</Badge>
                 )}
                 {!stagedAdmin && (person.is_admin || false) && (
                   <Badge variant="destructive" showIcon>Admin removal pending</Badge>
                 )}
                 {stagedAdmin === (person.is_admin || false) && person.is_admin && (
-                  <Badge variant="soft-attention" showIcon>Admin</Badge>
+                  <Badge variant="soft-admin" showIcon>Admin</Badge>
                 )}
               </div>
               <p className="form-helper-text">{person.email}</p>
@@ -173,7 +173,7 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
                   disabled={isSaving}
                   aria-label="Hide person from active list"
                 />
-                <Label htmlFor="hide-person" className="cursor-pointer">
+                <Label htmlFor="hide-person" className="cursor-pointer font-normal">
                   Hide this person
                 </Label>
               </div>
@@ -193,7 +193,7 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
                   disabled={isSaving || isSelf}
                   aria-label="Toggle administrative privileges"
                 />
-                <Label htmlFor="admin-toggle" className="cursor-pointer">
+                <Label htmlFor="admin-toggle" className="cursor-pointer font-normal">
                   Grant admin access
                 </Label>
               </div>

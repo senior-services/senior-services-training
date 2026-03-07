@@ -96,7 +96,7 @@ export function TrainingAttestation({
           htmlFor={checkboxId}
           id="attestation-label"
           className={cn(
-            "font-medium leading-relaxed select-none ml-3",
+            "font-normal leading-relaxed select-none ml-3",
             enabled
               ? "text-foreground cursor-pointer"
               : "text-muted-foreground cursor-not-allowed"

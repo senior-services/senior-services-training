@@ -83,6 +83,13 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   onProgressUpdate,
   initialVideo,
 }) => {
+  // Persist video-was-completed in localStorage so reopening the dialog remembers it
+  const videoCompletedKey = videoId ? `videoWasCompleted:${videoId}` : null;
+  const [videoWasCompleted, setVideoWasCompleted] = useState(() => {
+    if (!videoCompletedKey) return false;
+    return localStorage.getItem(videoCompletedKey) === 'true';
+  });
+
   // State management
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
@@ -138,6 +145,14 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   // Derived: video is ready for completion actions
   const videoReady = !isPresentation && progress >= 99;
 
+  // Persist videoWasCompleted to localStorage when video reaches 99%+
+  useEffect(() => {
+    if (videoReady && !videoWasCompleted && videoCompletedKey) {
+      setVideoWasCompleted(true);
+      localStorage.setItem(videoCompletedKey, 'true');
+    }
+  }, [videoReady, videoWasCompleted, videoCompletedKey]);
+
   // Effect to load video data and existing progress when modal opens
   useEffect(() => {
     const initializeVideo = async () => {
@@ -172,8 +187,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           
           // Restore timer from persisted viewing seconds
           const loadedVideo = ('data' in loadResult ? loadResult.data : null) || initialVideo;
-          console.log('[Timer Debug] loadedVideo:', loadedVideo?.content_type, 'duration:', loadedVideo?.duration_seconds);
-          console.log('[Timer Debug] existingProgress:', existingProgress?.acknowledgmentViewingSeconds);
           if (loadedVideo?.content_type === 'presentation'
               && existingProgress?.acknowledgmentViewingSeconds != null
               && existingProgress.acknowledgmentViewingSeconds > 0) {
@@ -202,6 +215,15 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     toast,
     initialVideo,
   ]);
+
+  // Re-initialize videoWasCompleted from localStorage when videoId changes
+  useEffect(() => {
+    if (videoCompletedKey) {
+      setVideoWasCompleted(localStorage.getItem(videoCompletedKey) === 'true');
+    } else {
+      setVideoWasCompleted(false);
+    }
+  }, [videoCompletedKey]);
 
   // Scroll reset on open or video change
   useEffect(() => {
@@ -247,14 +269,11 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     const saveInterval = setInterval(async () => {
       const currentSeconds = viewingSecondsRef.current;
       if (currentSeconds > 0) {
-        console.log('[Timer Sync] Attempting save, seconds:', currentSeconds);
         const result = await progressOperations.updateByEmail(
           user.email!, videoId, 0, undefined, undefined, currentSeconds
         );
-        if (result.success) {
-          console.log('[Timer Sync] Successfully saved seconds:', currentSeconds);
-        } else {
-          console.error('[Timer Sync] Failed to save:', result.error);
+        if (!result.success) {
+          logger.error('[Timer Sync] Failed to save viewing seconds', new Error(result.error || 'Unknown error'));
         }
       }
     }, 5000);
@@ -326,8 +345,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       const loadDraft = async () => {
         if (user?.email) {
           const draft = await quizOperations.getDraft(user.email, quiz.id);
-          console.log('[VPF auto-start] loaded draft:', draft);
-          console.log('[VPF auto-start] attestation_checked:', draft?.[0]?.attestation_checked);
           setDraftResponses(draft);
           // Restore attestation state from draft
           if (draft && draft.length > 0 && draft[0].attestation_checked) {
@@ -426,16 +443,19 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
   // Attestation state for quiz flow
   const [quizAttestationChecked, setQuizAttestationChecked] = useState(false);
+  const quizAttestationRef = useRef(false);
+  useEffect(() => { quizAttestationRef.current = quizAttestationChecked; }, [quizAttestationChecked]);
 
   const handleStartQuiz = useCallback(async () => {
     if (wasEverCompleted) return;
     // Load draft before starting
+    let restoredAttestation = false;
     if (user?.email && quiz) {
       const draft = await quizOperations.getDraft(user.email, quiz.id);
       setDraftResponses(draft);
       // Restore attestation state from draft
       if (draft && draft.length > 0 && draft[0].attestation_checked) {
-        setQuizAttestationChecked(true);
+        restoredAttestation = true;
       }
     }
     setQuizStarted(true);
@@ -445,7 +465,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     setQuizSubmitted(false);
     setQuizResults([]);
     setCompletedQuizResults([]);
-    setQuizAttestationChecked(false);
+    setQuizAttestationChecked(restoredAttestation);
     setTimeout(() => {
       const el = document.getElementById("quiz-section");
       if (el && scrollRef.current) {
@@ -458,21 +478,21 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const handleDraftSave = useCallback((drafts: QuizDraftResponse[]) => {
     if (!user?.email || !quiz) return;
     if (draftSaveTimeoutRef.current) clearTimeout(draftSaveTimeoutRef.current);
-    // Piggyback attestation state onto first draft entry
+    // Piggyback attestation state onto first draft entry (use ref for latest value)
     const draftsWithAttestation = drafts.length > 0
-      ? [{ ...drafts[0], attestation_checked: quizAttestationChecked }, ...drafts.slice(1)]
+      ? [{ ...drafts[0], attestation_checked: quizAttestationRef.current }, ...drafts.slice(1)]
       : drafts;
     draftSaveTimeoutRef.current = setTimeout(() => {
       quizOperations.saveDraft(user.email!, quiz.id, draftsWithAttestation);
     }, 2000);
-  }, [user?.email, quiz, quizAttestationChecked]);
+  }, [user?.email, quiz]);
 
   const handleQuizResponsesChange = useCallback(
-    (responses: QuizSubmissionData[], allAnswered: boolean, attestationChecked: boolean) => {
-      console.log('[VPF handleQuizResponsesChange] allAnswered:', allAnswered, 'attestationChecked:', attestationChecked);
+    (responses: QuizSubmissionData[], allAnswered: boolean, _attestationChecked: boolean) => {
       setQuizResponses(responses);
       setAllQuestionsAnswered(allAnswered);
-      setQuizAttestationChecked(attestationChecked);
+      // Note: attestation state is managed by VPF directly (restored from draft in auto-start/handleStartQuiz)
+      // Do NOT overwrite quizAttestationChecked here — it causes stale overwrites from QuizModal mount effect
       const hasAnyResponses = responses.some((response) => response.selected_option_id || response.text_answer?.trim());
       setHasQuizChanges(hasAnyResponses);
     },
@@ -502,7 +522,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           question_id: r.question_id,
           selected_option_id: r.selected_option_id,
           text_answer: r.text_answer,
-          ...(i === 0 ? { attestation_checked: quizAttestationChecked } : {}),
+          ...(i === 0 ? { attestation_checked: quizAttestationRef.current } : {}),
         }));
       if (drafts.length > 0) {
         await quizOperations.saveDraft(user.email, quiz.id, drafts);
@@ -659,19 +679,16 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
               />
 
               {/* Attestation - inline after quiz questions */}
-              {!quizSubmitted && !wasEverCompleted && (() => {
-                console.log('[VPF render] TrainingAttestation enabled:', allQuestionsAnswered, 'checked:', quizAttestationChecked);
-                return (
+              {!quizSubmitted && !wasEverCompleted && (
                   <div className="mt-6 max-w-4xl mx-auto">
                     <TrainingAttestation
-                      enabled={allQuestionsAnswered}
+                      enabled={videoWasCompleted}
                       checked={quizAttestationChecked}
                       onCheckedChange={setQuizAttestationChecked}
-                      disabledTooltip="Complete the questions above to enable this checkbox."
+                      disabledTooltip="Watch the video above to enable this checkbox."
                     />
                   </div>
-                );
-              })()}
+              )}
             </div>
           )}
         </div>
@@ -721,16 +738,26 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                    {!allQuestionsAnswered || !quizAttestationChecked ? (
-                      <ButtonWithTooltip
-                        tooltip="Complete the questions above and the final acknowledgement to submit."
-                        disabled
-                      >
-                        Submit Quiz
-                      </ButtonWithTooltip>
-                    ) : (
-                      <Button onClick={handleQuizSubmit}>Submit Quiz</Button>
-                    )}
+                    {(() => {
+                      const isSubmitEnabled = videoWasCompleted && allQuestionsAnswered && quizAttestationChecked;
+                      const submitTooltip = !videoWasCompleted
+                        ? "Watch the video above to continue."
+                        : !allQuestionsAnswered
+                          ? "Complete all quiz questions to submit."
+                          : !quizAttestationChecked
+                            ? "Check the acknowledgement box to submit."
+                            : "";
+                      return !isSubmitEnabled ? (
+                        <ButtonWithTooltip
+                          tooltip={submitTooltip}
+                          disabled
+                        >
+                          Submit Quiz
+                        </ButtonWithTooltip>
+                      ) : (
+                        <Button onClick={handleQuizSubmit}>Submit Quiz</Button>
+                      );
+                    })()}
                     </div>
                   </div>
                 );

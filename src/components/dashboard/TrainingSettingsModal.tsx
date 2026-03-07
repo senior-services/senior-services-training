@@ -74,7 +74,7 @@ export const TrainingSettingsModal: React.FC<TrainingSettingsModalProps> = ({ op
                   onCheckedChange={(checked) => setStagedHidden(checked === true)}
                   aria-label="Hide training from active list"
                 />
-                <Label htmlFor="hide-training" className="cursor-pointer">
+                <Label htmlFor="hide-training" className="cursor-pointer font-normal">
                   Hide Training
                 </Label>
               </div>

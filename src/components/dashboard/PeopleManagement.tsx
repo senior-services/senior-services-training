@@ -718,7 +718,7 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
                         <div className="flex items-center gap-2">
                           <span>{person.full_name || "Unknown"}</span>
                           {person.is_admin && (
-                            <Badge variant="soft-attention" showIcon>
+                            <Badge variant="soft-admin" showIcon>
                               Admin
                             </Badge>
                           )}
@@ -803,7 +803,7 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
                               <div className="flex items-center gap-2">
                                 <span className="font-medium">{person.full_name || "Unknown"}</span>
                                 {person.is_admin && (
-                                  <Badge variant="soft-attention" showIcon>
+                                  <Badge variant="soft-admin" showIcon>
                                     Admin
                                   </Badge>
                                 )}

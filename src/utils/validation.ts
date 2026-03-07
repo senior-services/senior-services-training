@@ -71,8 +71,8 @@ export const validateUrl = (url: string): ValidationResult => {
  */
 export const validateVideoTitle = (title: string): ValidationResult => {
   const errors: string[] = [];
-  const sanitized = sanitizeHtml(title.trim());
-  
+  const sanitized = title.trim();
+
   if (!sanitized) {
     errors.push(ERROR_MESSAGES.VALIDATION.REQUIRED);
   } else if (sanitized.length < VALIDATION_RULES.TITLE.MIN_LENGTH) {
@@ -94,7 +94,7 @@ export const validateVideoTitle = (title: string): ValidationResult => {
  */
 export const validateVideoDescription = (description: string): ValidationResult => {
   const errors: string[] = [];
-  const sanitized = sanitizeHtml(description.trim());
+  const sanitized = description.trim();
   
   if (sanitized.length > VALIDATION_RULES.DESCRIPTION.MAX_LENGTH) {
     errors.push(ERROR_MESSAGES.VALIDATION.MAX_LENGTH(VALIDATION_RULES.DESCRIPTION.MAX_LENGTH));
@@ -269,9 +269,13 @@ export const validateAndSanitize = (
     errors.push('Content contains potentially unsafe elements.');
   }
   
-  // Sanitize if HTML is not allowed
+  // Strip dangerous HTML tags/patterns but do NOT entity-encode.
+  // React's JSX handles XSS natively; entity-encoding here would
+  // double-encode values stored in the database (e.g. "&" → "&amp;").
   if (!options.allowHtml) {
-    sanitized = sanitizeHtml(sanitized);
+    sanitized = sanitized
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<\/?(?:iframe|object|embed|form|input|button)[^>]*>/gi, '');
   }
   
   return {

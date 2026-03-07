@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { Check, AlertTriangle, AlertCircle, Clock, Info, MessageSquare } from "lucide-react"
+import { Check, AlertTriangle, AlertCircle, Clock, Info, Shield } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -11,32 +11,30 @@ const badgeVariants = cva(
       variant: {
         default: "badge-default",
         secondary: "badge-secondary",
-        tertiary: "badge-tertiary",
         destructive: "badge-destructive",
         success: "badge-success",
         warning: "badge-warning",
         attention: "badge-attention",
         "hollow-primary": "badge-hollow-primary",
         "hollow-secondary": "badge-hollow-secondary",
-        "hollow-tertiary": "badge-hollow-tertiary",
         "hollow-destructive": "badge-hollow-destructive",
         "hollow-success": "badge-hollow-success",
         "hollow-warning": "badge-hollow-warning",
         "hollow-attention": "badge-hollow-attention",
         "ghost-primary": "badge-ghost-primary",
         "ghost-secondary": "badge-ghost-secondary",
-        "ghost-tertiary": "badge-ghost-tertiary",
         "ghost-destructive": "badge-ghost-destructive",
         "ghost-success": "badge-ghost-success",
         "ghost-warning": "badge-ghost-warning",
         "ghost-attention": "badge-ghost-attention",
         "soft-primary": "badge-soft-primary",
         "soft-secondary": "badge-soft-secondary",
-        "soft-tertiary": "badge-soft-tertiary",
         "soft-destructive": "badge-soft-destructive",
         "soft-success": "badge-soft-success",
         "soft-warning": "badge-soft-warning",
         "soft-attention": "badge-soft-attention",
+        admin: "badge-admin",
+        "soft-admin": "badge-soft-admin",
       },
     },
     defaultVariants: {
@@ -72,8 +70,8 @@ function Badge({ className, variant, showIcon, children, ...props }: BadgeProps)
       {showIcon && (variant === "secondary" || variant === "hollow-secondary" || variant === "ghost-secondary" || variant === "soft-secondary") && (
         <Info className="w-3 h-3 mr-1" />
       )}
-      {showIcon && (variant === "tertiary" || variant === "hollow-tertiary" || variant === "ghost-tertiary" || variant === "soft-tertiary") && (
-        <MessageSquare className="w-3 h-3 mr-1" />
+      {showIcon && (variant === "admin" || variant === "soft-admin") && (
+        <Shield className="w-3 h-3 mr-1" />
       )}
       {children}
     </div>

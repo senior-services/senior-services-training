@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +12,6 @@ import { Input } from "@/components/ui/input";
 import { SuffixInput } from "@/components/ui/SuffixInput";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertCircle, CheckCircle2, Info, Loader2 } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -49,6 +47,18 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
   const [isValidatingUrl, setIsValidatingUrl] = useState(false);
   const [urlError, setUrlError] = useState<string>("");
   const [titleError, setTitleError] = useState<string>("");
+
+  const viewingTimeRef = useRef<HTMLDivElement>(null);
+  const showViewingTime = !!(url.trim() && !urlError && contentType === "presentation");
+
+  // Scroll viewing time section into view when it appears
+  useEffect(() => {
+    if (showViewingTime && viewingTimeRef.current) {
+      setTimeout(() => {
+        viewingTimeRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 220);
+    }
+  }, [showViewingTime]);
 
   // Assign to all employees state
   const [assignToAll, setAssignToAll] = useState(false);
@@ -230,8 +240,8 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
           <DialogTitle>Add New Training</DialogTitle>
         </DialogHeader>
 
-        <DialogScrollArea className="space-y-4">
-          <div>
+        <DialogScrollArea className="space-y-5">
+          <div className="space-y-1.5">
             <Label htmlFor="title">Training Title</Label>
             <Input
               id="title"
@@ -248,7 +258,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
             )}
           </div>
 
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="description">
               Description <span className="font-normal italic text-muted-foreground">(optional)</span>
             </Label>
@@ -263,8 +273,8 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
             <p className="text-caption text-muted-foreground mt-1">{description.length}/1000 characters</p>
           </div>
 
-          <div className="space-y-4">
-            <div>
+          <div>
+            <div className="space-y-1.5">
               <Label htmlFor="url">Video or Presentation Link</Label>
               <div className="relative">
                 <Input
@@ -314,50 +324,51 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
           </div>
 
           {url.trim() && !urlError && (
-            <div>
-              <Label>Training Type</Label>
-              <ToggleGroup
-                type="single"
-                variant="pill"
-                value={contentType}
-                onValueChange={(value) => {
-                  if (value) setContentType(value as ContentType);
-                }}
-                className="mt-1"
+            <p className="flex items-center gap-1.5 text-sm text-foreground">
+              <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-600" />
+              <span>Detected as: <span className="font-medium">{contentType === "presentation" ? "Presentation" : "Video"}</span></span>
+              <span className="text-muted-foreground">·</span>
+              <button
+                type="button"
+                className="text-primary hover:text-primary/80 underline underline-offset-2 font-medium"
+                onClick={() => setContentType(contentType === "presentation" ? "video" : "presentation")}
               >
-                <ToggleGroupItem value="video" aria-label="Video">
-                  Video
-                </ToggleGroupItem>
-                <ToggleGroupItem value="presentation" aria-label="Presentation">
-                  Presentation
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
+                Change to {contentType === "presentation" ? "Video" : "Presentation"}
+              </button>
+            </p>
           )}
 
-          {url.trim() && !urlError && contentType === "presentation" && (
-            <div>
-              <div>
-                <Label htmlFor="min-viewing-time">Minimum Viewing Time Required</Label>
-              </div>
-              <SuffixInput
-                id="min-viewing-time"
-                type="number"
-                suffix="seconds"
-                className="max-w-[140px]"
-                value={minViewingTime}
-                onChange={(e) => setMinViewingTime(parseInt(e.target.value) || 0)}
-                onBlur={() => {
-                  if (minViewingTime < 1) setMinViewingTime(1);
-                }}
-                min={1}
-                aria-describedby="min-viewing-time-additional"
-              />
-              <p id="min-viewing-time-additional" className="form-additional-text">
-                60 seconds is recommended to ensure users have sufficient time to process key information.
-              </p>
+          <div
+            ref={viewingTimeRef}
+            className={cn(
+              "overflow-hidden transition-all duration-200 ease-in-out",
+              showViewingTime
+                ? "max-h-40 opacity-100"
+                : "max-h-0 opacity-0"
+            )}
+            aria-hidden={!showViewingTime}
+          >
+            <div className="mb-1.5">
+              <Label htmlFor="min-viewing-time">Minimum Viewing Time Required</Label>
             </div>
-          )}
+            <SuffixInput
+              id="min-viewing-time"
+              type="number"
+              suffix="seconds"
+              className="max-w-[140px]"
+              value={minViewingTime}
+              onChange={(e) => setMinViewingTime(parseInt(e.target.value) || 0)}
+              onBlur={() => {
+                if (minViewingTime < 1) setMinViewingTime(1);
+              }}
+              min={1}
+              aria-describedby="min-viewing-time-additional"
+              tabIndex={showViewingTime ? 0 : -1}
+            />
+            <p id="min-viewing-time-additional" className="form-additional-text">
+              60 seconds is recommended to ensure users have sufficient time to process key information.
+            </p>
+          </div>
 
           {/* TODO: Re-enable "Assign to All Employees" feature when ready.
               The state (assignToAll, dueDateOption, noDueDateRequired) and handlers

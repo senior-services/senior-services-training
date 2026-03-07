@@ -175,7 +175,6 @@ export const componentTracker = new ComponentUpdateTracker();
 // Helper functions for common operations
 export const trackComponentUpdate = (component: ComponentName, changes: string[]) => {
   const update = componentTracker.registerUpdate(component, changes);
-  console.log(componentTracker.generateUpdateSummary(update));
   return update;
 };
 

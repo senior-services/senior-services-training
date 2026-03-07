@@ -46,6 +46,8 @@ import {
   getYouTubeWatchUrl,
 } from "@/utils/videoUtils";
 import { ContentPlayer } from "@/components/content/ContentPlayer";
+import { formatLong } from "@/utils/date-formatter";
+import { format } from "date-fns";
 import { TrainingContent, VideoType, ContentType } from "@/types";
 import { QuizWithQuestions } from "@/types/quiz";
 import { QuestionFormData, OptionFormData } from "@/components/quiz/CreateQuizModal";
@@ -70,6 +72,10 @@ interface VideoData {
   completion_rate: number;
   created_at: string;
   updated_at: string;
+  created_by?: string | null;
+  created_by_email?: string | null;
+  updated_by?: string | null;
+  updated_by_email?: string | null;
   content_type?: ContentType;
   archived_at?: string | null;
   duration_seconds?: number;
@@ -115,6 +121,10 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
   const [versionAttemptCount, setVersionAttemptCount] = useState(0);
   const [isDownloadingVersions, setIsDownloadingVersions] = useState(false);
 
+  // Attribution display names
+  const [createdByName, setCreatedByName] = useState<string | null>(null);
+  const [updatedByName, setUpdatedByName] = useState<string | null>(null);
+
   // New state for usage checking
   const [videoUsage, setVideoUsage] = useState<{
     canDelete: boolean;
@@ -135,7 +145,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
         setVideoUsage(videoUsageResult.data);
       }
     } catch (error) {
-      console.error("Error loading usage info:", error);
+      logger.error("Error loading usage info", error as Error);
     } finally {
       setUsageLoading(false);
     }
@@ -157,6 +167,22 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
         .getVersionCount(video.id)
         .then(setVersionCount)
         .catch(() => setVersionCount(0));
+      // Resolve attribution emails to display names
+      const emails = [video.created_by_email, video.updated_by_email].filter(Boolean) as string[];
+      if (emails.length > 0) {
+        supabase
+          .from('profiles')
+          .select('email, full_name')
+          .in('email', emails)
+          .then(({ data }) => {
+            const nameMap = new Map((data || []).map(p => [p.email, p.full_name]));
+            setCreatedByName(video.created_by_email ? (nameMap.get(video.created_by_email) || video.created_by_email.split('@')[0]) : null);
+            setUpdatedByName(video.updated_by_email ? (nameMap.get(video.updated_by_email) || video.updated_by_email.split('@')[0]) : null);
+          });
+      } else {
+        setCreatedByName(null);
+        setUpdatedByName(null);
+      }
     }
     return () => {
       abortController.abort();
@@ -199,7 +225,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
           setOriginalQuestions([]);
         }
       } catch (error) {
-        console.log("No quiz found for this video:", error);
+        logger.debug("No quiz found for this video", error);
       } finally {
         setQuizLoading(false);
       }
@@ -360,16 +386,6 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
   const handleSave = async () => {
     if (!video) return;
 
-    // DEBUG: Log all values relevant to Save Quiz confirmation
-    console.log(
-      "[handleSave] quiz:",
-      quiz,
-      "| questions.length:",
-      questions.length,
-      "| hasAssignments:",
-      hasAssignments,
-    );
-
     // Enable validation display and cleanup/validate questions before saving
     setShowQuizValidation(true);
 
@@ -396,7 +412,6 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
 
     // Version check: if quiz exists and has been changed, check for attempts
     if (quiz && hasQuizChanges()) {
-      console.log("[handleSave] Entering version check block");
       try {
         const { attemptCount } = await quizOperations.checkUsage(quiz.id);
         if (attemptCount > 0) {
@@ -411,14 +426,6 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
 
     // First-time quiz save on unassigned training: show confirmation
     const isCreatingNewQuizForSave = !quiz && questions.length > 0;
-    console.log(
-      "[handleSave] isCreatingNewQuizForSave:",
-      isCreatingNewQuizForSave,
-      "| !hasAssignments:",
-      !hasAssignments,
-      "| shouldShowDialog:",
-      isCreatingNewQuizForSave && !hasAssignments,
-    );
     if (isCreatingNewQuizForSave && !hasAssignments) {
       setSaveQuizConfirmDialogOpen(true);
       return;
@@ -1106,7 +1113,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                 <TabsTrigger value="quiz">Quiz</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="info" className="space-y-6 mt-4">
+              <TabsContent value="info" className="space-y-5 mt-4">
                 {/* Video Preview Section */}
                 <div className="space-y-3">
                   <div className="border border-border-primary rounded-lg overflow-hidden bg-muted/30">
@@ -1133,7 +1140,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                 </div>
 
                 {/* Title Section */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="edit-title">Training Title</Label>
                   <Input
                     id="edit-title"
@@ -1144,7 +1151,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                 </div>
 
                 {/* Description Section */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="edit-description">
                     Description <span className="font-normal italic text-muted-foreground">(optional)</span>
                   </Label>
@@ -1160,23 +1167,26 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                 {/* Video Info */}
               </TabsContent>
 
-              <TabsContent value="quiz" className="space-y-6 mt-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <h3>{questions.length === 1 ? `Quiz Question (1)` : `Quiz Questions (${questions.length})`}</h3>
-                    {versionCount > 1 && quiz && <Badge variant="soft-tertiary">Version {quiz.version}</Badge>}
+              <TabsContent value="quiz" className="space-y-6 mt-6">
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center">
+                    <h3>Quiz Questions</h3>
+                    {versionCount > 1 && quiz && <Badge variant="soft-secondary">Version {quiz.version}</Badge>}
                   </div>
-                  {versionCount > 1 && (
-                    <Button variant="outline" onClick={handleDownloadVersions} disabled={isDownloadingVersions}>
-                      <Download className="w-4 h-4 mr-1" />
-                      {isDownloadingVersions ? "Downloading..." : "Download Quiz Versions"}
-                    </Button>
-                  )}
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-muted-foreground">{questions.length} {questions.length === 1 ? 'Question' : 'Questions'}</p>
+                    {versionCount > 1 && (
+                      <Button variant="link" size="sm" onClick={handleDownloadVersions} disabled={isDownloadingVersions}>
+                        <Download className="w-4 h-4 mr-1" />
+                        {isDownloadingVersions ? "Downloading..." : "Download All"}
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Attention banner for assigned trainings */}
                 {hasAssignments && quiz && (
-                  <Banner variant="attention" title="Versioning Notice">
+                  <Banner variant="warning" title="Versioning Notice">
                     This training is already assigned. Editing the quiz will create a new version for future employees.
                     Completed trainings won't be affected.
                   </Banner>
@@ -1188,7 +1198,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                           <CardTitle className="form-section-header mt-0">Question {questionIndex + 1}</CardTitle>
-                          {!(hasAssignments && questions.length === 1) && (
+                          {!(hasAssignments && originalQuestions.length > 0 && questions.length === 1) && (
                             <Button
                               onClick={() => removeQuestion(questionIndex)}
                               variant="ghost"
@@ -1199,14 +1209,14 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                             </Button>
                           )}
                         </div>
-                        {hasAssignments && questions.length === 1 && (
+                        {hasAssignments && originalQuestions.length > 0 && questions.length === 1 && (
                           <Banner variant="warning" size="compact-constrained">
                             A minimum of one question is required for assigned trainings.
                           </Banner>
                         )}
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div>
+                        <div className="space-y-1.5">
                           <Label>Question Type</Label>
                           <Select
                             value={question.question_type}
@@ -1257,7 +1267,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                           </Select>
                         </div>
 
-                        <div>
+                        <div className="space-y-1.5">
                           <Label>Question Text</Label>
                           <Textarea
                             value={question.question_text}
@@ -1326,7 +1336,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                                         />
                                         <Label
                                           htmlFor={`edit_question_${questionIndex}_option_${optionIndex}`}
-                                          className="whitespace-nowrap cursor-pointer"
+                                          className="whitespace-nowrap cursor-pointer font-normal"
                                         >
                                           Correct
                                         </Label>
@@ -1379,7 +1389,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                                       />
                                       <Label
                                         htmlFor={`edit_question_${questionIndex}_option_${optionIndex}`}
-                                        className="whitespace-nowrap cursor-pointer"
+                                        className="whitespace-nowrap cursor-pointer font-normal"
                                       >
                                         Correct
                                       </Label>
@@ -1438,13 +1448,13 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                               >
                                 <div className="flex items-center space-x-2">
                                   <RadioGroupItem value="True" id={`edit_question_${questionIndex}_true`} />
-                                  <Label htmlFor={`edit_question_${questionIndex}_true`} className="cursor-pointer">
+                                  <Label htmlFor={`edit_question_${questionIndex}_true`} className="cursor-pointer font-normal">
                                     True
                                   </Label>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   <RadioGroupItem value="False" id={`edit_question_${questionIndex}_false`} />
-                                  <Label htmlFor={`edit_question_${questionIndex}_false`} className="cursor-pointer">
+                                  <Label htmlFor={`edit_question_${questionIndex}_false`} className="cursor-pointer font-normal">
                                     False
                                   </Label>
                                 </div>
@@ -1484,6 +1494,16 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
               </TabsContent>
             </Tabs>
           </DialogScrollArea>
+
+          {video && (
+            <p className="text-sm text-muted-foreground px-6 pb-2">
+              {updatedByName && video.updated_at !== video.created_at
+                ? `Last updated by ${updatedByName} on ${formatLong(video.updated_at)} at ${format(new Date(video.updated_at), 'h:mm a')}`
+                : createdByName
+                  ? `Created by ${createdByName} on ${formatLong(video.created_at)} at ${format(new Date(video.created_at), 'h:mm a')}`
+                  : `Created by ${video.created_by_email?.split('@')[0] || 'Unknown'} on ${formatLong(video.created_at)} at ${format(new Date(video.created_at), 'h:mm a')}`}
+            </p>
+          )}
 
           <DialogFooter className="!flex !flex-row !justify-between !items-center">
             <div className="flex items-center space-x-4">

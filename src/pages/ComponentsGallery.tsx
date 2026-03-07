@@ -104,47 +104,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(new Set());
 
-  // Icon state management for button examples
-  const [buttonIcons, setButtonIcons] = useState({
-    default: "Plus",
-    outline: "Edit",
-    destructive: "Trash2",
-    ghost: "Download",
-    secondary: "Settings",
-  });
-  const availableIcons = {
-    Plus,
-    Edit,
-    Trash2,
-    Download,
-    Settings,
-    Search,
-    Bell,
-    User,
-    Home,
-    Upload,
-    Eye,
-    EyeOff,
-    AlertCircle,
-    CheckCircle,
-    Info,
-    X,
-    ArrowUp,
-    ArrowDown,
-    ArrowUpDown,
-  };
-  const getIconComponent = (iconName: string) => {
-    return availableIcons[iconName as keyof typeof availableIcons] || Plus;
-  };
-  const cycleIcon = (variant: keyof typeof buttonIcons) => {
-    const iconNames = Object.keys(availableIcons);
-    const currentIndex = iconNames.indexOf(buttonIcons[variant]);
-    const nextIndex = (currentIndex + 1) % iconNames.length;
-    setButtonIcons((prev) => ({
-      ...prev,
-      [variant]: iconNames[nextIndex],
-    }));
-  };
   const tableData = [
     {
       name: "Alice Johnson",
@@ -247,146 +206,43 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       <Header userRole="admin" userName={userName} userEmail={userEmail} onLogout={onLogout} />
 
-      <main className="container mx-auto px-4 py-8 space-y-12">
-        {/* Page Header */}
-        <div className="text-center space-y-4">
-          <h1 className="font-bold text-foreground">Components Gallery</h1>
-
-          {/* Anchor Navigation */}
-          <nav className="pt-4">
-            <ul className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-x-6 text-left">
-              <li className="break-inside-avoid mb-1">
+      {/* Fixed sidebar navigation */}
+      <nav className="hidden lg:block fixed top-24 right-6 w-[200px] z-40">
+        <div className="bg-background/95 backdrop-blur-sm border border-border rounded-lg p-3 shadow-md">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 px-2">Components</h3>
+          <ul className="space-y-0.5">
+            {[
+              { href: "#banners", label: "Banners" },
+              { href: "#badges", label: "Badges" },
+              { href: "#buttons", label: "Buttons" },
+              { href: "#calendar", label: "Calendar" },
+              { href: "#color-palette", label: "Color Palette" },
+              { href: "#data-display", label: "Data Display" },
+              { href: "#form-controls", label: "Form Controls" },
+              { href: "#icons", label: "Icons" },
+              { href: "#interactive", label: "Interactive" },
+              { href: "#layout", label: "Layout" },
+              { href: "#progress", label: "Progress" },
+              { href: "#toast", label: "Toast" },
+              { href: "#tooltips", label: "Tooltips" },
+              { href: "#training-cards", label: "Training Cards" },
+              { href: "#typography", label: "Typography" },
+              { href: "#typography-utilities", label: "Typography Utilities" },
+            ].map(({ href, label }) => (
+              <li key={href}>
                 <a
-                  href="#banners"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
+                  href={href}
+                  className="block text-sm text-muted-foreground hover:text-primary px-2 py-1 rounded hover:bg-primary/10 transition-colors"
                 >
-                  Banners
+                  {label}
                 </a>
               </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#badges"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Badges
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#buttons"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Buttons
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#calendar"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Calendar
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#color-palette"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Color Palette
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#data-display"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Data Display
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#form-controls"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Form Controls
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#icons"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Icons
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#interactive"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Interactive
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#layout"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Layout
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#progress"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Progress
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#toast"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Toast
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#tooltips"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Tooltips
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#training-cards"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Training Cards
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#typography"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Typography
-                </a>
-              </li>
-              <li className="break-inside-avoid mb-1">
-                <a
-                  href="#typography-utilities"
-                  className="block text-caption text-primary hover:text-primary/80 px-2 py-1 rounded hover:bg-primary/10 transition-colors font-medium"
-                >
-                  Typography Utility Classes
-                </a>
-              </li>
-            </ul>
-          </nav>
+            ))}
+          </ul>
         </div>
+      </nav>
 
+      <main className="px-4 py-8 space-y-12 lg:mr-[220px] max-w-[1400px] mx-auto">
         {/* Color Palette Section */}
         <Card id="color-palette" className="shadow-card hover:shadow-lg transition-shadow duration-300">
           <CardHeader>
@@ -791,6 +647,14 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   </TableRow>
                   <TableRow>
                     <TableCell>
+                      <code className="text-code bg-muted px-1.5 py-0.5 rounded">.text-sm</code>
+                    </TableCell>
+                    <TableCell>0.875rem</TableCell>
+                    <TableCell>14px</TableCell>
+                    <TableCell>Table headers</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
                       <code className="text-code bg-muted px-1.5 py-0.5 rounded">.text-caption</code>
                     </TableCell>
                     <TableCell>0.79rem</TableCell>
@@ -814,184 +678,156 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
         {/* Buttons Section */}
         <Card id="buttons" className="shadow-card hover:shadow-lg transition-shadow duration-300">
           <CardHeader>
-            <CardTitle>Buttons</CardTitle>
-            <CardDescription>All button variants and states</CardDescription>
+            <CardTitle>Button Component</CardTitle>
+            <CardDescription>Comprehensive guidelines for button variants, sizes, states, and usage patterns</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="variants">
               <TabsList className="shadow-md">
                 <TabsTrigger value="variants">Variants</TabsTrigger>
                 <TabsTrigger value="sizes">Sizes</TabsTrigger>
+                <TabsTrigger value="states">Interactive States</TabsTrigger>
                 <TabsTrigger value="icons">With Icons</TabsTrigger>
-                <TabsTrigger value="states">States</TabsTrigger>
               </TabsList>
 
+              {/* Variants */}
               <TabsContent value="variants" className="space-y-4">
-                <div className="rounded-lg p-6 border border-border-primary/50 shadow-md">
-                  <div className="flex flex-wrap gap-3">
-                    <Button className="shadow-md hover:shadow-lg transition-shadow">Default</Button>
-                    <Button variant="secondary" className="shadow-md hover:shadow-lg transition-shadow">
-                      Secondary
-                    </Button>
-                    <Button variant="destructive" className="shadow-md hover:shadow-lg transition-shadow">
-                      Destructive
-                    </Button>
-                    <Button variant="outline" className="shadow-md hover:shadow-lg transition-shadow">
-                      Outline
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="border-destructive text-destructive hover:bg-destructive/10 shadow-md hover:shadow-lg transition-shadow"
-                    >
-                      Unassign
-                    </Button>
-                    <Button variant="ghost" className="hover:shadow-md transition-shadow">
-                      Ghost
-                    </Button>
-                    <Button variant="link">Link</Button>
-                  </div>
+                <p className="text-muted-foreground">Six button variants for different semantic meanings and visual hierarchy</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
+                  {([
+                    { variant: undefined, label: "Default", desc: "Primary actions, main CTAs", code: 'variant="default"' },
+                    { variant: "secondary" as const, label: "Secondary", desc: "Secondary actions", code: 'variant="secondary"' },
+                    { variant: "destructive" as const, label: "Destructive", desc: "Delete, remove, dangerous actions", code: 'variant="destructive"' },
+                    { variant: "outline" as const, label: "Outline", desc: "Tertiary actions, filters", code: 'variant="outline"' },
+                    { variant: "ghost" as const, label: "Ghost", desc: "Subtle actions, menu items", code: 'variant="ghost"' },
+                    { variant: "link" as const, label: "Link", desc: "Text links, inline actions", code: 'variant="link"' },
+                  ] as const).map(({ variant, label, desc, code }) => (
+                    <div key={code} className="flex flex-col gap-3">
+                      <Button variant={variant}>{label}</Button>
+                      <code className="text-[0.8125rem] text-muted-foreground font-mono bg-muted px-2 py-1.5 rounded-md whitespace-nowrap overflow-x-auto">{code}</code>
+                      <p className="text-[0.8125rem] text-muted-foreground">{desc}</p>
+                    </div>
+                  ))}
                 </div>
               </TabsContent>
 
+              {/* Sizes */}
               <TabsContent value="sizes" className="space-y-4">
-                <div className="rounded-lg p-6 border border-border-primary/50 shadow-md">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Button size="sm" className="shadow-md hover:shadow-lg transition-shadow">
-                      Small
-                    </Button>
-                    <Button size="default" className="shadow-md hover:shadow-lg transition-shadow">
-                      Default
-                    </Button>
-                    <Button size="lg" className="shadow-md hover:shadow-lg transition-shadow">
-                      Large
-                    </Button>
-                    <Button size="icon" variant="ghost" className="hover:shadow-md transition-shadow">
-                      <Settings className="w-4 h-4" />
-                    </Button>
+                <p className="text-muted-foreground">Four size options to match different UI contexts</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                  {([
+                    { size: "sm" as const, label: "Small", desc: "36px height, compact spaces", code: 'size="sm"' },
+                    { size: "default" as const, label: "Default", desc: "40px height, standard", code: 'size="default"' },
+                    { size: "lg" as const, label: "Large", desc: "44px height, emphasis", code: 'size="lg"' },
+                  ] as const).map(({ size, label, desc, code }) => (
+                    <div key={code} className="flex flex-col gap-3">
+                      <div><Button size={size}>{label}</Button></div>
+                      <code className="text-[0.8125rem] text-muted-foreground font-mono bg-muted px-2 py-1.5 rounded-md">{code}</code>
+                      <p className="text-[0.8125rem] text-muted-foreground">{desc}</p>
+                    </div>
+                  ))}
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <Button size="icon">
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <code className="text-[0.8125rem] text-muted-foreground font-mono bg-muted px-2 py-1.5 rounded-md">size="icon"</code>
+                    <p className="text-[0.8125rem] text-muted-foreground">40×40px, icons only</p>
                   </div>
                 </div>
               </TabsContent>
 
-              <TabsContent value="icons" className="space-y-4">
-                <div className="rounded-lg p-6 border border-border-primary/50 shadow-md">
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-body-sm font-medium mb-2">With Text and Icons</h4>
-                      <div className="flex flex-wrap gap-3">
-                        <Button className="shadow-md hover:shadow-lg transition-shadow">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add New
-                        </Button>
-                        <Button variant="outline" className="shadow-md hover:shadow-lg transition-shadow">
-                          <Edit className="w-4 h-4 mr-2" />
-                          Edit
-                        </Button>
-                        <Button variant="destructive" className="shadow-md hover:shadow-lg transition-shadow">
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </Button>
-                        <Button variant="ghost" className="hover:shadow-md transition-shadow">
-                          <Download className="w-4 h-4 mr-2" />
-                          Download
-                        </Button>
-                        <Button variant="secondary" className="shadow-md hover:shadow-lg transition-shadow">
-                          <Settings className="w-4 h-4 mr-2" />
-                          Settings
-                        </Button>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-body-sm font-medium mb-2">Icon Only (Click to cycle icons)</h4>
-                      <div className="grid grid-cols-5 gap-4">
-                        <div className="flex flex-col items-center gap-1">
-                          <Button
-                            size="icon"
-                            onClick={() => cycleIcon("default")}
-                            className="cursor-pointer shadow-md hover:shadow-lg transition-all hover:scale-105"
-                          >
-                            {(() => {
-                              const IconComponent = getIconComponent(buttonIcons.default);
-                              return <IconComponent className="w-4 h-4" />;
-                            })()}
-                          </Button>
-                          <span className="text-caption text-muted-foreground">default</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            onClick={() => cycleIcon("outline")}
-                            className="cursor-pointer shadow-md hover:shadow-lg transition-all hover:scale-105"
-                          >
-                            {(() => {
-                              const IconComponent = getIconComponent(buttonIcons.outline);
-                              return <IconComponent className="w-4 h-4" />;
-                            })()}
-                          </Button>
-                          <span className="text-caption text-muted-foreground">outline</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <Button
-                            size="icon"
-                            variant="destructive"
-                            onClick={() => cycleIcon("destructive")}
-                            className="cursor-pointer shadow-md hover:shadow-lg transition-all hover:scale-105"
-                          >
-                            {(() => {
-                              const IconComponent = getIconComponent(buttonIcons.destructive);
-                              return <IconComponent className="w-4 h-4" />;
-                            })()}
-                          </Button>
-                          <span className="text-caption text-muted-foreground">destructive</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => cycleIcon("ghost")}
-                            className="cursor-pointer hover:shadow-md transition-all hover:scale-105"
-                          >
-                            {(() => {
-                              const IconComponent = getIconComponent(buttonIcons.ghost);
-                              return <IconComponent className="w-4 h-4" />;
-                            })()}
-                          </Button>
-                          <span className="text-caption text-muted-foreground">ghost</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <Button
-                            size="icon"
-                            variant="secondary"
-                            onClick={() => cycleIcon("secondary")}
-                            className="cursor-pointer shadow-md hover:shadow-lg transition-all hover:scale-105"
-                          >
-                            {(() => {
-                              const IconComponent = getIconComponent(buttonIcons.secondary);
-                              return <IconComponent className="w-4 h-4" />;
-                            })()}
-                          </Button>
-                          <span className="text-caption text-muted-foreground">secondary</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
+              {/* Interactive States */}
               <TabsContent value="states" className="space-y-4">
-                <div className="rounded-lg p-6 border border-border-primary/50 shadow-md">
+                <p className="text-muted-foreground">All button states across different variants</p>
+                {([
+                  { variant: undefined, name: "Default" },
+                  { variant: "secondary" as const, name: "Secondary" },
+                  { variant: "destructive" as const, name: "Destructive" },
+                  { variant: "outline" as const, name: "Outline" },
+                  { variant: "ghost" as const, name: "Ghost" },
+                  { variant: "link" as const, name: "Link" },
+                ] as const).map(({ variant, name }) => (
+                  <div key={name}>
+                    <h4 className="text-body font-medium mb-4 text-foreground">{name} Variant</h4>
+                    <div className="grid grid-cols-6 gap-4 items-center mb-6">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground text-center">Variant</div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground text-center">Normal</div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground text-center">Hover</div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground text-center">Active</div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground text-center">Focus</div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground text-center">Disabled</div>
+
+                      <div className="font-medium text-foreground">{name}</div>
+                      <div className="flex justify-center">
+                        <Button variant={variant}>{name === "Link" ? "Link" : name === "Destructive" ? "Delete" : "Button"}</Button>
+                      </div>
+                      <div className="flex justify-center">
+                        <Button variant={variant} className={
+                          variant === "outline" ? "bg-muted border-muted-foreground/40" :
+                          variant === "ghost" ? "bg-muted" :
+                          variant === "link" ? "text-primary/80" :
+                          "opacity-80"
+                        }>{name === "Link" ? "Link" : name === "Destructive" ? "Delete" : "Button"}</Button>
+                      </div>
+                      <div className="flex justify-center">
+                        <Button variant={variant} className="scale-[0.98]">{name === "Link" ? "Link" : name === "Destructive" ? "Delete" : "Button"}</Button>
+                      </div>
+                      <div className="flex justify-center">
+                        <Button variant={variant} className="ring-2 ring-ring ring-offset-2">{name === "Link" ? "Link" : name === "Destructive" ? "Delete" : "Button"}</Button>
+                      </div>
+                      <div className="flex justify-center">
+                        <Button variant={variant} disabled>{name === "Link" ? "Link" : name === "Destructive" ? "Delete" : "Button"}</Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </TabsContent>
+
+              {/* With Icons */}
+              <TabsContent value="icons" className="space-y-6">
+                <p className="text-muted-foreground">Icons enhance button meaning and visual clarity</p>
+
+                <div>
+                  <h4 className="text-body font-medium mb-4 text-foreground">Text + Icon</h4>
                   <div className="flex flex-wrap gap-3">
-                    <Button className="shadow-md hover:shadow-lg transition-shadow">Normal</Button>
-                    <Button disabled className="shadow-sm">
-                      Disabled
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add New
                     </Button>
-                    <Button
-                      onClick={toggleLoading}
-                      disabled={isLoading}
-                      className="shadow-md hover:shadow-lg transition-shadow"
-                    >
-                      {isLoading ? "Loading..." : "Click to Load"}
+                    <Button variant="outline">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
                     </Button>
+                    <Button variant="destructive">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                    <Button variant="ghost">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Settings
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-body font-medium mb-4 text-foreground">Icon Only (size="icon")</h4>
+                  <div className="grid grid-cols-5 sm:grid-cols-5 gap-5 max-w-lg">
+                    {([
+                      { variant: undefined, icon: Plus, label: "default" },
+                      { variant: "outline" as const, icon: Edit, label: "outline" },
+                      { variant: "destructive" as const, icon: Trash2, label: "destructive" },
+                      { variant: "ghost" as const, icon: Settings, label: "ghost" },
+                      { variant: "secondary" as const, icon: Download, label: "secondary" },
+                    ] as const).map(({ variant, icon: Icon, label }) => (
+                      <div key={label} className="flex flex-col items-center gap-2">
+                        <Button size="icon" variant={variant}>
+                          <Icon className="w-4 h-4" />
+                        </Button>
+                        <span className="text-[0.8125rem] text-muted-foreground">{label}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </TabsContent>
@@ -1074,10 +910,10 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 <div className="space-y-4">
                   <div className="p-3 rounded-md bg-card/50 shadow-sm space-y-3">
                     <div>
-                      <Label className="text-body-sm font-medium mb-2 block">Binary Switch (On/Off)</Label>
+                      <Label className="text-body-sm mb-2 block">Binary Switch (On/Off)</Label>
                       <div className="flex items-center space-x-2">
                         <Switch id="switch" checked={switchValue} onCheckedChange={setSwitchValue} />
-                        <Label htmlFor="switch">Enable notifications</Label>
+                        <Label htmlFor="switch" className="font-normal">Enable notifications</Label>
                       </div>
                     </div>
 
@@ -1136,11 +972,11 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       checked={checkboxValue}
                       onCheckedChange={(checked) => setCheckboxValue(checked as boolean)}
                     />
-                    <Label htmlFor="checkbox">Checkbox</Label>
+                    <Label htmlFor="checkbox" className="font-normal">Checkbox</Label>
                   </div>
 
                   <div>
-                    <Label className="font-medium mb-2 block">Radio Button Group</Label>
+                    <Label className="mb-2 block">Radio Button Group</Label>
                     <RadioGroup
                       value={radioValue}
                       onValueChange={setRadioValue}
@@ -1148,25 +984,25 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="small" id="size-small" />
-                        <Label htmlFor="size-small">Small</Label>
+                        <Label htmlFor="size-small" className="font-normal">Small</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="medium" id="size-medium" />
-                        <Label htmlFor="size-medium">Medium</Label>
+                        <Label htmlFor="size-medium" className="font-normal">Medium</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="large" id="size-large" />
-                        <Label htmlFor="size-large">Large</Label>
+                        <Label htmlFor="size-large" className="font-normal">Large</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="extra-large" id="size-xl" />
-                        <Label htmlFor="size-xl">Extra Large</Label>
+                        <Label htmlFor="size-xl" className="font-normal">Extra Large</Label>
                       </div>
                     </RadioGroup>
                   </div>
 
                   <div>
-                    <Label className="text-body-sm font-medium mb-2 block">Checkbox Group</Label>
+                    <Label className="mb-2 block">Checkbox Group</Label>
                     <div className="p-3 rounded-md bg-card/50 shadow-sm space-y-3">
                       {["Newsletter", "Marketing", "Updates", "Security Alerts"].map((option) => (
                         <div key={option} className="flex items-center space-x-2">
@@ -1183,7 +1019,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                               }
                             }}
                           />
-                          <Label htmlFor={`checkbox-${option.toLowerCase().replace(" ", "-")}`}>{option}</Label>
+                          <Label htmlFor={`checkbox-${option.toLowerCase().replace(" ", "-")}`} className="font-normal">{option}</Label>
                         </div>
                       ))}
                     </div>
@@ -1269,13 +1105,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
               {/* Error Banner */}
               <Banner variant="error" title="Error" description="Error banner for system issues or failures." />
 
-              {/* Attention Banner */}
-              <Banner
-                variant="attention"
-                title="Attention"
-                description="Attention banner for items requiring user action."
-              />
-
               <Separator className="my-6" />
 
               <h4 className="text-body-sm font-medium text-muted-foreground">Inline Banners (Compact)</h4>
@@ -1292,9 +1121,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
               {/* Compact Error */}
               <Banner variant="error" size="compact" description="Please fix the errors above." />
 
-              {/* Compact Attention */}
-              <Banner variant="attention" size="compact" description="Review pending items before submitting." />
-
               <Separator className="my-6" />
 
               <h4 className="text-body-sm font-medium text-muted-foreground">Inline Banners (Compact, Constrained)</h4>
@@ -1303,7 +1129,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
               <Banner variant="success" size="compact-constrained" description="All answers saved." />
               <Banner variant="warning" size="compact-constrained" description="Changes will take effect immediately." />
               <Banner variant="error" size="compact-constrained" description="Please fix the errors above." />
-              <Banner variant="attention" size="compact-constrained" description="Review pending items before submitting." />
             </div>
           </CardContent>
         </Card>
@@ -1326,10 +1151,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <Badge variant="secondary" showIcon>
                       Secondary with Icon
                     </Badge>
-                    <Badge variant="tertiary">Tertiary</Badge>
-                    <Badge variant="tertiary" showIcon>
-                      Tertiary with Icon
-                    </Badge>
                     <Badge variant="destructive">Destructive</Badge>
                     <Badge variant="destructive" showIcon>
                       Destructive with Icon
@@ -1342,9 +1163,9 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <Badge variant="warning" showIcon>
                       Warning with Icon
                     </Badge>
-                    <Badge variant="attention">Attention</Badge>
-                    <Badge variant="attention" showIcon>
-                      Attention with Icon
+                    <Badge variant="admin">Admin</Badge>
+                    <Badge variant="admin" showIcon>
+                      Admin with Icon
                     </Badge>
                   </div>
                 </div>
@@ -1359,10 +1180,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <Badge variant="hollow-secondary" showIcon>
                       Secondary with Icon
                     </Badge>
-                    <Badge variant="hollow-tertiary">Tertiary</Badge>
-                    <Badge variant="hollow-tertiary" showIcon>
-                      Tertiary with Icon
-                    </Badge>
                     <Badge variant="hollow-destructive">Destructive</Badge>
                     <Badge variant="hollow-destructive" showIcon>
                       Destructive with Icon
@@ -1374,10 +1191,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <Badge variant="hollow-warning">Warning</Badge>
                     <Badge variant="hollow-warning" showIcon>
                       Warning with Icon
-                    </Badge>
-                    <Badge variant="hollow-attention">Attention</Badge>
-                    <Badge variant="hollow-attention" showIcon>
-                      Attention with Icon
                     </Badge>
                   </div>
                 </div>
@@ -1392,10 +1205,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <Badge variant="soft-secondary" showIcon>
                       Secondary with Icon
                     </Badge>
-                    <Badge variant="soft-tertiary">Tertiary</Badge>
-                    <Badge variant="soft-tertiary" showIcon>
-                      Tertiary with Icon
-                    </Badge>
                     <Badge variant="soft-destructive">Destructive</Badge>
                     <Badge variant="soft-destructive" showIcon>
                       Destructive with Icon
@@ -1408,9 +1217,9 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <Badge variant="soft-warning" showIcon>
                       Warning with Icon
                     </Badge>
-                    <Badge variant="soft-attention">Attention</Badge>
-                    <Badge variant="soft-attention" showIcon>
-                      Attention with Icon
+                    <Badge variant="soft-admin">Admin</Badge>
+                    <Badge variant="soft-admin" showIcon>
+                      Admin with Icon
                     </Badge>
                   </div>
                 </div>
@@ -1425,10 +1234,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <Badge variant="ghost-secondary" showIcon>
                       Secondary with Icon
                     </Badge>
-                    <Badge variant="ghost-tertiary">Tertiary</Badge>
-                    <Badge variant="ghost-tertiary" showIcon>
-                      Tertiary with Icon
-                    </Badge>
                     <Badge variant="ghost-destructive">Destructive</Badge>
                     <Badge variant="ghost-destructive" showIcon>
                       Destructive with Icon
@@ -1440,10 +1245,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <Badge variant="ghost-warning">Warning</Badge>
                     <Badge variant="ghost-warning" showIcon>
                       Warning with Icon
-                    </Badge>
-                    <Badge variant="ghost-attention">Attention</Badge>
-                    <Badge variant="ghost-attention" showIcon>
-                      Attention with Icon
                     </Badge>
                   </div>
                 </div>
@@ -2576,7 +2377,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   <TableBody>
                     <TableRow>
                       <TableCell>
-                        <Badge variant="ghost-attention">Quiz Pending</Badge>
+                        <Badge variant="ghost-warning">Quiz Pending</Badge>
                       </TableCell>
                       <TableCell className="text-body-sm">
                         Video watched but quiz not yet taken (

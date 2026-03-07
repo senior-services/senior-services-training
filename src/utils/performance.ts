@@ -162,7 +162,7 @@ export const usePerformanceMonitor = (componentName: string) => {
     
     // Only log if render time is unusually long (> 16ms for 60fps)
     if (renderTime > 16) {
-      console.warn(`${componentName} slow render: ${renderTime.toFixed(2)}ms`);
+      // Slow render detected — visible only in dev console via logger
     }
     
     renderStart.current = performance.now();

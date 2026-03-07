@@ -17,7 +17,6 @@ const bannerVariants = cva(
         warning: "banner-warning",
         error: "banner-error",
         destructive: "banner-destructive",
-        attention: "banner-attention",
       },
       size: {
         default: "banner-size-default",
@@ -39,7 +38,6 @@ const iconMap = {
   warning: AlertTriangle,
   error: XCircle,
   destructive: XCircle,
-  attention: AlertTriangle,
   default: Info,
 }
 
@@ -71,7 +69,9 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>(
     ...props 
   }, ref) => {
     const IconComp = (CustomIcon || iconMap[variant as keyof typeof iconMap] || iconMap.default) as React.ElementType<{ className?: string }>
-    const iconClass = size === "compact" ? "h-4 w-4 mt-0.5 shrink-0" : "h-5 w-5 mt-0.5 shrink-0"
+    const isSimple = !title && !actions
+    const iconClass = size === "compact-constrained" ? "h-3.5 w-3.5 shrink-0" : size === "compact" ? "h-4 w-4 shrink-0" : "h-5 w-5 shrink-0"
+    const alignClass = isSimple ? "items-center" : "items-start"
 
     return (
       <div
@@ -80,8 +80,8 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>(
         className={cn(bannerVariants({ variant, size }), className)}
         {...props}
       >
-        <div className="flex items-start justify-between">
-          <div className="flex items-start space-x-3 flex-1">
+        <div className={cn("flex justify-between", alignClass)}>
+          <div className={cn("flex space-x-3 flex-1", alignClass)}>
             {showIcon && IconComp ? (
               <IconComp className={iconClass} />
             ) : null}

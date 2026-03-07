@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { logger } from '@/utils/logger';
 import { clearUserRoleCache } from '@/services/quizService';
+import { authActivityOperations } from '@/services/auditService';
 import { APP_CONFIG } from '@/constants';
 
 interface AuthState {
@@ -68,6 +69,12 @@ export function useAuth() {
           user: session?.user ?? null,
           loading: false,
         });
+
+        // Track login events
+        if (event === 'SIGNED_IN' && session?.user) {
+          const provider = session.user.app_metadata?.provider || 'unknown';
+          authActivityOperations.logLogin(provider);
+        }
       }
     );
 
@@ -164,6 +171,9 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
+      // Log logout before signing out (needs auth to write)
+      await authActivityOperations.logLogout();
+
       const { error } = await supabase.auth.signOut();
       
       if (error) {

@@ -112,8 +112,8 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ open, onOpen
         </DialogHeader>
 
         <DialogScrollArea>
-          <form id="add-employee-form" onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
+          <form id="add-employee-form" onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1.5">
               <Label htmlFor="email">Email Address</Label>
               <Input
                 id="email"

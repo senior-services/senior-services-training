@@ -73,7 +73,7 @@ export const VideoPage = () => {
         try {
           quizData = await quizOperations.getByVideoId(res.data.id);
         } catch (error) {
-          console.log('No quiz found for this video or error loading quiz:', error);
+          // Quiz may not exist for this video — this is expected
         }
 
         let completedAt: string | null = null;
@@ -146,7 +146,7 @@ export const VideoPage = () => {
         description: "Your training has been marked as complete.",
       });
     } catch (error) {
-      console.error('Error submitting quiz:', error);
+      logger.error('Error submitting quiz', error as Error);
       toast({
         title: "Error",
         description: "Failed to submit quiz. Please try again.",
