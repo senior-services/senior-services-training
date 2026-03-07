@@ -26,8 +26,8 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --primary: 206 75% 36%; /* rgb(23, 101, 161) */
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: WCAG AA compliant (5.39:1 on white) */
-    --secondary: 205 55% 40%; /* #2e6f9e */
+    /* Secondary: Gray used for secondary buttons & badges */
+    --secondary: 215 25% 45%; /* matches --muted-foreground */
     --secondary-foreground: 0 0% 100%;
 
     /* Muted: Higher Contrast for Senior Vision */
@@ -39,9 +39,7 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --success-foreground: 0 0% 100%;
     --warning: 21 90% 38%; /* #b8470a — 5.33:1 on white */
     --warning-foreground: 0 0% 100%;
-    --warning-bg: 35 100% 91%; /* #ffecd1 — warm amber tint, 4.61:1 with warning text */
-    --attention: 32 94% 33%; /* #a35905 — 5.24:1 on white */
-    --attention-foreground: 0 0% 100%;
+    --warning-bg: 38 92% 95%; /* #fef6e8 — soft warm cream */
     --destructive: 0 72% 45%; /* #c52020 — 5.81:1 on white */
     --destructive-foreground: 0 0% 100%;
 
@@ -71,8 +69,8 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --deadline-completed: 142 76% 30%; /* Match new success color */
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(205 55% 40%));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(205 55% 40%));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
 
     /* Shadows */
@@ -111,7 +109,7 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --primary: 206 75% 70%; /* Brighter primary in dark mode */
     --primary-foreground: 219 79% 6%;
 
-    --secondary: 205 55% 60%; /* #61a2d1 — 7.11:1 on dark bg */
+    --secondary: 215 16% 80%; /* matches --muted-foreground */
     --secondary-foreground: 219 79% 6%;
 
     --muted: 219 79% 12%; /* Darker muted background */
@@ -122,8 +120,6 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --warning: 21 90% 62%; /* #EA580C - Brighter orange for dark mode */
     --warning-foreground: 219 79% 6%;
     --warning-bg: 25 60% 14%; /* #39200e — warm dark amber, 5.97:1 with warning text */
-    --attention: 32 94% 58%; /* #D97706 - Brighter amber for dark mode */
-    --attention-foreground: 219 79% 6%;
     --destructive: 0 72% 65%; /* #DC2626 - Brighter red for dark mode */
     --destructive-foreground: 219 79% 6%;
 
@@ -150,8 +146,8 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --deadline-completed: 142 76% 55%;
 
     /* Dark gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(205 55% 60%));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(205 55% 60%));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
 
     /* Dark shadows */
@@ -265,9 +261,6 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   .badge-warning {
     @apply border-transparent bg-warning text-warning-foreground;
   }
-  .badge-attention {
-    @apply border-transparent bg-attention text-attention-foreground;
-  }
   .badge-admin {
     @apply border-transparent bg-background-header-admin text-white;
   }
@@ -290,9 +283,6 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   .badge-hollow-warning {
     @apply border-warning text-warning bg-transparent;
   }
-  .badge-hollow-attention {
-    @apply border-attention text-attention bg-transparent;
-  }
   /* Ghost */
   .badge-ghost-primary {
     @apply border-transparent text-primary bg-transparent;
@@ -309,9 +299,6 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   .badge-ghost-warning {
     @apply border-transparent text-warning bg-transparent;
   }
-  .badge-ghost-attention {
-    @apply border-transparent text-attention bg-transparent;
-  }
   /* Soft */
   .badge-soft-primary {
     @apply border-transparent text-primary bg-primary/10;
@@ -327,9 +314,6 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   }
   .badge-soft-warning {
     @apply border-transparent text-warning bg-[hsl(var(--warning-bg))];
-  }
-  .badge-soft-attention {
-    @apply border-transparent text-attention bg-attention/10;
   }
 
   /* ── Toggle Variant Classes ── */

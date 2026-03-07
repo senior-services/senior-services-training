@@ -136,7 +136,10 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     });
 
   // Presentation timer constants and computed values
-  const presentationMinSeconds = video?.duration_seconds && video.duration_seconds >= 60 ? video.duration_seconds : 60;
+  const presentationMinSeconds = useMemo(() =>
+    video?.duration_seconds && video.duration_seconds >= 60 ? video.duration_seconds : 60,
+    [video?.duration_seconds]
+  );
   const isPresentation = video?.content_type === "presentation";
   const remainingSeconds = isPresentation ? Math.max(0, presentationMinSeconds - viewingSeconds) : 0;
   const timerActive = remainingSeconds > 0;
@@ -144,14 +147,16 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
   // Derived: video is ready for completion actions
   const videoReady = !isPresentation && progress >= 99;
+  // Unified: content requirement met (video watched or presentation timer done)
+  const contentDone = isPresentation ? !timerActive : videoReady;
 
-  // Persist videoWasCompleted to localStorage when video reaches 99%+
+  // Persist videoWasCompleted to localStorage when content requirement is met
   useEffect(() => {
-    if (videoReady && !videoWasCompleted && videoCompletedKey) {
+    if (contentDone && !videoWasCompleted && videoCompletedKey) {
       setVideoWasCompleted(true);
       localStorage.setItem(videoCompletedKey, 'true');
     }
-  }, [videoReady, videoWasCompleted, videoCompletedKey]);
+  }, [contentDone, videoWasCompleted, videoCompletedKey]);
 
   // Effect to load video data and existing progress when modal opens
   useEffect(() => {
@@ -234,13 +239,11 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
   // Timer effect for presentations
   useEffect(() => {
-    if (!open || !video || video.content_type !== "presentation" || checkboxEnabled) {
-      return;
-    }
+    if (!open || !isPresentation || checkboxEnabled) return;
     const timer = setInterval(() => {
       setViewingSeconds((prev) => {
         const newSeconds = prev + 1;
-        if (newSeconds >= presentationMinSeconds && !checkboxEnabled) {
+        if (newSeconds >= presentationMinSeconds) {
           setCheckboxEnabled(true);
           setA11yAnnouncement(
             `You may now acknowledge that you have reviewed this training material after viewing for ${presentationMinSeconds} seconds.`,
@@ -255,7 +258,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [open, video, checkboxEnabled, videoId]);
+  }, [open, isPresentation, checkboxEnabled, presentationMinSeconds, videoId]);
 
   // Keep ref in sync with viewingSeconds state
   useEffect(() => {
@@ -337,19 +340,24 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     loadCompletedQuizResults();
   }, [wasEverCompleted, user?.email, videoId]);
 
-  // Auto-start quiz when reopening at 99%+ with quiz, and load draft
+  // Auto-start quiz when reopening with progress ≥99% OR existing draft answers
   useEffect(() => {
     if (!open || quizStarted || wasEverCompleted) return;
-    if (progress >= 99 && quiz && !quizLoading) {
-      // Load draft before starting quiz
-      const loadDraft = async () => {
-        if (user?.email) {
-          const draft = await quizOperations.getDraft(user.email, quiz.id);
-          setDraftResponses(draft);
-          // Restore attestation state from draft
-          if (draft && draft.length > 0 && draft[0].attestation_checked) {
-            setQuizAttestationChecked(true);
-          }
+    if (!quiz || quizLoading) return;
+
+    const loadDraftAndStart = async () => {
+      let draft: QuizDraftResponse[] | null = null;
+      if (user?.email) {
+        draft = await quizOperations.getDraft(user.email, quiz.id);
+      }
+
+      // Auto-start if video progress is ≥99% OR if draft answers exist (user previously started)
+      const hasDraftAnswers = draft && draft.length > 0;
+      if (progress >= 99 || hasDraftAnswers) {
+        setDraftResponses(draft);
+        // Restore attestation state from draft
+        if (hasDraftAnswers && draft![0].attestation_checked) {
+          setQuizAttestationChecked(true);
         }
         setQuizStarted(true);
         setTimeout(() => {
@@ -358,9 +366,9 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             scrollRef.current.scrollTo({ top: el.offsetTop - scrollRef.current.offsetTop, behavior: "smooth" });
           }
         }, 100);
-      };
-      loadDraft();
-    }
+      }
+    };
+    loadDraftAndStart();
   }, [open, progress, quiz, quizLoading, quizStarted, wasEverCompleted, user?.email]);
 
   const handleVideoEnded = useCallback(() => {
@@ -374,7 +382,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   }, [updateProgress, quiz, isPresentation]);
 
   const handleCompleteTraining = useCallback(async () => {
-    if (video?.content_type === "presentation" && !presentationAcknowledged) {
+    if (!videoAttestationChecked) {
       toast({
         variant: "destructive",
         title: "Acknowledgment Required",
@@ -395,7 +403,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     onOpenChange(false);
   }, [
     video,
-    presentationAcknowledged,
+    videoAttestationChecked,
     markComplete,
     user,
     videoId,
@@ -638,25 +646,13 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             )}
           </div>
 
-          {/* Compliance Checkbox - Only for Presentations */}
-          {video && video.content_type === "presentation" && !wasEverCompleted && !quiz && !quizLoading && (
-            <div>
-              <TrainingAttestation
-                enabled={checkboxEnabled}
-                checked={presentationAcknowledged}
-                onCheckedChange={setPresentationAcknowledged}
-                disabledTooltip="Please wait for the viewing timer to complete."
-              />
-            </div>
-          )}
-
-          {/* Attestation for non-quiz video trainings */}
-          {videoReady && !wasEverCompleted && !quiz && !quizLoading && (
+          {/* Attestation for trainings without quiz */}
+          {video && !wasEverCompleted && !quiz && !quizLoading && (
             <TrainingAttestation
-              enabled={true}
+              enabled={contentDone}
               checked={videoAttestationChecked}
               onCheckedChange={setVideoAttestationChecked}
-              disabledTooltip=""
+              disabledTooltip={isPresentation ? "Please wait for the viewing timer to complete." : "Watch the video to enable this checkbox."}
             />
           )}
 
@@ -682,10 +678,12 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
               {!quizSubmitted && !wasEverCompleted && (
                   <div className="mt-6 max-w-4xl mx-auto">
                     <TrainingAttestation
-                      enabled={videoWasCompleted}
+                      enabled={contentDone && allQuestionsAnswered}
                       checked={quizAttestationChecked}
                       onCheckedChange={setQuizAttestationChecked}
-                      disabledTooltip="Watch the video above to enable this checkbox."
+                      disabledTooltip={!contentDone
+                        ? (isPresentation ? "Please wait for the viewing timer to complete." : "Watch the video to enable this checkbox.")
+                        : "Answer all quiz questions to enable this checkbox."}
                     />
                   </div>
               )}
@@ -739,9 +737,9 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                       </AlertDialogContent>
                     </AlertDialog>
                     {(() => {
-                      const isSubmitEnabled = videoWasCompleted && allQuestionsAnswered && quizAttestationChecked;
-                      const submitTooltip = !videoWasCompleted
-                        ? "Watch the video above to continue."
+                      const isSubmitEnabled = contentDone && allQuestionsAnswered && quizAttestationChecked;
+                      const submitTooltip = !contentDone
+                        ? (isPresentation ? "Finish viewing to continue." : "Watch the video above to continue.")
                         : !allQuestionsAnswered
                           ? "Complete all quiz questions to submit."
                           : !quizAttestationChecked
@@ -763,9 +761,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 );
               }
 
-              // State: content (all 4 use cases)
-              const contentDone = isPresentation ? !timerActive : videoReady;
-              const attestationChecked = isPresentation ? presentationAcknowledged : videoAttestationChecked;
+              // State: content (all use cases — unified attestation)
+              const attestationChecked = videoAttestationChecked;
 
               const getPrimaryTooltip = () => {
                 if (!contentDone) {

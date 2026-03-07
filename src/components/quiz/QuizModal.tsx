@@ -118,12 +118,9 @@ export function QuizModal({
     const allAnswered = quiz.questions.every((question) => {
       const draft = initialDraftResponses.find(d => d.question_id === question.id);
       if (!draft) return false;
-      if (question.question_type === "multiple_choice") {
-        return draft.selected_option_ids && draft.selected_option_ids.length > 0;
-      } else if (question.question_type === "single_answer" || question.question_type === "true_false") {
-        return !!draft.selected_option_id;
-      }
-      return !!draft.text_answer?.trim();
+      return !!draft.selected_option_id
+        || !!(draft.selected_option_ids && draft.selected_option_ids.length > 0)
+        || !!draft.text_answer?.trim();
     });
 
     const responseArray: QuizSubmissionData[] = [];
@@ -197,15 +194,15 @@ export function QuizModal({
       }
     });
 
-    // Check if all questions are answered
+    // Check if all questions are answered — a question is answered if it has
+    // a selected option (single or multiple) or a non-empty text answer
     const allAnswered = quiz.questions.every((question) => {
       const response = newResponses[question.id];
-      if (question.question_type === "multiple_choice") {
-        return response && response.selected_option_ids && response.selected_option_ids.length > 0;
-      } else if (question.question_type === "single_answer" || question.question_type === "true_false") {
-        return response && response.selected_option_id;
-      }
-      return response && response.text_answer?.trim();
+      if (!response) return false;
+      const hasOption = !!response.selected_option_id;
+      const hasOptions = !!(response.selected_option_ids && response.selected_option_ids.length > 0);
+      const hasText = !!response.text_answer?.trim();
+      return hasOption || hasOptions || hasText;
     });
 
     onResponsesChange?.(responseArray, allAnswered, attestationChecked);
@@ -254,12 +251,10 @@ export function QuizModal({
   const allQuestionsAnswered =
     quiz?.questions.every((question) => {
       const response = responses[question.id];
-      if (question.question_type === "multiple_choice") {
-        return response && response.selected_option_ids && response.selected_option_ids.length > 0;
-      } else if (question.question_type === "single_answer" || question.question_type === "true_false") {
-        return response && response.selected_option_id;
-      }
-      return response && response.text_answer?.trim();
+      if (!response) return false;
+      return !!response.selected_option_id
+        || !!(response.selected_option_ids && response.selected_option_ids.length > 0)
+        || !!response.text_answer?.trim();
     }) || false;
 
   if (!quiz) return null;

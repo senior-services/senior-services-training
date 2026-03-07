@@ -28,7 +28,7 @@ export const Header = ({ userRole, userName, userEmail, onLogout, currentView }:
 
   // Dynamic background: purple for admin view, navy for employee/dashboard view
   const headerBg = isAdminView ? "bg-background-header-admin" : "bg-background-header";
-  const headerTextColor = isAdminView ? "text-attention-foreground" : "text-primary-foreground";
+  const headerTextColor = isAdminView ? "text-warning-foreground" : "text-primary-foreground";
 
   return (
     <header className={`${headerBg} border-b border-border-primary shadow-card`}>

@@ -588,8 +588,11 @@ export const quizOperations = {
         p_quiz_id: quizId
       });
       if (error) throw error;
-      if (!data || (Array.isArray(data) && data.length === 0)) return null;
-      return data as unknown as QuizDraftResponse[];
+      if (!data) return null;
+      // Normalize: DB may return a single object or an array
+      const normalized = Array.isArray(data) ? data : [data];
+      if (normalized.length === 0) return null;
+      return normalized as unknown as QuizDraftResponse[];
     } catch (error) {
       logger.error('Error getting quiz draft:', error);
       return null;

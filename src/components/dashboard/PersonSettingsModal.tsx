@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Banner } from '@/components/ui/banner';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
@@ -179,13 +180,10 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
               </div>
             </div>
 
-            {/* Admin toggle - attention container */}
-            <div className="bg-attention/10 border border-attention/20 rounded-lg p-4">
-              <h3 className="form-section-header !mt-0">Administrative Privileges</h3>
-              <p className="form-helper-text">
-                Grant this person full admin access to manage trainings and people.
-              </p>
-              <div className="flex items-center gap-2 mt-3">
+            {/* Admin toggle */}
+            <Banner variant="warning" title="Administrative Privileges">
+              <p className="mb-3">Grant this person full admin access to manage trainings and people.</p>
+              <div className="flex items-center gap-2">
                 <Checkbox
                   id="admin-toggle"
                   checked={stagedAdmin}
@@ -198,11 +196,11 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
                 </Label>
               </div>
               {isSelf && (
-                <p className="form-additional-text">
+                <p className="text-sm text-muted-foreground mt-2">
                   Admins cannot remove their own administrative privileges. To change your access level, please contact another administrator.
                 </p>
               )}
-            </div>
+            </Banner>
           </div>
         </DialogScrollArea>
 

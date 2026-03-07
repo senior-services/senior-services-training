@@ -120,6 +120,8 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
   const [saveQuizConfirmDialogOpen, setSaveQuizConfirmDialogOpen] = useState(false);
   const [versionAttemptCount, setVersionAttemptCount] = useState(0);
   const [isDownloadingVersions, setIsDownloadingVersions] = useState(false);
+  const [assignToAll, setAssignToAll] = useState(false);
+  const [activeEmployeeCount, setActiveEmployeeCount] = useState(0);
 
   // Attribution display names
   const [createdByName, setCreatedByName] = useState<string | null>(null);
@@ -167,6 +169,13 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
         .getVersionCount(video.id)
         .then(setVersionCount)
         .catch(() => setVersionCount(0));
+      // Fetch active employee count for assignment option
+      setAssignToAll(false);
+      supabase
+        .from('employees')
+        .select('id', { count: 'exact', head: true })
+        .is('archived_at', null)
+        .then(({ count }) => setActiveEmployeeCount(count || 0));
       // Resolve attribution emails to display names
       const emails = [video.created_by_email, video.updated_by_email].filter(Boolean) as string[];
       if (emails.length > 0) {
@@ -1164,7 +1173,16 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                   />
                 </div>
 
-                {/* Video Info */}
+                {/* Attribution */}
+                {video && (
+                  <p className="text-sm text-muted-foreground">
+                    {updatedByName && video.updated_at !== video.created_at
+                      ? `Last updated by ${updatedByName} on ${formatLong(video.updated_at)} at ${format(new Date(video.updated_at), 'h:mm a')}`
+                      : createdByName
+                        ? `Created by ${createdByName} on ${formatLong(video.created_at)} at ${format(new Date(video.created_at), 'h:mm a')}`
+                        : `Created by ${video.created_by_email?.split('@')[0] || 'Unknown'} on ${formatLong(video.created_at)} at ${format(new Date(video.created_at), 'h:mm a')}`}
+                  </p>
+                )}
               </TabsContent>
 
               <TabsContent value="quiz" className="space-y-6 mt-6">
@@ -1490,20 +1508,30 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                       </div>
                     </div>
                   )}
+
+                  {/* Training Assignment option — only for first-time quiz creation */}
+                  {!quiz && questions.length > 0 && (
+                    <Banner variant="warning" title="Training Assignment">
+                      <p className="mb-3">When you save this quiz, you can assign this training to all employees.</p>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="assign-to-all"
+                          checked={assignToAll}
+                          onCheckedChange={(checked) => setAssignToAll(checked === true)}
+                        />
+                        <Label htmlFor="assign-to-all" className="cursor-pointer font-normal">
+                          Assign to all employees ({activeEmployeeCount} people)
+                        </Label>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        You can also assign this training to specific employees later from the People section.
+                      </p>
+                    </Banner>
+                  )}
                 </div>
               </TabsContent>
             </Tabs>
           </DialogScrollArea>
-
-          {video && (
-            <p className="text-sm text-muted-foreground px-6 pb-2">
-              {updatedByName && video.updated_at !== video.created_at
-                ? `Last updated by ${updatedByName} on ${formatLong(video.updated_at)} at ${format(new Date(video.updated_at), 'h:mm a')}`
-                : createdByName
-                  ? `Created by ${createdByName} on ${formatLong(video.created_at)} at ${format(new Date(video.created_at), 'h:mm a')}`
-                  : `Created by ${video.created_by_email?.split('@')[0] || 'Unknown'} on ${formatLong(video.created_at)} at ${format(new Date(video.created_at), 'h:mm a')}`}
-            </p>
-          )}
 
           <DialogFooter className="!flex !flex-row !justify-between !items-center">
             <div className="flex items-center space-x-4">

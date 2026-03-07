@@ -222,7 +222,7 @@ const AuthCallbackContent = () => {
           role="status"
           aria-live="polite"
         >
-          <AlertTriangle className="w-12 h-12 text-attention mx-auto" />
+          <AlertTriangle className="w-12 h-12 text-warning mx-auto" />
           <div>
             <h2 className="font-semibold text-white mb-2">
               Authentication Taking Longer Than Expected

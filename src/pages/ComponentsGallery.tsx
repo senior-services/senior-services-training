@@ -253,7 +253,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Primary Colors */}
               <div className="space-y-3">
-                <h4 className="text-body-sm font-bold uppercase text-secondary">Primary Colors</h4>
+                <h4 className="text-body-sm font-bold uppercase text-primary">Primary Colors</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-lg bg-primary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
@@ -267,7 +267,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
 
               {/* Secondary Colors */}
               <div className="space-y-3">
-                <h4 className="text-body-sm font-bold uppercase text-secondary">Secondary Colors</h4>
+                <h4 className="text-body-sm font-bold uppercase text-primary">Secondary Colors</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-lg bg-secondary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
@@ -281,7 +281,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
 
               {/* Status Colors */}
               <div className="space-y-3">
-                <h4 className="text-body-sm font-bold uppercase text-secondary">Status Colors</h4>
+                <h4 className="text-body-sm font-bold uppercase text-primary">Status Colors</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-lg bg-success border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
@@ -298,13 +298,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-attention border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
-                    <div>
-                      <div className="text-body-sm font-medium">Attention</div>
-                      <div className="text-caption text-muted-foreground">--attention</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-lg bg-destructive border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Destructive</div>
@@ -316,7 +309,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
 
               {/* UI Colors */}
               <div className="space-y-3">
-                <h4 className="text-body-sm font-bold uppercase text-secondary">UI Colors</h4>
+                <h4 className="text-body-sm font-bold uppercase text-primary">UI Colors</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-lg bg-background-main border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
@@ -372,7 +365,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
 
               {/* Text Colors */}
               <div className="space-y-3">
-                <h4 className="text-body-sm font-bold uppercase text-secondary">Text Colors</h4>
+                <h4 className="text-body-sm font-bold uppercase text-primary">Text Colors</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-lg bg-background border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
@@ -415,7 +408,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
 
               {/* Border & Input Colors */}
               <div className="space-y-3">
-                <h4 className="text-body-sm font-bold uppercase text-secondary">Border & Input</h4>
+                <h4 className="text-body-sm font-bold uppercase text-primary">Border & Input</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-lg bg-border-primary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
@@ -455,33 +448,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </div>
               </div>
 
-              {/* Gradient Examples */}
-              <div className="space-y-3">
-                <h4 className="text-body-sm font-bold uppercase text-secondary">Gradients</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-gradient-primary border border-border-primary shadow-lg hover:shadow-card transition-all duration-200 hover:scale-105"></div>
-                    <div>
-                      <div className="text-body-sm font-medium">Primary Gradient</div>
-                      <div className="text-caption text-muted-foreground">--gradient-primary</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-gradient-hero border border-border-primary shadow-lg hover:shadow-card transition-all duration-200 hover:scale-105"></div>
-                    <div>
-                      <div className="text-body-sm font-medium">Hero Gradient</div>
-                      <div className="text-caption text-muted-foreground">--gradient-hero</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-gradient-card border border-border-primary shadow-lg hover:shadow-card transition-all duration-200 hover:scale-105"></div>
-                    <div>
-                      <div className="text-body-sm font-medium">Card Gradient</div>
-                      <div className="text-caption text-muted-foreground">--gradient-card</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -1143,7 +1109,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
             <div className="space-y-4">
               <div className="space-y-3">
                 <div>
-                  <h4 className="text-body-sm font-bold uppercase text-secondary mb-3">Solid Variants</h4>
+                  <h4 className="text-body-sm font-bold uppercase text-primary mb-3">Solid Variants</h4>
                   <div className="flex flex-wrap gap-2">
                     <Badge>Primary</Badge>
                     <Badge showIcon>Primary with Icon</Badge>
@@ -1170,7 +1136,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   </div>
                 </div>
                 <div>
-                  <h4 className="text-body-sm font-bold uppercase text-secondary mb-3">Hollow Variants</h4>
+                  <h4 className="text-body-sm font-bold uppercase text-primary mb-3">Hollow Variants</h4>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="hollow-primary">Primary</Badge>
                     <Badge variant="hollow-primary" showIcon>
@@ -1195,7 +1161,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   </div>
                 </div>
                 <div>
-                  <h4 className="text-body-sm font-bold uppercase text-secondary mb-3">Soft Variants</h4>
+                  <h4 className="text-body-sm font-bold uppercase text-primary mb-3">Soft Variants</h4>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="soft-primary">Primary</Badge>
                     <Badge variant="soft-primary" showIcon>
@@ -1224,7 +1190,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   </div>
                 </div>
                 <div>
-                  <h4 className="text-body-sm font-bold uppercase text-secondary mb-3">Ghost Variants</h4>
+                  <h4 className="text-body-sm font-bold uppercase text-primary mb-3">Ghost Variants</h4>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="ghost-primary">Primary</Badge>
                     <Badge variant="ghost-primary" showIcon>
