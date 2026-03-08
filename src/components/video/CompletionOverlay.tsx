@@ -18,7 +18,7 @@ export function CompletionOverlay({ video, quiz, onStartQuiz, onCompleteTraining
   const hasQuiz = quiz && quiz.questions && quiz.questions.length > 0;
 
   return (
-    <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-10 animate-fade-in">
+    <div className="absolute inset-0 bg-overlay/75 backdrop-blur-sm flex items-center justify-center z-10 animate-fade-in">
       <div className="bg-card rounded-xl p-8 max-w-md mx-4 text-center shadow-xl border animate-scale-in relative">
         {onClose && (
           <button

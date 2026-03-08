@@ -31,7 +31,8 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Employee, VideoAssignment } from "@/types/employee";
 import type { Video as VideoType } from "@/types";
 import { STATUS_LABELS } from "@/constants";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { Banner } from "@/components/ui/banner";
 import { LoadingSkeleton, LoadingSpinner } from "@/components/ui/loading-spinner";
 import { TOOLTIP_CONFIG } from "@/constants/tooltip-config";
 import { logger } from "@/utils/logger";
@@ -94,6 +95,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [showUnassignDialog, setShowUnassignDialog] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [hiddenVideoIds, setHiddenVideoIds] = useState<Set<string>>(new Set());
   const [filterMode, setFilterMode] = useState<"unassigned" | "assigned" | "completed" | "all">("assigned");
   const [videoIdsWithQuizzes, setVideoIdsWithQuizzes] = useState<Map<string, string>>(new Map());
@@ -111,8 +113,6 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
   const [dueDateOption, setDueDateOption] = useState<DueDateOption>("1week");
   const [noDueDateRequired, setNoDueDateRequired] = useState(false);
 
-  const { toast } = useToast();
-
   useEffect(() => {
     if (open && employee) {
       loadVideosAndAssignments();
@@ -127,6 +127,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
     } else {
       setLoading(true);
     }
+    setError(null);
     try {
       // Load videos, assignments, progress data, and quiz data in parallel
       const [videosResult, assignmentsResult, progressResult, quizzesResult, userAttemptsResult] = await Promise.all([
@@ -273,11 +274,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
       }
     } catch (error) {
       logger.error("Error loading videos and assignments", error as Error);
-      toast({
-        title: "Error",
-        description: "Failed to load video assignments",
-        variant: "destructive",
-      });
+      setError("Failed to load video assignments");
     } finally {
       setLoading(false);
       setIsRefreshing(false);
@@ -384,10 +381,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
 
       await Promise.all(promises);
 
-      toast({
-        title: "Success",
-        description: `${videosToAssign.size} training${videosToAssign.size !== 1 ? "s" : ""} assigned to ${employee.full_name || employee.email} and an email notification has been sent.`,
-      });
+      toast.success("Success", { description: `${videosToAssign.size} training${videosToAssign.size !== 1 ? "s" : ""} assigned to ${employee.full_name || employee.email} and an email notification has been sent.` });
 
       // Fire-and-forget: single batched email notification
       const dueStr = dueDate ? formatLong(dueDate) : "No due date set";
@@ -409,11 +403,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
       await loadVideosAndAssignments(true);
     } catch (error) {
       logger.error("Error assigning videos", error as Error);
-      toast({
-        title: "Error",
-        description: "Failed to assign trainings",
-        variant: "destructive",
-      });
+      setError("Failed to assign trainings");
     } finally {
       setIsSubmitting(false);
       resetDueDateDialog();
@@ -442,20 +432,13 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
 
       await Promise.all(promises);
 
-      toast({
-        title: "Success",
-        description: `${videosToUnassign.size} training${videosToUnassign.size !== 1 ? "s" : ""} unassigned from ${employee.full_name || employee.email}`,
-      });
+      toast.success("Success", { description: `${videosToUnassign.size} training${videosToUnassign.size !== 1 ? "s" : ""} unassigned from ${employee.full_name || employee.email}` });
 
       onAssignmentComplete(true);
       await loadVideosAndAssignments(true);
     } catch (error) {
       logger.error("Error unassigning videos", error as Error);
-      toast({
-        title: "Error",
-        description: "Failed to unassign trainings",
-        variant: "destructive",
-      });
+      setError("Failed to unassign trainings");
     } finally {
       setIsSubmitting(false);
       setShowUnassignDialog(false);
@@ -476,6 +459,7 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
     setVideoDeadlines(new Map(initialVideoDeadlines));
     setShowDiscardDialog(false);
     setShowUnassignDialog(false);
+    setError(null);
     setFilterMode("assigned");
     resetDueDateDialog();
     // Reset quiz state
@@ -675,6 +659,11 @@ export const AssignVideosModal: React.FC<AssignVideosModalProps> = ({
               aria-live="polite"
             >
               <LoadingSpinner size="lg" label="Updating assignments" />
+            </div>
+          )}
+          {error && (
+            <div className="mb-4">
+              <Banner variant="error" size="compact" description={error} />
             </div>
           )}
           {loading ? (

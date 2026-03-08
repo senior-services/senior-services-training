@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
 import { AdminService } from '@/services/adminService';
-import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { AuthErrorBoundary } from '@/components/auth/AuthErrorBoundary';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,6 @@ function isCompanyEmailError(error: any): boolean {
 
 const AuthCallbackContent = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
 
@@ -65,27 +63,14 @@ const AuthCallbackContent = () => {
             const errorMsg = errorDescription || errorParam || 'Authentication failed';
             
             if (isCompanyEmailError({ message: errorMsg })) {
-              toast({
-                title: 'Company Email Required',
-                description: `Only @southsoundseniors.org email addresses are allowed. Need access? Contact ${APP_CONFIG.supportEmail}`,
-                variant: 'destructive'
-              });
+              navigate('/auth', { state: { authError: `Only @southsoundseniors.org email addresses are allowed. Need access? Contact ${APP_CONFIG.supportEmail}` } });
             } else {
-              toast({
-                title: 'Authentication Error',
-                description: errorMsg,
-                variant: 'destructive'
-              });
+              navigate('/auth', { state: { authError: errorMsg } });
             }
           } else {
-            toast({
-              title: 'Authentication Required',
-              description: 'Please sign in to continue.',
-              variant: 'destructive'
-            });
+            navigate('/auth', { state: { authError: 'Please sign in to continue.' } });
           }
-          
-          navigate('/auth');
+
           return;
         }
 
@@ -105,8 +90,7 @@ const AuthCallbackContent = () => {
                   p_email: email 
                 });
                 
-                toast({
-                  title: 'Welcome, Administrator!',
+                toast.success('Welcome, Administrator!', {
                   description: 'You have been granted admin access.',
                 });
                 
@@ -117,12 +101,7 @@ const AuthCallbackContent = () => {
                 
                 // Check if this is a company email error from the database
                 if (isCompanyEmailError(adminError)) {
-                  toast({
-                    title: 'Company Email Required',
-                    description: `Only @southsoundseniors.org email addresses are allowed. Need access? Contact ${APP_CONFIG.supportEmail}`,
-                    variant: 'destructive'
-                  });
-                  navigate('/auth');
+                  navigate('/auth', { state: { authError: `Only @southsoundseniors.org email addresses are allowed. Need access? Contact ${APP_CONFIG.supportEmail}` } });
                   return;
                 }
               }
@@ -141,12 +120,7 @@ const AuthCallbackContent = () => {
               
               // Check if this is a company email error from the database
               if (isCompanyEmailError(roleError)) {
-                toast({
-                  title: 'Company Email Required',
-                  description: `Only @southsoundseniors.org email addresses are allowed. Need access? Contact ${APP_CONFIG.supportEmail}`,
-                  variant: 'destructive'
-                });
-                navigate('/auth');
+                navigate('/auth', { state: { authError: `Only @southsoundseniors.org email addresses are allowed. Need access? Contact ${APP_CONFIG.supportEmail}` } });
                 return;
               }
               
@@ -165,12 +139,7 @@ const AuthCallbackContent = () => {
             
             // Check if this is a company email error from the database
             if (isCompanyEmailError(dbError)) {
-              toast({
-                title: 'Company Email Required',
-                description: `Only @southsoundseniors.org email addresses are allowed. Need access? Contact ${APP_CONFIG.supportEmail}`,
-                variant: 'destructive'
-              });
-              navigate('/auth');
+              navigate('/auth', { state: { authError: `Only @southsoundseniors.org email addresses are allowed. Need access? Contact ${APP_CONFIG.supportEmail}` } });
               return;
             }
             
@@ -185,25 +154,15 @@ const AuthCallbackContent = () => {
         
         // Check if this is a company email error
         if (isCompanyEmailError(error)) {
-          toast({
-            title: 'Company Email Required',
-            description: `Only @southsoundseniors.org email addresses are allowed. Need access? Contact ${APP_CONFIG.supportEmail}`,
-            variant: 'destructive'
-          });
+          navigate('/auth', { state: { authError: `Only @southsoundseniors.org email addresses are allowed. Need access? Contact ${APP_CONFIG.supportEmail}` } });
         } else {
-          toast({
-            title: 'Authentication Error',
-            description: 'Something went wrong during authentication. Please try again.',
-            variant: 'destructive'
-          });
+          navigate('/auth', { state: { authError: 'Something went wrong during authentication. Please try again.' } });
         }
-        
-        navigate('/auth');
       }
     };
 
     handleAuthCallback();
-  }, [navigate, toast, retryCount]);
+  }, [navigate, retryCount]);
 
   const handleRetry = () => {
     setIsRetrying(true);
@@ -224,10 +183,10 @@ const AuthCallbackContent = () => {
         >
           <AlertTriangle className="w-12 h-12 text-warning mx-auto" />
           <div>
-            <h2 className="font-semibold text-white mb-2">
+            <h2 className="font-semibold text-on-color mb-2">
               Authentication Taking Longer Than Expected
             </h2>
-            <p className="text-white/80 mb-4">
+            <p className="text-on-color/80 mb-4">
               There may be an issue with your authentication. Would you like to try again?
             </p>
             <Button 
@@ -245,7 +204,7 @@ const AuthCallbackContent = () => {
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
       <div 
-        className="flex items-center space-x-3 text-white"
+        className="flex items-center space-x-3 text-on-color"
         role="status"
         aria-live="polite"
         aria-label="Authentication in progress"
@@ -256,7 +215,7 @@ const AuthCallbackContent = () => {
         />
         <div>
           <span className="text-h4">Completing authentication...</span>
-          <div className="text-body-sm text-white/70 mt-1">
+          <div className="text-body-sm text-on-color/70 mt-1">
             Please wait while we verify your credentials
           </div>
         </div>

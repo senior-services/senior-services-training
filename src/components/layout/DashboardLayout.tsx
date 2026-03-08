@@ -31,6 +31,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   userRole,
   overallProgress,
   onLogout,
+  avatarUrl,
   loading = false,
   className,
 }) => {
@@ -50,6 +51,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         userName={userName}
         userEmail={userEmail}
         onLogout={onLogout}
+        avatarUrl={avatarUrl}
       />
 
       {/* Main content area */}

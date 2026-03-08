@@ -9,12 +9,14 @@ interface AdminDashboardProps {
   userName: string;
   userEmail: string;
   onLogout: () => void;
+  avatarUrl?: string | null;
 }
 
 export const AdminDashboard = ({
   userName,
   userEmail,
-  onLogout
+  onLogout,
+  avatarUrl
 }: AdminDashboardProps) => {
   useEffect(() => {
     logger.info('Admin dashboard accessed', {
@@ -24,7 +26,7 @@ export const AdminDashboard = ({
 
   return (
     <div className="min-h-screen bg-background">
-      <Header userName={userName} userEmail={userEmail} userRole="admin" onLogout={onLogout} currentView="admin" />
+      <Header userName={userName} userEmail={userEmail} userRole="admin" onLogout={onLogout} currentView="admin" avatarUrl={avatarUrl} />
       
       <main className="container mx-auto px-4 pb-8">
         <div className="space-y-8">

@@ -19,7 +19,8 @@ export default {
 		},
 		extend: {
 	fontSize: {
-			/* Composite Tokens — Major Second (1.125) scale */
+			/* Composite Tokens — Major Second (1.125) scale, 16px base */
+			'display': ['2.281rem', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.03em' }],
 			'h1':      ['1.802rem', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.02em' }],
 			'h2':      ['1.602rem', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '-0.01em' }],
 			'h3':      ['1.424rem', { lineHeight: '1.2', fontWeight: '600', letterSpacing: '0' }],
@@ -28,7 +29,7 @@ export default {
 			'body':    ['1rem',     { lineHeight: '1.6', fontWeight: '400', letterSpacing: '0' }],
 			'body-sm': ['0.889rem', { lineHeight: '1.5', fontWeight: '400', letterSpacing: '0' }],
 			'caption': ['0.79rem',  { lineHeight: '1.4', fontWeight: '400', letterSpacing: '0' }],
-			'code':    ['0.9375rem', { lineHeight: '1.5', fontWeight: '400', letterSpacing: '0' }],
+			'code':    ['0.875rem', { lineHeight: '1.5', fontWeight: '400', letterSpacing: '0' }],
 		},
 			spacing: {
 				/* Enhanced spacing for better touch targets */
@@ -98,6 +99,12 @@ export default {
 				'deadline-warning': 'hsl(var(--deadline-warning))',
 				'deadline-upcoming': 'hsl(var(--deadline-upcoming))',
 				'deadline-completed': 'hsl(var(--deadline-completed))',
+				'card-muted': 'hsl(var(--card-muted))',
+				'card-muted-border': 'hsl(var(--card-muted-border))',
+				'card-info': 'hsl(var(--card-info))',
+				'card-info-border': 'hsl(var(--card-info-border))',
+				overlay: 'hsl(var(--overlay))',
+				'on-color': 'hsl(var(--on-color))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -123,6 +130,7 @@ export default {
 				'sm': 'var(--shadow-sm)',
 				'md': 'var(--shadow-md)',
 				'lg': 'var(--shadow-lg)',
+				'float': 'var(--shadow-float)',
 				'card': 'var(--shadow-card)'
 			},
 			transitionTimingFunction: {

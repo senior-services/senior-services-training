@@ -59,6 +59,7 @@ export function useAuth() {
     session: null,
     loading: true,
   });
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     // Set up auth state listener first
@@ -95,9 +96,10 @@ export function useAuth() {
   }, []);
 
   const signInWithGoogle = async () => {
+    setAuthError(null);
     try {
       const redirectUrl = `${window.location.origin}/`;
-      
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -108,18 +110,19 @@ export function useAuth() {
       if (error) {
         const userMessage = getAuthErrorMessage(error);
         logger.error('Google sign in error', error as Error);
-        toast.error(userMessage);
+        setAuthError(userMessage);
       }
     } catch (error) {
       logger.error('Google sign in error', error as Error);
-      toast.error('Failed to sign in with Google');
+      setAuthError('Failed to sign in with Google');
     }
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
+    setAuthError(null);
     try {
       const redirectUrl = `${window.location.origin}/`;
-      
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -134,7 +137,7 @@ export function useAuth() {
       if (error) {
         const userMessage = getAuthErrorMessage(error);
         logger.error('Sign up error', error as Error);
-        toast.error(userMessage);
+        setAuthError(userMessage);
         return { error };
       }
 
@@ -142,12 +145,13 @@ export function useAuth() {
       return { error: null };
     } catch (error) {
       logger.error('Sign up error', error as Error);
-      toast.error('Failed to sign up');
+      setAuthError('Failed to sign up');
       return { error: error as Error };
     }
   };
 
   const signIn = async (email: string, password: string) => {
+    setAuthError(null);
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -157,14 +161,14 @@ export function useAuth() {
       if (error) {
         const userMessage = getAuthErrorMessage(error);
         logger.error('Sign in error', error as Error);
-        toast.error(userMessage);
+        setAuthError(userMessage);
         return { error };
       }
 
       return { error: null };
     } catch (error) {
       logger.error('Sign in error', error as Error);
-      toast.error('Failed to sign in');
+      setAuthError('Failed to sign in');
       return { error: error as Error };
     }
   };
@@ -211,6 +215,8 @@ export function useAuth() {
     user: state.user,
     session: state.session,
     loading: state.loading,
+    authError,
+    clearAuthError: () => setAuthError(null),
     signInWithGoogle,
     signUp,
     signIn,

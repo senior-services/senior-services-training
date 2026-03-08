@@ -59,7 +59,7 @@ export const COMPONENT_USAGE_MAP = {
     'ComponentsGallery'
   ],
   'toast': [
-    'All components via useToast hook'
+    'All components via sonner toast'
   ]
 };
 

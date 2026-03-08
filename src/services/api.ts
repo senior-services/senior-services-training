@@ -259,6 +259,7 @@ export const videoOperations = {
           description: updates.description,
           ...(updates.type && { type: updates.type }),
           ...(updates.content_type && { content_type: updates.content_type }),
+          ...(updates.duration_seconds !== undefined && { duration_seconds: updates.duration_seconds }),
           updated_at: new Date().toISOString(),
           updated_by: user?.id || null,
           updated_by_email: user?.email || null,

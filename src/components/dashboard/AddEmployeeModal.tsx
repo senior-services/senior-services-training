@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { UserPlus, Mail } from "lucide-react";
 import { employeeOperations } from "@/services/api";
 import type { Employee } from "@/types/employee";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { Banner } from "@/components/ui/banner";
 import { logger } from "@/utils/logger";
 
 interface AddEmployeeModalProps {
@@ -26,8 +27,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ open, onOpen
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const { toast } = useToast();
-
+  const [error, setError] = useState<string | null>(null);
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -37,23 +37,16 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ open, onOpen
     e.preventDefault();
 
     if (!email.trim()) {
-      toast({
-        title: "Error",
-        description: "Email address is required",
-        variant: "destructive",
-      });
+      setError("Email address is required");
       return;
     }
 
     if (!validateEmail(email)) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid email address",
-        variant: "destructive",
-      });
+      setError("Please enter a valid email address");
       return;
     }
 
+    setError(null);
     setIsSubmitting(true);
     try {
       const result = await employeeOperations.add(email.trim().toLowerCase());
@@ -68,10 +61,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ open, onOpen
         };
         onEmployeeAdded(employee);
         handleClose();
-        toast({
-          title: "Success",
-          description: "Employee added successfully",
-        });
+        toast.success("Success", { description: "Employee added successfully" });
       } else {
         throw new Error(result.error || "Failed to add employee");
       }
@@ -80,17 +70,9 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ open, onOpen
 
       // Handle duplicate email error
       if (error?.code === "23505" || error?.message?.includes("duplicate")) {
-        toast({
-          title: "Error",
-          description: "An employee with this email already exists",
-          variant: "destructive",
-        });
+        setError("An employee with this email already exists");
       } else {
-        toast({
-          title: "Error",
-          description: "Failed to add employee. Please try again.",
-          variant: "destructive",
-        });
+        setError("Failed to add employee. Please try again.");
       }
     } finally {
       setIsSubmitting(false);
@@ -101,6 +83,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ open, onOpen
     setEmail("");
     setIsSubmitting(false);
     setHasChanges(false);
+    setError(null);
     onOpenChange(false);
   };
 
@@ -123,6 +106,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ open, onOpen
                 onChange={(e) => {
                   setEmail(e.target.value);
                   setHasChanges(true);
+                  setError(null);
                 }}
                 required
                 disabled={isSubmitting}
@@ -131,6 +115,9 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ open, onOpen
                 The employee will be able to access assigned videos when they sign in with this email.
               </p>
             </div>
+            {error && (
+              <Banner variant="error" size="compact" description={error} />
+            )}
           </form>
         </DialogScrollArea>
 

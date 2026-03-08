@@ -104,7 +104,7 @@ export class ErrorBoundary extends Component<Props, State> {
         >
           <Card className="w-full max-w-lg">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+              <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-[hsl(var(--destructive-bg))] flex items-center justify-center">
                 <AlertTriangle 
                   className="w-8 h-8 text-destructive" 
                   aria-hidden="true"
@@ -213,7 +213,7 @@ interface ErrorFallbackProps {
 export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError }) => {
   return (
     <div 
-      className="rounded-lg border border-destructive/20 bg-destructive/5 p-4"
+      className="rounded-lg border border-[hsl(var(--destructive-border))] bg-[hsl(var(--destructive-bg))] p-4"
       role="alert"
       aria-labelledby="fallback-title"
     >

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Presentation } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { TrainingContent } from '@/types';
 import { getGooglePresentationEmbedUrl, isGoogleDriveUrl, isGooglePresentationUrl, isUrlFromTrustedDomain } from '@/utils/videoUtils';
 import { PRESENTATION_CONFIG } from '@/constants/presentation-config';
@@ -10,10 +11,12 @@ interface PresentationViewerProps {
   content: TrainingContent;
   onProgressUpdate?: (progress: number) => void;
   onComplete?: () => void;
+  className?: string;
 }
 
 export const PresentationViewer: React.FC<PresentationViewerProps> = ({
   content,
+  className,
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [hasError, setHasError] = useState(false);
@@ -124,7 +127,7 @@ export const PresentationViewer: React.FC<PresentationViewerProps> = ({
   }
 
   return (
-    <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+    <div className={cn("relative aspect-video bg-muted overflow-hidden", className)}>
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted">
           <div className="flex flex-col items-center gap-2">

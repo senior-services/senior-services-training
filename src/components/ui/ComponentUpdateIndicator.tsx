@@ -7,6 +7,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Banner } from '@/components/ui/banner';
 import { useComponentUpdates } from '@/hooks/useComponentUpdates';
 import { ComponentName, COMPONENT_USAGE_MAP } from '@/utils/componentUpdates';
 import { RefreshCw, CheckCircle, AlertTriangle, Info } from 'lucide-react';
@@ -20,12 +21,13 @@ export const ComponentUpdateIndicator: React.FC<ComponentUpdateIndicatorProps> =
   className = '',
   showHistory = true 
 }) => {
-  const { 
-    trackUpdate, 
-    validateComponent, 
-    validateAllComponents, 
-    getRecentUpdates, 
-    isValidating 
+  const {
+    trackUpdate,
+    validateComponent,
+    validateAllComponents,
+    getRecentUpdates,
+    isValidating,
+    error
   } = useComponentUpdates();
 
   const recentUpdates = getRecentUpdates().slice(0, 3);
@@ -54,6 +56,9 @@ export const ComponentUpdateIndicator: React.FC<ComponentUpdateIndicatorProps> =
       </CardHeader>
       
       <CardContent className="space-y-4">
+        {error && (
+          <Banner variant="error" size="compact" description={error} />
+        )}
         {/* Test Update Button */}
         <div className="flex gap-2">
           <Button 

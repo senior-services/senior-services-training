@@ -16,8 +16,8 @@ export const Landing = ({
         {/* Header */}
         <div className="text-center mb-12">
           <img src="/lovable-uploads/SS_2019_logo_Reversed.png" alt="Senior Services for South Sound" className="mx-auto h-32 w-auto mb-6" />
-          <h1 className="text-white mb-4">Senior Services Training Portal</h1>
-          <p className="text-h4 text-white/90 max-w-2xl mx-auto">
+          <h1 className="text-on-color mb-4">Senior Services Training Portal</h1>
+          <p className="text-h4 text-on-color/90 max-w-2xl mx-auto">
             Streamlined onboarding and continuous training for nonprofit employees
           </p>
         </div>
@@ -47,7 +47,7 @@ export const Landing = ({
         </div>
         
         {/* Bottom Section */}
-        <div className="text-center text-white/80">
+        <div className="text-center text-on-color/80">
           <p className="text-body-sm">
             For technical support, please contact your administrator or IT department
           </p>

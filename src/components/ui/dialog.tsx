@@ -19,7 +19,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-overlay/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -36,7 +36,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border bg-background shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg flex flex-col max-h-[90vh] [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-scroll-area])]:px-6 [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-scroll-area])]:py-6",
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border bg-background shadow-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg flex flex-col max-h-[90vh] [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-scroll-area])]:px-6 [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-scroll-area])]:py-6 [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-scroll-area])]:bg-muted/50",
         className
       )}
       {...props}
@@ -56,7 +56,7 @@ const FullscreenDialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-2 sm:inset-2.5 z-50 border bg-background shadow-lg rounded-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 flex flex-col overflow-hidden [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-scroll-area]):not([data-dialog-close])]:px-6 [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-scroll-area]):not([data-dialog-close])]:py-6",
+        "fixed inset-2 sm:inset-2.5 z-50 border bg-background shadow-md rounded-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 flex flex-col overflow-hidden [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-scroll-area]):not([data-dialog-close])]:px-6 [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-scroll-area]):not([data-dialog-close])]:py-6 [&>:not([data-dialog-header]):not([data-dialog-footer]):not([data-dialog-scroll-area]):not([data-dialog-close])]:bg-muted/50",
         className
       )}
       {...props}
@@ -74,7 +74,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex items-center justify-between bg-background px-6 py-4 border-b border-border-secondary flex-shrink-0 sm:rounded-t-lg",
+      "flex items-center justify-between bg-background px-6 py-4 border-b border-border-secondary flex-shrink-0 sm:rounded-t-lg shadow-sm",
       className
     )}
     data-dialog-header
@@ -97,7 +97,7 @@ const DialogScrollArea = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex-1 px-6 py-6 overflow-y-auto min-h-0",
+      "flex-1 px-6 py-6 overflow-y-auto min-h-0 bg-muted/50",
       className
     )}
     data-dialog-scroll-area
@@ -112,7 +112,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 bg-background px-6 py-4 border-t border-border-secondary flex-shrink-0 sm:rounded-b-lg",
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 bg-background px-6 py-4 border-t border-border-secondary flex-shrink-0 sm:rounded-b-lg shadow-[0_-1px_2px_0_hsl(220_20%_20%/0.04)]",
       className
     )}
     data-dialog-footer

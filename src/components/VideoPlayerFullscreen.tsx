@@ -26,7 +26,7 @@ import { TrainingAttestation } from "@/components/shared/TrainingAttestation";
 import { quizOperations } from "@/services/quizService";
 import { progressOperations } from "@/services/api";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { QuizSubmissionData, QuizResponse, QuizWithQuestions, QuizDraftResponse } from "@/types/quiz";
 import type { Video, TrainingContent } from "@/types";
@@ -51,6 +51,16 @@ interface VideoPlayerFullscreenProps {
   onProgressUpdate?: (progress: number) => void;
   /** Optional initial video data to avoid extra fetch */
   initialVideo?: Video;
+}
+
+/** Fisher-Yates shuffle — returns a new array with elements in random order. */
+function shuffleArray<T>(arr: T[]): T[] {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 /**
@@ -108,6 +118,8 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
   const [showVideoCompletedBadge, setShowVideoCompletedBadge] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [draftResponses, setDraftResponses] = useState<QuizDraftResponse[] | null>(null);
+  const [shuffledQuiz, setShuffledQuiz] = useState<QuizWithQuestions | null>(null);
+  const [playerError, setPlayerError] = useState<string | null>(null);
 
   // Refs
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -123,7 +135,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
   // Hooks for authentication and user feedback
   const { user } = useAuth();
-  const { toast } = useToast();
 
   // Custom hooks for data management
   const { video, quiz, videoLoading: vLoading, quizLoading, loadVideoData, resetVideoData } = useVideoData();
@@ -167,6 +178,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         resetVideoData();
         resetProgress();
         setQuizStarted(false);
+        setShuffledQuiz(null);
         setQuizSubmitted(false);
         setQuizResults([]);
         setCompletedQuizResults([]);
@@ -175,15 +187,12 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         setIsInitializing(true);
         return;
       }
+      setPlayerError(null);
       setIsInitializing(true);
       try {
         const loadResult = await loadVideoData(videoId, initialVideo);
         if (!loadResult.success) {
-          toast({
-            title: "Video Loading Error",
-            description: "Unable to load video details. Please try again.",
-            variant: "destructive",
-          });
+          setPlayerError("Unable to load video details. Please try again.");
           return;
         }
 
@@ -359,6 +368,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         if (hasDraftAnswers && draft![0].attestation_checked) {
           setQuizAttestationChecked(true);
         }
+        setShuffledQuiz({ ...quiz, questions: shuffleArray(quiz.questions) });
         setQuizStarted(true);
         setTimeout(() => {
           const el = document.getElementById("quiz-section");
@@ -383,22 +393,16 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
 
   const handleCompleteTraining = useCallback(async () => {
     if (!videoAttestationChecked) {
-      toast({
-        variant: "destructive",
-        title: "Acknowledgment Required",
-        description: "Please confirm that you have reviewed the training material.",
-      });
+      setPlayerError("Please confirm that you have reviewed the training material.");
       return;
     }
+    setPlayerError(null);
     await markComplete();
     if (video?.content_type === "presentation" && user?.email && videoId) {
       await progressOperations.updateByEmail(user.email, videoId, 100, new Date(), new Date(), viewingSeconds);
     }
     setVideoAttestationChecked(false);
-    toast({
-      title: "Training Completed! 🎉",
-      description: "You've successfully completed this training.",
-    });
+    toast.success("Training Completed!", { description: "You've successfully completed this training." });
     onProgressUpdate?.(100);
     onOpenChange(false);
   }, [
@@ -408,7 +412,6 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
     user,
     videoId,
     viewingSeconds,
-    toast,
     onProgressUpdate,
     onOpenChange,
   ]);
@@ -438,16 +441,12 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       logger.info("Quiz submitted successfully", { quizId: quiz.id, videoId: video?.id, userEmail: user.email });
       setQuizSubmitted(true);
       await markComplete();
-      toast({ title: "Quiz Submitted! 📝", description: "Review your answers." });
+      toast.success("Quiz Submitted!", { description: "Review your answers." });
     } catch (error) {
       logger.error("Failed to submit quiz", error);
-      toast({
-        title: "Quiz Submission Error",
-        description: "Failed to submit quiz. Please try again.",
-        variant: "destructive",
-      });
+      setPlayerError("Failed to submit quiz. Please try again.");
     }
-  }, [quiz, user?.email, video?.id, toast, quizResponses, markComplete]);
+  }, [quiz, user?.email, video?.id, quizResponses, markComplete]);
 
   // Attestation state for quiz flow
   const [quizAttestationChecked, setQuizAttestationChecked] = useState(false);
@@ -465,6 +464,9 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
       if (draft && draft.length > 0 && draft[0].attestation_checked) {
         restoredAttestation = true;
       }
+    }
+    if (quiz) {
+      setShuffledQuiz({ ...quiz, questions: shuffleArray(quiz.questions) });
     }
     setQuizStarted(true);
     setQuizResponses([]);
@@ -615,9 +617,15 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
         {/* Scrollable Body */}
         <div
           ref={scrollRef}
-          className="flex-1 overflow-y-auto min-h-0 w-full p-6 flex flex-col gap-6"
+          className={cn(
+            "flex-1 min-h-0 w-full p-6 flex flex-col gap-6 bg-muted/50",
+            isPresentation && !wasEverCompleted ? "overflow-hidden" : "overflow-y-auto"
+          )}
           data-dialog-scroll-area
         >
+          {playerError && (
+            <Banner variant="error" size="compact" description={playerError} />
+          )}
           {video?.description && video.description.trim() !== "" && (
             <div id="video-description">
               <p className="text-body text-foreground">{video.description}</p>
@@ -625,7 +633,12 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
           )}
 
           <div
-            className="w-full aspect-video bg-black rounded-lg overflow-hidden shadow-inner flex-shrink-0 relative"
+            className={cn(
+              "w-full bg-black overflow-hidden shadow-inner relative",
+              isPresentation
+                ? wasEverCompleted ? "aspect-video min-h-[240px] flex-shrink-0" : "flex-1 min-h-0"
+                : "aspect-video flex-shrink-0"
+            )}
             data-video-container
             tabIndex={0}
             aria-label="Video player. Press spacebar to play or pause."
@@ -642,6 +655,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
                 onFurthestUpdate={updateFurthestWatched}
                 initialSeekSeconds={lastPositionSeconds}
                 onLastPositionUpdate={updateLastPosition}
+                presentationClassName={wasEverCompleted ? undefined : "aspect-auto h-full"}
               />
             )}
           </div>
@@ -651,7 +665,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             <TrainingAttestation
               enabled={contentDone}
               checked={videoAttestationChecked}
-              onCheckedChange={setVideoAttestationChecked}
+              onCheckedChange={(checked) => { setVideoAttestationChecked(checked); setPlayerError(null); }}
               disabledTooltip={isPresentation ? "Please wait for the viewing timer to complete." : "Watch the video to enable this checkbox."}
             />
           )}
@@ -661,7 +675,7 @@ export const VideoPlayerFullscreen: React.FC<VideoPlayerFullscreenProps> = ({
             (wasEverCompleted && (completedQuiz || quiz) && completedQuizResults.length > 0)) && (
             <div id="quiz-section" className="mt-8 border-t pt-8 pb-10">
               <QuizModal
-                quiz={wasEverCompleted && completedQuiz ? completedQuiz : quiz!}
+                quiz={wasEverCompleted && completedQuiz ? completedQuiz : shuffledQuiz || quiz!}
                 onSubmit={handleQuizSubmit}
                 onCancel={() => {}}
                 onResponsesChange={handleQuizResponsesChange}

@@ -39,9 +39,17 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --success-foreground: 0 0% 100%;
     --warning: 21 90% 38%; /* #b8470a — 5.33:1 on white */
     --warning-foreground: 0 0% 100%;
+    --primary-bg: 206 43% 94%; /* #e8f0f6 — solid equiv of primary/10 on white */
+    --primary-border: 207 45% 87%; /* #d0e0ed — solid equiv of primary/20 on white */
+    --success-bg: 155 50% 93%; /* #e2f2ec — soft mint green */
+    --success-border: 157 40% 86%; /* #cdecd8 — solid equiv of success/20 on white */
     --warning-bg: 38 92% 95%; /* #fef6e8 — soft warm cream */
+    --warning-border: 22 55% 88%; /* #f2dccf — solid equiv of warning/20 on white */
     --destructive: 0 72% 45%; /* #c52020 — 5.81:1 on white */
     --destructive-foreground: 0 0% 100%;
+    --destructive-bg: 0 55% 94%; /* #f9e9e9 — solid equiv of destructive/10 on white */
+    --destructive-border: 0 52% 89%; /* #f3d2d2 — solid equiv of destructive/20 on white */
+    --admin-bg: 261 30% 95%; /* #f0eef6 — solid equiv of admin/10 on white */
 
     /* UI Elements - Stronger Borders and Inputs */
     --border-primary: 210 14% 89%; /* Light modern border */
@@ -50,13 +58,6 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --accent: 210 20% 90%;
     --accent-foreground: 215 25% 15%;
     --ring: 206 75% 36%;
-
-    /* Toggle Component Colors */
-    --toggle-group-background: 210 20% 88%;
-    --toggle-group-background-dark: 215 25% 25%;
-    --toggle-item-selected: 0 0% 100%;
-    --toggle-item-selected-foreground: 215 25% 15%;
-    --toggle-item-hover: 0 0% 100% / 0.6;
 
     --radius: 0.75rem;
 
@@ -73,22 +74,24 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(205 55% 40%));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
 
-    /* Shadows */
-    --shadow-sm: 0 1px 3px 0 hsl(220 20% 20% / 0.08), 0 1px 2px -1px hsl(220 20% 20% / 0.05);
-    --shadow-md: 0 4px 8px -2px hsl(220 20% 20% / 0.12), 0 2px 4px -2px hsl(220 20% 20% / 0.08);
-    --shadow-lg: 0 12px 24px -4px hsl(220 20% 20% / 0.14), 0 4px 8px -2px hsl(220 20% 20% / 0.08);
-    --shadow-card: 0 2px 8px -2px hsl(220 20% 20% / 0.1), 0 6px 20px -4px hsl(220 20% 20% / 0.1);
+    /* Shadows — flat, minimal elevation */
+    --shadow-sm: 0 1px 2px 0 hsl(220 20% 20% / 0.04);
+    --shadow-md: 0 2px 4px -1px hsl(220 20% 20% / 0.06);
+    --shadow-lg: 0 4px 12px -2px hsl(220 20% 20% / 0.08);
+    --shadow-float: 0 8px 24px -4px hsl(220 20% 20% / 0.15);
+    --shadow-card: 0 1px 3px -1px hsl(220 20% 20% / 0.05);
 
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* Card surface variants */
+    --card-muted: 210 20% 96%; /* Warm gray card fill */
+    --card-muted-border: 210 18% 88%; /* Slightly darker than fill */
+    --card-info: 207 52% 95%; /* Light blue card fill */
+    --card-info-border: 207 45% 85%; /* Slightly darker than fill */
 
-    /* Admin Highlight Color */
-    --admin-highlight: 357 77% 58%; /* #e15554 */
+    /* Overlay backdrop */
+    --overlay: 0 0% 0%;
 
-    /* Yellow accent colors for admin icons - WCAG AAA compliant */
-    --yellow-light: 45 90% 88%; /* Light yellow background */
-    --yellow-dark: 38 75% 35%; /* Dark yellow for icons */
+    /* On-color foreground (text on filled backgrounds like gradients, status badges) */
+    --on-color: 0 0% 100%;
   }
 
   .dark {
@@ -119,9 +122,17 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --success-foreground: 219 79% 6%;
     --warning: 21 90% 62%; /* #EA580C - Brighter orange for dark mode */
     --warning-foreground: 219 79% 6%;
+    --primary-bg: 206 55% 13%; /* solid equiv of primary/10 on dark bg */
+    --primary-border: 206 55% 20%; /* solid equiv of primary/20 on dark bg */
+    --success-bg: 155 45% 13%; /* #122b20 — deep green surface */
+    --success-border: 161 50% 14%; /* solid equiv of success/20 on dark bg */
     --warning-bg: 25 60% 14%; /* #39200e — warm dark amber, 5.97:1 with warning text */
+    --warning-border: 21 55% 17%; /* solid equiv of warning/20 on dark bg */
     --destructive: 0 72% 65%; /* #DC2626 - Brighter red for dark mode */
     --destructive-foreground: 219 79% 6%;
+    --destructive-bg: 0 50% 12%; /* solid equiv of destructive/10 on dark bg */
+    --destructive-border: 0 45% 18%; /* solid equiv of destructive/20 on dark bg */
+    --admin-bg: 261 30% 10%; /* solid equiv of admin/10 on dark bg */
 
     --border-primary: 219 30% 22%; /* Subtle dark mode border */
     --border-secondary: 219 30% 22%; /* Medium border */
@@ -130,12 +141,17 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --accent-foreground: 210 20% 98%;
     --ring: 206 73% 70%;
 
-    /* Toggle Component Colors - Dark Mode */
-    --toggle-group-background: 219 79% 18%;
-    --toggle-group-background-dark: 219 79% 18%;
-    --toggle-item-selected: 210 20% 98%;
-    --toggle-item-selected-foreground: 219 79% 6%;
-    --toggle-item-hover: 210 20% 98% / 0.2;
+    /* Card surface variants */
+    --card-muted: 219 30% 14%;
+    --card-muted-border: 219 28% 20%;
+    --card-info: 207 40% 14%;
+    --card-info-border: 207 38% 22%;
+
+    /* Overlay backdrop */
+    --overlay: 0 0% 0%;
+
+    /* On-color foreground */
+    --on-color: 0 0% 100%;
 
     /* Dark mode progress & status colors - Enhanced */
     --progress-bg: 219 79% 12%;
@@ -150,11 +166,12 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(205 55% 60%));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
 
-    /* Dark shadows */
-    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.2), 0 1px 2px -1px hsl(0 0% 0% / 0.15);
-    --shadow-md: 0 4px 8px -2px hsl(0 0% 0% / 0.3), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
-    --shadow-lg: 0 12px 24px -4px hsl(0 0% 0% / 0.35), 0 4px 8px -2px hsl(0 0% 0% / 0.2);
-    --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.2), 0 6px 20px -4px hsl(0 0% 0% / 0.25);
+    /* Dark shadows — flat, minimal elevation */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 2px 4px -1px hsl(0 0% 0% / 0.15);
+    --shadow-lg: 0 4px 12px -2px hsl(0 0% 0% / 0.2);
+    --shadow-float: 0 8px 24px -4px hsl(0 0% 0% / 0.35);
+    --shadow-card: 0 1px 3px -1px hsl(0 0% 0% / 0.12);
   }
 }
 
@@ -164,7 +181,8 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   }
 
   body {
-    @apply bg-background-main text-foreground font-sans antialiased text-body;
+    @apply text-foreground font-sans antialiased text-body;
+    @apply bg-background-main;
   }
 
   /* Heading tags inherit composite tokens automatically */
@@ -250,7 +268,7 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply border-transparent bg-primary text-primary-foreground;
   }
   .badge-secondary {
-    @apply border-transparent bg-muted-foreground text-white;
+    @apply border-transparent bg-muted-foreground text-on-color;
   }
   .badge-destructive {
     @apply border-transparent bg-destructive text-destructive-foreground;
@@ -262,10 +280,10 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply border-transparent bg-warning text-warning-foreground;
   }
   .badge-admin {
-    @apply border-transparent bg-background-header-admin text-white;
+    @apply border-transparent bg-background-header-admin text-on-color;
   }
   .badge-soft-admin {
-    @apply border-transparent text-background-header-admin bg-background-header-admin/10;
+    @apply border-transparent text-background-header-admin bg-[hsl(var(--admin-bg))];
   }
   /* Hollow */
   .badge-hollow-primary {
@@ -301,16 +319,16 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   }
   /* Soft */
   .badge-soft-primary {
-    @apply border-transparent text-primary bg-primary/10;
+    @apply border-transparent text-primary bg-[hsl(var(--primary-bg))];
   }
   .badge-soft-secondary {
     @apply border-transparent text-muted-foreground bg-muted;
   }
   .badge-soft-destructive {
-    @apply border-transparent text-destructive bg-destructive/10;
+    @apply border-transparent text-destructive bg-[hsl(var(--destructive-bg))];
   }
   .badge-soft-success {
-    @apply border-transparent text-success bg-success/10;
+    @apply border-transparent text-success bg-[hsl(var(--success-bg))];
   }
   .badge-soft-warning {
     @apply border-transparent text-warning bg-[hsl(var(--warning-bg))];
@@ -324,7 +342,11 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply border border-input bg-transparent hover:bg-accent hover:text-accent-foreground;
   }
   .toggle-pill {
-    @apply bg-transparent rounded-full hover:bg-white/60 data-[state=on]:bg-white data-[state=on]:text-gray-900 data-[state=on]:font-semibold data-[state=on]:shadow-sm transition-all duration-200 h-8 px-4;
+    @apply bg-transparent rounded-full text-muted-foreground font-medium
+      hover:bg-transparent hover:text-foreground
+      data-[state=on]:bg-background data-[state=on]:text-foreground
+      data-[state=on]:shadow-sm
+      transition-all duration-200 h-8 px-4;
   }
 
   /* ── Toggle Size Classes ── */
@@ -395,7 +417,7 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   }
 
   .training-card {
-    @apply bg-card border border-border-primary rounded-lg shadow-card hover:shadow-lg transition-all duration-300;
+    @apply bg-card border border-border-primary rounded-lg shadow-card hover:shadow-md transition-all duration-300;
   }
 
   .status-badge {
@@ -406,23 +428,23 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
   }
 
   .bg-gradient-hero {
-    background: linear-gradient(135deg, hsl(206, 75%, 36%), hsl(205, 52%, 63%));
+    background: var(--gradient-hero);
   }
 
   .status-overdue {
-    @apply bg-deadline-overdue text-white;
+    @apply bg-deadline-overdue text-on-color;
   }
 
   .status-warning {
-    @apply bg-deadline-warning text-white;
+    @apply bg-deadline-warning text-on-color;
   }
 
   .status-upcoming {
-    @apply bg-deadline-upcoming text-white;
+    @apply bg-deadline-upcoming text-on-color;
   }
 
   .status-completed {
-    @apply bg-deadline-completed text-white;
+    @apply bg-deadline-completed text-on-color;
   }
 
   /* Semantic typography — composite tokens now live in tailwind.config.ts.
@@ -431,7 +453,7 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply text-body-sm;
   }
   .text-code {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     line-height: 1.5;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
@@ -459,22 +481,22 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply bg-background text-foreground;
   }
   .banner-info {
-    @apply bg-primary/10 text-primary border-primary/20;
+    @apply bg-[hsl(var(--primary-bg))] text-primary border-[hsl(var(--primary-border))];
   }
   .banner-information {
-    @apply bg-primary/10 text-primary border-primary/20;
+    @apply bg-[hsl(var(--primary-bg))] text-primary border-[hsl(var(--primary-border))];
   }
   .banner-success {
-    @apply bg-success/10 text-success border-success/20;
+    @apply bg-[hsl(var(--success-bg))] text-success border-[hsl(var(--success-border))];
   }
   .banner-warning {
-    @apply bg-[hsl(var(--warning-bg))] text-warning border-warning/20;
+    @apply bg-[hsl(var(--warning-bg))] text-warning border-[hsl(var(--warning-border))];
   }
   .banner-error {
-    @apply bg-destructive/10 text-destructive border-destructive/20;
+    @apply bg-[hsl(var(--destructive-bg))] text-destructive border-[hsl(var(--destructive-border))];
   }
   .banner-destructive {
-    @apply bg-destructive/10 text-destructive border-destructive/20;
+    @apply bg-[hsl(var(--destructive-bg))] text-destructive border-[hsl(var(--destructive-border))];
   }
   .banner-size-default {
     @apply p-4;
@@ -483,12 +505,38 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply py-2 px-3;
   }
   .banner-size-compact-constrained {
-    @apply py-1.5 px-2.5 text-sm w-fit whitespace-nowrap;
+    @apply py-1.5 px-2.5 text-sm;
+  }
+
+  /* ── Toast close button ── */
+  [data-sonner-toaster] [data-close-button] {
+    @apply !h-6 !w-6 !top-1/2 !-translate-y-1/2 !right-2 !left-auto !border-border !bg-background;
+  }
+  [data-sonner-toaster] [data-close-button] svg {
+    @apply !h-4 !w-4;
+  }
+
+  /* ── Master Template: Alert (floating, solid background) ── */
+  .alert-base {
+    @apply fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg rounded-lg p-4 shadow-float;
+    font-weight: 500;
+  }
+  .alert-info {
+    @apply bg-primary text-on-color;
+  }
+  .alert-success {
+    @apply bg-success text-on-color;
+  }
+  .alert-warning {
+    @apply bg-warning text-on-color;
+  }
+  .alert-error {
+    @apply bg-destructive text-on-color;
   }
 
   /* ── Master Template: Sheet ── */
   .sheet-base {
-    @apply fixed z-50 gap-4 bg-background p-6 shadow-lg transition ease-in-out
+    @apply fixed z-50 gap-4 bg-background p-6 shadow-md transition ease-in-out
       data-[state=open]:animate-in data-[state=closed]:animate-out
       data-[state=closed]:duration-300 data-[state=open]:duration-500;
   }
@@ -505,29 +553,6 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm;
   }
 
-  /* ── Master Template: Toast ── */
-  .toast-base {
-    @apply pointer-events-auto relative flex w-full items-center justify-between
-      space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all
-      data-[swipe=cancel]:translate-x-0
-      data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)]
-      data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]
-      data-[swipe=move]:transition-none
-      data-[state=open]:animate-in data-[state=closed]:animate-out
-      data-[swipe=end]:animate-out data-[state=closed]:fade-out-80
-      data-[state=closed]:slide-out-to-top-full
-      data-[state=open]:slide-in-from-top-full;
-  }
-  .toast-default {
-    @apply border bg-background text-foreground;
-  }
-  .toast-destructive {
-    @apply border-destructive bg-destructive text-destructive-foreground;
-  }
-  .toast-success {
-    @apply border-success bg-background text-success;
-  }
-
   /* ── Master Template: Toggle Group ── */
   .toggle-group-base {
     @apply flex items-center w-fit;
@@ -536,7 +561,7 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
     @apply gap-1;
   }
   .toggle-group-pill {
-    @apply gap-0 bg-muted rounded-full p-1.5;
+    @apply gap-0.5 bg-muted rounded-full p-1;
   }
 
   /* ── Master Template: Navigation Menu Trigger ── */
@@ -557,8 +582,8 @@ All colors are HSL and follow brand guidelines from southsoundseniors.org
 
   /* Play overlay button — large circular white */
   .button-play-overlay {
-    @apply rounded-full bg-white/90 hover:bg-white text-primary hover:text-primary
-      shadow-lg hover:shadow-xl;
+    @apply rounded-full bg-on-color/90 hover:bg-on-color text-primary hover:text-primary
+      shadow-sm hover:shadow-md;
   }
 
   /* Dev quick-login outline tints */

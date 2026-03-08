@@ -34,7 +34,6 @@ import { cn } from "@/lib/utils";
 import { videoOperations } from "@/services/api";
 import { quizOperations, questionOperations, optionOperations } from "@/services/quizService";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/utils/logger";
 import { sanitizeInput } from "@/utils/security";
 import {
@@ -46,6 +45,7 @@ import {
   getYouTubeWatchUrl,
 } from "@/utils/videoUtils";
 import { ContentPlayer } from "@/components/content/ContentPlayer";
+import { SuffixInput } from "@/components/ui/SuffixInput";
 import { formatLong } from "@/utils/date-formatter";
 import { format } from "date-fns";
 import { TrainingContent, VideoType, ContentType } from "@/types";
@@ -89,6 +89,7 @@ interface EditVideoModalProps {
     updates: {
       title: string;
       description: string;
+      duration_seconds?: number;
     },
   ) => Promise<void>;
   onDelete: (videoId: string) => Promise<void>;
@@ -97,6 +98,8 @@ interface EditVideoModalProps {
 export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, onQuizSaved }: EditVideoModalProps) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [minViewingTime, setMinViewingTime] = useState<number>(60);
+  const [timerFocused, setTimerFocused] = useState(false);
   const [loading, setLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -127,6 +130,9 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
   const [createdByName, setCreatedByName] = useState<string | null>(null);
   const [updatedByName, setUpdatedByName] = useState<string | null>(null);
 
+  // Inline error state for quiz operations
+  const [quizError, setQuizError] = useState<string | null>(null);
+
   // New state for usage checking
   const [videoUsage, setVideoUsage] = useState<{
     canDelete: boolean;
@@ -135,7 +141,6 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
     quizCompletedCount: number;
   } | null>(null);
   const [usageLoading, setUsageLoading] = useState(false);
-  const { toast } = useToast();
 
   // Load usage information for video only (quiz usage removed to prevent double-load flicker)
   const loadUsageInfo = useCallback(async () => {
@@ -158,6 +163,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
       setVideoUsage(null);
       setTitle(video.title || "");
       setDescription(video.description || "");
+      setMinViewingTime(video.duration_seconds || 60);
       loadQuiz(abortController.signal);
       loadUsageInfo();
       // Load versioning info
@@ -394,6 +400,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
   };
   const handleSave = async () => {
     if (!video) return;
+    setQuizError(null);
 
     // Enable validation display and cleanup/validate questions before saving
     setShowQuizValidation(true);
@@ -402,20 +409,12 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
     const isCreatingNewQuiz = !quiz && questions.length > 0;
     if (isCreatingNewQuiz) {
       if (questions.length === 0) {
-        toast({
-          title: "Please add at least one question",
-          description: "Please add at least one question to create the quiz.",
-          variant: "destructive",
-        });
+        setQuizError("Please add at least one question to create the quiz.");
         return;
       }
     }
     if (questions.length > 0 && !cleanupAndValidateQuestions()) {
-      toast({
-        title: "Validation Error",
-        description: "Please fix the question errors before saving.",
-        variant: "destructive",
-      });
+      setQuizError("Please fix the question errors before saving.");
       return;
     }
 
@@ -448,8 +447,6 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
     if (!video) return;
     setLoading(true);
     try {
-      const isCreatingNewQuiz = !quiz && questions.length > 0;
-
       if (questions.length > 0) {
         if (quiz) {
           if (createNewVersion) {
@@ -483,12 +480,13 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
         }
       }
 
-      if (!isCreatingNewQuiz) {
-        await onSave(video.id, {
-          title,
-          description,
-        });
-      }
+      await onSave(video.id, {
+        title,
+        description,
+        ...(video.content_type === "presentation" && {
+          duration_seconds: Math.max(minViewingTime, 30),
+        }),
+      });
       handleClose();
     } catch (error) {
       logger.error("Error updating video", error as Error);
@@ -510,7 +508,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
     try {
       const versions = await quizOperations.getVersionHistory(video.id);
       if (versions.length === 0) {
-        toast({ title: "No versions found", variant: "destructive" });
+        setQuizError("No versions found.");
         return;
       }
 
@@ -586,7 +584,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
       XLSX.writeFile(wb, `Quiz Versions - ${video.title}.xlsx`);
     } catch (error) {
       logger.error("Error downloading versions:", error);
-      toast({ title: "Error downloading versions", variant: "destructive" });
+      setQuizError("Error downloading versions.");
     } finally {
       setIsDownloadingVersions(false);
     }
@@ -837,11 +835,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
       if (video) onQuizSaved?.(video.id);
     } catch (error) {
       logger.error("Error creating questions for versioned quiz:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save quiz version",
-        variant: "destructive",
-      });
+      setQuizError("Failed to save quiz version.");
     } finally {
       setIsCreatingQuiz(false);
     }
@@ -965,11 +959,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
       if (video) onQuizSaved?.(video.id);
     } catch (error) {
       logger.error("Error updating quiz:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update quiz",
-        variant: "destructive",
-      });
+      setQuizError("Failed to update quiz.");
     } finally {
       setIsCreatingQuiz(false);
     }
@@ -978,11 +968,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
     if (!video) return;
 
     if (questions.length === 0) {
-      toast({
-        title: "Please add at least one question",
-        description: "Please add at least one question to create the quiz.",
-        variant: "destructive",
-      });
+      setQuizError("Please add at least one question to create the quiz.");
       return;
     }
     setIsCreatingQuiz(true);
@@ -1041,11 +1027,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
       if (video) onQuizSaved?.(video.id);
     } catch (error) {
       logger.error("Error creating quiz:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create quiz",
-        variant: "destructive",
-      });
+      setQuizError("Failed to create quiz.");
     } finally {
       setIsCreatingQuiz(false);
     }
@@ -1054,6 +1036,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
     video &&
     (title !== (video.title || "") ||
       description !== (video.description || "") ||
+      (video.content_type === "presentation" && minViewingTime !== (video.duration_seconds || 60)) ||
       (!quiz && questions.length > 0) ||
       (quiz &&
         (questions.length !== quiz.questions.length ||
@@ -1115,7 +1098,11 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
             <DialogTitle>Edit Training</DialogTitle>
           </DialogHeader>
 
-          <DialogScrollArea>
+          {quizError && (
+            <Banner variant="error" size="compact" description={quizError} dismissible onDismiss={() => setQuizError(null)} />
+          )}
+
+          <DialogScrollArea className="pt-0">
             <Tabs defaultValue="info" className="w-full">
               <TabsList>
                 <TabsTrigger value="info">Details</TabsTrigger>
@@ -1124,15 +1111,15 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
 
               <TabsContent value="info" className="space-y-5 mt-4">
                 {/* Video Preview Section */}
-                <div className="space-y-3">
-                  <div className="border border-border-primary rounded-lg overflow-hidden bg-muted/30">
-                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                <div>
+                  <div className="border border-border-primary overflow-hidden bg-muted/30">
+                    <div className={`aspect-video overflow-hidden ${trainingContent.content_type === "presentation" ? "bg-muted" : "bg-black"}`}>
                       <ContentPlayer content={trainingContent} onProgressUpdate={() => {}} onComplete={() => {}} />
                     </div>
                   </div>
 
                   {/* Content Source */}
-                  <div className="text-left">
+                  <div className="text-left mt-1">
                     <span className="text-caption text-muted-foreground">
                       Content Source:{" "}
                       {isYouTube
@@ -1170,12 +1157,48 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Enter video description..."
                     rows={4}
+                    maxLength={500}
                   />
+                  <p className={`text-caption mt-1 ${description.length >= 500 ? "text-destructive" : description.length >= 450 ? "text-warning" : "text-muted-foreground"}`}>{description.length} / 500 characters</p>
                 </div>
+
+                {/* Minimum Viewing Time — presentations only */}
+                {trainingContent.content_type === "presentation" && (
+                  <div>
+                    <div className="mb-1.5">
+                      <Label htmlFor="edit-min-viewing-time">Minimum Viewing Time Required</Label>
+                    </div>
+                    <SuffixInput
+                      id="edit-min-viewing-time"
+                      type="number"
+                      suffix="seconds"
+                      className="max-w-[140px]"
+                      value={minViewingTime}
+                      onChange={(e) => setMinViewingTime(Math.floor(parseInt(e.target.value) || 0))}
+                      onFocus={() => setTimerFocused(true)}
+                      onBlur={() => {
+                        setTimerFocused(false);
+                        if (minViewingTime < 30) setMinViewingTime(30);
+                      }}
+                      min={30}
+                      step={1}
+                      aria-describedby="edit-min-viewing-time-additional"
+                    />
+                    <p id="edit-min-viewing-time-additional" className={`form-additional-text ${!timerFocused && minViewingTime < 30 ? "text-destructive" : !timerFocused && minViewingTime < 60 ? "text-warning" : ""}`}>
+                      {timerFocused
+                        ? "60s minimum recommended for effective learning."
+                        : minViewingTime < 30
+                          ? "30 seconds is the minimum allowed timer."
+                          : minViewingTime < 60
+                            ? "Below the 60s recommendation."
+                            : "60s minimum recommended for effective learning."}
+                    </p>
+                  </div>
+                )}
 
                 {/* Attribution */}
                 {video && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground border-t border-border pt-5">
                     {updatedByName && video.updated_at !== video.created_at
                       ? `Last updated by ${updatedByName} on ${formatLong(video.updated_at)} at ${format(new Date(video.updated_at), 'h:mm a')}`
                       : createdByName
@@ -1204,9 +1227,8 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
 
                 {/* Attention banner for assigned trainings */}
                 {hasAssignments && quiz && (
-                  <Banner variant="warning" title="Versioning Notice">
-                    This training is already assigned. Editing the quiz will create a new version for future employees.
-                    Completed trainings won't be affected.
+                  <Banner variant="info" size="compact">
+                    <span className="font-bold">Note:</span> Editing creates a new version. Existing records are not affected.
                   </Banner>
                 )}
 
@@ -1375,9 +1397,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                                 </RadioGroup>
 
                                 {showQuizValidation && questionValidationErrors[questionIndex] && (
-                                  <div className="text-body-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
-                                    {questionValidationErrors[questionIndex]}
-                                  </div>
+                                  <Banner variant="error" size="compact" description={questionValidationErrors[questionIndex]} />
                                 )}
                               </div>
                             ) : (
@@ -1427,9 +1447,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                                 ))}
 
                                 {showQuizValidation && questionValidationErrors[questionIndex] && (
-                                  <div className="text-body-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
-                                    {questionValidationErrors[questionIndex]}
-                                  </div>
+                                  <Banner variant="error" size="compact" description={questionValidationErrors[questionIndex]} />
                                 )}
                               </div>
                             )}
@@ -1479,9 +1497,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
                               </RadioGroup>
 
                               {showQuizValidation && questionValidationErrors[questionIndex] && (
-                                <div className="text-body-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
-                                  {questionValidationErrors[questionIndex]}
-                                </div>
+                                <Banner variant="error" size="compact" description={questionValidationErrors[questionIndex]} />
                               )}
                             </div>
                           </div>

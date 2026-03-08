@@ -20,18 +20,34 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { UserPlus, Download, EyeOff, Eye, ChevronDown, Settings, Edit } from "lucide-react";
+import { UserPlus, Download, EyeOff, Eye, ChevronDown, MoreVertical, Edit } from "lucide-react";
 import { SortableTableHead } from "@/components/ui/sortable-table-head";
-import { employeeOperations } from "@/services/api";
-import { IconButtonWithTooltip } from "@/components/ui/icon-button-with-tooltip";
+import { employeeOperations, assignmentOperations } from "@/services/api";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Banner } from "@/components/ui/banner";
 import type { EmployeeWithAssignments, Employee, EmployeeAssignmentWithProgress } from "@/types/employee";
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AddEmployeeModal } from "./AddEmployeeModal";
 import { AssignVideosModal } from "./AssignVideosModal";
 import { DownloadDataModal } from "./DownloadDataModal";
-import { PersonSettingsModal } from "./PersonSettingsModal";
+import { IconButtonWithTooltip } from "@/components/ui/icon-button-with-tooltip";
+import { AdminService } from "@/services/adminService";
 import { logger } from "@/utils/logger";
 import { format, differenceInDays, isPast } from "date-fns";
 import { formatLong } from "@/utils/date-formatter";
@@ -63,15 +79,16 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [settingsEmployee, setSettingsEmployee] = useState<(EmployeeWithAssignments & { is_admin?: boolean }) | null>(
-    null,
-  );
+  const [pendingHidePerson, setPendingHidePerson] = useState<(EmployeeWithAssignments & { is_admin?: boolean }) | null>(null);
+  const [adminDialogPerson, setAdminDialogPerson] = useState<(EmployeeWithAssignments & { is_admin?: boolean }) | null>(null);
+  const [stagedAdmin, setStagedAdmin] = useState(false);
+  const [isSavingAdmin, setIsSavingAdmin] = useState(false);
   const [sortColumn, setSortColumn] = useState<"name" | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [pendingShowPerson, setPendingShowPerson] = useState<EmployeeWithAssignments | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [pageError, setPageError] = useState<string | null>(null);
 
-  const { toast } = useToast();
 
   useEffect(() => {
     loadPeople();
@@ -185,12 +202,12 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
         }
       } catch (error) {
         logger.error("Error loading people", error as Error);
-        toast({ title: "Error", description: "Failed to load people", variant: "destructive" });
+        setPageError("Failed to load people");
       } finally {
         if (!silentRefresh) setLoading(false);
       }
     },
-    [toast],
+    [],
   );
 
   // Failsafe: refresh data when window regains focus (covers missed real-time events)
@@ -237,9 +254,9 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
         return [...prev, transformed];
       });
       setShowAddModal(false);
-      toast({ title: "Success", description: "Person added successfully" });
+      toast.success("Success", { description: "Person added successfully" });
     },
-    [toast],
+    [],
   );
 
   const handleAssignVideos = useCallback((employee: Employee) => {
@@ -252,17 +269,17 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
       try {
         const result = await employeeOperations.hide(person.id);
         if (result.success) {
-          toast({ title: "Success", description: `${person.full_name || person.email} has been hidden` });
+          toast.success("Success", { description: `${person.full_name || person.email} has been hidden` });
           loadPeople();
           loadHiddenPeople();
         } else {
           throw new Error(result.error || "Failed to hide person");
         }
       } catch (error) {
-        toast({ title: "Error", description: "Failed to hide person", variant: "destructive" });
+        setPageError("Failed to hide person");
       }
     },
-    [toast, loadPeople, loadHiddenPeople],
+    [loadPeople, loadHiddenPeople],
   );
 
   const handleShowPerson = useCallback(
@@ -270,18 +287,73 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
       try {
         const result = await employeeOperations.show(person.id);
         if (result.success) {
-          toast({ title: "Success", description: `${person.full_name || person.email} is now visible` });
+          toast.success("Success", { description: `${person.full_name || person.email} is now visible` });
           loadPeople();
           loadHiddenPeople();
         } else {
           throw new Error(result.error || "Failed to show person");
         }
       } catch (error) {
-        toast({ title: "Error", description: "Failed to show person", variant: "destructive" });
+        setPageError("Failed to show person");
       }
     },
-    [toast, loadPeople, loadHiddenPeople],
+    [loadPeople, loadHiddenPeople],
   );
+
+  const handleOpenAdminDialog = useCallback((person: EmployeeWithAssignments & { is_admin?: boolean }) => {
+    setAdminDialogPerson(person);
+    setStagedAdmin(person.is_admin || false);
+  }, []);
+
+  const handleSaveAdmin = useCallback(async () => {
+    if (!adminDialogPerson) return;
+    const adminChanged = stagedAdmin !== (adminDialogPerson.is_admin || false);
+    if (!adminChanged) {
+      setAdminDialogPerson(null);
+      return;
+    }
+    setIsSavingAdmin(true);
+    try {
+      if (stagedAdmin) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .eq('email', adminDialogPerson.email)
+          .maybeSingle();
+        if (!profile) {
+          await AdminService.addPendingAdminByEmail(adminDialogPerson.email || '');
+          toast.success("Success", { description: "Admin invitation created. They'll get admin access when they sign in." });
+        } else {
+          await AdminService.addAdminByEmail(adminDialogPerson.email || '');
+          toast.success("Success", { description: `${adminDialogPerson.full_name || adminDialogPerson.email} is now an administrator` });
+        }
+      } else {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .eq('email', adminDialogPerson.email)
+          .maybeSingle();
+        if (profile) {
+          await AdminService.removeAdminRole(profile.user_id, false, adminDialogPerson.email);
+          toast.success("Success", { description: `${adminDialogPerson.full_name || adminDialogPerson.email} is no longer an administrator` });
+        }
+      }
+      // Fire-and-forget notification
+      assignmentOperations.sendAdminStatusNotification({
+        employee_email: adminDialogPerson.email,
+        employee_name: adminDialogPerson.full_name || adminDialogPerson.email,
+        granted: stagedAdmin,
+        app_url: window.location.origin,
+      }).catch(() => {});
+      await loadPeople();
+      setAdminDialogPerson(null);
+    } catch (error: any) {
+      logger.error('Error toggling admin status', error as Error);
+      setPageError(error.message || "Failed to update admin status");
+    } finally {
+      setIsSavingAdmin(false);
+    }
+  }, [adminDialogPerson, stagedAdmin, loadPeople]);
 
   const handleSort = useCallback(
     (column: "name") => {
@@ -631,16 +703,16 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
         const filename = `training_data_${format(now, "yyyy-MM-dd")}.xlsx`;
         XLSX.writeFile(workbook, filename);
 
-        toast({ title: "Success", description: "Training data exported successfully" });
+        toast.success("Success", { description: "Training data exported successfully" });
         setShowDownloadModal(false);
       } catch (error) {
         logger.error("Error exporting to Excel", error as Error);
-        toast({ title: "Error", description: "Failed to export data", variant: "destructive" });
+        setPageError("Failed to export data");
       } finally {
         setIsExporting(false);
       }
     },
-    [hiddenPeople, loadFreshPeopleData, loadHiddenPeopleQuizData, processEmployeesForExport, toast],
+    [hiddenPeople, loadFreshPeopleData, loadHiddenPeopleQuizData, processEmployeesForExport],
   );
 
   const handleDownloadClick = useCallback(() => {
@@ -670,6 +742,10 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
           </Button>
         </div>
       </div>
+
+      {pageError && (
+        <Banner variant="error" size="compact" description={pageError} dismissible onDismiss={() => setPageError(null)} />
+      )}
 
       {/* People Table */}
       <Card className="shadow-md">
@@ -744,15 +820,21 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
                           <Edit className="w-4 h-4 mr-2" aria-hidden="true" />
                           Edit
                         </Button>
-                        <IconButtonWithTooltip
-                          icon={Settings}
-                          tooltip="Person settings"
-                          onClick={() => setSettingsEmployee(person)}
-                          variant="ghost"
-                          size="icon"
-                          className="text-muted-foreground hover:text-foreground"
-                          ariaLabel={`Settings for ${person.full_name || person.email}`}
-                        />
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" aria-label={`Actions for ${person.full_name || person.email}`}>
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setPendingHidePerson(person)}>
+                              Manage Visibility Setting
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOpenAdminDialog(person)}>
+                              Manage Admin Access
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -858,19 +940,86 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
         isLoading={isExporting}
       />
 
-      {/* Person Settings Modal */}
-      <PersonSettingsModal
-        open={!!settingsEmployee}
-        onOpenChange={(open) => {
-          if (!open) setSettingsEmployee(null);
-        }}
-        person={settingsEmployee}
-        onHide={(person) => handleHidePerson(person)}
-        onAdminToggled={async () => {
-          await loadPeople();
-        }}
-        currentUserEmail={userEmail}
-      />
+      {/* Hide Person Confirmation */}
+      <AlertDialog open={!!pendingHidePerson} onOpenChange={(open) => !open && setPendingHidePerson(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hide this person?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will move {pendingHidePerson?.full_name || pendingHidePerson?.email} to the hidden list. Their assignments and progress will not be affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingHidePerson(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingHidePerson) {
+                  handleHidePerson(pendingHidePerson);
+                  setPendingHidePerson(null);
+                }
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Manage Admin Access Dialog */}
+      <Dialog open={!!adminDialogPerson} onOpenChange={(open) => { if (!open) setAdminDialogPerson(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Admin Access</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-body">Grant {adminDialogPerson?.full_name || adminDialogPerson?.email} full admin access to manage trainings and people.</p>
+            {(() => {
+              const isSelf = !!(userEmail && adminDialogPerson?.email &&
+                adminDialogPerson.email.toLowerCase() === userEmail.toLowerCase());
+              const hasChanged = stagedAdmin !== (adminDialogPerson?.is_admin || false);
+              return (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="admin-access-toggle"
+                      checked={stagedAdmin}
+                      onCheckedChange={(checked) => setStagedAdmin(checked === true)}
+                      disabled={isSavingAdmin || isSelf}
+                    />
+                    <Label htmlFor="admin-access-toggle" className="cursor-pointer font-normal">
+                      {adminDialogPerson?.is_admin ? "Remove admin access" : "Grant admin access"}
+                    </Label>
+                  </div>
+                  {isSelf && (
+                    <Banner variant="warning" size="compact-constrained">
+                      You cannot change your own admin access.
+                    </Banner>
+                  )}
+                  {!isSelf && hasChanged && stagedAdmin && (
+                    <Banner variant="warning" size="compact-constrained">
+                      This person will be notified and changes take effect immediately.
+                    </Banner>
+                  )}
+                  {!isSelf && hasChanged && !stagedAdmin && (
+                    <Banner variant="warning" size="compact-constrained">
+                      This person will lose admin access immediately.
+                    </Banner>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAdminDialogPerson(null)}>Cancel</Button>
+            <Button
+              onClick={handleSaveAdmin}
+              disabled={isSavingAdmin || stagedAdmin === (adminDialogPerson?.is_admin || false) || !!(userEmail && adminDialogPerson?.email && adminDialogPerson.email.toLowerCase() === userEmail.toLowerCase())}
+            >
+              {isSavingAdmin ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Show Person Confirmation */}
       <AlertDialog open={!!pendingShowPerson} onOpenChange={(open) => !open && setPendingShowPerson(null)}>

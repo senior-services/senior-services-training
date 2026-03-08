@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
-import { Edit, Video as VideoIcon, Plus, Play, Settings, MessageSquare } from "lucide-react";
+import { Edit, Video as VideoIcon, Plus, Play, MoreVertical, MessageSquare } from "lucide-react";
 import { SortableTableHead } from "@/components/ui/sortable-table-head";
 import { formatShort } from "@/utils/date-formatter";
 import { isYouTubeUrl, getYouTubeVideoId, isGoogleDriveUrl, getGoogleDriveFileId } from "@/utils/videoUtils";
@@ -19,7 +19,12 @@ import { createButtonAriaProps, announceToScreenReader } from "@/utils/accessibi
 import { cn } from "@/lib/utils";
 import { quizOperations } from "@/services/quizService";
 import { logger } from "@/utils/logger";
-import { IconButtonWithTooltip } from "../ui/icon-button-with-tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 interface VideoTableProps {
   videos: Video[];
   loading?: boolean;
@@ -240,7 +245,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       data-video-id={video.id}
                       className={cn(
                         "group transition-all duration-700",
-                        fadingHighlightId === video.id && "bg-green-50 dark:bg-green-950/30 animate-highlight-pulse"
+                        fadingHighlightId === video.id && "bg-success/10 animate-highlight-pulse"
                       )}
                     >
                       {/* Video title and preview */}
@@ -249,15 +254,13 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                           {/* Content preview */}
                           <div className="relative w-20 h-12 rounded-md overflow-hidden bg-muted shrink-0">
                             {video.content_type === 'presentation' ? (
-                              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-300 via-slate-250 to-slate-200 dark:from-slate-700 dark:via-slate-650 dark:to-slate-600">
-                                <svg width="32" height="24" viewBox="0 0 96 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                  <rect x="14" y="8" width="56" height="42" rx="3" transform="rotate(-6 14 8)" fill="white" fillOpacity="0.6" stroke="currentColor" strokeOpacity="0.1" strokeWidth="2" className="text-slate-400" />
-                                  <rect x="24" y="6" width="56" height="42" rx="3" transform="rotate(3 52 27)" fill="white" fillOpacity="0.75" stroke="currentColor" strokeOpacity="0.12" strokeWidth="2" className="text-slate-400" />
-                                  <rect x="20" y="12" width="56" height="42" rx="3" fill="white" fillOpacity="0.95" stroke="currentColor" strokeOpacity="0.15" strokeWidth="2" className="text-slate-400" />
-                                  <rect x="28" y="22" width="24" height="3" rx="1.5" fill="currentColor" fillOpacity="0.18" className="text-slate-500" />
-                                  <rect x="28" y="29" width="40" height="2" rx="1" fill="currentColor" fillOpacity="0.1" className="text-slate-400" />
-                                  <rect x="28" y="34" width="36" height="2" rx="1" fill="currentColor" fillOpacity="0.1" className="text-slate-400" />
-                                </svg>
+                              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-background-muted">
+                                <img
+                                  src="/lovable-uploads/undraw_key-points_iiic.svg"
+                                  alt={`${video.title} - Presentation thumbnail`}
+                                  className="w-full h-full object-contain p-1"
+                                  loading="lazy"
+                                />
                               </div>
                             ) : (
                               <>
@@ -299,7 +302,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                                     video.video_url || video.thumbnail_url ? "hidden" : "",
                                   )}
                                 >
-                                  <Play className="w-4 h-4 text-white" aria-hidden="true" />
+                                  <Play className="w-4 h-4 text-on-color" aria-hidden="true" />
                                 </div>
                               </>
                             )}
@@ -310,9 +313,9 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                                 handleVideoAction("Play video", video, () => onPlay(video));
                               }}
                               aria-label={`Play video: ${video.title}`}
-                              className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center group"
+                              className="absolute inset-0 bg-overlay/0 hover:bg-overlay/20 transition-colors flex items-center justify-center group"
                             >
-                              <Play className="w-3 h-3 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <Play className="w-3 h-3 text-on-color opacity-0 group-hover:opacity-100 transition-opacity" />
                             </a>
                           </div>
 
@@ -325,7 +328,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                             </div>
                             {video.description && (
                               <p
-                                className="text-body text-muted-foreground line-clamp-2 mt-1"
+                                className="text-sm text-muted-foreground line-clamp-2 mt-1"
                                 title={video.description}
                               >
                                 {video.description.length > 150
@@ -377,15 +380,18 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                             Edit
                           </Button>
                           {onSettings && (
-                            <IconButtonWithTooltip
-                              icon={Settings}
-                              tooltip="Training settings"
-                              onClick={() => handleVideoAction("Open settings", video, () => onSettings(video))}
-                              variant="ghost"
-                              size="icon"
-                              className="text-muted-foreground hover:text-foreground"
-                              ariaLabel={`Settings for ${video.title}`}
-                            />
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" aria-label={`Actions for ${video.title}`}>
+                                  <MoreVertical className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleVideoAction("Open settings", video, () => onSettings(video))}>
+                                  Manage Visibility Setting
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           )}
                         </div>
                       </TableCell>

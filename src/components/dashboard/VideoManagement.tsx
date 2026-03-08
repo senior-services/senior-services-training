@@ -5,8 +5,8 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { EyeOff, ChevronDown, Eye, Settings } from "lucide-react";
-import { TrainingSettingsModal } from "./TrainingSettingsModal";
+import { EyeOff, ChevronDown, Eye } from "lucide-react";
+import { Alert } from "../ui/alert";
 import { VideoTable } from "./VideoTable";
 import { AddContentModal, ContentFormData } from "../content/AddContentModal";
 import { EditVideoModal } from "../EditVideoModal";
@@ -65,6 +65,9 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
   const [settingsVideo, setSettingsVideo] = useState<Video | null>(null);
   const [pendingShowVideo, setPendingShowVideo] = useState<Video | null>(null);
 
+  // Inline error state
+  const [pageError, setPageError] = useState<string | null>(null);
+
   // Highlight newly added video
   const [highlightVideoId, setHighlightVideoId] = useState<string | null>(null);
 
@@ -79,13 +82,14 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
    */
   const loadVideos = async () => {
     setLoading(true);
+    setPageError(null);
     try {
       // Check authentication status first
       const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session) {
-        toast.error("Please log in to view videos");
+        setPageError("Please log in to view videos.");
         setLoading(false);
         return;
       }
@@ -103,10 +107,10 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
           error: result.error,
           adminUser: userEmail,
         });
-        toast.error(result.error || "Failed to load videos");
+        setPageError(result.error || "Failed to load videos.");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "An unexpected error occurred while loading videos");
+      setPageError(error instanceof Error ? error.message : "An unexpected error occurred while loading videos.");
     }
     setLoading(false);
   };
@@ -153,7 +157,7 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
           setShowConfirmDialog(true);
         }
       } else {
-        toast.error("Failed to fetch employees. Please try again.");
+        setPageError("Failed to fetch employees. Please try again.");
       }
     } else {
       // No assignment - just create the video
@@ -181,14 +185,14 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
 
     const result = await videoOperations.create(sanitizedData);
     if (result.success) {
-      toast.success(`"${sanitizedData.title}" has been added to the training library.`);
+      toast.success("Success", { description: `"${sanitizedData.title}" has been added to the training library.` });
       if (result.data?.id) {
         setHighlightVideoId(result.data.id);
       }
       await loadVideos();
       setIsAddVideoModalOpen(false);
     } else {
-      toast.error(result.error || "Failed to add video");
+      setPageError(result.error || "Failed to add video.");
     }
     performanceTracker.end(operation);
 
@@ -223,7 +227,7 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
       const videoResult = await videoOperations.create(sanitizedData);
 
       if (!videoResult.success || !videoResult.data) {
-        toast.error(videoResult.error || "Failed to add video");
+        setPageError(videoResult.error || "Failed to add video.");
         return;
       }
 
@@ -234,7 +238,7 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Authentication error. Please log in again.");
+        setPageError("Authentication error. Please log in again.");
         return;
       }
 
@@ -257,29 +261,29 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
           const assignResult = await assignmentOperations.createBatch(assignments);
 
           if (assignResult.success) {
-            toast.success(
-              `"${sanitizedData.title}" added and assigned to ${activeEmployees.length} employee${activeEmployees.length !== 1 ? "s" : ""}`,
-            );
+            toast.success("Success", {
+              description: `"${sanitizedData.title}" added and assigned to ${activeEmployees.length} employee${activeEmployees.length !== 1 ? "s" : ""}`,
+            });
           } else {
             // Video created but assignment failed
-            toast.error(`Video added but failed to assign: ${assignResult.error}`);
+            setPageError(`Video added but failed to assign: ${assignResult.error}`);
             logger.error("Batch assignment failed", undefined, {
               videoId: newVideo.id,
               error: assignResult.error,
             });
           }
         } else {
-          toast.success(`"${sanitizedData.title}" has been added to the training library.`);
+          toast.success("Success", { description: `"${sanitizedData.title}" has been added to the training library.` });
         }
       } else {
-        toast.success(`"${sanitizedData.title}" has been added (could not fetch employees for assignment).`);
+        toast.success("Success", { description: `"${sanitizedData.title}" has been added (could not fetch employees for assignment).` });
       }
 
       await loadVideos();
       setIsAddVideoModalOpen(false);
     } catch (error) {
       logger.error("Error adding video with assignments", error as Error);
-      toast.error("An unexpected error occurred");
+      setPageError("An unexpected error occurred.");
     } finally {
       setIsSubmitting(false);
       setShowConfirmDialog(false);
@@ -316,6 +320,7 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
     updates: {
       title: string;
       description: string;
+      duration_seconds?: number;
     },
   ) => {
     const operation = "updateVideo";
@@ -330,15 +335,18 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
       ...(video?.video_url && {
         content_type: detectContentTypeFromUrl(video.video_url) || video.content_type || "video",
       }),
+      ...(updates.duration_seconds !== undefined && {
+        duration_seconds: updates.duration_seconds,
+      }),
     };
     const result = await videoOperations.update(videoId, sanitizedUpdates);
     if (result.success) {
-      toast.success("Video details have been updated.");
+      toast.success("Success", { description: "Training updated successfully." });
       await loadVideos();
       setIsEditVideoModalOpen(false);
       setEditingVideo(null);
     } else {
-      toast.error(result.error || "Failed to update video");
+      setPageError(result.error || "Failed to update video.");
     }
     performanceTracker.end(operation);
   };
@@ -349,12 +357,12 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
   const handleDeleteVideo = async (videoId: string) => {
     const result = await videoOperations.delete(videoId);
     if (result.success) {
-      toast.success("Video has been removed from the library.");
+      toast.success("Success", { description: "Video has been removed from the library." });
       await loadVideos();
       setIsEditVideoModalOpen(false);
       setEditingVideo(null);
     } else {
-      toast.error(result.error || "Failed to delete video");
+      setPageError(result.error || "Failed to delete video.");
     }
   };
 
@@ -383,11 +391,11 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
   const handleHideVideo = async (video: Video) => {
     const result = await videoOperations.hide(video.id);
     if (result.success) {
-      toast.success(`"${video.title}" has been hidden from the video list`);
+      toast.success("Success", { description: `"${video.title}" has been hidden from the video list` });
       await loadVideos();
       await loadHiddenVideos();
     } else {
-      toast.error(result.error || "Failed to hide video");
+      setPageError(result.error || "Failed to hide video.");
     }
   };
 
@@ -397,11 +405,11 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
   const handleShowVideo = async (video: Video) => {
     const result = await videoOperations.show(video.id);
     if (result.success) {
-      toast.success(`"${video.title}" is now visible in the video list`);
+      toast.success("Success", { description: `"${video.title}" is now visible in the video list` });
       await loadVideos();
       await loadHiddenVideos();
     } else {
-      toast.error(result.error || "Failed to show video");
+      setPageError(result.error || "Failed to show video.");
     }
   };
 
@@ -410,14 +418,14 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
    */
   const generateThumbnailColor = (title: string): string => {
     const colors = [
-      "bg-blue-500",
-      "bg-green-500",
-      "bg-purple-500",
-      "bg-pink-500",
-      "bg-indigo-500",
-      "bg-teal-500",
-      "bg-orange-500",
-      "bg-red-500",
+      "bg-primary",
+      "bg-success",
+      "bg-background-header-admin",
+      "bg-background-primary",
+      "bg-destructive",
+      "bg-warning",
+      "bg-muted-foreground",
+      "bg-background-header",
     ];
     const index = title.charCodeAt(0) % colors.length;
     return colors[index];
@@ -433,6 +441,10 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
 
   return (
     <div className="space-y-6">
+      {pageError && (
+        <Alert variant="error" description={pageError} onDismiss={() => setPageError(null)} />
+      )}
+
       <VideoTable
         videos={videos}
         loading={loading}
@@ -484,7 +496,7 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
                               <div>
                                 <div className="font-medium">{video.title}</div>
                                 {video.description && (
-                                  <div className="text-body-sm text-muted-foreground line-clamp-2 mt-1">
+                                  <div className="text-sm text-muted-foreground line-clamp-2 mt-1">
                                     {video.description}
                                   </div>
                                 )}
@@ -530,15 +542,30 @@ export const VideoManagement: React.FC<VideoManagementProps> = ({ userEmail, onV
       {/* Video Player Modal */}
       <VideoPlayerModal open={isVideoPlayerOpen} onOpenChange={setIsVideoPlayerOpen} video={selectedVideo} />
 
-      {/* Training Settings Modal */}
-      <TrainingSettingsModal
-        open={!!settingsVideo}
-        onOpenChange={(open) => {
-          if (!open) setSettingsVideo(null);
-        }}
-        video={settingsVideo}
-        onHide={(video) => handleHideVideo(video)}
-      />
+      {/* Hide Training Confirmation */}
+      <AlertDialog open={!!settingsVideo} onOpenChange={(open) => !open && setSettingsVideo(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hide this training?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will move "{settingsVideo?.title}" to the hidden list. All existing progress and assignments will not be affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSettingsVideo(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (settingsVideo) {
+                  handleHideVideo(settingsVideo);
+                  setSettingsVideo(null);
+                }
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Confirmation Dialog for Show Training */}
       <AlertDialog open={!!pendingShowVideo} onOpenChange={(open) => !open && setPendingShowVideo(null)}>

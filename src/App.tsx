@@ -1,5 +1,4 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
@@ -76,11 +75,10 @@ const AppContent = () => {
     return (
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
-            <div className="text-white text-h4">Loading...</div>
+          <div className="min-h-screen bg-background-header flex items-center justify-center">
+            <div className="text-on-color text-h4">Loading...</div>
           </div>
           <Toaster />
-          <Sonner />
         </TooltipProvider>
       </QueryClientProvider>
     );
@@ -88,6 +86,7 @@ const AppContent = () => {
 
   const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
   const userEmail = user?.email || '';
+  const avatarUrl = user?.user_metadata?.avatar_url || null;
 
   return (
     <>
@@ -116,13 +115,14 @@ const AppContent = () => {
           path="/dashboard" 
           element={
             isAuthenticated ? (
-              <EmployeeDashboard 
+              <EmployeeDashboard
                 userName={userName}
                 userEmail={userEmail}
                 userRole={isAdmin ? "admin" : "employee"}
                 onLogout={handleLogout}
                 onPlayVideo={handlePlayVideo}
                 refreshTrigger={refreshDashboard}
+                avatarUrl={avatarUrl}
               />
             ) : (
               <Navigate to="/auth" replace />
@@ -136,10 +136,11 @@ const AppContent = () => {
           element={
             isAuthenticated ? (
               isAdmin ? (
-                <AdminDashboard 
+                <AdminDashboard
                   userName={userName}
                   userEmail={userEmail}
                   onLogout={handleLogout}
+                  avatarUrl={avatarUrl}
                 />
               ) : (
                 <Navigate to="/dashboard" replace />
@@ -198,7 +199,6 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Sonner />
         <BrowserRouter>
           <AppContent />
         </BrowserRouter>

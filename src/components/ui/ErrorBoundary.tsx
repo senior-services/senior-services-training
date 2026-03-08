@@ -111,7 +111,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <Card className="w-full max-w-lg">
             <CardHeader className="text-center">
               <div className="flex justify-center mb-4">
-                <div className="rounded-full bg-destructive/10 p-3">
+                <div className="rounded-full bg-[hsl(var(--destructive-bg))] p-3">
                   <AlertTriangle 
                     className="w-8 h-8 text-destructive" 
                     aria-hidden="true"

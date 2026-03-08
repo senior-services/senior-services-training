@@ -8,7 +8,8 @@ import { Dialog, FullscreenDialogContent, DialogScrollArea } from "@/components/
 import { Progress } from "@/components/ui/progress";
 import { videoOperations, progressOperations } from '@/services/api';
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
-import { useToast } from "@/hooks/use-toast";
+import { Banner } from "@/components/ui/banner";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import type { Video } from "@/types";
@@ -31,7 +32,8 @@ export const VideoPage = () => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
   const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false);
-  const { toast } = useToast();
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [quizError, setQuizError] = useState<string | null>(null);
   const { user, loading: authLoading } = useAuth();
   const { role } = useUserRole(user);
   const location = useLocation();
@@ -63,7 +65,8 @@ export const VideoPage = () => {
     try {
       setLoading(true);
       setProgressLoading(true);
-      
+      setLoadError(null);
+
       const res = await videoOperations.getById(id);
       if (res.success && res.data) {
         setVideo(res.data);
@@ -83,11 +86,7 @@ export const VideoPage = () => {
             completedAt = progressResult?.completedAt || null;
           } catch (error) {
             logger.error('Failed to load existing progress', error as Error);
-            toast({
-              title: "Warning",
-              description: "Could not load your previous progress",
-              variant: "default",
-            });
+            toast.warning("Warning", { description: "Could not load your previous progress" });
           }
         }
 
@@ -107,11 +106,7 @@ export const VideoPage = () => {
       }
     } catch (error) {
       logger.error('Error loading video', error as Error);
-      toast({
-        title: "Error",
-        description: "Failed to load video",
-        variant: "destructive",
-      });
+      setLoadError("Failed to load video");
     } finally {
       setLoading(false);
       setProgressLoading(false);
@@ -126,10 +121,7 @@ export const VideoPage = () => {
   const handleCompleteTraining = async () => {
     await markComplete();
     setShowCompletionOverlay(false);
-    toast({
-      title: "Training Completed! 🎉",
-      description: "You've successfully completed this training.",
-    });
+    toast.success("Training Completed!", { description: "You've successfully completed this training." });
   };
 
   const handleQuizSubmit = async (responses: QuizSubmissionData[]) => {
@@ -141,17 +133,10 @@ export const VideoPage = () => {
       setShowQuiz(false);
       await markComplete();
       
-      toast({
-        title: "Quiz completed!",
-        description: "Your training has been marked as complete.",
-      });
+      toast.success("Quiz completed!", { description: "Your training has been marked as complete." });
     } catch (error) {
       logger.error('Error submitting quiz', error as Error);
-      toast({
-        title: "Error",
-        description: "Failed to submit quiz. Please try again.",
-        variant: "destructive",
-      });
+      setQuizError("Failed to submit quiz. Please try again.");
     } finally {
       setIsSubmittingQuiz(false);
     }
@@ -206,6 +191,11 @@ export const VideoPage = () => {
               </Button>
             </Link>
           </div>
+          {loadError && (
+            <div className="mb-4">
+              <Banner variant="error" size="compact" description={loadError} />
+            </div>
+          )}
           <div className="text-center py-12">
             <p className="text-muted-foreground">Video not found</p>
           </div>
@@ -338,6 +328,12 @@ export const VideoPage = () => {
           </CardContent>
         </Card>
       </div>
+
+      {quizError && (
+        <div className="container mx-auto px-4 mb-4">
+          <Banner variant="error" size="compact" description={quizError} />
+        </div>
+      )}
 
       <Dialog open={showQuiz} onOpenChange={setShowQuiz}>
         <FullscreenDialogContent>

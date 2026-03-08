@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,9 +17,19 @@ interface HeaderProps {
   onLogout: () => void;
   /** Which view is currently active — controls header background color */
   currentView?: "admin" | "dashboard";
+  avatarUrl?: string | null;
 }
 
-export const Header = ({ userRole, userName, userEmail, onLogout, currentView }: HeaderProps) => {
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
+export const Header = ({ userRole, userName, userEmail, onLogout, currentView, avatarUrl }: HeaderProps) => {
+  const [imgFailed, setImgFailed] = useState(false);
   const navigate = useNavigate();
   const isAdmin = userRole === "admin";
   const isAdminView = currentView === "admin";
@@ -61,7 +72,20 @@ export const Header = ({ userRole, userName, userEmail, onLogout, currentView }:
             {/* User Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost">
+                <Button variant="ghost" className="gap-2">
+                  {avatarUrl && !imgFailed ? (
+                    <img
+                      src={avatarUrl}
+                      alt=""
+                      className="w-7 h-7 rounded-full object-cover"
+                      referrerPolicy="no-referrer"
+                      onError={() => setImgFailed(true)}
+                    />
+                  ) : (
+                    <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground text-caption font-medium flex items-center justify-center shrink-0">
+                      {getInitials(userName)}
+                    </span>
+                  )}
                   {userName} <ChevronDown className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>

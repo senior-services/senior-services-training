@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Alert } from "@/components/ui/alert";
 import { Banner } from "@/components/ui/banner";
 import {
   AlertDialog,
@@ -50,7 +51,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Calendar } from "@/components/ui/calendar";
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
 
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -58,7 +58,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { IconButtonWithTooltip } from "@/components/ui/icon-button-with-tooltip";
 import { SortableTableHead } from "@/components/ui/sortable-table-head";
 import { getTooltipText } from "@/utils/tooltipText";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Home,
   Settings,
@@ -73,9 +73,11 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
+  AlertTriangle,
   CheckCircle,
   Info,
   X,
+  XCircle,
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
@@ -90,7 +92,6 @@ interface ComponentsGalleryProps {
   onLogout: () => void;
 }
 export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsGalleryProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [switchValue, setSwitchValue] = useState(false);
   const [twoOptionToggle, setTwoOptionToggle] = useState<string>("light");
   const [multiOptionToggle, setMultiOptionToggle] = useState<string>("medium");
@@ -103,6 +104,8 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
   const [sortColumn, setSortColumn] = useState<string>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(new Set());
+  const [alertDemo, setAlertDemo] = useState<"info" | "success" | "warning" | "error" | null>(null);
+  const [dismissibleBannerVisible, setDismissibleBannerVisible] = useState(true);
 
   const tableData = [
     {
@@ -155,7 +158,6 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
     }
     return sortDirection === "asc" ? comparison : -comparison;
   });
-  const { toast } = useToast();
   const handleSort = (column: string) => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -164,27 +166,16 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
       setSortDirection("asc");
     }
   };
-  const showToast = (type: "default" | "destructive" | "success") => {
+  const showToast = (type: "default" | "success" | "warning") => {
     switch (type) {
       case "success":
-        toast({
-          title: "Success!",
-          description: "This is a success message.",
-          variant: "success",
-        });
+        toast.success("Success!", { description: "This is a success message." });
         break;
-      case "destructive":
-        toast({
-          title: "Error!",
-          description: "This is an error message.",
-          variant: "destructive",
-        });
+      case "warning":
+        toast.warning("Warning!", { description: "This is a warning message." });
         break;
       default:
-        toast({
-          title: "Info",
-          description: "This is an info message.",
-        });
+        toast.info("Info", { description: "This is an info message." });
     }
   };
   const toggleLoading = () => {
@@ -208,26 +199,43 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
 
       {/* Fixed sidebar navigation */}
       <nav className="hidden lg:block fixed top-24 right-6 w-[200px] z-40">
-        <div className="bg-background/95 backdrop-blur-sm border border-border rounded-lg p-3 shadow-md">
+        <div className="bg-background/95 backdrop-blur-sm border border-border rounded-lg p-3 shadow-sm">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 px-2">Components</h3>
           <ul className="space-y-0.5">
             {[
-              { href: "#banners", label: "Banners" },
+              { href: "#avatars", label: "Avatars" },
               { href: "#badges", label: "Badges" },
               { href: "#buttons", label: "Buttons" },
-              { href: "#calendar", label: "Calendar" },
+              { href: "#cards", label: "Cards" },
               { href: "#color-palette", label: "Color Palette" },
-              { href: "#data-display", label: "Data Display" },
+              { href: "#dialogs", label: "Dialogs" },
               { href: "#form-controls", label: "Form Controls" },
               { href: "#icons", label: "Icons" },
-              { href: "#interactive", label: "Interactive" },
-              { href: "#layout", label: "Layout" },
+              { href: "#loading-states", label: "Loading States" },
+              { href: "#notifications", label: "Notifications" },
               { href: "#progress", label: "Progress" },
-              { href: "#toast", label: "Toast" },
+              { href: "#shadows", label: "Shadows" },
+              { href: "#tables", label: "Tables" },
+              { href: "#tabs", label: "Tabs" },
               { href: "#tooltips", label: "Tooltips" },
-              { href: "#training-cards", label: "Training Cards" },
               { href: "#typography", label: "Typography" },
-              { href: "#typography-utilities", label: "Typography Utilities" },
+            ].map(({ href, label }) => (
+              <li key={href}>
+                <a
+                  href={href}
+                  className="block text-sm text-muted-foreground hover:text-primary px-2 py-1 rounded hover:bg-primary/10 transition-colors"
+                >
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <Separator className="my-2" />
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 px-2">App Specific</h3>
+          <ul className="space-y-0.5">
+            {[
+              { href: "#training-cards", label: "Training Cards" },
+              { href: "#badge-rules", label: "Badge Rules" },
             ].map(({ href, label }) => (
               <li key={href}>
                 <a
@@ -242,35 +250,28 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
         </div>
       </nav>
 
-      <main className="px-4 py-8 space-y-12 lg:mr-[220px] max-w-[1400px] mx-auto">
+      <main className="px-4 py-8 space-y-6 lg:mr-[220px] max-w-[1400px] mx-auto">
         {/* Color Palette Section */}
-        <Card id="color-palette" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+        <Card id="color-palette" className="shadow-card hover:shadow-md transition-shadow duration-300">
           <CardHeader>
             <CardTitle>Color Palette</CardTitle>
             <CardDescription>Design system color tokens and semantic colors</CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Primary Colors */}
+              {/* Primary & Secondary Colors */}
               <div className="space-y-3">
-                <h4 className="text-body-sm font-bold uppercase text-primary">Primary Colors</h4>
+                <h4 className="text-body-sm font-bold uppercase text-primary">Primary & Secondary</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-primary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-primary border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Primary</div>
                       <div className="text-caption text-muted-foreground">--primary</div>
                     </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Secondary Colors */}
-              <div className="space-y-3">
-                <h4 className="text-body-sm font-bold uppercase text-primary">Secondary Colors</h4>
-                <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-secondary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-secondary border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Secondary</div>
                       <div className="text-caption text-muted-foreground">--secondary</div>
@@ -284,21 +285,21 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 <h4 className="text-body-sm font-bold uppercase text-primary">Status Colors</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-success border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-success border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Success</div>
                       <div className="text-caption text-muted-foreground">--success</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-warning border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-warning border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Warning</div>
                       <div className="text-caption text-muted-foreground">--warning</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-destructive border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-destructive border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Destructive</div>
                       <div className="text-caption text-muted-foreground">--destructive</div>
@@ -312,49 +313,49 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 <h4 className="text-body-sm font-bold uppercase text-primary">UI Colors</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-background-main border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-background-main border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Background Main</div>
                       <div className="text-caption text-muted-foreground">--background-main</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-background-header border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-background-header border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Background Header</div>
                       <div className="text-caption text-muted-foreground">--background-header</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-background-header-admin border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-background-header-admin border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Background Header Admin</div>
                       <div className="text-caption text-muted-foreground">--background-header-admin</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-background-primary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-background-primary border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Background Primary</div>
                       <div className="text-caption text-muted-foreground">--background-primary</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-background-muted border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-background-muted border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Background Muted</div>
                       <div className="text-caption text-muted-foreground">--background-muted</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-card border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-card border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Card</div>
                       <div className="text-caption text-muted-foreground">--card</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-muted border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-muted border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Muted</div>
                       <div className="text-caption text-muted-foreground">--muted</div>
@@ -368,7 +369,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 <h4 className="text-body-sm font-bold uppercase text-primary">Text Colors</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-background border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg bg-background border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 flex items-center justify-center">
                       <div className="w-6 h-6 bg-foreground rounded-sm shadow-sm"></div>
                     </div>
                     <div>
@@ -377,7 +378,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-background border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg bg-background border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 flex items-center justify-center">
                       <div className="w-6 h-6 bg-muted-foreground rounded-sm shadow-sm"></div>
                     </div>
                     <div>
@@ -386,7 +387,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-primary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg bg-primary border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 flex items-center justify-center">
                       <div className="w-6 h-6 bg-primary-foreground rounded-sm shadow-sm"></div>
                     </div>
                     <div>
@@ -395,7 +396,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-secondary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg bg-secondary border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 flex items-center justify-center">
                       <div className="w-6 h-6 bg-secondary-foreground rounded-sm shadow-sm"></div>
                     </div>
                     <div>
@@ -411,35 +412,35 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 <h4 className="text-body-sm font-bold uppercase text-primary">Border & Input</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-border-primary border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-border-primary border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Border Primary</div>
                       <div className="text-caption text-muted-foreground">--border-primary</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-border-secondary border border-border-secondary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-border-secondary border border-border-secondary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Border Secondary</div>
                       <div className="text-caption text-muted-foreground">--border-secondary</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-input border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-input border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Input</div>
                       <div className="text-caption text-muted-foreground">--input</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-accent border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-accent border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Accent</div>
                       <div className="text-caption text-muted-foreground">--accent</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-ring border border-border-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"></div>
+                    <div className="w-12 h-12 rounded-lg bg-ring border border-border-primary shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"></div>
                     <div>
                       <div className="text-body-sm font-medium">Ring</div>
                       <div className="text-caption text-muted-foreground">--ring</div>
@@ -452,14 +453,23 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </CardContent>
         </Card>
 
-        {/* Typography Section — Major Third (1.250) Scale */}
-        <Card id="typography" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+        {/* Typography Section — Major Second (1.125) Scale */}
+        <Card id="typography" className="shadow-card hover:shadow-md transition-shadow duration-300">
           <CardHeader>
             <CardTitle>Typography</CardTitle>
             <CardDescription>Major Second (1.125) type scale — 16px base</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-4 rounded-lg p-6 border border-border-primary/50 shadow-md">
+            <div className="space-y-4 rounded-lg p-6 border border-border-primary/50 shadow-sm">
+              {/* Display — .text-display (~37px) — hero sections only */}
+              <div className="flex items-baseline gap-2">
+                <span className="text-display">Display</span>
+                <span className="text-body-sm text-muted-foreground">(~37px / 2.281rem)</span>
+              </div>
+              <p className="text-body-sm text-muted-foreground -mt-2 ml-1">Hero sections, major page titles, strategic emphasis only. Use <code className="text-code bg-muted px-1 py-0.5 rounded">.text-display</code> — no HTML tag mapping.</p>
+
+              <Separator />
+
               {/* Headings — use bare HTML tags, sized by global CSS */}
               <div className="flex items-baseline gap-2">
                 <h1>Heading 1</h1>
@@ -532,27 +542,46 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
 
               <Separator />
 
-              {/* Code — .text-code (0.9375rem / 15px) */}
+              {/* Code — .text-code (0.875rem / 14px) */}
               <div className="flex items-baseline gap-2">
                 <code className="text-code bg-muted px-2 py-1 rounded shadow-sm border border-border-primary/30">
                   Code snippet
                 </code>
-                <span className="text-body-sm text-muted-foreground">(15px / 0.9375rem)</span>
+                <span className="text-body-sm text-muted-foreground">(14px / 0.875rem)</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card id="typography-utilities" className="shadow-card hover:shadow-lg transition-shadow duration-300">
-          <CardHeader>
-            <CardTitle>Typography Utility Classes</CardTitle>
-            <CardDescription>
-              Visual overrides for semantic tags using the Major Third scale. Use semantic HTML tags (h1-h4, p) by
+
+            {/* Font Weights */}
+            <h3 id="font-weights" className="font-semibold pt-2">Font Weights</h3>
+            <p className="text-body-sm text-muted-foreground">Available font weight utilities — use to control emphasis and hierarchy</p>
+            <div className="space-y-4 rounded-lg p-6 border border-border-primary/50 shadow-sm">
+              {([
+                { cls: "font-light", weight: "300", label: "Light" },
+                { cls: "font-normal", weight: "400", label: "Normal" },
+                { cls: "font-medium", weight: "500", label: "Medium" },
+                { cls: "font-semibold", weight: "600", label: "Semibold" },
+                { cls: "font-bold", weight: "700", label: "Bold" },
+              ] as const).map(({ cls, weight, label }) => (
+                <div key={cls} className="flex items-baseline gap-4">
+                  <p className={`text-body-lg ${cls} flex-1`}>
+                    {label} — The quick brown fox jumps over the lazy dog.
+                  </p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <code className="text-code bg-muted px-1.5 py-0.5 rounded">.{cls}</code>
+                    <span className="text-body-sm text-muted-foreground">({weight})</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Typography Utility Classes */}
+            <h3 id="typography-utilities" className="font-semibold pt-2">Typography Utility Classes</h3>
+            <p className="text-body-sm text-muted-foreground">
+              Visual overrides for semantic tags using the Major Second (1.125) scale. Use semantic HTML tags (h1-h4, p) by
               default. Apply these utility classes only when a visual override is needed.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-8">
+            </p>
             {/* Reference Table */}
-            <div className="rounded-lg border border-border-primary/50 overflow-hidden shadow-md">
+            <div className="rounded-lg border border-border-primary/50 overflow-hidden shadow-sm">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50 hover:bg-muted/50">
@@ -565,34 +594,42 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 <TableBody>
                   <TableRow>
                     <TableCell>
+                      <code className="text-code bg-muted px-1.5 py-0.5 rounded">.text-display</code>
+                    </TableCell>
+                    <TableCell>2.281rem</TableCell>
+                    <TableCell>~37px</TableCell>
+                    <TableCell>Hero sections, major page titles (strategic use only)</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
                       <code className="text-code bg-muted px-1.5 py-0.5 rounded">.text-h1</code>
                     </TableCell>
-                    <TableCell>3.052rem</TableCell>
-                    <TableCell>~49px</TableCell>
+                    <TableCell>1.802rem</TableCell>
+                    <TableCell>~29px</TableCell>
                     <TableCell>Page titles (visual override)</TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell>
                       <code className="text-code bg-muted px-1.5 py-0.5 rounded">.text-h2</code>
                     </TableCell>
-                    <TableCell>1.953rem</TableCell>
-                    <TableCell>~31px</TableCell>
+                    <TableCell>1.602rem</TableCell>
+                    <TableCell>~26px</TableCell>
                     <TableCell>Section headings (visual override)</TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell>
                       <code className="text-code bg-muted px-1.5 py-0.5 rounded">.text-h3</code>
                     </TableCell>
-                    <TableCell>1.563rem</TableCell>
-                    <TableCell>~25px</TableCell>
+                    <TableCell>1.424rem</TableCell>
+                    <TableCell>~23px</TableCell>
                     <TableCell>Subsection headings (visual override)</TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell>
                       <code className="text-code bg-muted px-1.5 py-0.5 rounded">.text-h4</code>
                     </TableCell>
-                    <TableCell>1.25rem</TableCell>
-                    <TableCell>20px</TableCell>
+                    <TableCell>1.266rem</TableCell>
+                    <TableCell>~20px</TableCell>
                     <TableCell>Minor headings (visual override)</TableCell>
                   </TableRow>
                   <TableRow>
@@ -631,9 +668,9 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     <TableCell>
                       <code className="text-code bg-muted px-1.5 py-0.5 rounded">.text-code</code>
                     </TableCell>
-                    <TableCell>0.9375rem</TableCell>
-                    <TableCell>15px</TableCell>
-                    <TableCell>Code snippets</TableCell>
+                    <TableCell>0.875rem</TableCell>
+                    <TableCell>14px</TableCell>
+                    <TableCell>Code snippets (monospace, matches text-sm)</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
@@ -642,14 +679,14 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
         </Card>
 
         {/* Buttons Section */}
-        <Card id="buttons" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+        <Card id="buttons" className="shadow-card hover:shadow-md transition-shadow duration-300">
           <CardHeader>
             <CardTitle>Button Component</CardTitle>
             <CardDescription>Comprehensive guidelines for button variants, sizes, states, and usage patterns</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="variants">
-              <TabsList className="shadow-md">
+              <TabsList className="shadow-sm">
                 <TabsTrigger value="variants">Variants</TabsTrigger>
                 <TabsTrigger value="sizes">Sizes</TabsTrigger>
                 <TabsTrigger value="states">Interactive States</TabsTrigger>
@@ -682,9 +719,9 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 <p className="text-muted-foreground">Four size options to match different UI contexts</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                   {([
-                    { size: "sm" as const, label: "Small", desc: "36px height, compact spaces", code: 'size="sm"' },
-                    { size: "default" as const, label: "Default", desc: "40px height, standard", code: 'size="default"' },
-                    { size: "lg" as const, label: "Large", desc: "44px height, emphasis", code: 'size="lg"' },
+                    { size: "sm" as const, label: "Small", desc: "32px height, compact spaces", code: 'size="sm"' },
+                    { size: "default" as const, label: "Default", desc: "36px height, standard", code: 'size="default"' },
+                    { size: "lg" as const, label: "Large", desc: "40px height, emphasis", code: 'size="lg"' },
                   ] as const).map(({ size, label, desc, code }) => (
                     <div key={code} className="flex flex-col gap-3">
                       <div><Button size={size}>{label}</Button></div>
@@ -699,7 +736,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                       </Button>
                     </div>
                     <code className="text-[0.8125rem] text-muted-foreground font-mono bg-muted px-2 py-1.5 rounded-md">size="icon"</code>
-                    <p className="text-[0.8125rem] text-muted-foreground">40×40px, icons only</p>
+                    <p className="text-[0.8125rem] text-muted-foreground">36×36px, icons only</p>
                   </div>
                 </div>
               </TabsContent>
@@ -802,14 +839,14 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
         </Card>
 
         {/* Form Controls Section */}
-        <Card id="form-controls" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+        <Card id="form-controls" className="shadow-card hover:shadow-md transition-shadow duration-300">
           <CardHeader>
             <CardTitle>Form Controls</CardTitle>
             <CardDescription>Input fields and form elements</CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
             {/* Form Section Header */}
-            <div className="rounded-lg p-6 border border-border-primary/50 shadow-md space-y-1">
+            <div className="rounded-lg p-6 border border-border-primary/50 shadow-sm space-y-1">
               <h4 className="text-body font-bold text-foreground mb-3">Form Section Header</h4>
               <p className="text-body-sm text-muted-foreground mb-4">
                 Use to label groups of related form fields. Apply the single
@@ -824,7 +861,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 <Input placeholder="Enter department..." className="shadow-sm" />
               </div>
             </div>
-            <div className="rounded-lg p-6 border border-border-primary/50 shadow-md">
+            <div className="rounded-lg p-6 border border-border-primary/50 shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
@@ -1011,96 +1048,289 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </div>
               </div>
             </div>
+
+            {/* Dropdown Menus */}
+            <div className="space-y-4">
+              <h4 className="text-body-sm font-bold uppercase text-primary">Dropdown Menus</h4>
+              <div className="flex flex-wrap gap-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline">Dropdown Menu <ChevronDown className="w-4 h-4" /></Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-background">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Settings className="w-4 h-4 mr-2" />
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <Bell className="w-4 h-4 mr-2" />
+                      Notifications
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline">Menu With Icons <ChevronDown className="w-4 h-4" /></Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-background">
+                    <DropdownMenuItem>
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Settings className="w-4 h-4 mr-2" />
+                      Settings
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline">Menu Without Icons <ChevronDown className="w-4 h-4" /></Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-background">
+                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                    <DropdownMenuItem>Settings</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Banners */}
-        <Card id="banners" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+        {/* ── Notifications ── */}
+        <Card id="notifications" className="shadow-card hover:shadow-md transition-shadow duration-300">
           <CardHeader>
-            <CardTitle>Banners</CardTitle>
+            <CardTitle>Notifications</CardTitle>
             <CardDescription>
-              Banner components for notifications, alerts, and status messages with modern drop shadows
+              Four notification types ordered by priority: Toast, Banner, Inline Banner, and Alert.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-8">
+
+            {/* ── 1. Toast ── */}
             <div className="space-y-4">
-              <h4 className="text-body-sm font-medium text-muted-foreground">Default Banner - All Variant Options</h4>
+              <h4 className="text-body-sm font-bold uppercase text-primary">Toast</h4>
+              <p className="text-sm text-muted-foreground">
+                Lightweight, non-blocking feedback. Bottom-right, auto-dismiss at 4s. Description only, no title. Use for transient confirmations that don't require user action.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => showToast("success")}>
+                  Success
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => showToast("default")}>
+                  Info
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => showToast("warning")}>
+                  Warning
+                </Button>
+              </div>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p><strong>Usage:</strong> <code className="text-code bg-muted px-1 py-0.5 rounded">import {"{ toast }"} from "sonner"</code></p>
+                <p><code className="text-code bg-muted px-1 py-0.5 rounded">toast.success("Success", {"{ description }"})</code> — auto-dismiss 4s</p>
+                <p><code className="text-code bg-muted px-1 py-0.5 rounded">toast.info("Info", {"{ description }"})</code> — auto-dismiss 4s</p>
+                <p><code className="text-code bg-muted px-1 py-0.5 rounded">toast.warning("Warning", {"{ description }"})</code> — auto-dismiss 4s</p>
+                <p className="mt-2 text-xs">Error notifications should use the <code className="text-code bg-muted px-1 py-0.5 rounded">Alert</code> component instead of toast.</p>
+              </div>
+            </div>
 
-              {/* Default Banner - Basic */}
-              <Banner title="Default Banner" description="Basic banner with icon and no actions." />
+            <Separator />
 
-              {/* Default Banner - With Close Action */}
+            {/* ── 2. Banner (page/section level) ── */}
+            <div className="space-y-4">
+              <h4 className="text-body-sm font-bold uppercase text-primary">Banner</h4>
+              <p className="text-sm text-muted-foreground">
+                Page or section-level inline alerts. Persistent, placed at the top of the page or section. Supports optional close icon, link, and action button.
+              </p>
+
+              <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mt-4">Variants</h5>
+              <Banner variant="info" title="Information" description="Informational banner for updates or announcements." />
+              <Banner variant="success" title="Success" description="Operation completed successfully." />
+              <Banner variant="warning" title="Warning" description="Important notice that requires attention." />
+              <Banner variant="error" title="Error" description="Something went wrong. Please try again." />
+
+              <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mt-6">With Close Icon</h5>
+              {dismissibleBannerVisible ? (
+                <Banner
+                  variant="info"
+                  title="Dismissible Banner"
+                  description="Click the X to dismiss this banner."
+                  dismissible
+                  onDismiss={() => setDismissibleBannerVisible(false)}
+                />
+              ) : (
+                <Button size="sm" variant="outline" onClick={() => setDismissibleBannerVisible(true)}>
+                  Show Dismissible Banner
+                </Button>
+              )}
+
+              <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mt-6">With Link (via children)</h5>
+              <Banner variant="info" title="Update Available">
+                <p>A new version is available. <a href="#notifications" className="underline font-medium">View release notes</a></p>
+              </Banner>
+
+              <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mt-6">With Action Button</h5>
               <Banner
-                title="Default Banner with Close"
-                description="Banner with dismissible close action."
-                dismissible
-                onDismiss={() => console.log("Banner dismissed")}
-              />
-
-              {/* Default Banner - With Button */}
-              <Banner
-                title="Default Banner with Action"
-                description="Banner with action button."
+                variant="warning"
+                title="Unsaved Changes"
+                description="You have unsaved changes that will be lost."
                 actions={
                   <Button variant="outline" size="sm">
-                    Learn More
+                    Save Now
                   </Button>
                 }
               />
+            </div>
 
-              {/* Default Banner - Without Icon */}
-              <Banner title="Default Banner without Icon" description="Banner with icon hidden." showIcon={false} />
+            <Separator />
 
-              <Separator className="my-6" />
+            {/* ── 3. Inline Banner ── */}
+            <div className="space-y-4">
+              <h4 className="text-body-sm font-bold uppercase text-primary">Inline Banner</h4>
+              <p className="text-sm text-muted-foreground">
+                Field or text-level inline alerts. Persists until the user resolves the condition. No close icon, no action button. Available in default (body text) and small (constrained) sizes, each in full-width or width-constrained layout.
+              </p>
 
-              <h4 className="text-body-sm font-medium text-muted-foreground">Other Banner Types</h4>
-
-              {/* Info Banner */}
-              <Banner
-                variant="info"
-                title="Information"
-                description="Informational banner for updates or announcements."
-              />
-
-              {/* Success Banner */}
-              <Banner variant="success" title="Success" description="Success banner for completed operations." />
-
-              {/* Warning Banner */}
-              <Banner variant="warning" title="Warning" description="Warning banner for important notices." />
-
-              {/* Error Banner */}
-              <Banner variant="error" title="Error" description="Error banner for system issues or failures." />
-
-              <Separator className="my-6" />
-
-              <h4 className="text-body-sm font-medium text-muted-foreground">Inline Banners (Compact)</h4>
-
-              {/* Compact Info */}
+              <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mt-4">Default — Full Width</h5>
               <Banner variant="info" size="compact" description="This field is optional." />
-
-              {/* Compact Success */}
               <Banner variant="success" size="compact" description="All answers saved." />
-
-              {/* Compact Warning */}
               <Banner variant="warning" size="compact" description="Changes will take effect immediately." />
-
-              {/* Compact Error */}
               <Banner variant="error" size="compact" description="Please fix the errors above." />
 
-              <Separator className="my-6" />
+              <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mt-6">Default — Width Constrained</h5>
+              <Banner variant="info" size="compact" description="This field is optional." className="w-fit" />
 
-              <h4 className="text-body-sm font-medium text-muted-foreground">Inline Banners (Compact, Constrained)</h4>
+              <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mt-6">Small — Full Width</h5>
+              <Banner variant="info" size="compact-constrained" description="This field is optional." />
 
-              <Banner variant="information" size="compact-constrained" description="This field is optional." />
-              <Banner variant="success" size="compact-constrained" description="All answers saved." />
-              <Banner variant="warning" size="compact-constrained" description="Changes will take effect immediately." />
-              <Banner variant="error" size="compact-constrained" description="Please fix the errors above." />
+              <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mt-6">Small — Width Constrained</h5>
+              <Banner variant="info" size="compact-constrained" description="This field is optional." className="w-fit" />
+            </div>
+
+            <Separator />
+
+            {/* ── 4. Alert (floating) ── */}
+            <div className="space-y-4">
+              <h4 className="text-body-sm font-bold uppercase text-primary">Alert</h4>
+              <p className="text-sm text-muted-foreground">
+                High-priority floating alerts. Top-centered, persistent until dismissed. Solid background with white text. Close icon required. Supports optional link and action button. Use for critical system-level messages.
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => setAlertDemo("success")}>
+                  Success Alert
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setAlertDemo("info")}>
+                  Info Alert
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setAlertDemo("warning")}>
+                  Warning Alert
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setAlertDemo("error")}>
+                  Error Alert
+                </Button>
+              </div>
+
+              {alertDemo && (
+                <Alert
+                  variant={alertDemo}
+                  title={alertDemo === "success" ? "Changes Saved" : alertDemo === "info" ? "System Update" : alertDemo === "warning" ? "Session Expiring" : "Connection Lost"}
+                  description={alertDemo === "success" ? "Your changes have been saved successfully." : alertDemo === "info" ? "Scheduled maintenance tonight at 10 PM." : alertDemo === "warning" ? "Your session will expire in 5 minutes." : "Unable to reach the server. Please check your connection."}
+                  onDismiss={() => setAlertDemo(null)}
+                />
+              )}
+
+              <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mt-6">Static Preview (all variants)</h5>
+              <div className="space-y-3">
+                <div className="alert-info rounded-lg p-4">
+                  <div className="flex gap-2.5">
+                    <Info className="h-5 w-5 shrink-0 text-on-color" />
+                    <div className="flex-1">
+                      <h5 className="font-semibold leading-tight tracking-tight text-on-color mb-1.5">Info Alert</h5>
+                      <div className="text-on-color/90">Informational alert with solid background.</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="alert-success rounded-lg p-4">
+                  <div className="flex gap-2.5">
+                    <CheckCircle className="h-5 w-5 shrink-0 text-on-color" />
+                    <div className="flex-1">
+                      <h5 className="font-semibold leading-tight tracking-tight text-on-color mb-1.5">Success Alert</h5>
+                      <div className="text-on-color/90">Success alert with solid background.</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="alert-warning rounded-lg p-4">
+                  <div className="flex gap-2.5">
+                    <AlertTriangle className="h-5 w-5 shrink-0 text-on-color" />
+                    <div className="flex-1">
+                      <h5 className="font-semibold leading-tight tracking-tight text-on-color mb-1.5">Warning Alert</h5>
+                      <div className="text-on-color/90">Warning alert with solid background.</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="alert-error rounded-lg p-4">
+                  <div className="flex gap-2.5">
+                    <XCircle className="h-5 w-5 shrink-0 text-on-color" />
+                    <div className="flex-1">
+                      <h5 className="font-semibold leading-tight tracking-tight text-on-color mb-1.5">Error Alert</h5>
+                      <div className="text-on-color/90">Error alert with solid background.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-sm text-muted-foreground space-y-1 mt-4">
+                <p><strong>Usage:</strong> <code className="text-code bg-muted px-1 py-0.5 rounded">import {"{ Alert }"} from "@/components/ui/alert"</code></p>
+                <p><code className="text-code bg-muted px-1 py-0.5 rounded">{"<Alert variant=\"error\" title=\"...\" description=\"...\" onDismiss={...} />"}</code></p>
+              </div>
+            </div>
+
+
+          </CardContent>
+        </Card>
+
+        {/* Shadows */}
+        <Card id="shadows" className="shadow-card hover:shadow-md transition-shadow duration-300">
+          <CardHeader>
+            <CardTitle>Shadows</CardTitle>
+            <CardDescription>Elevation tokens for consistent depth across components</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Floating elements (Toast and Alert) share the <code className="text-code bg-muted px-1 py-0.5 rounded">shadow-float</code> elevation token for consistent depth above page content.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="rounded-lg border p-4 shadow-md text-center">
+                <p className="text-xs text-muted-foreground mb-1">shadow-md</p>
+                <p className="text-sm font-medium">Cards &amp; panels</p>
+              </div>
+              <div className="rounded-lg border p-4 shadow-lg text-center">
+                <p className="text-xs text-muted-foreground mb-1">shadow-lg</p>
+                <p className="text-sm font-medium">Dropdowns &amp; popovers</p>
+              </div>
+              <div className="rounded-lg border p-4 shadow-float text-center">
+                <p className="text-xs text-muted-foreground mb-1">shadow-float</p>
+                <p className="text-sm font-medium">Toast &amp; Alert</p>
+              </div>
+            </div>
+            <div className="text-sm text-muted-foreground space-y-1 mt-4">
+              <p><strong>CSS variable:</strong> <code className="text-code bg-muted px-1 py-0.5 rounded">--shadow-float</code></p>
+              <p><strong>Tailwind class:</strong> <code className="text-code bg-muted px-1 py-0.5 rounded">shadow-float</code></p>
             </div>
           </CardContent>
         </Card>
 
         {/* Badges */}
-        <Card id="badges" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+        <Card id="badges" className="shadow-card hover:shadow-md transition-shadow duration-300">
           <CardHeader>
             <CardTitle>Badges</CardTitle>
             <CardDescription>Status and labeling components in multiple variants</CardDescription>
@@ -1220,7 +1450,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
         </Card>
 
         {/* Progress */}
-        <Card id="progress" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+        <Card id="progress" className="shadow-card hover:shadow-md transition-shadow duration-300">
           <CardHeader>
             <CardTitle>Progress</CardTitle>
             <CardDescription>Progress indicators and loading states</CardDescription>
@@ -1241,56 +1471,38 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </CardContent>
         </Card>
 
-        {/* Toast */}
-        <Card id="toast" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+        {/* Avatars */}
+        <Card id="avatars">
           <CardHeader>
-            <CardTitle>Toast</CardTitle>
-            <CardDescription>Toast notifications and messages</CardDescription>
+            <CardTitle>Avatars</CardTitle>
+            <CardDescription>User avatar components with image and fallback support</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <Button size="sm" onClick={() => showToast("default")}>
-                  Info Toast
-                </Button>
-                <Button size="sm" onClick={() => showToast("success")}>
-                  Success Toast
-                </Button>
-                <Button size="sm" variant="destructive" onClick={() => showToast("destructive")}>
-                  Error Toast
-                </Button>
-              </div>
+          <CardContent>
+            <div className="flex gap-4">
+              <Avatar>
+                <AvatarImage src="https://github.com/shadcn.png" />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
+              <Avatar>
+                <AvatarFallback>JD</AvatarFallback>
+              </Avatar>
+              <Avatar>
+                <AvatarFallback>
+                  <User className="w-4 h-4" />
+                </AvatarFallback>
+              </Avatar>
             </div>
           </CardContent>
         </Card>
 
-        {/* Data Display */}
-        <Card id="data-display">
+        {/* Tables */}
+        <Card id="tables">
           <CardHeader>
-            <CardTitle>Data Display</CardTitle>
-            <CardDescription>Tables, avatars, and data presentation</CardDescription>
+            <CardTitle>Tables</CardTitle>
+            <CardDescription>Data tables with sorting, filtering, and expandable rows</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
-              <h3 className="font-medium">Avatars</h3>
-              <div className="flex gap-4">
-                <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <Avatar>
-                  <AvatarFallback>JD</AvatarFallback>
-                </Avatar>
-                <Avatar>
-                  <AvatarFallback>
-                    <User className="w-4 h-4" />
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="font-medium">Tables</h3>
 
               <Tabs defaultValue="basic">
                 <TabsList>
@@ -1652,7 +1864,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </TabsContent>
 
                 <TabsContent value="accordion" className="space-y-4">
-                  <div className="rounded-lg p-6 border border-border-primary/50 shadow-md">
+                  <div className="rounded-lg p-6 border border-border-primary/50 shadow-sm">
                     <h4 className="text-body-sm font-medium mb-4">Collapsible Table Rows (Admin Pattern)</h4>
                     <Table>
                       <TableCaption>Employee table with expandable rows matching admin area pattern</TableCaption>
@@ -1712,7 +1924,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                           return (
                             <React.Fragment key={employee.id}>
                               <TableRow
-                                className={`group transition-colors ${isExpanded ? "border-b-0 bg-muted/50" : "hover:bg-slate-100"}`}
+                                className={`group transition-colors ${isExpanded ? "border-b-0 bg-muted/50" : "hover:bg-muted"}`}
                               >
                                 <TableCell className="py-3">
                                   <Collapsible
@@ -1834,24 +2046,31 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
               </Tabs>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="font-medium">Loading States</h3>
-              <LoadingSkeleton />
-            </div>
           </CardContent>
         </Card>
 
-        {/* Interactive Components */}
-        <Card id="interactive">
+        {/* Loading States */}
+        <Card id="loading-states">
           <CardHeader>
-            <CardTitle>Interactive Components</CardTitle>
-            <CardDescription>Dialogs, dropdowns, and overlays</CardDescription>
+            <CardTitle>Loading States</CardTitle>
+            <CardDescription>Skeleton loaders and placeholder content</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <LoadingSkeleton />
+          </CardContent>
+        </Card>
+
+        {/* Dialogs */}
+        <Card id="dialogs">
+          <CardHeader>
+            <CardTitle>Dialogs</CardTitle>
+            <CardDescription>Modal dialogs, confirmation prompts, and fullscreen overlays</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex flex-wrap gap-4">
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="shadow-md hover:shadow-lg transition-shadow">Open Dialog</Button>
+                  <Button className="shadow-sm hover:shadow-md transition-shadow">Open Dialog</Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -1911,17 +2130,17 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                     </div>
                   </DialogScrollArea>
                   <DialogFooter>
-                    <Button variant="outline" className="shadow-md hover:shadow-lg transition-shadow">
+                    <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow">
                       Cancel
                     </Button>
-                    <Button className="shadow-md hover:shadow-lg transition-shadow">Confirm</Button>
+                    <Button className="shadow-sm hover:shadow-md transition-shadow">Confirm</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
 
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="secondary" className="shadow-md hover:shadow-lg transition-shadow">
+                  <Button variant="secondary" className="shadow-sm hover:shadow-md transition-shadow">
                     Open Fullscreen Dialog
                   </Button>
                 </DialogTrigger>
@@ -1947,18 +2166,18 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   </DialogScrollArea>
                   <DialogFooter>
                     <DialogClose asChild>
-                      <Button variant="outline" className="shadow-md hover:shadow-lg transition-shadow">
+                      <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow">
                         Cancel
                       </Button>
                     </DialogClose>
-                    <Button className="shadow-md hover:shadow-lg transition-shadow">Save Changes</Button>
+                    <Button className="shadow-sm hover:shadow-md transition-shadow">Save Changes</Button>
                   </DialogFooter>
                 </FullscreenDialogContent>
               </Dialog>
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="shadow-md hover:shadow-lg transition-shadow">
+                  <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow">
                     Show Alert
                   </Button>
                 </AlertDialogTrigger>
@@ -1980,7 +2199,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="shadow-md hover:shadow-lg transition-shadow">
+                  <Button variant="destructive" className="shadow-sm hover:shadow-md transition-shadow">
                     Delete Item
                   </Button>
                 </AlertDialogTrigger>
@@ -1998,91 +2217,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                 </AlertDialogContent>
               </AlertDialog>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">Dropdown Menu</Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="w-4 h-4 mr-2" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <Bell className="w-4 h-4 mr-2" />
-                    Notifications
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Ghost Dropdown Variant With Icons on Dark Background*/}
-              <div className="bg-background-header rounded-lg">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost">
-                      Menu With Icons <ChevronDown className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem>
-                      <User className="w-4 h-4 mr-2" />
-                      Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Settings className="w-4 h-4 mr-2" />
-                      Settings
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {/* Ghost Dropdown Variant on Dark Background */}
-              <div className="bg-background-header rounded-lg">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost">
-                      Menu Without Icons
-                      <ChevronDown className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem>Profile</DropdownMenuItem>
-                    <DropdownMenuItem>Settings</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline">Hover for Tooltip</Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>This is a helpful tooltip</p>
-                </TooltipContent>
-              </Tooltip>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Calendar Component */}
-        <Card id="calendar">
-          <CardHeader>
-            <CardTitle>Calendar</CardTitle>
-            <CardDescription>Date picker component</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              className="rounded-md border pointer-events-auto"
-            />
           </CardContent>
         </Card>
 
@@ -2127,11 +2262,11 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
           </CardContent>
         </Card>
 
-        {/* Layout Components */}
-        <Card id="layout">
+        {/* Cards */}
+        <Card id="cards">
           <CardHeader>
-            <CardTitle>Layout Components</CardTitle>
-            <CardDescription>Cards, separators, and tabs</CardDescription>
+            <CardTitle>Cards</CardTitle>
+            <CardDescription>Container components for grouping content</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -2162,8 +2297,36 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
               </Card>
             </div>
 
-            <Separator />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="bg-card-muted border-card-muted-border">
+                <CardHeader>
+                  <CardTitle>Muted Card</CardTitle>
+                  <CardDescription>Subtle gray surface for secondary content</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p>Use <code className="text-code">bg-card-muted</code> with <code className="text-code">border-card-muted-border</code> for low-emphasis containers.</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-card-info border-card-info-border">
+                <CardHeader>
+                  <CardTitle>Info Card</CardTitle>
+                  <CardDescription>Light blue surface for informational content</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p>Use <code className="text-code">bg-card-info</code> with <code className="text-code">border-card-info-border</code> for highlighted or informational containers.</p>
+                </CardContent>
+              </Card>
+            </div>
+          </CardContent>
+        </Card>
 
+        {/* Tabs */}
+        <Card id="tabs">
+          <CardHeader>
+            <CardTitle>Tabs</CardTitle>
+            <CardDescription>Tabbed navigation for switching between content views</CardDescription>
+          </CardHeader>
+          <CardContent>
             <Tabs defaultValue="tab1">
               <TabsList>
                 <TabsTrigger value="tab1">Tab 1</TabsTrigger>
@@ -2205,7 +2368,7 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   progress: 0,
                   dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
                 }}
-                onPlay={() => toast({ title: "Training Card", description: "Playing: Workplace Safety Basics" })}
+                onPlay={() => toast.info("Training Card", { description: "Playing: Workplace Safety Basics" })}
               />
               <TrainingCard
                 video={{
@@ -2218,16 +2381,20 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   completedAt: "2025-01-06T00:00:00Z",
                   quizSummary: { correct: 8, total: 10, percent: 80 },
                 }}
-                onPlay={() => toast({ title: "Training Card", description: "Playing: PPE Requirements" })}
+                onPlay={() => toast.info("Training Card", { description: "Playing: PPE Requirements" })}
               />
             </div>
 
-            <Separator />
+          </CardContent>
+        </Card>
 
-            {/* Badge Rules Reference */}
-            <div className="space-y-6">
-              <h3 className="font-semibold">Badge Rules Reference</h3>
-
+        {/* Badge Rules */}
+        <Card id="badge-rules">
+          <CardHeader>
+            <CardTitle>Badge Rules</CardTitle>
+            <CardDescription>Badge display logic for training cards — status, quiz scores, and other indicators</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
               {/* Status Badges */}
               <div className="space-y-3">
                 <h4 className="text-body-sm font-semibold text-muted-foreground uppercase tracking-wider">
@@ -2361,12 +2528,11 @@ export const ComponentsGallery = ({ userName, userEmail, onLogout }: ComponentsG
                   </TableBody>
                 </Table>
               </div>
-            </div>
           </CardContent>
         </Card>
 
         {/* Tooltips Section */}
-        <Card id="tooltips" className="shadow-card hover:shadow-lg transition-shadow duration-300">
+        <Card id="tooltips" className="shadow-card hover:shadow-md transition-shadow duration-300">
           <CardHeader>
             <CardTitle>Tooltips</CardTitle>
             <CardDescription>Arrow alignment variants — hover each button to see the arrow position</CardDescription>

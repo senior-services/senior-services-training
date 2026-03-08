@@ -370,13 +370,13 @@ export function QuizModal({
                                     if (isSubmitted) {
                                       if (isSelected && isSelectedCorrect) {
                                         optionClassName +=
-                                          " text-success bg-success/10 border-success/20 rounded-md p-3 border";
+                                          " text-success bg-[hsl(var(--success-bg))] border-success/20 rounded-md p-3 border";
                                       } else if (isSelected && !isSelectedCorrect) {
                                         optionClassName +=
-                                          " text-destructive bg-destructive/10 border-destructive/20 rounded-md p-3 border";
+                                          " text-destructive bg-[hsl(var(--destructive-bg))] border-[hsl(var(--destructive-border))] rounded-md p-3 border";
                                       } else if (!isSelected && isCorrect) {
                                         optionClassName +=
-                                          " text-success bg-success/10 border-success/20 rounded-md p-3 border";
+                                          " text-success bg-[hsl(var(--success-bg))] border-success/20 rounded-md p-3 border";
                                       }
                                     }
 
@@ -470,13 +470,13 @@ export function QuizModal({
                                 if (isSubmitted) {
                                   if (isSelected && isSelectedCorrect) {
                                     optionClassName +=
-                                      " text-success bg-success/10 border-success/20 rounded-md p-3 border";
+                                      " text-success bg-[hsl(var(--success-bg))] border-success/20 rounded-md p-3 border";
                                   } else if (isSelected && !isSelectedCorrect) {
                                     optionClassName +=
-                                      " text-destructive bg-destructive/10 border-destructive/20 rounded-md p-3 border";
+                                      " text-destructive bg-[hsl(var(--destructive-bg))] border-[hsl(var(--destructive-border))] rounded-md p-3 border";
                                   } else if (!isSelected && isCorrect) {
                                     optionClassName +=
-                                      " text-success bg-success/10 border-success/20 rounded-md p-3 border";
+                                      " text-success bg-[hsl(var(--success-bg))] border-success/20 rounded-md p-3 border";
                                   }
                                 }
 
@@ -553,13 +553,13 @@ export function QuizModal({
                                 if (isSubmitted) {
                                   if (isSelected && isSelectedCorrect) {
                                     optionClassName +=
-                                      " text-success bg-success/10 border-success/20 rounded-md p-3 border";
+                                      " text-success bg-[hsl(var(--success-bg))] border-success/20 rounded-md p-3 border";
                                   } else if (isSelected && !isSelectedCorrect) {
                                     optionClassName +=
-                                      " text-destructive bg-destructive/10 border-destructive/20 rounded-md p-3 border";
+                                      " text-destructive bg-[hsl(var(--destructive-bg))] border-[hsl(var(--destructive-border))] rounded-md p-3 border";
                                   } else if (!isSelected && isCorrect) {
                                     optionClassName +=
-                                      " text-success bg-success/10 border-success/20 rounded-md p-3 border";
+                                      " text-success bg-[hsl(var(--success-bg))] border-success/20 rounded-md p-3 border";
                                   }
                                 }
 

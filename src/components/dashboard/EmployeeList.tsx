@@ -173,7 +173,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
             <div className="text-body-sm text-muted-foreground">Total Employees</div>
           </div>
           
-          <div className="text-center p-4 bg-success/10 rounded-lg">
+          <div className="text-center p-4 bg-[hsl(var(--success-bg))] rounded-lg">
             <div className="text-h2 font-bold text-success">{stats.completed}</div>
             <div className="text-body-sm text-muted-foreground">Completed</div>
           </div>
@@ -183,7 +183,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
             <div className="text-body-sm text-muted-foreground">On Track</div>
           </div>
           
-          <div className="text-center p-4 bg-destructive/10 rounded-lg">
+          <div className="text-center p-4 bg-[hsl(var(--destructive-bg))] rounded-lg">
             <div className="text-h2 font-bold text-destructive">{stats.behind}</div>
             <div className="text-body-sm text-muted-foreground">Behind Schedule</div>
           </div>
@@ -267,7 +267,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
                          id={`employee-${employee.id}-name`}
                          className="flex items-center gap-3 font-medium text-foreground"
                        >
-                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                         <div className="w-8 h-8 rounded-full bg-[hsl(var(--primary-bg))] flex items-center justify-center">
                            <User className="w-4 h-4 text-primary" />
                          </div>
                          <span>{employee.name}</span>

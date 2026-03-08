@@ -13,7 +13,8 @@ import { IconButtonWithTooltip } from '@/components/ui/icon-button-with-tooltip'
 import { getTooltipText } from '@/utils/tooltipText';
 import { AdminService, AdminUser } from '@/services/adminService';
 import { LoadingSkeleton } from '@/components/ui/loading-spinner';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
+import { Banner } from "@/components/ui/banner";
 import { formatShort } from '@/utils/date-formatter';
 import { logger } from '@/utils/logger';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +26,9 @@ export const AdminManagement: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [sortColumn, setSortColumn] = useState<'name' | 'dateAdded' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -37,9 +41,6 @@ export const AdminManagement: React.FC = () => {
     email: '',
     employeeName: ''
   });
-  const {
-    toast
-  } = useToast();
   const handleSort = (column: 'name' | 'dateAdded') => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -71,15 +72,12 @@ export const AdminManagement: React.FC = () => {
   const loadAdmins = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const data = await AdminService.getAdmins();
       setAdmins(data);
     } catch (error) {
       logger.error('Error loading admins', error as Error);
-      toast({
-        title: "Error",
-        description: "Failed to load admins",
-        variant: "destructive"
-      });
+      setLoadError("Failed to load admins");
     } finally {
       setLoading(false);
     }
@@ -97,13 +95,10 @@ export const AdminManagement: React.FC = () => {
   };
   const handleAddAdmin = async () => {
     if (!newAdminEmail.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter an email address",
-        variant: "destructive"
-      });
+      setAddError("Please enter an email address");
       return;
     }
+    setAddError(null);
     setIsAdding(true);
     try {
       // Check if user is already an employee
@@ -123,11 +118,7 @@ export const AdminManagement: React.FC = () => {
       await proceedWithAdminAddition(newAdminEmail.trim());
     } catch (error: any) {
       logger.error('Error adding admin', error as Error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to add admin",
-        variant: "destructive"
-      });
+      setAddError(error.message || "Failed to add admin");
       setIsAdding(false);
     }
   };
@@ -138,17 +129,10 @@ export const AdminManagement: React.FC = () => {
       setHasChanges(false);
       setShowAddModal(false);
       await loadAdmins();
-      toast({
-        title: "Success",
-        description: "Admin invitation sent successfully. They will gain admin access when they sign up."
-      });
+      toast.success("Success", { description: "Admin invitation sent successfully. They will gain admin access when they sign up." });
     } catch (error: any) {
       logger.error('Error adding admin', error as Error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to add admin",
-        variant: "destructive"
-      });
+      setAddError(error.message || "Failed to add admin");
     } finally {
       setIsAdding(false);
     }
@@ -164,6 +148,7 @@ export const AdminManagement: React.FC = () => {
   };
   const handleDeleteAdmin = async () => {
     if (!deleteConfirmAdmin) return;
+    setDeleteError(null);
     setIsDeleting(true);
     try {
       await AdminService.removeAdminRole(deleteConfirmAdmin.id, deleteConfirmAdmin.isPending);
@@ -173,17 +158,10 @@ export const AdminManagement: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 200));
       await loadAdmins();
       
-      toast({
-        title: "Success",
-        description: deleteConfirmAdmin.isPending ? "Pending admin invitation removed" : "Admin removed successfully"
-      });
+      toast.success("Success", { description: deleteConfirmAdmin.isPending ? "Pending admin invitation removed" : "Admin removed successfully" });
     } catch (error: any) {
       logger.error('Error removing admin', error as Error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to remove admin",
-        variant: "destructive"
-      });
+      setDeleteError(error.message || "Failed to remove admin");
     } finally {
       setIsDeleting(false);
     }
@@ -204,6 +182,12 @@ export const AdminManagement: React.FC = () => {
       {/* Admins Table */}
       <Card className="shadow-md">
         <CardContent className="p-0">
+          {(loadError || deleteError) && (
+            <div className="p-4 pb-0 space-y-2">
+              {loadError && <Banner variant="error" size="compact" description={loadError} />}
+              {deleteError && <Banner variant="error" size="compact" description={deleteError} />}
+            </div>
+          )}
           {loading ? <div className="p-6 space-y-4">
               <LoadingSkeleton lines={1} className="h-12" />
               <LoadingSkeleton lines={1} className="h-12" />
@@ -296,12 +280,16 @@ export const AdminManagement: React.FC = () => {
                 <Input id="admin-email" type="email" placeholder="admin@example.com" value={newAdminEmail} onChange={e => {
                 setNewAdminEmail(e.target.value);
                 setHasChanges(true);
+                setAddError(null);
               }} onKeyDown={e => {
                 if (e.key === 'Enter') {
                   handleAddAdmin();
                 }
               }} />
               </div>
+              {addError && (
+                <Banner variant="error" size="compact" description={addError} />
+              )}
             </div>
           </DialogScrollArea>
 
@@ -332,7 +320,7 @@ export const AdminManagement: React.FC = () => {
     }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-orange-600">
+            <AlertDialogTitle className="text-warning">
               Promote Employee to Administrator
             </AlertDialogTitle>
             <AlertDialogDescription>

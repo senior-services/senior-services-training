@@ -43,6 +43,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
   const [url, setUrl] = useState("");
   const [contentType, setContentType] = useState<ContentType>("video");
   const [minViewingTime, setMinViewingTime] = useState<number>(60);
+  const [timerFocused, setTimerFocused] = useState(false);
 
   const [isValidatingUrl, setIsValidatingUrl] = useState(false);
   const [urlError, setUrlError] = useState<string>("");
@@ -196,7 +197,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
       // TODO: Re-enable when "Assign to All" feature is restored in the UI
       assignToAll: false,
       dueDate: undefined,
-      duration_seconds: contentType === "presentation" ? minViewingTime : undefined,
+      duration_seconds: contentType === "presentation" ? Math.max(minViewingTime, 30) : undefined,
     };
 
     onSave(formData);
@@ -228,7 +229,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
       return <AlertCircle className="h-4 w-4 text-destructive" />;
     }
     if (url && !urlError) {
-      return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+      return <CheckCircle2 className="h-4 w-4 text-success" />;
     }
     return null;
   };
@@ -268,9 +269,9 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
               onChange={handleDescriptionChange}
               placeholder="Enter content description (optional)"
               rows={3}
-              maxLength={1000}
+              maxLength={500}
             />
-            <p className="text-caption text-muted-foreground mt-1">{description.length}/1000 characters</p>
+            <p className={`text-caption mt-1 ${description.length >= 500 ? "text-destructive" : description.length >= 450 ? "text-warning" : "text-muted-foreground"}`}>{description.length} / 500 characters</p>
           </div>
 
           <div>
@@ -325,7 +326,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
 
           {url.trim() && !urlError && (
             <p className="flex items-center gap-1.5 text-sm text-foreground">
-              <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-600" />
+              <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-success" />
               <span>Detected as: <span className="font-medium">{contentType === "presentation" ? "Presentation" : "Video"}</span></span>
               <span className="text-muted-foreground">·</span>
               <button
@@ -357,16 +358,25 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ open, onOpenCh
               suffix="seconds"
               className="max-w-[140px]"
               value={minViewingTime}
-              onChange={(e) => setMinViewingTime(parseInt(e.target.value) || 0)}
+              onChange={(e) => setMinViewingTime(Math.floor(parseInt(e.target.value) || 0))}
+              onFocus={() => setTimerFocused(true)}
               onBlur={() => {
-                if (minViewingTime < 1) setMinViewingTime(1);
+                setTimerFocused(false);
+                if (minViewingTime < 30) setMinViewingTime(30);
               }}
-              min={1}
+              min={30}
+              step={1}
               aria-describedby="min-viewing-time-additional"
               tabIndex={showViewingTime ? 0 : -1}
             />
-            <p id="min-viewing-time-additional" className="form-additional-text">
-              60 seconds is recommended to ensure users have sufficient time to process key information.
+            <p id="min-viewing-time-additional" className={`form-additional-text ${!timerFocused && minViewingTime < 30 ? "text-destructive" : !timerFocused && minViewingTime < 60 ? "text-warning" : ""}`}>
+              {timerFocused
+                ? "60s minimum recommended for effective learning."
+                : minViewingTime < 30
+                  ? "30 seconds is the minimum allowed timer."
+                  : minViewingTime < 60
+                    ? "Below the 60s recommendation."
+                    : "60s minimum recommended for effective learning."}
             </p>
           </div>
 

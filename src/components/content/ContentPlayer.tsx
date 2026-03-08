@@ -13,6 +13,7 @@ interface ContentPlayerProps {
   onFurthestUpdate?: (seconds: number) => void;
   initialSeekSeconds?: number;
   onLastPositionUpdate?: (seconds: number) => void;
+  presentationClassName?: string;
 }
 
 export const ContentPlayer: React.FC<ContentPlayerProps> = ({
@@ -25,6 +26,7 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   onFurthestUpdate,
   initialSeekSeconds = 0,
   onLastPositionUpdate,
+  presentationClassName,
 }) => {
   // Default to video if content_type is not specified (backward compatibility)
   const contentType = content.content_type || 'video';
@@ -35,6 +37,7 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
         content={content}
         onProgressUpdate={onProgressUpdate}
         onComplete={onComplete}
+        className={presentationClassName}
       />
     );
   }

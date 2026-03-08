@@ -13,7 +13,6 @@ import { assignmentOperations, progressOperations } from "@/services/api";
 import { quizOperations } from "@/services/quizService";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
-import { useToast } from "@/hooks/use-toast";
 import type { Video } from "@/types";
 import type { QuizAttemptWithDetails } from "@/types/quiz";
 import { logger, performanceTracker } from "@/utils/logger";
@@ -41,6 +40,7 @@ interface EmployeeDashboardProps {
   onLogout: () => void;
   onPlayVideo: (videoId: string, initialVideo?: Video) => void;
   refreshTrigger?: number;
+  avatarUrl?: string | null;
 }
 
 /**
@@ -64,7 +64,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
   userRole = "employee",
   onLogout,
   onPlayVideo,
-  refreshTrigger = 0
+  refreshTrigger = 0,
+  avatarUrl
 }) => {
   // Performance monitoring
   usePerformanceMonitor("EmployeeDashboard");
@@ -82,7 +83,6 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
   const [videoIdsWithQuizzes, setVideoIdsWithQuizzes] = useState<Map<string, {createdAt: string;questionCount: number;}>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
   const reloadTimer = React.useRef<number | null>(null);
 
   // Sanitize and validate user data for security
@@ -199,11 +199,6 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       if (!loadResult.success) {
         const errorMessage = "Failed to load your assigned videos. Please try refreshing the page.";
         setError(errorMessage);
-        toast({
-          title: "Error",
-          description: errorMessage,
-          variant: "destructive"
-        });
 
         // Announce error to screen readers
         if (!opts?.silent) announceToScreenReader(errorMessage, "assertive");
@@ -211,7 +206,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
       performanceTracker.end("loadAssignedVideos");
       if (!opts?.silent) setLoading(false);
     },
-    [userEmail, toast]
+    [userEmail]
   );
 
   // Enhanced video data transformation with security and accessibility
@@ -497,7 +492,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           userName={sanitizedUserData.displayName}
           userEmail={userEmail}
           onLogout={onLogout}
-          currentView="dashboard" />
+          currentView="dashboard"
+          avatarUrl={avatarUrl} />
 
 
         <main className="container mx-auto px-4 py-8" role="main" aria-labelledby="error-heading">
@@ -530,7 +526,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           userName={sanitizedUserData.displayName}
           userEmail={userEmail}
           onLogout={onLogout}
-          currentView="dashboard" />
+          currentView="dashboard"
+          avatarUrl={avatarUrl} />
 
 
         <main className="container mx-auto px-4 py-8" role="main" aria-labelledby="dashboard-heading">

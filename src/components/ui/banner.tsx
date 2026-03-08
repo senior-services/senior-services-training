@@ -3,7 +3,6 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { X, Info, AlertTriangle, CheckCircle, XCircle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { Button } from "./button"
 
 const bannerVariants = cva(
   "banner-base",
@@ -54,24 +53,30 @@ export interface BannerProps
 }
 
 const Banner = React.forwardRef<HTMLDivElement, BannerProps>(
-  ({ 
-    className, 
-    variant = "default", 
+  ({
+    className,
+    variant = "default",
     size = "default",
-    title, 
-    description, 
-    icon: CustomIcon, 
-    showIcon = true, 
-    dismissible = false, 
-    onDismiss, 
-    actions, 
-    children, 
-    ...props 
+    title,
+    description,
+    icon: CustomIcon,
+    showIcon = true,
+    dismissible = false,
+    onDismiss,
+    actions,
+    children,
+    ...props
   }, ref) => {
     const IconComp = (CustomIcon || iconMap[variant as keyof typeof iconMap] || iconMap.default) as React.ElementType<{ className?: string }>
-    const isSimple = !title && !actions
-    const iconClass = size === "compact-constrained" ? "h-3.5 w-3.5 shrink-0" : size === "compact" ? "h-4 w-4 shrink-0" : "h-5 w-5 shrink-0"
-    const alignClass = isSimple ? "items-center" : "items-start"
+    const iconSize = size === "compact-constrained" ? "h-3.5 w-3.5 shrink-0" : size === "compact" ? "h-4 w-4 shrink-0" : "h-5 w-5 shrink-0"
+
+    const renderBody = () => (
+      <>
+        {description && <div className="font-normal [&_p]:leading-relaxed opacity-90">{description}</div>}
+        {children && <div className="font-medium [&_p]:leading-relaxed">{children}</div>}
+        {actions && <div className="mt-3 flex items-center space-x-2">{actions}</div>}
+      </>
+    )
 
     return (
       <div
@@ -80,38 +85,27 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>(
         className={cn(bannerVariants({ variant, size }), className)}
         {...props}
       >
-        <div className={cn("flex justify-between", alignClass)}>
-          <div className={cn("flex space-x-3 flex-1", alignClass)}>
+        <div className={cn("flex justify-between", title ? "items-start" : "items-center")}>
+          <div className={cn("flex gap-2.5 flex-1", title ? "items-start" : "items-center")}>
             {showIcon && IconComp ? (
-              <IconComp className={iconClass} />
+              <IconComp className={iconSize} />
             ) : null}
             <div className="flex-1 min-w-0">
               {title && (
-                <h5 className="mb-1 font-medium leading-none tracking-tight">{title}</h5>
+                <h5 className={cn("font-semibold leading-tight tracking-tight", (description || children || actions) && "mb-1.5")}>{title}</h5>
               )}
-              {description && (
-                <div className="[&_p]:leading-relaxed opacity-90">{description}</div>
-              )}
-              {children && (
-                <div className="[&_p]:leading-relaxed">{children}</div>
-              )}
-              {actions && (
-                <div className="mt-3 flex items-center space-x-2">
-                  {actions}
-                </div>
-              )}
+              {renderBody()}
             </div>
           </div>
           {dismissible && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 hover:bg-black/10 dark:hover:bg-white/10"
+            <button
+              type="button"
+              className="h-6 w-6 p-0 inline-flex items-center justify-center rounded-sm opacity-70 hover:opacity-100 transition-opacity ml-2"
               onClick={onDismiss}
               aria-label="Dismiss banner"
             >
               <X className="h-4 w-4" />
-            </Button>
+            </button>
           )}
         </div>
       </div>

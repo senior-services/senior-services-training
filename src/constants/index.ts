@@ -50,14 +50,14 @@ export const CONTENT_CONFIG = {
   },
   MAX_FILE_SIZE: 100 * 1024 * 1024, // 100MB
   THUMBNAIL_COLORS: [
-    'bg-blue-500',
-    'bg-green-500',
-    'bg-purple-500',
-    'bg-indigo-500',
-    'bg-pink-500',
-    'bg-red-500',
-    'bg-yellow-500',
-    'bg-teal-500',
+    'bg-primary',
+    'bg-success',
+    'bg-background-header-admin',
+    'bg-background-primary',
+    'bg-destructive',
+    'bg-warning',
+    'bg-muted-foreground',
+    'bg-background-header',
   ] as const,
   SUPPORTED_URLS: {
     YOUTUBE: /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/,

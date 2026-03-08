@@ -87,6 +87,7 @@ export interface DashboardProps {
   userName: string;
   userEmail: string;
   onLogout: () => void;
+  avatarUrl?: string | null;
 }
 
 export interface ModalProps {
@@ -111,6 +112,7 @@ export interface VideoUpdateData {
   description: string;
   type?: VideoType;
   content_type?: ContentType;
+  duration_seconds?: number;
 }
 
 export interface VideoCreateData extends VideoUpdateData {

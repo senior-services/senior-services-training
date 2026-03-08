@@ -11,7 +11,7 @@ import {
   getComponentHealth,
   validateAllComponents 
 } from '@/utils/componentUpdates';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface ComponentUpdateHook {
   trackUpdate: (component: ComponentName, changes: string[]) => Promise<void>;
@@ -19,15 +19,17 @@ interface ComponentUpdateHook {
   validateAllComponents: () => Promise<void>;
   getRecentUpdates: () => ReturnType<typeof componentTracker.getRecentUpdates>;
   isValidating: boolean;
+  error: string | null;
 }
 
 export const useComponentUpdates = (): ComponentUpdateHook => {
   const [isValidating, setIsValidating] = useState(false);
-  const { toast } = useToast();
+  const [error, setError] = useState<string | null>(null);
 
   const trackUpdate = async (component: ComponentName, changes: string[]) => {
     setIsValidating(true);
-    
+    setError(null);
+
     try {
       // Track the update
       const update = trackComponentUpdate(component, changes);
@@ -36,36 +38,27 @@ export const useComponentUpdates = (): ComponentUpdateHook => {
       const health = await getComponentHealth(component);
       
       // Show success toast with summary
-      toast({
-        title: `✅ ${component} component updated`,
+      toast.success(`${component} component updated`, {
         description: `Updated in ${update.affectedAreas.length} areas: ${update.affectedAreas.slice(0, 3).join(', ')}${update.affectedAreas.length > 3 ? '...' : ''}`,
-        variant: "success",
       });
 
       // Show warnings if any
       if (health.issues.length > 0) {
-        toast({
-          title: `⚠️ Issues detected in ${component}`,
+        toast.warning(`Issues detected in ${component}`, {
           description: health.issues.join(', '),
-          variant: "destructive",
         });
       }
 
       // Show recommendations if any
       if (health.recommendations.length > 0) {
-        toast({
-          title: `💡 Recommendations for ${component}`,
-          description: health.recommendations[0], // Show first recommendation
+        toast.info(`Recommendations for ${component}`, {
+          description: health.recommendations[0],
         });
       }
 
     } catch (error) {
       console.error('Error tracking component update:', error);
-      toast({
-        title: `❌ Error updating ${component}`,
-        description: 'Failed to track component update',
-        variant: "destructive",
-      });
+      setError(`Failed to track component update for ${component}`);
     } finally {
       setIsValidating(false);
     }
@@ -73,30 +66,23 @@ export const useComponentUpdates = (): ComponentUpdateHook => {
 
   const validateComponent = async (component: ComponentName) => {
     setIsValidating(true);
-    
+    setError(null);
+
     try {
       const health = await getComponentHealth(component);
-      
+
       if (health.isHealthy) {
-        toast({
-          title: `✅ ${component} is healthy`,
+        toast.success(`${component} is healthy`, {
           description: `No issues found in component structure`,
-          variant: "success",
         });
       } else {
-        toast({
-          title: `⚠️ Issues found in ${component}`,
+        toast.warning(`Issues found in ${component}`, {
           description: `${health.issues.length} issues detected`,
-          variant: "destructive",
         });
       }
     } catch (error) {
       console.error('Error validating component:', error);
-      toast({
-        title: `❌ Validation failed`,
-        description: `Could not validate ${component}`,
-        variant: "destructive",
-      });
+      setError(`Could not validate ${component}`);
     } finally {
       setIsValidating(false);
     }
@@ -104,24 +90,25 @@ export const useComponentUpdates = (): ComponentUpdateHook => {
 
   const validateAll = async () => {
     setIsValidating(true);
-    
+    setError(null);
+
     try {
       const results = await validateAllComponents();
       
-      toast({
-        title: `📊 Component Health Report`,
-        description: `${results.healthyComponents}/${results.totalComponents} components healthy`,
-        variant: results.healthyComponents === results.totalComponents ? "success" : "default",
-      });
+      if (results.healthyComponents === results.totalComponents) {
+        toast.success('Component Health Report', {
+          description: `${results.healthyComponents}/${results.totalComponents} components healthy`,
+        });
+      } else {
+        toast.info('Component Health Report', {
+          description: `${results.healthyComponents}/${results.totalComponents} components healthy`,
+        });
+      }
 
       
     } catch (error) {
       console.error('Error validating all components:', error);
-      toast({
-        title: `❌ Validation failed`,
-        description: 'Could not validate components',
-        variant: "destructive",
-      });
+      setError('Could not validate components');
     } finally {
       setIsValidating(false);
     }
@@ -137,5 +124,6 @@ export const useComponentUpdates = (): ComponentUpdateHook => {
     validateAllComponents: validateAll,
     getRecentUpdates,
     isValidating,
+    error,
   };
 };

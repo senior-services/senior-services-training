@@ -20,7 +20,7 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminService } from '@/services/adminService';
 import { assignmentOperations } from '@/services/api';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import { logger } from '@/utils/logger';
 import type { EmployeeWithAssignments } from '@/types/employee';
 
@@ -44,13 +44,14 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
   const [stagedAdmin, setStagedAdmin] = useState(false);
   const [stagedHidden, setStagedHidden] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Reset staged state when person changes or modal opens
   useEffect(() => {
     if (open && person) {
       setStagedAdmin(person.is_admin || false);
       setStagedHidden(false);
+      setSaveError(null);
     }
   }, [open, person]);
 
@@ -72,10 +73,10 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
 
         if (!profile) {
           await AdminService.addPendingAdminByEmail(person.email || '');
-          toast({ title: "Success", description: "Admin invitation created. They'll get admin access when they sign in." });
+          toast.success("Success", { description: "Admin invitation created. They'll get admin access when they sign in." });
         } else {
           await AdminService.addAdminByEmail(person.email || '');
-          toast({ title: "Success", description: `${person.full_name || person.email} is now an administrator` });
+          toast.success("Success", { description: `${person.full_name || person.email} is now an administrator` });
         }
       } else {
         const { data: profile } = await supabase
@@ -87,7 +88,7 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
         if (profile) {
           // AdminService.removeAdminRole already updates employees.is_admin = false
           await AdminService.removeAdminRole(profile.user_id, false, person.email);
-          toast({ title: "Success", description: `${person.full_name || person.email} is no longer an administrator` });
+          toast.success("Success", { description: `${person.full_name || person.email} is no longer an administrator` });
         }
         // No manual employees update needed — removeAdminRole handles it
         return;
@@ -96,11 +97,7 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
       // AdminService.addAdminByEmail already updates employees.is_admin — no manual write needed
     } catch (error: any) {
       logger.error('Error toggling admin status', error as Error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update admin status",
-        variant: "destructive",
-      });
+      setSaveError(error.message || "Failed to update admin status");
       throw error;
     }
   };
@@ -141,6 +138,9 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
 
         <DialogScrollArea>
           <div className="space-y-6">
+            {saveError && (
+              <Banner variant="error" size="compact" description={saveError} />
+            )}
             {/* Person info */}
             <div>
               <div className="flex items-center gap-2 mb-1">

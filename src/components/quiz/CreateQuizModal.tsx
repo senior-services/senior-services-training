@@ -12,7 +12,6 @@ import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { QuizQuestion, QuizQuestionOption } from "@/types/quiz";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
 import { OptionList, OptionRow } from "@/components/ui/option-list";
 
 interface CreateQuizModalProps {
@@ -44,13 +43,13 @@ export interface OptionFormData {
 }
 
 export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmitting }: CreateQuizModalProps) {
-  const { toast } = useToast();
   const [formData, setFormData] = useState<QuizFormData>({
     title: "",  // Will be auto-populated from video title on submit
     description: "",
     video_id: videoId,
     questions: []
   });
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const addQuestion = () => {
     const newQuestion: QuestionFormData = {
@@ -59,6 +58,7 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
       order_index: formData.questions.length,
       options: []
     };
+    setSubmitError(null);
     setFormData(prev => ({
       ...prev,
       questions: [...prev.questions, newQuestion]
@@ -181,14 +181,11 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
   const handleSubmit = () => {
     // Check if there are no questions
     if (formData.questions.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "No Questions Added",
-        description: "Please add at least one question to create the quiz.",
-      });
+      setSubmitError("Please add at least one question to create the quiz.");
       return;
     }
-    
+    setSubmitError(null);
+
     const { cleanedQuestions, errors } = cleanupAndValidateQuestions(formData.questions);
     
     if (Object.keys(errors).length > 0) {
@@ -222,6 +219,10 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                 Add Question
               </Button>
             </div>
+
+            {submitError && (
+              <Banner variant="error" size="compact" description={submitError} />
+            )}
 
             {formData.questions.length === 0 && (
               <Banner 
@@ -368,9 +369,7 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                           </RadioGroup>
                           
                           {validationErrors[questionIndex] && (
-                            <div className="text-body-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
-                              {validationErrors[questionIndex]}
-                            </div>
+                            <Banner variant="error" size="compact" description={validationErrors[questionIndex]} />
                           )}
                         </div>
                       ) : (
@@ -416,9 +415,7 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                           </OptionList>
                           
                           {validationErrors[questionIndex] && (
-                            <div className="text-body-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
-                              {validationErrors[questionIndex]}
-                            </div>
+                            <Banner variant="error" size="compact" description={validationErrors[questionIndex]} />
                           )}
                         </div>
                       )}
@@ -457,9 +454,7 @@ export function CreateQuizModal({ open, onOpenChange, onSubmit, videoId, isSubmi
                         </RadioGroup>
                         
                         {validationErrors[questionIndex] && (
-                          <div className="text-body-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
-                            {validationErrors[questionIndex]}
-                          </div>
+                          <Banner variant="error" size="compact" description={validationErrors[questionIndex]} />
                         )}
                       </div>
                     </div>

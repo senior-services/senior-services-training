@@ -227,20 +227,13 @@ export const TrainingCard = memo<TrainingCardProps>(({
         <header className="relative border-b border-border-primary">
           <button type="button" onClick={handlePlay} aria-label={ariaLabels.playButton} className="block focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-t-lg w-full text-left overflow-hidden">
             {video.content_type === 'presentation' ? (
-              <div className="w-full aspect-video bg-gradient-to-br from-slate-300 via-slate-250 to-slate-200 dark:from-slate-700 dark:via-slate-650 dark:to-slate-600 flex items-center justify-center rounded-t-lg transition-transform duration-300 group-hover:scale-105">
-                <svg width="96" height="72" viewBox="0 0 96 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="drop-shadow-sm">
-                  {/* Back slide - rotated left */}
-                  <rect x="14" y="8" width="56" height="42" rx="3" transform="rotate(-6 14 8)" fill="white" fillOpacity="0.6" stroke="currentColor" strokeOpacity="0.1" strokeWidth="1" className="text-slate-400" />
-                  {/* Middle slide - rotated right */}
-                  <rect x="24" y="6" width="56" height="42" rx="3" transform="rotate(3 52 27)" fill="white" fillOpacity="0.75" stroke="currentColor" strokeOpacity="0.12" strokeWidth="1" className="text-slate-400" />
-                  {/* Front slide - centered, no rotation */}
-                  <rect x="20" y="12" width="56" height="42" rx="3" fill="white" fillOpacity="0.95" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" className="text-slate-400" />
-                  {/* Content lines on front slide */}
-                  <rect x="28" y="22" width="24" height="3" rx="1.5" fill="currentColor" fillOpacity="0.18" className="text-slate-500" />
-                  <rect x="28" y="29" width="40" height="2" rx="1" fill="currentColor" fillOpacity="0.1" className="text-slate-400" />
-                  <rect x="28" y="34" width="36" height="2" rx="1" fill="currentColor" fillOpacity="0.1" className="text-slate-400" />
-                  <rect x="28" y="39" width="28" height="2" rx="1" fill="currentColor" fillOpacity="0.1" className="text-slate-400" />
-                </svg>
+              <div className="w-full aspect-video bg-gradient-to-br from-muted to-background-muted flex items-center justify-center rounded-t-lg overflow-hidden transition-transform duration-300 group-hover:scale-105">
+                <img
+                  src="/lovable-uploads/undraw_key-points_iiic.svg"
+                  alt={`${sanitizedVideo.title} - Presentation thumbnail`}
+                  className="w-full h-full object-contain p-4"
+                  loading={priority ? "eager" : "lazy"}
+                />
               </div>
             ) : (
               <img
@@ -263,7 +256,7 @@ export const TrainingCard = memo<TrainingCardProps>(({
           </button>
 
           {/* Overlay with Enhanced Accessibility */}
-          <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute inset-0 bg-overlay/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <Button size="icon" className="button-play-overlay button-size-play" onClick={handlePlay} onKeyDown={handleCardKeyPress} aria-label={ariaLabels.playButton}>
               <Play className="w-6 h-6 ml-1" aria-hidden="true" />
               <span className="sr-only">{ariaLabels.playButton}</span>
