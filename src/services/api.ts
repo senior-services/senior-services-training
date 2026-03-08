@@ -349,6 +349,9 @@ export const videoOperations = {
 
       if (error) {
         logger.error('Failed to delete video', undefined, { videoId: id, supabaseError: error.message });
+        if (error.code === '23503') {
+          return { data: null, error: 'Cannot delete: training records exist for this video. Use archive instead.', success: false };
+        }
         return { data: null, error: error.message, success: false };
       }
 
@@ -567,6 +570,9 @@ export const employeeOperations = {
 
       if (error) {
         logger.error('Failed to delete employee', undefined, { employeeId, supabaseError: error.message });
+        if (error.code === '23503') {
+          return { data: null, error: 'Cannot delete: training records exist for this person. Use archive instead.', success: false };
+        }
         return { data: null, error: error.message, success: false };
       }
 
@@ -864,6 +870,10 @@ export const assignmentOperations = {
       }
 
       logger.info('Assignment deleted successfully', { assignmentId });
+      auditLogOperations.log('deleted', 'assignment', {
+        resourceId: assignmentId,
+        oldValues: { assignment_id: assignmentId },
+      });
       return { data: true, error: null, success: true };
     } catch (error) {
       logger.error('Unexpected error deleting assignment', error as Error, { assignmentId });
@@ -1069,6 +1079,12 @@ export const progressOperations = {
         logger.error('Failed to delete progress', undefined, { employeeId, videoId, supabaseError: error.message });
         return { data: null, error: error.message, success: false };
       }
+
+      auditLogOperations.log('deleted', 'training', {
+        resourceId: videoId,
+        oldValues: { employee_id: employeeId, video_id: videoId },
+      });
+
       return { data: true, error: null, success: true };
     } catch (err) {
       return { data: null, error: String(err), success: false };

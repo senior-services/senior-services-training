@@ -162,9 +162,9 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
 
             {/* Hide person */}
             <div>
-              <h3 className="form-section-header !mt-0">Hide Person From Active List</h3>
+              <h3 className="form-section-header !mt-0">Archive Person</h3>
               <p className="form-helper-text">
-                Moves to the Hidden section without affecting assignments or progress.
+                Archiving this person removes their login access while retaining all training records and assignment history.
               </p>
               <div className="flex items-center gap-2 mt-3">
                 <Checkbox
@@ -175,7 +175,7 @@ export const PersonSettingsModal: React.FC<PersonSettingsModalProps> = ({
                   aria-label="Hide person from active list"
                 />
                 <Label htmlFor="hide-person" className="cursor-pointer font-normal">
-                  Hide this person
+                  Archive this person
                 </Label>
               </div>
             </div>

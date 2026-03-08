@@ -32,10 +32,10 @@ export const getTooltipText = (action: string, context?: TooltipContext): string
       return 'Unarchive Employee';
     
     case 'hide-employee':
-      return 'Hide employee from list';
-    
+      return 'Archive employee';
+
     case 'show-employee':
-      return 'Show employee in main list';
+      return 'Unarchive employee';
     
     case 'hide-video':
       return 'Hide Video from List';

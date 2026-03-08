@@ -239,6 +239,44 @@ export const authActivityOperations = {
   /**
    * Log a logout event
    */
+  /**
+   * Log a failed login attempt
+   * Note: Only works if the user has an active session (e.g., archived block).
+   * For unauthenticated failures, the DB function silently skips.
+   */
+  async logLoginFailed(provider?: string, reason?: string): Promise<void> {
+    try {
+      const meta = getClientMetadata();
+
+      await supabase.rpc('log_auth_activity', {
+        p_event_type: `login_failed${reason ? `:${reason}` : ''}`,
+        p_provider: provider || null,
+        p_ip_address: meta.ip_address,
+        p_user_agent: meta.user_agent,
+      });
+    } catch (error) {
+      logger.error('Failed to log failed login activity', error as Error);
+    }
+  },
+
+  /**
+   * Log a blocked login (archived employee) — must be called while user is still authenticated
+   */
+  async logLoginBlocked(reason: string): Promise<void> {
+    try {
+      const meta = getClientMetadata();
+
+      await supabase.rpc('log_auth_activity', {
+        p_event_type: `login_blocked:${reason}`,
+        p_provider: null,
+        p_ip_address: meta.ip_address,
+        p_user_agent: meta.user_agent,
+      });
+    } catch (error) {
+      logger.error('Failed to log blocked login activity', error as Error);
+    }
+  },
+
   async logLogout(): Promise<void> {
     try {
       const meta = getClientMetadata();

@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
+import { auditLogOperations } from '@/services/auditService';
 
 export interface AdminUser {
   id: string;
@@ -114,6 +115,11 @@ export class AdminService {
       logger.error('Error adding pending admin', upsertError as Error);
       throw upsertError;
     }
+
+    auditLogOperations.log('created', 'pending_admin', {
+      resourceTitle: email,
+      newValues: { email },
+    });
   }
 
   /**
@@ -145,6 +151,11 @@ export class AdminService {
 
     if (error) {
       logger.error('Error removing pending admin', error as Error);
+    } else {
+      auditLogOperations.log('deleted', 'pending_admin', {
+        resourceTitle: email,
+        oldValues: { email },
+      });
     }
   }
 
@@ -211,6 +222,12 @@ export class AdminService {
       logger.error('Error adding admin role', insertError as Error);
       throw insertError;
     }
+
+    auditLogOperations.log('created', 'admin_role', {
+      resourceId: profile.user_id,
+      resourceTitle: email,
+      newValues: { user_id: profile.user_id, role: 'admin', email },
+    });
   }
 
   /**
@@ -256,6 +273,12 @@ export class AdminService {
       logger.error('Error granting admin role', error as Error);
       throw error;
     }
+
+    auditLogOperations.log('created', 'admin_role', {
+      resourceId: userId,
+      resourceTitle: userProfile?.email,
+      newValues: { user_id: userId, role: 'admin', email: userProfile?.email },
+    });
   }
 
   /**
@@ -273,6 +296,10 @@ export class AdminService {
         logger.error('Error removing pending admin', error as Error);
         throw error;
       }
+      auditLogOperations.log('deleted', 'pending_admin', {
+        resourceId: userId,
+        oldValues: { id: userId },
+      });
       return;
     }
 
@@ -302,6 +329,11 @@ export class AdminService {
       logger.error('Error removing admin role', error as Error);
       throw error;
     }
+
+    auditLogOperations.log('deleted', 'admin_role', {
+      resourceId: userId,
+      oldValues: { user_id: userId, role: 'admin' },
+    });
 
     // Add employee role back to ensure user has a role
     await supabase

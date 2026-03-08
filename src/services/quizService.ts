@@ -484,7 +484,12 @@ export const quizOperations = {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        if ((error as any).code === '23503') {
+          throw new Error('Cannot delete quiz: completion records exist. Use versioning instead.');
+        }
+        throw error;
+      }
     } catch (error) {
       logger.error('Error deleting quiz:', error);
       throw error;
@@ -664,7 +669,12 @@ export const questionOperations = {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        if ((error as any).code === '23503') {
+          throw new Error('Cannot delete question: completion records reference it.');
+        }
+        throw error;
+      }
     } catch (error) {
       logger.error('Error deleting question:', error);
       throw error;
@@ -716,7 +726,12 @@ export const optionOperations = {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        if ((error as any).code === '23503') {
+          throw new Error('Cannot delete option: completion records reference it.');
+        }
+        throw error;
+      }
     } catch (error) {
       logger.error('Error deleting option:', error);
       throw error;

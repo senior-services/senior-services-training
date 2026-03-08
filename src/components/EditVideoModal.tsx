@@ -959,7 +959,10 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
       if (video) onQuizSaved?.(video.id);
     } catch (error) {
       logger.error("Error updating quiz:", error);
-      setQuizError("Failed to update quiz.");
+      const message = error instanceof Error && error.message.startsWith('Cannot delete')
+        ? error.message
+        : "Failed to update quiz.";
+      setQuizError(message);
     } finally {
       setIsCreatingQuiz(false);
     }

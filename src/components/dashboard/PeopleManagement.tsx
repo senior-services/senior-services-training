@@ -20,7 +20,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { UserPlus, Download, EyeOff, Eye, ChevronDown, MoreVertical, Edit } from "lucide-react";
+import { UserPlus, Download, Archive, ChevronDown, MoreVertical, Edit, RotateCcw } from "lucide-react";
 import { SortableTableHead } from "@/components/ui/sortable-table-head";
 import { employeeOperations, assignmentOperations } from "@/services/api";
 import {
@@ -586,7 +586,7 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
             "Completion Date": "--",
             "Quiz Results": "--",
             "Quiz Version": "--",
-            ...(includeVisibility && { Visibility: hiddenEmployeeIds.has(person.id) ? "Hidden" : "Active" }),
+            ...(includeVisibility && { Visibility: hiddenEmployeeIds.has(person.id) ? "Archived" : "Active" }),
           });
         } else {
           videos.forEach((assignment) => {
@@ -636,7 +636,7 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
               "Completion Date": completionDate,
               "Quiz Results": quizResults,
               "Quiz Version": quizVersion,
-              ...(includeVisibility && { Visibility: hiddenEmployeeIds.has(person.id) ? "Hidden" : "Active" }),
+              ...(includeVisibility && { Visibility: hiddenEmployeeIds.has(person.id) ? "Archived" : "Active" }),
             });
           });
         }
@@ -828,7 +828,7 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => setPendingHidePerson(person)}>
-                              Manage Visibility Setting
+                              Archive Settings
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleOpenAdminDialog(person)}>
                               Manage Admin Access
@@ -855,14 +855,14 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
                   className="w-4 h-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180"
                   aria-hidden="true"
                 />
-                <EyeOff className="w-5 h-5 text-muted-foreground" />
-                <span className="text-h4 font-semibold">Hidden People</span>
+                <Archive className="w-5 h-5 text-muted-foreground" />
+                <span className="text-h4 font-semibold">Archived People</span>
                 <Badge variant="soft-destructive" className="ml-2">
                   {hiddenPeople.length}
                 </Badge>
                 <div className="ml-auto">
                   <span className="text-body-sm text-muted-foreground bg-muted px-2 py-1 rounded">
-                    Hidden people retain all assignments and progress
+                    Archived people retain all assignments and progress and cannot log in
                   </span>
                 </div>
               </div>
@@ -895,15 +895,15 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
                           </TableCell>
                           <TableCell>
                             <div className="flex justify-center">
-                              <IconButtonWithTooltip
-                                icon={Eye}
-                                tooltip="Show person in main list"
-                                onClick={() => setPendingShowPerson(person)}
-                                variant="ghost"
+                              <Button
+                                variant="outline"
                                 size="sm"
-                                className="text-muted-foreground hover:text-foreground"
-                                ariaLabel={`Show ${person.full_name || person.email}`}
-                              />
+                                onClick={() => setPendingShowPerson(person)}
+                                aria-label={`Unarchive ${person.full_name || person.email}`}
+                              >
+                                <RotateCcw className="w-4 h-4 mr-1.5" aria-hidden="true" />
+                                Unarchive
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -944,9 +944,9 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
       <AlertDialog open={!!pendingHidePerson} onOpenChange={(open) => !open && setPendingHidePerson(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Hide this person?</AlertDialogTitle>
+            <AlertDialogTitle>Archive this person?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will move {pendingHidePerson?.full_name || pendingHidePerson?.email} to the hidden list. Their assignments and progress will not be affected.
+              This will move {pendingHidePerson?.full_name || pendingHidePerson?.email} to the Archived section. They will no longer be able to log in, but all their training data will be retained.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1025,10 +1025,9 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
       <AlertDialog open={!!pendingShowPerson} onOpenChange={(open) => !open && setPendingShowPerson(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Show this person?</AlertDialogTitle>
+            <AlertDialogTitle>Unarchive this person?</AlertDialogTitle>
             <AlertDialogDescription>
-              "{pendingShowPerson?.full_name || pendingShowPerson?.email}" will be restored to the main people list
-              without affecting their assignments or progress.
+              {pendingShowPerson?.full_name || pendingShowPerson?.email} will be restored to the active people list and will be able to log in again.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1041,7 +1040,7 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
                 }
               }}
             >
-              Show Person
+              Unarchive
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

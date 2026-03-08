@@ -151,19 +151,27 @@ const AppContent = () => {
           } 
         />
 
-        <Route 
-          path="/video/:videoId" 
-          element={<VideoPage />} 
+        <Route
+          path="/video/:videoId"
+          element={isAuthenticated ? <VideoPage /> : <Navigate to="/auth" replace />}
         />
-        <Route 
-          path="/components-gallery" 
+        <Route
+          path="/components-gallery"
           element={
-            <ComponentsGallery 
-              userName={userName}
-              userEmail={userEmail}
-              onLogout={handleLogout}
-            />
-          } 
+            isAuthenticated ? (
+              isAdmin ? (
+                <ComponentsGallery
+                  userName={userName}
+                  userEmail={userEmail}
+                  onLogout={handleLogout}
+                />
+              ) : (
+                <Navigate to="/dashboard" replace />
+              )
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          }
         />
         <Route path="*" element={<NotFound />} />
       </Routes>

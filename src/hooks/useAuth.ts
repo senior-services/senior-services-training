@@ -71,10 +71,32 @@ export function useAuth() {
           loading: false,
         });
 
-        // Track login events
+        // Track login events and check archived status
         if (event === 'SIGNED_IN' && session?.user) {
           const provider = session.user.app_metadata?.provider || 'unknown';
           authActivityOperations.logLogin(provider);
+
+          // Check if employee is archived (deactivated)
+          const userEmail = session.user.email;
+          if (userEmail) {
+            supabase
+              .from('employees')
+              .select('archived_at')
+              .eq('email', userEmail)
+              .maybeSingle()
+              .then(({ data }) => {
+                if (data?.archived_at) {
+                  // Log blocked login before signing out (user is still authenticated)
+                  authActivityOperations.logLoginBlocked('archived_employee');
+                  // Employee is archived — sign them out
+                  supabase.auth.signOut().then(() => {
+                    setState({ session: null, user: null, loading: false });
+                    clearUserRoleCache();
+                    setAuthError('Your account has been deactivated. Please contact your administrator.');
+                  });
+                }
+              });
+          }
         }
       }
     );
@@ -110,10 +132,12 @@ export function useAuth() {
       if (error) {
         const userMessage = getAuthErrorMessage(error);
         logger.error('Google sign in error', error as Error);
+        authActivityOperations.logLoginFailed('google', error.message);
         setAuthError(userMessage);
       }
     } catch (error) {
       logger.error('Google sign in error', error as Error);
+      authActivityOperations.logLoginFailed('google', (error as Error).message);
       setAuthError('Failed to sign in with Google');
     }
   };
@@ -161,6 +185,7 @@ export function useAuth() {
       if (error) {
         const userMessage = getAuthErrorMessage(error);
         logger.error('Sign in error', error as Error);
+        authActivityOperations.logLoginFailed('password', error.message);
         setAuthError(userMessage);
         return { error };
       }
@@ -168,6 +193,7 @@ export function useAuth() {
       return { error: null };
     } catch (error) {
       logger.error('Sign in error', error as Error);
+      authActivityOperations.logLoginFailed('password', (error as Error).message);
       setAuthError('Failed to sign in');
       return { error: error as Error };
     }

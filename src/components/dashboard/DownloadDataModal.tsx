@@ -57,7 +57,7 @@ export const DownloadDataModal: React.FC<DownloadDataModalProps> = ({
             disabled={isLoading}
           />
           <Label htmlFor={switchId} className="cursor-pointer font-normal">
-            Include hidden employees ({hiddenCount})
+            Include archived employees ({hiddenCount})
           </Label>
         </div>
 
