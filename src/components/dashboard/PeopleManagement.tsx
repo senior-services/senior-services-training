@@ -53,7 +53,7 @@ import { format, differenceInDays, isPast } from "date-fns";
 import { formatLong } from "@/utils/date-formatter";
 import { quizOperations } from "@/services/quizService";
 import { createSafeDisplayName } from "@/utils/security";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { STATUS_LABELS } from "@/constants";
 import {
   isLegacyExempt as sharedIsLegacyExempt,
@@ -695,13 +695,27 @@ export const PeopleManagement: React.FC<PeopleManagementProps> = ({ userEmail })
           quizVersions,
         );
 
-        const workbook = XLSX.utils.book_new();
-        const worksheet = XLSX.utils.json_to_sheet(exportData);
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Training Data");
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Training Data");
+
+        if (exportData.length > 0) {
+          worksheet.columns = Object.keys(exportData[0]).map((key) => ({
+            header: key,
+            key,
+          }));
+          exportData.forEach((row) => worksheet.addRow(row));
+        }
 
         const now = new Date();
         const filename = `training_data_${format(now, "yyyy-MM-dd")}.xlsx`;
-        XLSX.writeFile(workbook, filename);
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
 
         toast.success("Success", { description: "Training data exported successfully" });
         setShowDownloadModal(false);

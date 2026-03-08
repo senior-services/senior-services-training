@@ -51,7 +51,7 @@ import { format } from "date-fns";
 import { TrainingContent, VideoType, ContentType } from "@/types";
 import { QuizWithQuestions } from "@/types/quiz";
 import { QuestionFormData, OptionFormData } from "@/components/quiz/CreateQuizModal";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 // Extended interfaces for editing with IDs
 interface EditableQuestionFormData extends QuestionFormData {
@@ -532,23 +532,24 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
         }
       }
 
-      const wb = XLSX.utils.book_new();
+      const wb = new ExcelJS.Workbook();
 
       for (const version of versions) {
-        const sheetData: any[][] = [];
-        sheetData.push([`Version ${version.version}${version.archived_at ? " (Archived)" : " (Active)"}`]);
-        sheetData.push([
+        const ws = wb.addWorksheet(`Version ${version.version}`);
+
+        ws.addRow([`Version ${version.version}${version.archived_at ? " (Archived)" : " (Active)"}`]);
+        ws.addRow([
           `Created: ${new Date(version.created_at).toLocaleDateString()}`,
           "",
           `Created by: ${version.created_by ? userEmails[version.created_by] || "Unknown" : "N/A"}`,
         ]);
-        sheetData.push([
+        ws.addRow([
           `Last edited: ${new Date(version.updated_at).toLocaleDateString()}`,
           "",
           `Last edited by: ${version.updated_by ? userEmails[version.updated_by] || "Unknown" : "N/A"}`,
         ]);
-        sheetData.push([]);
-        sheetData.push([
+        ws.addRow([]);
+        ws.addRow([
           "Question #",
           "Question Text",
           "Type",
@@ -565,7 +566,7 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
             .filter((o) => "is_correct" in o && o.is_correct)
             .map((o) => o.option_text)
             .join(", ");
-          sheetData.push([
+          ws.addRow([
             i + 1,
             q.question_text,
             q.question_type.replace("_", " "),
@@ -576,12 +577,16 @@ export const EditVideoModal = ({ open, onOpenChange, video, onSave, onDelete, on
             correctAnswers,
           ]);
         });
-
-        const ws = XLSX.utils.aoa_to_sheet(sheetData);
-        XLSX.utils.book_append_sheet(wb, ws, `Version ${version.version}`);
       }
 
-      XLSX.writeFile(wb, `Quiz Versions - ${video.title}.xlsx`);
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Quiz Versions - ${video.title}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
     } catch (error) {
       logger.error("Error downloading versions:", error);
       setQuizError("Error downloading versions.");
