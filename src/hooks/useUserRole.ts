@@ -14,7 +14,11 @@ export function useUserRole(user: User | null) {
 
     if (!user) {
       setRole(null);
-      setLoading(false);
+      // Don't set loading=false here — keep it true so that when user
+      // transitions from null to non-null, the App loading guard stays
+      // active until the role is actually fetched. The App.tsx loading
+      // check (isAuthenticated && roleLoading) ensures this only blocks
+      // when a user is authenticated, so unauthenticated flows are unaffected.
       return;
     }
 

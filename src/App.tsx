@@ -14,6 +14,7 @@ import { VideoPlayerFullscreen } from "@/components/VideoPlayerFullscreen";
 import { logger } from "@/utils/logger";
 import { AuthCallback } from "./pages/AuthCallback";
 import { ComponentsGallery } from "./pages/ComponentsGallery";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import type { Video } from "./types";
 
 // YouTube API type declarations
@@ -160,11 +161,23 @@ const AppContent = () => {
           element={
             isAuthenticated ? (
               isAdmin ? (
-                <ComponentsGallery
-                  userName={userName}
-                  userEmail={userEmail}
-                  onLogout={handleLogout}
-                />
+                // TEMPORARY: ErrorBoundary for diagnosing blank render — remove once resolved
+                <ErrorBoundary
+                  onError={(error) => console.error('[ComponentsGallery crash]', error)}
+                  fallbackComponent={
+                    <div className="min-h-screen bg-background p-8">
+                      <h1 className="text-h2 text-destructive mb-4">ComponentsGallery crashed</h1>
+                      <p className="text-body mb-2">Check the browser console for the full stack trace.</p>
+                      <p className="text-body-sm text-muted-foreground">This diagnostic wrapper can be removed from App.tsx once the issue is resolved.</p>
+                    </div>
+                  }
+                >
+                  <ComponentsGallery
+                    userName={userName}
+                    userEmail={userEmail}
+                    onLogout={handleLogout}
+                  />
+                </ErrorBoundary>
               ) : (
                 <Navigate to="/dashboard" replace />
               )
