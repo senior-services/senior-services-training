@@ -6,7 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SANDBOX_EMAIL = "jbowers@southsoundseniors.org";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -188,14 +187,7 @@ Deno.serve(async (req) => {
 </html>`;
     }
 
-    // --- Sandbox override ---
-    let finalRecipient = employee_email;
-    if (employee_email !== SANDBOX_EMAIL) {
-      console.log(
-        `Skipping email for sandbox testing: ${employee_email}. Redirecting to ${SANDBOX_EMAIL}`
-      );
-      finalRecipient = SANDBOX_EMAIL;
-    }
+    const finalRecipient = employee_email;
 
     // --- Send via Resend ---
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
