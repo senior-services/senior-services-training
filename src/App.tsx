@@ -156,8 +156,10 @@ const AppContent = () => {
           path="/video/:videoId"
           element={isAuthenticated ? <VideoPage /> : <Navigate to="/auth" replace />}
         />
+        <Route path="/components-gallery" element={<Navigate to="/style-guide" replace />} />
+        <Route path="/component-gallery" element={<Navigate to="/style-guide" replace />} />
         <Route
-          path="/components-gallery"
+          path="/style-guide"
           element={
             isAuthenticated ? (
               isAdmin ? (
