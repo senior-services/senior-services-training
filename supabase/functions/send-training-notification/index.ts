@@ -142,9 +142,9 @@ Deno.serve(async (req) => {
 
       const titlesHtml = titles.length === 1
         ? `<p style="font-size:15px;color:#0f172a;margin:0;">${titles[0]}</p>`
-        : `<ul style="margin:0;padding:0;list-style:none;">${titles.map(t =>
-            `<li style="font-size:15px;font-weight:600;color:#0f172a;padding:5px 0;display:flex;align-items:flex-start;gap:8px;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#2563a8;margin-top:6px;flex-shrink:0;"></span>${t}</li>`
-          ).join("")}</ul>`;
+        : `<table cellpadding="0" cellspacing="0" style="margin:0 0 16px;">${titles.map(t =>
+            `<tr><td style="width:14px;padding:4px 0;vertical-align:top;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#2563a8;margin-top:5px;"></span></td><td style="font-size:15px;font-weight:600;color:#0f172a;padding:4px 0;line-height:1.4;">${t}</td></tr>`
+          ).join("")}</table>`;
 
       html = `
 <!DOCTYPE html>
