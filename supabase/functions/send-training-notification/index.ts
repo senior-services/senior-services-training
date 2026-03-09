@@ -1,5 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const PORTAL_URL = "https://training.southsoundseniors.org";
+const LOGO_URL = `${PORTAL_URL}/lovable-uploads/SS_logo.png`;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -75,14 +78,13 @@ Deno.serve(async (req) => {
       }
 
       const displayName = employee_name || employee_email;
-      const loginUrl = app_url ? `${app_url}/auth` : "#";
+      const loginUrl = `${PORTAL_URL}/auth`;
       const contentText = granted
         ? "You have been granted Administrative Privileges for the Senior Services Training Portal."
         : "Your Administrative Privileges for the Senior Services Training Portal have been removed.";
       const buttonText = granted ? "Access Admin Dashboard" : "Go to Training Portal";
       subjectLine = granted ? "Administrative Privileges Granted" : "Administrative Privileges Removed";
 
-      const logoUrl = app_url ? `${app_url}/lovable-uploads/SS_logo.png` : "";
       html = `
 <!DOCTYPE html>
 <html>
@@ -92,7 +94,7 @@ Deno.serve(async (req) => {
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;">
         <tr><td style="padding:20px 28px 14px;">
-          <img src="${logoUrl}" alt="Senior Services for South Sound" height="40" style="display:block;" />
+          <img src="${LOGO_URL}" alt="Senior Services for South Sound" height="40" style="display:block;" />
         </td></tr>
         <tr><td style="padding:32px 28px 28px;">
           <p style="font-size:20px;font-weight:600;color:#0f172a;margin:0 0 16px;">Hello, ${displayName}.</p>
@@ -127,7 +129,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      const loginUrl = app_url ? `${app_url}/auth` : "#";
+      const loginUrl = `${PORTAL_URL}/auth`;
       const displayName = employee_name || employee_email;
       const dueDateDisplay = due_date || "No due date set";
       subjectLine = titles.length === 1
@@ -144,7 +146,6 @@ Deno.serve(async (req) => {
             `<li style="font-size:15px;font-weight:600;color:#0f172a;padding:5px 0;display:flex;align-items:flex-start;gap:8px;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#2563a8;margin-top:6px;flex-shrink:0;"></span>${t}</li>`
           ).join("")}</ul>`;
 
-      const logoUrl = app_url ? `${app_url}/lovable-uploads/SS_logo.png` : "";
       html = `
 <!DOCTYPE html>
 <html>
@@ -154,7 +155,7 @@ Deno.serve(async (req) => {
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;">
         <tr><td style="padding:20px 28px 14px;">
-          <img src="${logoUrl}" alt="Senior Services for South Sound" height="40" style="display:block;" />
+          <img src="${LOGO_URL}" alt="Senior Services for South Sound" height="40" style="display:block;" />
         </td></tr>
         <tr><td style="padding:32px 28px 28px;">
           <p style="font-size:20px;font-weight:600;color:#0f172a;margin:0 0 16px;">Hello, ${displayName}.</p>
