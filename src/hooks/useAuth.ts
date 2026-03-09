@@ -165,7 +165,7 @@ export function useAuth() {
         return { error };
       }
 
-      toast.success('Check your email for confirmation link');
+      toast.success('Check your email for confirmation link', { description: 'Click the link in the email to complete your registration.' });
       return { error: null };
     } catch (error) {
       logger.error('Sign up error', error as Error);
@@ -221,7 +221,7 @@ export function useAuth() {
       clearUserRoleCache();
       
       if (!error) {
-        toast.success('Successfully signed out');
+        toast.success('Successfully signed out', { description: 'You have been logged out of your account.' });
       }
     } catch (error) {
       logger.error('Sign out error', error as Error);
