@@ -83,45 +83,33 @@ Deno.serve(async (req) => {
       const buttonText = granted ? "Access Admin Dashboard" : "Go to Training Portal";
       subjectLine = granted ? "Administrative Privileges Granted" : "Administrative Privileges Removed";
 
+      const logoUrl = app_url ? `${app_url}/lovable-uploads/SS_logo.png` : "";
       html = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 0;">
+<body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 0;">
     <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
-        <!-- Header -->
-        <tr>
-          <td style="background:#1a365d;padding:24px 32px;text-align:center;">
-            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Senior Services of South Sound</h1>
-            <p style="margin:4px 0 0;color:#93c5fd;font-size:13px;">Access Update</p>
-          </td>
-        </tr>
-        <!-- Body -->
-        <tr>
-          <td style="padding:32px;">
-            <p style="margin:0 0 16px;font-size:16px;color:#1a1a1a;">Hello ${displayName},</p>
-            <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.6;">
-              ${contentText}
-            </p>
-            <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
-              <tr>
-                <td style="background:rgb(23,101,161);border-radius:6px;">
-                  <a href="${loginUrl}" style="display:inline-block;padding:12px 32px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;">
-                    ${buttonText}
-                  </a>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <!-- Footer -->
-        <tr>
-          <td style="padding:16px 32px;background:#f9fafb;text-align:center;">
-            <p style="margin:0;font-size:12px;color:#9ca3af;">This is an automated message from Senior Services Training Portal.</p>
-          </td>
-        </tr>
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;">
+        <tr><td style="padding:20px 28px 14px;">
+          <img src="${logoUrl}" alt="Senior Services for South Sound" height="40" style="display:block;" />
+        </td></tr>
+        <tr><td style="padding:32px 28px 28px;">
+          <p style="font-size:20px;font-weight:600;color:#0f172a;margin:0 0 16px;">Hello, ${displayName}.</p>
+          <p style="font-size:15px;color:#0f172a;line-height:1.7;margin:0 0 10px;">
+            ${contentText}
+          </p>
+          <div style="height:24px;"></div>
+          <a href="${loginUrl}" style="display:inline-block;background:#2563a8;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 22px;border-radius:6px;">
+            ${buttonText}
+          </a>
+        </td></tr>
+        <tr><td style="border-top:1px solid #cbd5e1;background:#f8fafc;padding:16px 28px;">
+          <p style="font-size:12px;color:#6b7280;line-height:1.7;margin:0;">
+            Automated message from the <a href="${loginUrl}" style="color:#2563a8;text-decoration:none;">Senior Services Training Portal</a>. You're receiving this because your admin privileges were updated.
+          </p>
+        </td></tr>
       </table>
     </td></tr>
   </table>
@@ -147,68 +135,52 @@ Deno.serve(async (req) => {
         ? `New Training Assigned: ${titles[0]}`
         : `${titles.length} New Trainings Assigned`;
 
-      const titlesHtml = titles.map(t =>
-        `<li style="margin:0 0 6px;font-size:15px;color:#1a1a1a;font-weight:600;">${t}</li>`
-      ).join("");
-
-      const assignedLabel = titles.length === 1 ? "Assigned Training" : "Assigned Trainings";
       const introText = titles.length === 1
         ? "You have been assigned a new training. Please complete it by the due date."
         : `You have been assigned ${titles.length} new trainings. Please complete them by the due date.`;
 
+      const titlesHtml = titles.length === 1
+        ? `<p style="font-size:15px;color:#0f172a;margin:0;">${titles[0]}</p>`
+        : `<ul style="margin:0;padding:0;list-style:none;">${titles.map(t =>
+            `<li style="font-size:15px;font-weight:600;color:#0f172a;padding:5px 0;display:flex;align-items:flex-start;gap:8px;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#2563a8;margin-top:6px;flex-shrink:0;"></span>${t}</li>`
+          ).join("")}</ul>`;
+
+      const logoUrl = app_url ? `${app_url}/lovable-uploads/SS_logo.png` : "";
       html = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 0;">
+<body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 0;">
     <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
-        <!-- Header -->
-        <tr>
-          <td style="background:#1a365d;padding:24px 32px;text-align:center;">
-            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Senior Services of South Sound</h1>
-            <p style="margin:4px 0 0;color:#93c5fd;font-size:13px;">Training Portal</p>
-          </td>
-        </tr>
-        <!-- Body -->
-        <tr>
-          <td style="padding:32px;">
-            <p style="margin:0 0 16px;font-size:16px;color:#1a1a1a;">Hello ${displayName},</p>
-            <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.6;">
-              ${introText}
-            </p>
-            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:6px;margin-bottom:24px;">
-              <tr>
-                <td style="padding:16px 20px;">
-                  <p style="margin:0 0 8px;font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;">${assignedLabel}</p>
-                  <ul style="margin:0;padding:0 0 0 18px;">${titlesHtml}</ul>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:0 20px 16px;">
-                  <p style="margin:0 0 8px;font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;">Due Date</p>
-                  <p style="margin:0;font-size:15px;color:#1a1a1a;">${dueDateDisplay}</p>
-                </td>
-              </tr>
-            </table>
-            <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
-              <tr>
-                <td style="background:rgb(23,101,161);border-radius:6px;">
-                  <a href="${loginUrl}" style="display:inline-block;padding:12px 32px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;">
-                    Go to Training Portal
-                  </a>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <!-- Footer -->
-        <tr>
-          <td style="padding:16px 32px;background:#f9fafb;text-align:center;">
-            <p style="margin:0;font-size:12px;color:#9ca3af;">This is an automated message from Senior Services Training Portal.</p>
-          </td>
-        </tr>
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;">
+        <tr><td style="padding:20px 28px 14px;">
+          <img src="${logoUrl}" alt="Senior Services for South Sound" height="40" style="display:block;" />
+        </td></tr>
+        <tr><td style="padding:32px 28px 28px;">
+          <p style="font-size:20px;font-weight:600;color:#0f172a;margin:0 0 16px;">Hello, ${displayName}.</p>
+          <p style="font-size:15px;color:#0f172a;line-height:1.7;margin:0 0 10px;">
+            ${introText}
+          </p>
+          <div style="height:24px;"></div>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;margin:0 0 24px;">
+            <tr><td style="padding:18px 20px;">
+              <p style="font-size:11px;font-weight:600;color:#64748b;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 10px;">Assigned Training</p>
+              ${titlesHtml}
+              <div style="height:1px;background:#cbd5e1;margin:14px 0;"></div>
+              <p style="font-size:11px;font-weight:600;color:#64748b;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 8px;">Due Date</p>
+              <p style="font-size:15px;color:#0f172a;margin:0;">${dueDateDisplay}</p>
+            </td></tr>
+          </table>
+          <a href="${loginUrl}" style="display:inline-block;background:#2563a8;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 22px;border-radius:6px;">
+            Go to Training Portal
+          </a>
+        </td></tr>
+        <tr><td style="border-top:1px solid #cbd5e1;background:#f8fafc;padding:16px 28px;">
+          <p style="font-size:12px;color:#6b7280;line-height:1.7;margin:0;">
+            Automated message from the <a href="${loginUrl}" style="color:#2563a8;text-decoration:none;">Senior Services Training Portal</a>. You're receiving this because you were assigned new training.
+          </p>
+        </td></tr>
       </table>
     </td></tr>
   </table>
